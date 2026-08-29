@@ -7,9 +7,13 @@ from typing import Dict, Any, List, Optional
 import math
 from datetime import datetime, timedelta
 
-from src.agents.specialist_agents import (
-    VibrationAgent, MCSAAgent, DGAAgent, PDAgent, TribologyAgent, ThermalAgent
-)
+from pple.engineering.registry import ModuleRegistry
+from pple.engineering.modules.vibration import VibrationModule
+from pple.engineering.modules.mcsa import MCSAModule
+from pple.engineering.modules.dga import DGAModule
+from pple.engineering.modules.partial_discharge import PartialDischargeModule
+from pple.engineering.modules.tribology import TribologyModule
+from pple.engineering.modules.thermal import ThermalModule
 
 
 class FailureModeDiagnosisAgent:
@@ -324,17 +328,34 @@ class ReliabilityFusionAgent:
     runs Failure Mode Diagnosis, predicts RUL, calculates Risk, and prepares Maintenance WO.
     """
     def __init__(self):
-        self.vibration_agent = VibrationAgent()
-        self.mcsa_agent = MCSAAgent()
-        self.dga_agent = DGAAgent()
-        self.pd_agent = PDAgent()
-        self.tribology_agent = TribologyAgent()
-        self.thermal_agent = ThermalAgent()
+        # Specialist domain evaluation is delegated to pple's EngineeringModule
+        # registry (docs/final.md Phase 10), same as SubAgentCoordinator - see
+        # self._analyze().
+        self.module_registry = ModuleRegistry()
+        for module_cls in (
+            VibrationModule,
+            MCSAModule,
+            DGAModule,
+            PartialDischargeModule,
+            TribologyModule,
+            ThermalModule,
+        ):
+            self.module_registry.register(module_cls())
 
         self.diagnosis_agent = FailureModeDiagnosisAgent()
         self.rul_predictor = RULPredictor()
         self.risk_engine = RiskEngine()
         self.decision_agent = MaintenanceDecisionAgent()
+
+    def _analyze(self, module_id: str, equipment: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Run one domain evaluation through the pple EngineeringModule registry.
+
+        Returns the same raw evaluation dict shape the legacy
+        specialist_agents.*Agent.evaluate() calls used to return directly -
+        LegacyAgentAdapterModule.analyze() passes it through unchanged.
+        """
+        module = self.module_registry.get(module_id)
+        return module.analyze(data, {"equipment_id": equipment})
 
     def run_full_fusion(
         self,
@@ -353,22 +374,22 @@ class ReliabilityFusionAgent:
 
         # 1. Run individual specialist evaluations
         if vibration_data is not None:
-            specialist_results["Vibration"] = self.vibration_agent.evaluate(equipment, vibration_data)
+            specialist_results["Vibration"] = self._analyze("vibration", equipment, vibration_data)
             health_weights["Vibration"] = 0.28
         if mcsa_data is not None:
-            specialist_results["MCSA"] = self.mcsa_agent.evaluate(equipment, mcsa_data)
+            specialist_results["MCSA"] = self._analyze("mcsa", equipment, mcsa_data)
             health_weights["MCSA"] = 0.28
         if thermal_data is not None:
-            specialist_results["Thermal"] = self.thermal_agent.evaluate(equipment, thermal_data)
+            specialist_results["Thermal"] = self._analyze("thermal", equipment, thermal_data)
             health_weights["Thermal"] = 0.20
         if oil_data is not None:
-            specialist_results["Tribology"] = self.tribology_agent.evaluate(equipment, oil_data)
+            specialist_results["Tribology"] = self._analyze("tribology", equipment, oil_data)
             health_weights["Tribology"] = 0.14
         if dga_data is not None:
-            specialist_results["DGA"] = self.dga_agent.evaluate(equipment, dga_data)
+            specialist_results["DGA"] = self._analyze("dga", equipment, dga_data)
             health_weights["DGA"] = 0.35
         if pd_data is not None:
-            specialist_results["Partial Discharge"] = self.pd_agent.evaluate(equipment, pd_data)
+            specialist_results["Partial Discharge"] = self._analyze("partial_discharge", equipment, pd_data)
             health_weights["Partial Discharge"] = 0.25
 
         # If transformer asset, rebalance weights
