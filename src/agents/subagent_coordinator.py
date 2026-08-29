@@ -6,18 +6,17 @@ manages inter-agent communication, aggregates diagnostic evidence, and generates
 
 from typing import Dict, Any, List, Optional
 import time
-from .specialist_agents import (
-    VibrationAgent,
-    MCSAAgent,
-    DGAAgent,
-    PDAgent,
-    TribologyAgent,
-    ThermalAgent
-)
 from .fusion_engine import ReliabilityFusionAgent
 from .safety_guard import SafetyGuardrailAgent
 from .asset_graph import AssetKnowledgeGraph
 from .continuous_learning import PowerPlantSkillLearner
+from pple.engineering.registry import ModuleRegistry
+from pple.engineering.modules.vibration import VibrationModule
+from pple.engineering.modules.mcsa import MCSAModule
+from pple.engineering.modules.dga import DGAModule
+from pple.engineering.modules.partial_discharge import PartialDischargeModule
+from pple.engineering.modules.tribology import TribologyModule
+from pple.engineering.modules.thermal import ThermalModule
 
 
 class SubAgentDescriptor:
@@ -59,12 +58,20 @@ class SubAgentCoordinator:
     and consensus diagnostic synthesis.
     """
     def __init__(self):
-        self.vibration_agent = VibrationAgent()
-        self.mcsa_agent = MCSAAgent()
-        self.dga_agent = DGAAgent()
-        self.pd_agent = PDAgent()
-        self.tribology_agent = TribologyAgent()
-        self.thermal_agent = ThermalAgent()
+        # Specialist domain evaluation is delegated to pple's EngineeringModule
+        # registry (docs/final.md Phase 10) instead of instantiating each
+        # specialist_agents.*Agent directly - see self._analyze().
+        self.module_registry = ModuleRegistry()
+        for module_cls in (
+            VibrationModule,
+            MCSAModule,
+            DGAModule,
+            PartialDischargeModule,
+            TribologyModule,
+            ThermalModule,
+        ):
+            self.module_registry.register(module_cls())
+
         self.fusion_agent = ReliabilityFusionAgent()
         self.safety_guard = SafetyGuardrailAgent()
         self.asset_graph = AssetKnowledgeGraph()
@@ -224,6 +231,18 @@ class SubAgentCoordinator:
 
         return list(active_agents)
 
+    def _analyze(self, module_id: str, equipment: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Run one domain evaluation through the pple EngineeringModule registry.
+
+        Returns the same raw evaluation dict shape the legacy
+        specialist_agents.*Agent.evaluate() calls used to return directly
+        (condition, health_score, failure_mode, severity, confidence,
+        evidence, recommendation, metrics) - LegacyAgentAdapterModule.analyze()
+        passes it through unchanged, so this is not a behavior change.
+        """
+        module = self.module_registry.get(module_id)
+        return module.analyze(data, {"equipment_id": equipment})
+
     def run_collaborative_diagnosis(
         self,
         equipment: str,
@@ -254,7 +273,7 @@ class SubAgentCoordinator:
         traces = []
         
         # Vibration Sub-Agent
-        vib_eval = self.vibration_agent.evaluate(equipment, vib_data)
+        vib_eval = self._analyze("vibration", equipment, vib_data)
         traces.append({
             "subagent": self._registry["vibration"].to_dict(),
             "evaluation": vib_eval,
@@ -264,7 +283,7 @@ class SubAgentCoordinator:
         })
 
         # MCSA Sub-Agent
-        mcsa_eval = self.mcsa_agent.evaluate(equipment, mcsa_data)
+        mcsa_eval = self._analyze("mcsa", equipment, mcsa_data)
         traces.append({
             "subagent": self._registry["mcsa"].to_dict(),
             "evaluation": mcsa_eval,
@@ -274,7 +293,7 @@ class SubAgentCoordinator:
         })
 
         # Tribology Sub-Agent
-        oil_eval = self.tribology_agent.evaluate(equipment, oil_data)
+        oil_eval = self._analyze("tribology", equipment, oil_data)
         traces.append({
             "subagent": self._registry["tribology"].to_dict(),
             "evaluation": oil_eval,
@@ -284,7 +303,7 @@ class SubAgentCoordinator:
         })
 
         # Thermal Sub-Agent
-        therm_eval = self.thermal_agent.evaluate(equipment, thermal_data)
+        therm_eval = self._analyze("thermal", equipment, thermal_data)
         traces.append({
             "subagent": self._registry["thermal"].to_dict(),
             "evaluation": therm_eval,
@@ -295,7 +314,7 @@ class SubAgentCoordinator:
 
         # DGA Sub-Agent (for Transformers) or PD Sub-Agent
         if "transformer" in equipment.lower() or "trafo" in equipment.lower():
-            dga_eval = self.dga_agent.evaluate(equipment, dga_data)
+            dga_eval = self._analyze("dga", equipment, dga_data)
             traces.append({
                 "subagent": self._registry["dga"].to_dict(),
                 "evaluation": dga_eval,
