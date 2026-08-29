@@ -266,6 +266,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# PPLE V2 (docs/final.md Phase 24): additive /api/v2/* routes exposing the
+# pple.engineering module registry. Does not affect any /api/* route above.
+from pple.api.router import router as pple_api_v2_router
+app.include_router(pple_api_v2_router)
+
 # Global Data Cache
 _cached_raw_df: Optional[pd.DataFrame] = None
 _cached_latest_df: Optional[pd.DataFrame] = None

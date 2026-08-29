@@ -54,6 +54,27 @@ class TestAPIServer(unittest.TestCase):
         self.assertIn("consensus_health_index", data)
         self.assertIn("subagent_traces", data)
 
+    def test_v2_list_modules_endpoint(self):
+        res = self.client.get("/api/v2/modules")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        module_ids = {m["id"] for m in data["modules"]}
+        self.assertEqual(
+            module_ids,
+            {"vibration", "mcsa", "dga", "partial_discharge", "tribology", "thermal"},
+        )
+
+    def test_v2_get_module_endpoint(self):
+        res = self.client.get("/api/v2/modules/vibration")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["id"], "vibration")
+        self.assertIn("MOTOR", data["applicable_equipment"])
+
+    def test_v2_get_unknown_module_returns_404(self):
+        res = self.client.get("/api/v2/modules/does-not-exist")
+        self.assertEqual(res.status_code, 404)
+
     def test_assessment_report_endpoint(self):
         res = self.client.get("/api/reports/assessment/BFP%201A")
         self.assertEqual(res.status_code, 200)
