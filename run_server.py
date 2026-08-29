@@ -1,0 +1,62 @@
+"""
+Robust FastAPI Launcher for Power Plant O&M Reliability Platform.
+Checks for port availability, releases stale background processes if needed, and starts Uvicorn.
+"""
+
+import os
+import sys
+import socket
+import subprocess
+import time
+
+
+def is_port_in_use(port: int, host: str = "127.0.0.1") -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.5)
+        return s.connect_ex((host, port)) == 0
+
+
+def kill_process_on_port(port: int):
+    if sys.platform == "win32":
+        try:
+            # Find PID using netstat
+            output = subprocess.check_output(f"netstat -ano | findstr :{port}", shell=True, text=True)
+            for line in output.strip().split("\n"):
+                parts = line.strip().split()
+                if len(parts) >= 5 and f":{port}" in parts[1] and parts[3] == "LISTENING":
+                    pid = parts[4]
+                    if pid != str(os.getpid()):
+                        print(f"[*] Menutup proses lama (PID: {pid}) yang menahan Port {port}...")
+                        subprocess.run(f"taskkill /F /PID {pid}", shell=True, capture_output=True)
+            time.sleep(1)
+        except Exception as e:
+            pass
+
+
+def main():
+    port = int(os.getenv("PORT", "8000"))
+    host = os.getenv("HOST", "0.0.0.0")
+
+    print(f"============================================================")
+    print(f"🚀 Memulai Power Plant O&M Reliability API Server...")
+    print(f"📍 Host: {host} | Port: {port}")
+    print(f"============================================================")
+
+    if is_port_in_use(port, "127.0.0.1"):
+        print(f"[!] Port {port} sedang digunakan oleh proses lain. Membersihkan port...")
+        kill_process_on_port(port)
+
+    import uvicorn
+    # Try 0.0.0.0, fallback to 127.0.0.1 if permission issues occur
+    try:
+        uvicorn.run("api_server:app", host=host, port=port, reload=True)
+    except OSError as e:
+        if "10013" in str(e) or "access permissions" in str(e).lower():
+            print(f"[!] Port {port} dibatasi pada 0.0.0.0, beralih ke 127.0.0.1...")
+            uvicorn.run("api_server:app", host="127.0.0.1", port=port, reload=True)
+        else:
+            raise e
+
+
+if __name__ == "__main__":
+    main()

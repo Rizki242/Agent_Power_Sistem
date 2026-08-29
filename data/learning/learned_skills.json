@@ -1,0 +1,127 @@
+{
+  "skills": [
+    {
+      "id": "SKILL-PLTU-007",
+      "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-86",
+      "equipment": "BFP 1A",
+      "system": "Adaptive Disturbance & Operational Protection",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Synthetic disturbance: Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+      ],
+      "verified_root_cause": "Terverifikasi melalui EnvRigger rollout validation pada BFP 1A.",
+      "corrective_action_taken": "Penerbitan Work Order terencana dan mitigasi getaran/arus komposit.",
+      "lesson_learned": "Penerapan kontrak Chain-ExtendedLifecycle-86 berhasil melatih agent untuk mendeteksi kopling anomali lebih awal.",
+      "author": "EnvRigger AI Customizer",
+      "verified_at": "2026-08-27",
+      "accuracy_boost_weight": 1.25
+    },
+    {
+      "id": "SKILL-PLTU-006",
+      "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-515",
+      "equipment": "BFP 1A",
+      "system": "Adaptive Disturbance & Operational Protection",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Synthetic disturbance: Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+      ],
+      "verified_root_cause": "Terverifikasi melalui EnvRigger rollout validation pada BFP 1A.",
+      "corrective_action_taken": "Penerbitan Work Order terencana dan mitigasi getaran/arus komposit.",
+      "lesson_learned": "Penerapan kontrak Chain-ExtendedLifecycle-515 berhasil melatih agent untuk mendeteksi kopling anomali lebih awal.",
+      "author": "EnvRigger AI Customizer",
+      "verified_at": "2026-08-27",
+      "accuracy_boost_weight": 1.25
+    },
+    {
+      "id": "SKILL-PLTU-001",
+      "title": "BFP 1A 1X Vibration Peak & Phase Current Unbalance",
+      "equipment": "BFP 1A",
+      "system": "Feedwater Auxiliary System (Boiler Feed Pump)",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "1X vibration peak tinggi (5.8 mm/s ISO Zone C)",
+        "Deviasi arus fasa 4.8%",
+        "Suhu bearing NDE naik ke 68°C"
+      ],
+      "verified_root_cause": "Kendornya baut pondasi pedestal NDE dan ketidaksejajaran kopling (angular misalignment 0.15 mm), bukan unbalance rotor.",
+      "corrective_action_taken": "Re-torque baut pondasi ke 140 Nm, re-alignment kopling laser tolerance <0.05 mm, dan inspeksi pelumasan grease sintetis.",
+      "lesson_learned": "Pada motor 6.3kV daya besar (>500 kW), getaran 1X tinggi yang disertai deviasi arus ringan sering kali disebabkan oleh pergeseran baseframe/pedestal pondasi dinamis daripada ketidakseimbangan massa murni.",
+      "author": "Chief CBM Specialist PLTU Jeranjang",
+      "verified_at": "2026-01-15",
+      "accuracy_boost_weight": 1.2
+    },
+    {
+      "id": "SKILL-PLTU-002",
+      "title": "ID Fan 1#1 Vibration 1X Ash Buildup on Blades",
+      "equipment": "ID Fan 1#1",
+      "system": "Flue Gas & Draft System",
+      "category": "VIBRASI",
+      "symptoms": [
+        "Vibrasi horizontal 1H dan 2H naik bertahap dari 2.2 mm/s ke 6.4 mm/s dalam 3 minggu",
+        "Harmonik 1X dominan pada spektrum FFT"
+      ],
+      "verified_root_cause": "Penumpukan abu terbang batubara (fly ash accumulation) pada sudu-sudu impeller fan akibat kelembaban gas buang saat startup.",
+      "corrective_action_taken": "Pembersihan kerak abu impeller (blade water wash) saat shutdown singkat dan balancing ulang in-situ (balancing bobot koreksi 120 gram).",
+      "lesson_learned": "Kenaikan tren getaran 1X bertahap pada induced draft fan biasanya merupakan indikasi kuat akumulasi kerak fly ash pada sudu impeller, bukan kelonggaran bantalan.",
+      "author": "Mechanical Maintenance Engineer",
+      "verified_at": "2026-02-02",
+      "accuracy_boost_weight": 1.15
+    },
+    {
+      "id": "SKILL-PLTU-003",
+      "title": "Motor BC 41 Pole-Pass Sideband -43 dB Rotor Bar Crack",
+      "equipment": "BC 41",
+      "system": "Coal Handling Conveyor System",
+      "category": "MCSA_KELISTRIKAN",
+      "symptoms": [
+        "Upper Sideband dB -43.2 dB (Severity Level 3)",
+        "Fluktuasi arus motor berkala pada beban 85%",
+        "Getaran modulated pole-pass frequency 2sf"
+      ],
+      "verified_root_cause": "2 batang rotor bar retak (cracked rotor bars) di dekat end-ring akibat lonjakan torsi saat conveyor sering start-stop bermuatan penuh.",
+      "corrective_action_taken": "Penggantian rotor cadangan (spare rotor swap) dan re-brazing rotor bar di bengkel spesialis kelistrikan.",
+      "lesson_learned": "Conveyor motor yang mengalami start-stop berat rentan mengalami thermal fatigue pada sambungan rotor bar end-ring; sideband di atas -45 dB membutuhkan penggantian sebelum terjadi patah total.",
+      "author": "Electrical Predictive Maintenance Engineer",
+      "verified_at": "2026-02-10",
+      "accuracy_boost_weight": 1.3
+    },
+    {
+      "id": "SKILL-PLTU-004",
+      "title": "Trafo Unit 1 C2H2 & C2H4 Spike (Duval Triangle T3 Thermal Fault)",
+      "equipment": "Transformer Unit 1 (GSUT)",
+      "system": "Main Power Transformer 150kV",
+      "category": "DGA_TRAFO",
+      "symptoms": [
+        "TDCG naik ke 840 ppm (Condition 3 IEEE C57.104)",
+        "Etilena C2H4 185 ppm, Asetilena C2H2 12 ppm",
+        "Duval Triangle 1 koordinat jatuh di zona T3 (>700°C)"
+      ],
+      "verified_root_cause": "Hotspot termal pada koneksi selector switch tap changer (OLTC) internal akibat kontak resistansi tinggi.",
+      "corrective_action_taken": "Pemeriksaan internal tank OLTC, penggantian fixed contacts dan moving contacts, serta sirkulasi purifikasi minyak trafo vacuum degassing.",
+      "lesson_learned": "Kombinasi C2H4 dominan dengan sedikit C2H2 pada minyak trafo merupakan sidik jari pasti pemanasan lokal ekstrem (>700°C) pada kontak logam berbeban tinggi.",
+      "author": "Transformer Specialist CBM",
+      "verified_at": "2026-02-18",
+      "accuracy_boost_weight": 1.25
+    },
+    {
+      "id": "SKILL-PLTU-005",
+      "title": "CWP 1A Lube Oil Water Contamination & Viscosity Drop",
+      "equipment": "CWP 1A",
+      "system": "Circulating Cooling Water System",
+      "category": "TRIBOLOGI",
+      "symptoms": [
+        "Kandungan air Karl Fischer naik ke 450 ppm (Batas baku mutu < 100 ppm)",
+        "Viskositas 40°C turun dari 46 cSt ke 39.5 cSt",
+        "Kekeruhan oli meningkat (warna milky/susu)"
+      ],
+      "verified_root_cause": "Kerusakan mechanical seal & labyrinth seal shaft pompa CWP akibat gesekan kotoran air laut, menyebabkan rembesan uap air ke oil reservoir bearing.",
+      "corrective_action_taken": "Penggantian mechanical seal set, flushing oil reservoir dengan oil purifier centrifuge, dan penggantian oli baru ISO VG 46.",
+      "lesson_learned": "Penurunan viskositas disertai warna susu pada pompa sirkulasi pendingin adalah tanda pasti intrusi air pendingin melalui labyrinth seal; segera lakukan oil flushing untuk mencegah pitting bearing.",
+      "author": "Lubrication & Tribology Analyst",
+      "verified_at": "2026-02-22",
+      "accuracy_boost_weight": 1.2
+    }
+  ],
+  "last_updated": "2026-08-27T16:58:06.189722",
+  "total_skills_count": 7
+}

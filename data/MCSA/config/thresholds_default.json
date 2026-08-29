@@ -1,0 +1,30 @@
+{
+  "rotorbar": {
+    "delta_db_alarm": 9,
+    "delta_db_high": 15
+  },
+  "load": {
+    "valid_min": 40,
+    "monitoring_min": 20
+  },
+  "vfd": {
+    "sb_adjust_db": 3
+  },
+  "thd_voltage": {
+    "alarm_pct": 5,
+    "high_pct": 8
+  },
+  "unbalance_voltage": {
+    "alarm_pct": 1,
+    "high_pct": 2
+  },
+  "unbalance_current": {
+    "alarm_pct": 5,
+    "high_pct": 10
+  },
+  "baseline": {
+    "window_months": 12,
+    "exclude_outliers": true,
+    "method": "MAD"
+  }
+}

@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Streamlit / secrets
+.streamlit/secrets.toml
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+mcp.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local agent/tool caches
+.agents/
+
+# Build/cache artifacts
+dist/
+build/
+frontend/dist/
+frontend/node_modules/
+frontend/.vite-cache/
+data/**/runtime/
+*.log
+
+# Local generated test artifact
+test_output.pptx
+test_result*.json
+debug_*.py

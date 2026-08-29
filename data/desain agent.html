@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RIZBOT PDM Agent — Power Plant Predictive Maintenance</title>
+<style>
+:root{
+  --bg:#071018;
+  --panel:#0c1722;
+  --panel-2:#0f1d2a;
+  --line:#203244;
+  --text:#edf6ff;
+  --muted:#8ba1b5;
+  --cyan:#32d5ff;
+  --green:#43e39f;
+  --amber:#ffbd52;
+  --red:#ff657a;
+  --purple:#a987ff;
+  --blue:#5aa6ff;
+  --shadow:0 22px 50px rgba(0,0,0,.22);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 75% 5%,rgba(50,213,255,.07),transparent 25%),
+    linear-gradient(180deg,#071018,#09131d 45%,#071018);
+  color:var(--text);
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{display:grid;grid-template-columns:268px 1fr;min-height:100vh}
+.sidebar{
+  position:sticky;top:0;height:100vh;padding:22px 18px;
+  border-right:1px solid var(--line);
+  background:rgba(7,16,24,.95);
+  backdrop-filter:blur(16px);
+  display:flex;flex-direction:column;gap:22px;
+}
+.brand{display:flex;align-items:center;gap:12px;padding:0 8px}
+.brandmark{
+  width:42px;height:42px;border:1px solid rgba(50,213,255,.36);
+  border-radius:13px;display:grid;place-items:center;
+  box-shadow:inset 0 0 28px rgba(50,213,255,.08);
+}
+.brandmark span{font-weight:900;color:var(--cyan);letter-spacing:-2px}
+.brand h1{font-size:15px;margin:0;letter-spacing:.08em}
+.brand p{margin:3px 0 0;color:var(--muted);font-size:11px;letter-spacing:.08em}
+.plant-pill{
+  margin:0 7px;padding:12px 13px;border:1px solid var(--line);border-radius:12px;
+  background:linear-gradient(180deg,#0b1722,#09131d);
+}
+.plant-pill small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.12em}
+.plant-pill strong{display:block;margin-top:5px;font-size:13px}
+.nav-title{font-size:10px;color:#60798f;text-transform:uppercase;letter-spacing:.16em;padding:0 12px}
+.nav{display:flex;flex-direction:column;gap:5px}
+.nav a{
+  color:#9db0c3;text-decoration:none;display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;font-size:13px;border:1px solid transparent;
+  transition:.2s ease;
+}
+.nav a:hover,.nav a.active{
+  color:white;background:#0f1d2a;border-color:#1e3446;
+}
+.nav a.active{box-shadow:inset 3px 0 0 var(--cyan)}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot.cyan{background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.dot.green{background:var(--green)}
+.dot.amber{background:var(--amber)}
+.dot.red{background:var(--red)}
+.dot.purple{background:var(--purple)}
+.dot.blue{background:var(--blue)}
+.sidebar-bottom{margin-top:auto}
+.agent-status{
+  border:1px solid #1d3a3a;background:rgba(67,227,159,.045);
+  padding:12px;border-radius:12px;
+}
+.agent-status .row{display:flex;justify-content:space-between;align-items:center}
+.agent-status strong{font-size:12px}
+.agent-status small{display:block;color:var(--muted);margin-top:8px;line-height:1.45}
+.main{min-width:0}
+.topbar{
+  height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+  justify-content:space-between;padding:0 28px;background:rgba(7,16,24,.72);
+  backdrop-filter:blur(14px);position:sticky;top:0;z-index:20;
+}
+.page-title h2{font-size:16px;margin:0}.page-title p{margin:4px 0 0;color:var(--muted);font-size:11px}
+.top-actions{display:flex;align-items:center;gap:9px}
+.btn{
+  height:36px;padding:0 13px;border-radius:9px;border:1px solid var(--line);
+  background:#0d1b27;color:#dcecff;font-size:12px;
+}
+.btn:hover{border-color:#38536b}.btn.primary{background:#c7f5ff;color:#051118;border-color:#c7f5ff;font-weight:800}
+.icon-btn{
+  width:36px;height:36px;border-radius:9px;border:1px solid var(--line);
+  background:#0d1b27;color:#a9bed1;display:grid;place-items:center;
+}
+.content{padding:24px 28px 40px;max-width:1680px;margin:auto}
+.hero{
+  display:grid;grid-template-columns:1.5fr .95fr;gap:16px;margin-bottom:16px;
+}
+.card{
+  border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(15,29,42,.95),rgba(10,22,32,.97));
+  box-shadow:var(--shadow);
+}
+.overview{padding:20px}
+.section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.kicker{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--cyan)}
+.section-head h3{margin:6px 0 4px;font-size:20px}.section-head p{margin:0;color:var(--muted);font-size:12px}
+.live{
+  display:flex;align-items:center;gap:7px;color:#9fe8c8;font-size:11px;border:1px solid #1c493b;
+  padding:7px 9px;border-radius:999px;background:rgba(67,227,159,.04)
+}
+.live .pulse{width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 12px var(--green)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
+.metric{
+  border:1px solid #1a2c3b;background:#091520;border-radius:12px;padding:13px;
+}
+.metric span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.metric strong{display:block;font-size:22px;margin-top:7px;letter-spacing:-.04em}
+.metric small{display:block;font-size:10px;margin-top:4px;color:#6f879b}
+.health-grid{display:grid;grid-template-columns:210px 1fr;gap:18px;margin-top:18px;align-items:center}
+.gauge-wrap{display:grid;place-items:center}
+.gauge{
+  width:172px;height:172px;border-radius:50%;
+  background:conic-gradient(var(--green) 0 79%, #1a2d39 79% 100%);
+  display:grid;place-items:center;position:relative;
+}
+.gauge:before{content:"";position:absolute;inset:13px;border-radius:50%;background:#0b1722;border:1px solid #203543}
+.gauge-value{position:relative;text-align:center}.gauge-value strong{font-size:41px;letter-spacing:-.07em}.gauge-value span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em}
+.asset-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary-box{padding:12px;border-left:2px solid #314659;background:rgba(255,255,255,.016)}
+.summary-box.warn{border-color:var(--amber)}.summary-box.crit{border-color:var(--red)}.summary-box.ok{border-color:var(--green)}
+.summary-box small{color:var(--muted);font-size:10px}.summary-box strong{display:block;margin-top:4px;font-size:13px}
+.agent-panel{padding:18px;display:flex;flex-direction:column;min-height:100%}
+.agent-header{display:flex;align-items:center;justify-content:space-between}
+.agent-title{display:flex;gap:11px;align-items:center}
+.ai-icon{
+  width:38px;height:38px;border-radius:11px;border:1px solid rgba(50,213,255,.32);
+  background:radial-gradient(circle at 50% 40%,rgba(50,213,255,.16),rgba(50,213,255,.02));
+  display:grid;place-items:center;color:var(--cyan);font-weight:900
+}
+.agent-title strong{font-size:13px}.agent-title small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.chip{font-size:9px;padding:5px 7px;border-radius:999px;border:1px solid #235148;color:#88e4bb;background:#0c211c}
+.chatlog{display:flex;flex-direction:column;gap:9px;margin:16px 0;max-height:336px;overflow:auto;padding-right:4px}
+.msg{border:1px solid #1b2f3e;border-radius:12px;padding:11px 12px;font-size:11px;line-height:1.55;color:#bdd0df;background:#0a1620}
+.msg.ai{border-color:#204153;background:rgba(50,213,255,.035)}
+.msg .msg-head{display:flex;justify-content:space-between;color:#72899d;font-size:9px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.09em}
+.msg b{color:#e8f7ff}.msg .risk{color:#ffd17d}
+.chat-input{margin-top:auto;display:grid;grid-template-columns:1fr auto;gap:8px}
+.chat-input input{
+  background:#07131d;border:1px solid #213647;border-radius:10px;color:white;height:39px;padding:0 12px;outline:none;
+}
+.chat-input input:focus{border-color:#39728c}.send{width:42px;border-radius:10px;border:1px solid #31546a;background:#123047;color:#bdefff}
+.module-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
+.module{
+  padding:13px;border:1px solid var(--line);background:#0b1823;border-radius:13px;min-width:0;position:relative;overflow:hidden;
+}
+.module:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--module)}
+.module-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.module-name{font-size:11px;font-weight:800;letter-spacing:.03em}.status{font-size:9px;color:#72899c}
+.module strong{display:block;font-size:20px;margin:10px 0 3px;letter-spacing:-.04em}.module small{color:var(--muted);font-size:9px;white-space:nowrap}
+.module .bar{margin-top:10px;height:3px;background:#172a38;border-radius:20px;overflow:hidden}.module .bar i{display:block;height:100%;background:var(--module)}
+.module.mcsa{--module:var(--cyan)}.module.vib{--module:var(--blue)}.module.trib{--module:var(--amber)}.module.dga{--module:var(--purple)}.module.pd{--module:var(--red)}.module.thermal{--module:var(--green)}
+.workspace{display:grid;grid-template-columns:1.65fr .9fr;gap:16px}
+.left-stack,.right-stack{display:flex;flex-direction:column;gap:16px}
+.panel{padding:17px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.panel-head h4{margin:0;font-size:12px}.panel-head span{color:var(--muted);font-size:9px}
+.filters{display:flex;gap:7px}.filter{border:1px solid #203548;background:#0b1924;color:#8fa6ba;border-radius:8px;padding:6px 8px;font-size:9px}
+.asset-table{width:100%;border-collapse:collapse;font-size:10px}
+.asset-table th{text-align:left;padding:8px;color:#698196;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #213342}
+.asset-table td{padding:11px 8px;border-bottom:1px solid #172a38;color:#c4d3df}
+.asset-table tr:last-child td{border-bottom:0}
+.asset-name strong{font-size:10px}.asset-name small{display:block;color:#6f879b;font-size:8px;margin-top:3px}
+.badge{font-size:8px;padding:4px 7px;border-radius:999px;border:1px solid}
+.badge.normal{color:#7ce4b2;border-color:#23543d;background:#0c241b}.badge.watch{color:#ffd37e;border-color:#60481f;background:#251d0b}.badge.alarm{color:#ff9aa8;border-color:#63303a;background:#261116}
+.health-num{font-weight:800}.trend-up{color:#ff8f9f}.trend-down{color:#7fe3b5}
+.chart{height:220px;border:1px solid #172c3c;border-radius:12px;background:
+ linear-gradient(rgba(39,63,80,.18) 1px,transparent 1px),
+ linear-gradient(90deg,rgba(39,63,80,.18) 1px,transparent 1px);
+ background-size:100% 44px,72px 100%;position:relative;overflow:hidden}
+.chart svg{position:absolute;inset:0;width:100%;height:100%}
+.chart-label{position:absolute;left:12px;top:10px;font-size:9px;color:#607a90}
+.alert-list{display:flex;flex-direction:column}
+.alert{display:grid;grid-template-columns:8px 1fr auto;gap:10px;align-items:start;padding:11px 0;border-bottom:1px solid #172a38}
+.alert:last-child{border-bottom:0}.sev{width:7px;height:7px;border-radius:50%;margin-top:4px}
+.alert strong{display:block;font-size:10px}.alert p{margin:4px 0 0;color:#7f96aa;font-size:9px;line-height:1.45}.alert time{color:#637b8f;font-size:8px}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.action{
+  text-align:left;padding:11px;border:1px solid #203443;border-radius:10px;background:#0a1721;color:#bcd0df;
+}
+.action strong{display:block;font-size:10px}.action small{display:block;color:#6c8498;font-size:8px;margin-top:4px}
+.action:hover{border-color:#36566d;background:#0d1c28}
+.agent-insight{border-left:2px solid var(--cyan);background:rgba(50,213,255,.035);padding:12px 13px}
+.agent-insight span{font-size:9px;color:var(--cyan);text-transform:uppercase;letter-spacing:.1em}.agent-insight p{font-size:10px;color:#a9bdcc;line-height:1.55;margin:7px 0 0}
+.footer-note{color:#536b80;font-size:9px;text-align:center;padding:22px 0 0}
+.mobile-toggle{display:none}
+@media(max-width:1280px){
+  .module-grid{grid-template-columns:repeat(3,1fr)}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:1050px){
+  .app{grid-template-columns:80px 1fr}
+  .sidebar{padding:20px 10px}.brand h1,.brand p,.plant-pill,.nav-title,.nav a span.label,.sidebar-bottom{display:none}
+  .brand{justify-content:center}.nav a{justify-content:center}.hero,.workspace{grid-template-columns:1fr}
+}
+@media(max-width:720px){
+  .app{display:block}.sidebar{display:none}.topbar{padding:0 14px}.content{padding:14px}
+  .module-grid{grid-template-columns:repeat(2,1fr)}.health-grid{grid-template-columns:1fr}
+  .top-actions .btn:not(.primary){display:none}.metrics{grid-template-columns:1fr 1fr}.asset-summary{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brandmark"><span>R</span></div>
+      <div><h1>RIZBOT PDM</h1><p>POWER PLANT AGENT</p></div>
+    </div>
+
+    <div class="plant-pill">
+      <small>Active Plant</small>
+      <strong>PLTU Jeranjang · 3 × 25 MW</strong>
+    </div>
+
+    <div>
+      <div class="nav-title">Command Center</div>
+      <nav class="nav">
+        <a href="#" class="active"><span class="dot cyan"></span><span class="label">Overview</span></a>
+        <a href="#"><span class="dot green"></span><span class="label">Asset Health</span></a>
+        <a href="#"><span class="dot amber"></span><span class="label">AI Diagnosis</span></a>
+        <a href="#"><span class="dot red"></span><span class="label">Alerts & Cases</span></a>
+      </nav>
+    </div>
+
+    <div>
+      <div class="nav-title">PDM Modules</div>
+      <nav class="nav">
+        <a href="#"><span class="dot cyan"></span><span class="label">MCSA</span></a>
+        <a href="#"><span class="dot blue"></span><span class="label">Vibration</span></a>
+        <a href="#"><span class="dot amber"></span><span class="label">Tribology</span></a>
+        <a href="#"><span class="dot purple"></span><span class="label">DGA</span></a>
+        <a href="#"><span class="dot red"></span><span class="label">Partial Discharge</span></a>
+        <a href="#"><span class="dot green"></span><span class="label">Thermal</span></a>
+      </nav>
+    </div>
+
+    <div>
+      <div class="nav-title">System</div>
+      <nav class="nav">
+        <a href="#"><span class="dot blue"></span><span class="label">Data Hub</span></a>
+        <a href="#"><span class="dot purple"></span><span class="label">Knowledge / RAG</span></a>
+        <a href="#"><span class="dot green"></span><span class="label">Reports</span></a>
+      </nav>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="agent-status">
+        <div class="row"><strong>AI Agent Core</strong><span class="dot green"></span></div>
+        <small>RAG connected<br>6 diagnostic engines online</small>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="page-title">
+        <h2>PDM Intelligence Command Center</h2>
+        <p>Unified condition monitoring · diagnostics · risk prioritization</p>
+      </div>
+      <div class="top-actions">
+        <button class="btn">+ Upload Data</button>
+        <button class="btn">Generate Report</button>
+        <button class="icon-btn">⌕</button>
+        <button class="btn primary">Ask PDM Agent</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="hero">
+        <div class="card overview">
+          <div class="section-head">
+            <div>
+              <div class="kicker">Plant condition overview</div>
+              <h3>Reliability Intelligence</h3>
+              <p>Fused health assessment from six predictive-maintenance domains.</p>
+            </div>
+            <div class="live"><span class="pulse"></span> Agent Online</div>
+          </div>
+
+          <div class="metrics">
+            <div class="metric"><span>Monitored Assets</span><strong>128</strong><small>112 with fresh data</small></div>
+            <div class="metric"><span>Open Alerts</span><strong>07</strong><small>2 high priority</small></div>
+            <div class="metric"><span>Critical Assets</span><strong>03</strong><small>Requires engineering review</small></div>
+            <div class="metric"><span>Data Quality</span><strong>94%</strong><small>Healthy ingestion pipeline</small></div>
+          </div>
+
+          <div class="health-grid">
+            <div class="gauge-wrap">
+              <div class="gauge">
+                <div class="gauge-value"><strong>79</strong><span>Plant Health</span></div>
+              </div>
+            </div>
+            <div class="asset-summary">
+              <div class="summary-box crit"><small>Highest Risk</small><strong>MOT Unit 2 · Oil Contamination</strong></div>
+              <div class="summary-box warn"><small>Watchlist</small><strong>GT Unit 1 · Thermal Gas Trend</strong></div>
+              <div class="summary-box warn"><small>Vibration</small><strong>CWP-2A · Looseness Pattern</strong></div>
+              <div class="summary-box ok"><small>Stable</small><strong>Generator PD · Within Baseline</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card agent-panel">
+          <div class="agent-header">
+            <div class="agent-title">
+              <div class="ai-icon">AI</div>
+              <div><strong>PDM Agent</strong><small>Cross-domain diagnostic copilot</small></div>
+            </div>
+            <span class="chip">RAG READY</span>
+          </div>
+
+          <div class="chatlog" id="chatlog">
+            <div class="msg ai">
+              <div class="msg-head"><span>PDM Agent</span><span>now</span></div>
+              Plant condition scan completed. <b>3 assets need engineering attention.</b>
+            </div>
+            <div class="msg ai">
+              <div class="msg-head"><span>Priority Finding</span><span>P1</span></div>
+              MOT Unit 2 shows combined evidence from tribology: elevated Fe/Cu, water and particle cleanliness. <span class="risk">Risk is driven by contamination + wear evidence.</span>
+            </div>
+            <div class="msg ai">
+              <div class="msg-head"><span>Recommended Action</span><span>AI</span></div>
+              Validate sample quality → inspect filtration / breather → resample → correlate with vibration and bearing temperature before maintenance decision.
+            </div>
+          </div>
+
+          <div class="chat-input">
+            <input id="agentInput" placeholder="Ask: apa prioritas maintenance hari ini?" />
+            <button class="send" onclick="sendAgent()">↗</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="module-grid">
+        <div class="module mcsa">
+          <div class="module-top"><span class="module-name">MCSA</span><span class="status">31 assets</span></div>
+          <strong>92%</strong><small>Electrical health</small><div class="bar"><i style="width:92%"></i></div>
+        </div>
+        <div class="module vib">
+          <div class="module-top"><span class="module-name">VIBRATION</span><span class="status">42 assets</span></div>
+          <strong>83%</strong><small>Mechanical health</small><div class="bar"><i style="width:83%"></i></div>
+        </div>
+        <div class="module trib">
+          <div class="module-top"><span class="module-name">TRIBOLOGY</span><span class="status">17 assets</span></div>
+          <strong>68%</strong><small>Lubricant health</small><div class="bar"><i style="width:68%"></i></div>
+        </div>
+        <div class="module dga">
+          <div class="module-top"><span class="module-name">DGA</span><span class="status">16 assets</span></div>
+          <strong>81%</strong><small>Transformer health</small><div class="bar"><i style="width:81%"></i></div>
+        </div>
+        <div class="module pd">
+          <div class="module-top"><span class="module-name">PD</span><span class="status">9 assets</span></div>
+          <strong>88%</strong><small>Insulation health</small><div class="bar"><i style="width:88%"></i></div>
+        </div>
+        <div class="module thermal">
+          <div class="module-top"><span class="module-name">THERMAL</span><span class="status">56 points</span></div>
+          <strong>95%</strong><small>Thermal health</small><div class="bar"><i style="width:95%"></i></div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="left-stack">
+          <div class="card panel">
+            <div class="panel-head">
+              <h4>Asset Risk Ranking</h4>
+              <div class="filters"><button class="filter">All Units</button><button class="filter">All Modules</button><button class="filter">Risk ↓</button></div>
+            </div>
+            <div style="overflow:auto">
+              <table class="asset-table">
+                <thead>
+                  <tr><th>Asset</th><th>Module</th><th>Health</th><th>Condition</th><th>Trend</th><th>AI Priority</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="asset-name"><strong>Main Oil Tank U2</strong><small>Lubrication System</small></td>
+                    <td>Tribology</td><td class="health-num">58</td><td><span class="badge alarm">ALARM</span></td><td class="trend-up">↑ worsening</td><td>P1</td>
+                  </tr>
+                  <tr>
+                    <td class="asset-name"><strong>GT Unit 1</strong><small>Generator Transformer</small></td>
+                    <td>DGA</td><td class="health-num">71</td><td><span class="badge watch">WATCH</span></td><td class="trend-up">↑ rising</td><td>P2</td>
+                  </tr>
+                  <tr>
+                    <td class="asset-name"><strong>CWP-2A</strong><small>Cooling Water Pump</small></td>
+                    <td>Vibration</td><td class="health-num">73</td><td><span class="badge watch">WATCH</span></td><td class="trend-up">↑ unstable</td><td>P2</td>
+                  </tr>
+                  <tr>
+                    <td class="asset-name"><strong>BFP Motor U3</strong><small>6.6 kV Motor</small></td>
+                    <td>MCSA</td><td class="health-num">91</td><td><span class="badge normal">NORMAL</span></td><td class="trend-down">→ stable</td><td>P4</td>
+                  </tr>
+                  <tr>
+                    <td class="asset-name"><strong>Generator U2</strong><small>Stator Insulation</small></td>
+                    <td>PD</td><td class="health-num">88</td><td><span class="badge normal">NORMAL</span></td><td class="trend-down">→ stable</td><td>P4</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-head"><h4>Unified Condition Trend</h4><span>Last 30 Days · normalized health index</span></div>
+            <div class="chart">
+              <div class="chart-label">Health Index</div>
+              <svg viewBox="0 0 800 220" preserveAspectRatio="none" aria-label="mock health trend chart">
+                <polyline fill="none" stroke="#32d5ff" stroke-width="2" points="0,58 70,62 140,60 210,72 280,68 350,75 420,74 490,82 560,79 630,86 700,84 800,89"/>
+                <polyline fill="none" stroke="#5aa6ff" stroke-width="2" points="0,95 70,90 140,98 210,100 280,94 350,105 420,112 490,107 560,122 630,128 700,120 800,132"/>
+                <polyline fill="none" stroke="#ffbd52" stroke-width="2" points="0,120 70,124 140,121 210,130 280,132 350,143 420,150 490,147 560,158 630,168 700,174 800,183"/>
+                <polyline fill="none" stroke="#a987ff" stroke-width="2" points="0,106 70,104 140,108 210,105 280,112 350,116 420,117 490,124 560,123 630,129 700,137 800,140"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-stack">
+          <div class="card panel">
+            <div class="panel-head"><h4>Priority Alerts</h4><span>AI triaged</span></div>
+            <div class="alert-list">
+              <div class="alert">
+                <span class="sev" style="background:var(--red)"></span>
+                <div><strong>MOT Unit 2 · Oil condition critical</strong><p>Particle count, wear metals and water indicate combined contamination/wear mechanism.</p></div><time>10:42</time>
+              </div>
+              <div class="alert">
+                <span class="sev" style="background:var(--amber)"></span>
+                <div><strong>GT Unit 1 · DGA trend watch</strong><p>Thermal gas signature is rising. Verify loading, temperature and repeat DGA.</p></div><time>09:15</time>
+              </div>
+              <div class="alert">
+                <span class="sev" style="background:var(--amber)"></span>
+                <div><strong>CWP-2A · Vibration pattern</strong><p>Harmonic content suggests looseness; correlate with mounting and alignment inspection.</p></div><time>08:37</time>
+              </div>
+            </div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-head"><h4>Quick Actions</h4><span>Engineering workflow</span></div>
+            <div class="action-grid">
+              <button class="action"><strong>Upload Measurement</strong><small>CSV · Excel · Image · PDF</small></button>
+              <button class="action"><strong>Run AI Diagnosis</strong><small>Cross-module reasoning</small></button>
+              <button class="action"><strong>Create Case</strong><small>Track anomaly to closure</small></button>
+              <button class="action"><strong>Generate Report</strong><small>Engineering PDF export</small></button>
+              <button class="action"><strong>Trend Analysis</strong><small>Asset / parameter history</small></button>
+              <button class="action"><strong>Knowledge Search</strong><small>ISO · IEEE · IEC · manuals</small></button>
+            </div>
+          </div>
+
+          <div class="card panel">
+            <div class="agent-insight">
+              <span>Agent Architecture Principle</span>
+              <p>Individual diagnostic engines stay deterministic and auditable. The AI Agent fuses evidence across modules, checks context and history, then explains the risk and recommended next action.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer-note">RIZBOT PDM Agent UI Concept · Demo data only · Designed for MCSA, Vibration, Tribology, DGA, Partial Discharge & Thermal</div>
+    </div>
+  </main>
+</div>
+
+<script>
+function sendAgent(){
+  const input=document.getElementById('agentInput');
+  const log=document.getElementById('chatlog');
+  const value=input.value.trim();
+  if(!value) return;
+  const user=document.createElement('div');
+  user.className='msg';
+  user.innerHTML='<div class="msg-head"><span>Engineer</span><span>now</span></div>'+value.replace(/[<>]/g,'');
+  log.appendChild(user);
+
+  const ai=document.createElement('div');
+  ai.className='msg ai';
+  ai.innerHTML='<div class="msg-head"><span>PDM Agent</span><span>demo</span></div><b>Demo mode:</b> connect this UI to your FastAPI / RAG backend to run real engineering diagnosis. The front-end is ready for API integration.';
+  log.appendChild(ai);
+  input.value='';
+  log.scrollTop=log.scrollHeight;
+}
+document.getElementById('agentInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendAgent()});
+</script>
+</body>
+</html>

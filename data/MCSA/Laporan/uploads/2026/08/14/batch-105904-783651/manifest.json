@@ -1,0 +1,82 @@
+{
+  "batch_id": "batch-105904-783651",
+  "uploaded_at": "2026-08-14T10:59:04",
+  "status": "previewed",
+  "files": [
+    {
+      "original_name": "C3WP2A_000.docx",
+      "stored_name": "C3WP2A_000.docx",
+      "sha256": "3aa614a4e7f188d69c27dc4fcd818092f4f3a7a515c2dbd426d2086353608949",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "C3WP2A",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 2",
+        "voltage": "380/400 V",
+        "full_name": "C3WP 2A"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "C3WP2B_000.docx",
+      "stored_name": "C3WP2B_000.docx",
+      "sha256": "2596fc048029a835a119d6fe00c4e1f0a9aa3bba4fe8bc6bc81076a878faf5c0",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "C3WP2B",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 2",
+        "voltage": "380/400 V",
+        "full_name": "C3WP 2B"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "CEP2A_000.docx",
+      "stored_name": "CEP2A_000.docx",
+      "sha256": "b88bc1000f9e8c7296c50009c36dea228c6f2f8ca0c34c74a4c145420d6c3e99",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "CEP2A",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 2",
+        "voltage": "380/400 V",
+        "full_name": "CEP 2A"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "VCP2A_000.docx",
+      "stored_name": "VCP2A_000.docx",
+      "sha256": "0b083c38fcee4cc6bdb0088e27b6cb4358824f96259d756b6dd5624cb88fccab",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "VCP2A",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 2",
+        "voltage": "380/400 V",
+        "full_name": "VCP 2A"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "VCP2B_000.docx",
+      "stored_name": "VCP2B_000.docx",
+      "sha256": "dbd4261b8e0c9f49b7dcef30e1d3acb73e0f84e061f8d56a920f453911a7df2f",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "VCP2B",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 2",
+        "voltage": "380/400 V",
+        "full_name": "VCP 2B"
+      },
+      "row_count": 21
+    }
+  ]
+}

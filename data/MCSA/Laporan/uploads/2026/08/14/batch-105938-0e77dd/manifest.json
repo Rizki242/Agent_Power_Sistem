@@ -1,0 +1,185 @@
+{
+  "batch_id": "batch-105938-0e77dd",
+  "uploaded_at": "2026-08-14T10:59:38",
+  "status": "committed",
+  "files": [
+    {
+      "original_name": "C3WP2A_000.docx",
+      "stored_name": "C3WP2A_000.docx",
+      "sha256": "3aa614a4e7f188d69c27dc4fcd818092f4f3a7a515c2dbd426d2086353608949",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "C3WP2A",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 2",
+        "voltage": "380/400 V",
+        "full_name": "C3WP 2A"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "C3WP2B_000.docx",
+      "stored_name": "C3WP2B_000.docx",
+      "sha256": "2596fc048029a835a119d6fe00c4e1f0a9aa3bba4fe8bc6bc81076a878faf5c0",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "C3WP2B",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 2",
+        "voltage": "380/400 V",
+        "full_name": "C3WP 2B"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "CEP2A_000.docx",
+      "stored_name": "CEP2A_000.docx",
+      "sha256": "b88bc1000f9e8c7296c50009c36dea228c6f2f8ca0c34c74a4c145420d6c3e99",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "CEP2A",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 2",
+        "voltage": "380/400 V",
+        "full_name": "CEP 2A"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "VCP2A_000.docx",
+      "stored_name": "VCP2A_000.docx",
+      "sha256": "0b083c38fcee4cc6bdb0088e27b6cb4358824f96259d756b6dd5624cb88fccab",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "VCP2A",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 2",
+        "voltage": "380/400 V",
+        "full_name": "VCP 2A"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "VCP2B_000.docx",
+      "stored_name": "VCP2B_000.docx",
+      "sha256": "dbd4261b8e0c9f49b7dcef30e1d3acb73e0f84e061f8d56a920f453911a7df2f",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "VCP2B",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 2",
+        "voltage": "380/400 V",
+        "full_name": "VCP 2B"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "BFP3A_000.docx",
+      "stored_name": "BFP3A_000.docx",
+      "sha256": "6017897c3a1952a91f1226e15a6b529e7d11a5dc538d34dc617de9d44bbdd400",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BFP3A",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 3",
+        "voltage": "6.3 KV",
+        "full_name": "BFP 3A"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "CWP3A_000.docx",
+      "stored_name": "CWP3A_000.docx",
+      "sha256": "ccab13df342808f06f4bd711258b78a0a79ef5cc3ee7d9b1389294869681c551",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "CWP3A",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 3",
+        "voltage": "6.3 KV",
+        "full_name": "CWP 3A"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "CWP3B_000.docx",
+      "stored_name": "CWP3B_000.docx",
+      "sha256": "f55b5c32cc68eb5000408818d0c95ee5cbfa7033cbe2b4837df04a33d1519d2c",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "CWP3B",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 3",
+        "voltage": "6.3 KV",
+        "full_name": "CWP 3B"
+      },
+      "row_count": 23
+    },
+    {
+      "original_name": "IDF3A_000.docx",
+      "stored_name": "IDF3A_000.docx",
+      "sha256": "81fb0106359b63773a649476219deae669d4fd14e9dc99f3ecaf90f17fa2d8d9",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "IDF3A",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 3",
+        "voltage": "6.3 KV",
+        "full_name": "IDF 3A"
+      },
+      "row_count": 23
+    },
+    {
+      "original_name": "IDF3B_000.docx",
+      "stored_name": "IDF3B_000.docx",
+      "sha256": "0e18c433813679198fd29f7cdbed9f7336728233ddd2c2d53076206cd3193529",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "IDF3B",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 3",
+        "voltage": "6.3 KV",
+        "full_name": "IDF 3B"
+      },
+      "row_count": 23
+    },
+    {
+      "original_name": "PAF_000.docx",
+      "stored_name": "PAF_000.docx",
+      "sha256": "314af01448631993677fbc18b16277b6183a901507ddeb9fafba8479db5ba0cd",
+      "parse_status": "quarantined",
+      "error": "Equipment PAF tidak ditemukan di equipment_master.json",
+      "equipment": "",
+      "report_date": "",
+      "metadata": {},
+      "row_count": 0
+    },
+    {
+      "original_name": "SAF_000.docx",
+      "stored_name": "SAF_000.docx",
+      "sha256": "52cc43101eb00036643bd8a9558f6fc6372915f3adf30b496b8f5c5d6016b31e",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "SAF",
+      "report_date": "2026-08-29",
+      "metadata": {
+        "unit": "UNIT 3",
+        "voltage": "6.3 KV",
+        "full_name": "SAF 3"
+      },
+      "row_count": 23
+    }
+  ],
+  "committed_at": "2026-08-14T10:59:52",
+  "committed_rows": 243
+}

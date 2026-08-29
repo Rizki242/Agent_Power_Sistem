@@ -1,0 +1,56 @@
+{
+  "references": [
+    "ESA/MCSA International guidelines"
+  ],
+  "overall": {
+    "high": [
+      "Prioritaskan inspeksi dan verifikasi ulang hasil pengukuran (ESA/MCSA).",
+      "Pertimbangkan pembatasan operasi sampai penyebab utama terkonfirmasi."
+    ],
+    "alarm": [
+      "Jadwalkan pemeriksaan lanjutan dan lakukan trending lebih sering untuk parameter yang abnormal (ESA/MCSA)."
+    ],
+    "normal": [
+      "Lanjutkan monitoring berkala dengan prosedur pengukuran yang konsisten (ESA/MCSA)."
+    ]
+  },
+  "load": {
+    "invalid": [
+      "Load terlalu rendah untuk diagnosis yang valid; lakukan pengukuran ulang pada beban lebih tinggi."
+    ],
+    "monitoring": [
+      "Load menengah: gunakan hasil untuk monitoring; konfirmasi ulang di beban lebih tinggi untuk diagnosis rotor bar yang lebih akurat."
+    ],
+    "valid": [
+      "Load memadai untuk diagnosis; lanjutkan interpretasi ESA/MCSA sesuai indikator."
+    ]
+  },
+  "unbalance_voltage": {
+    "alarm_high": [
+      "Periksa suplai/terminal/koneksi dan ketidakseimbangan beban satu fasa; ulangi pengukuran di titik yang sama."
+    ]
+  },
+  "unbalance_current": {
+    "alarm_high": [
+      "Periksa indikasi unbalance tegangan, koneksi, dan kondisi beban; pastikan konfigurasi CT dan pembacaan benar."
+    ]
+  },
+  "thd_voltage": {
+    "alarm_high": [
+      "Identifikasi sumber harmonisa (mis. VFD/rectifier), evaluasi filter/reaktor, dan validasi titik ukur sesuai praktik ESA/MCSA."
+    ]
+  },
+  "rotorbar": {
+    "monitoring": [
+      "Indikasi rotor bar ringan: lakukan trending, konfirmasi pada load lebih tinggi, dan validasi sideband sesuai standar ESA/MCSA."
+    ],
+    "alarm_high": [
+      "Indikasi rotor bar kuat: lakukan verifikasi ulang pengukuran, inspeksi rotor (bila memungkinkan), dan siapkan rencana tindak lanjut maintenance."
+    ]
+  },
+  "bearing": {
+    "alarm_high": [
+      "Tindak lanjuti indikasi bearing: cek pelumasan, alignment, looseness, dan lakukan inspeksi lanjutan sesuai prosedur maintenance."
+    ]
+  }
+}

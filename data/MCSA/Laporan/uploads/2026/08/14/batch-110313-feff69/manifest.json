@@ -1,0 +1,308 @@
+{
+  "batch_id": "batch-110313-feff69",
+  "uploaded_at": "2026-08-14T11:03:13",
+  "status": "committed",
+  "files": [
+    {
+      "original_name": "CCWP3A_000.docx",
+      "stored_name": "CCWP3A_000.docx",
+      "sha256": "f41166cede0d46fb9dcdaaa5fa1766159359de83052bcc3a487f3c49540890ee",
+      "parse_status": "quarantined",
+      "error": "Equipment CCWP3A tidak ditemukan di equipment_master.json",
+      "equipment": "",
+      "report_date": "",
+      "metadata": {},
+      "row_count": 0
+    },
+    {
+      "original_name": "CCWP3B_000.docx",
+      "stored_name": "CCWP3B_000.docx",
+      "sha256": "e37a74507992d5fec31abc40a7963083dd975512d3c33a7c20f92b5a96066544",
+      "parse_status": "quarantined",
+      "error": "Equipment CCWP3B tidak ditemukan di equipment_master.json",
+      "equipment": "",
+      "report_date": "",
+      "metadata": {},
+      "row_count": 0
+    },
+    {
+      "original_name": "CEP3B_000.docx",
+      "stored_name": "CEP3B_000.docx",
+      "sha256": "768f01b5a17bf075250a578b6b6caa70bd687856eae2d115580cc04465825882",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "CEP3B",
+      "report_date": "2026-08-28",
+      "metadata": {
+        "unit": "UNIT 3",
+        "voltage": "380/400 V",
+        "full_name": "CEP 3B"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "CEP3C_000.docx",
+      "stored_name": "CEP3C_000.docx",
+      "sha256": "aec614c066e4f86b9fc9b83b58b0b60564c1005c26c83a22f3fbf9edf430625e",
+      "parse_status": "quarantined",
+      "error": "Equipment CEP3C tidak ditemukan di equipment_master.json",
+      "equipment": "",
+      "report_date": "",
+      "metadata": {},
+      "row_count": 0
+    },
+    {
+      "original_name": "CTF3B_000.docx",
+      "stored_name": "CTF3B_000.docx",
+      "sha256": "ab01c983e552a9a0c3266db91efe4241450ac34c251e207d54abffae2aab5174",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "CTF3B",
+      "report_date": "2026-08-28",
+      "metadata": {
+        "unit": "UNIT 3",
+        "voltage": "380/400 V",
+        "full_name": "CTF 3B"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "RAF3A_000.docx",
+      "stored_name": "RAF3A_000.docx",
+      "sha256": "6bb6e2d141932b96c3783b47b06520db3764c9687786626b854490c0322096db",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "RAF3A",
+      "report_date": "2026-08-28",
+      "metadata": {
+        "unit": "UNIT 3",
+        "voltage": "380/400 V",
+        "full_name": "RAF 3A"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "WJP3B_000.docx",
+      "stored_name": "WJP3B_000.docx",
+      "sha256": "d3a1fbdec19be180c3ed005b217142aeb6955545c51b2eeda7cd632dff6f5359",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "WJP3B",
+      "report_date": "2026-08-28",
+      "metadata": {
+        "unit": "UNIT 3",
+        "voltage": "380/400 V",
+        "full_name": "WJP 3B"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "BC41_000.docx",
+      "stored_name": "BC41_000.docx",
+      "sha256": "5d3ce511c26488cbf6ef9b22d648a539c67d9f5c3c287e34ca09d9b78edcd69c",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BC41",
+      "report_date": "2026-08-28",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "BC 4.1"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "BC51_000.docx",
+      "stored_name": "BC51_000.docx",
+      "sha256": "e62eac416c81ef427c8dd2448d90c60a8c1b6aac0b179d107ca190375976eba1",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BC51",
+      "report_date": "2026-08-28",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "BC 5.1"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "BC71_000.docx",
+      "stored_name": "BC71_000.docx",
+      "sha256": "44de8bb6c7347aeb4099c876fda5e51da8ac265602cbf0a0470d7846abae55a4",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BC71",
+      "report_date": "2026-08-28",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "BC 7.1"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "BC81_000.docx",
+      "stored_name": "BC81_000.docx",
+      "sha256": "b54f25bebf6c1d9bd4f7c0f22cb4f2305f00a897584a51fb126dca5699a6ce22",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BC81",
+      "report_date": "2026-08-28",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "BC 8.1"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "BC101_000.docx",
+      "stored_name": "BC101_000.docx",
+      "sha256": "03b8aadd39ca94fd7bbf58d6ae4394a8edde882c6c1bba59a9bf71fbe6d353ec",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BC101",
+      "report_date": "2026-08-28",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "BC 10.1"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "CRUSHER1_000.docx",
+      "stored_name": "CRUSHER1_000.docx",
+      "sha256": "94e5f4f1fe127897e179e141190640d815293f492914a343f8c9b09e5189e309",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "CRUSHER1",
+      "report_date": "2026-08-28",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "CRUSHER 1"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "ROLLINGSCREEN1_000.docx",
+      "stored_name": "ROLLINGSCREEN1_000.docx",
+      "sha256": "01b1416807d15df63bca97077c0a61edf2520299cd24c7326e5694025b1d24dd",
+      "parse_status": "quarantined",
+      "error": "Equipment ROLLINGSCREEN1 tidak ditemukan di equipment_master.json",
+      "equipment": "",
+      "report_date": "",
+      "metadata": {},
+      "row_count": 0
+    },
+    {
+      "original_name": "BC42_000.docx",
+      "stored_name": "BC42_000.docx",
+      "sha256": "8bbfbcce6fe2364a8ec1af5b409d3279054f920af5ee2f69523f96d20a2f4a14",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BC42",
+      "report_date": "2026-08-14",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "BC 4.2"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "BC52_000.docx",
+      "stored_name": "BC52_000.docx",
+      "sha256": "38a1ca5c0bad67b6fda0bfbab964fe30cdf456aa2751bf326409de8c3bccbcc2",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BC52",
+      "report_date": "2026-08-14",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "BC 5.2"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "BC72_000.docx",
+      "stored_name": "BC72_000.docx",
+      "sha256": "982a2974496bb94af91d4a4ad12428cb0896d66e5ac82f601b6fe8c4b8f20602",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BC72",
+      "report_date": "2026-08-14",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "BC 7.2"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "BC82_000.docx",
+      "stored_name": "BC82_000.docx",
+      "sha256": "9c6b9151125f67eb6d285ec96922180d6b4da617c5ed80d61188157769485ac3",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BC82",
+      "report_date": "2026-08-14",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "BC 8.2"
+      },
+      "row_count": 20
+    },
+    {
+      "original_name": "BC102_000.docx",
+      "stored_name": "BC102_000.docx",
+      "sha256": "c02f7690bfc025f3da60b7bc0a81789b54189f5f311dc1ba8d603f644442f4a6",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "BC102",
+      "report_date": "2026-08-14",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "BC 10.2"
+      },
+      "row_count": 21
+    },
+    {
+      "original_name": "CRUSHER2_000.docx",
+      "stored_name": "CRUSHER2_000.docx",
+      "sha256": "434060c0823843112119f60d7c4ff13e1a30296a037674d65cc04d01c8973529",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "CRUSHER2",
+      "report_date": "2026-08-14",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "CRUSHER 2"
+      },
+      "row_count": 22
+    },
+    {
+      "original_name": "ROLLINGSCREEN2_000.docx",
+      "stored_name": "ROLLINGSCREEN2_000.docx",
+      "sha256": "667bca2e57e5a0bb27b1ea139fb4dae4fe9481d286a2db1595ffb168897c9389",
+      "parse_status": "valid",
+      "error": "",
+      "equipment": "ROLLINGSCREEN2",
+      "report_date": "2026-08-14",
+      "metadata": {
+        "unit": "UNIT COMMON",
+        "voltage": "380/400 V",
+        "full_name": "Rolling Screen 2"
+      },
+      "row_count": 20
+    }
+  ],
+  "committed_at": "2026-08-14T11:03:31",
+  "committed_rows": 362
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Vibration Analysis Knowledge"
+  short_description: "Use vibration training knowledge for diagnosis."
+  default_prompt: "Use $vibration-analysis-knowledge to evaluate vibration spectra, waveform evidence, fault frequencies, data quality, and conservative diagnostic recommendations."
