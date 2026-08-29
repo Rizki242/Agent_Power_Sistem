@@ -357,6 +357,42 @@ def get_bearing_info(asset_id: str) -> Optional[Dict[str, str]]:
     }
 
 
+# Columns Manajemen Data is allowed to write - an allow-list, not the raw
+# fields dict, so this can never be used to update an arbitrary column.
+_EDITABLE_ASSET_FIELDS = (
+    'status_vibrasi',
+    'c1_bearing_type',
+    'c1_inboard_bearing',
+    'c1_outboard_bearing',
+    'c2_bearing_type',
+    'c2_inboard_bearing',
+    'c2_onboard_bearing',
+)
+
+
+def update_vibration_asset(asset_id: str, fields: Dict[str, Any]) -> bool:
+    """Update one or more editable columns for a single existing asset.
+
+    Only touches the row matching `asset_id` - unlike rebuild_database_from_excel
+    (a full drop-and-reload of every table), this is a targeted UPDATE. Silently
+    ignores any key in `fields` not in _EDITABLE_ASSET_FIELDS. Returns True if a
+    row was actually updated, False if the asset_id doesn't exist or nothing
+    in `fields` was editable.
+    """
+    updates = {k: v for k, v in fields.items() if k in _EDITABLE_ASSET_FIELDS}
+    if not updates:
+        return False
+    set_clause = ', '.join(f'{col} = ?' for col in updates)
+    params = list(updates.values()) + [asset_id]
+    conn = _get_connection(readonly=False)
+    try:
+        cur = conn.execute(f'UPDATE assets SET {set_clause} WHERE asset_id = ?', params)
+        conn.commit()
+        return cur.rowcount > 0
+    finally:
+        conn.close()
+
+
 def load_vibration_monthly_tests(excel_path: Optional[str] = None) -> List[Dict[str, Any]]:
     """Loads periodic overall vibration test measurements (1V, 1H, 1A, 2V, 2H, 2A, Vmax, Status)."""
     file_path = Path(excel_path) if excel_path else Path(get_data_path('vibrasi', 'Exsume Vibrasi Januari 2026.xlsx'))

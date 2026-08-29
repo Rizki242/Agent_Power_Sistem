@@ -9,6 +9,7 @@ from typing import Dict, Any, List, Optional
 import pandas as pd
 
 from src.data_loader import get_data_path
+from src.domain_overrides import DomainOverrideStore
 
 # Standard list of power transformers across the plant
 DEFAULT_TRANSFORMERS = [
@@ -85,6 +86,29 @@ DEFAULT_TRANSFORMERS = [
         "status": "NORMAL"
     }
 ]
+
+def _override_store() -> DomainOverrideStore:
+    return DomainOverrideStore(get_data_path('config', 'dga_overrides.json'))
+
+
+def _merged_transformers() -> List[Dict[str, Any]]:
+    """DEFAULT_TRANSFORMERS with any recorded overrides applied on top - an
+    override whose transformer_id matches an existing entry replaces it, a
+    new transformer_id adds a new transformer. Order: base list order first,
+    then any override-only additions."""
+    overrides = _override_store().all()
+    merged = [dict(overrides.get(t['transformer_id'], t)) for t in DEFAULT_TRANSFORMERS]
+    known_ids = {t['transformer_id'] for t in DEFAULT_TRANSFORMERS}
+    merged.extend(dict(record) for tid, record in overrides.items() if tid not in known_ids)
+    return merged
+
+
+def save_dga_transformer(transformer_id: str, fields: Dict[str, Any]) -> None:
+    """Add a new transformer or edit an existing one (base or previously-overridden)."""
+    record = dict(fields)
+    record['transformer_id'] = transformer_id
+    _override_store().set(transformer_id, record)
+
 
 def calculate_dga_diagnosis(gases: Dict[str, float]) -> Dict[str, Any]:
     """Calculates TDCG, IEEE C57.104 condition, Duval Triangle 1, and Rogers Ratios."""
@@ -180,7 +204,7 @@ def calculate_dga_diagnosis(gases: Dict[str, float]) -> Dict[str, Any]:
 
 def get_dga_summary() -> Dict[str, Any]:
     """Returns summary stats for transformer DGA fleet."""
-    transformers = DEFAULT_TRANSFORMERS
+    transformers = _merged_transformers()
     by_unit = {}
     by_status = {"NORMAL": 0, "PREWARNING": 0, "WARNING": 0, "HIGH": 0}
     
@@ -201,7 +225,7 @@ def get_dga_summary() -> Dict[str, Any]:
 def search_dga_transformers(unit: Optional[str] = None, status: Optional[str] = None, search: Optional[str] = None) -> List[Dict[str, Any]]:
     """Returns filtered transformer list with diagnosis."""
     results = []
-    for t in DEFAULT_TRANSFORMERS:
+    for t in _merged_transformers():
         if unit and unit.upper() != "ALL" and t["unit"].upper() != unit.upper():
             continue
         if search and search.strip():
@@ -225,7 +249,7 @@ def search_dga_transformers(unit: Optional[str] = None, status: Optional[str] = 
 def get_dga_transformer_detail(transformer_id: str) -> Optional[Dict[str, Any]]:
     """Returns detailed transformer record including gas parameters and historical trend."""
     target = None
-    for t in DEFAULT_TRANSFORMERS:
+    for t in _merged_transformers():
         if t["transformer_id"].upper() == transformer_id.upper():
             target = dict(t)
             break

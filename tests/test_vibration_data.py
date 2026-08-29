@@ -11,6 +11,7 @@ from src.vibration_data import (
     get_bearing_info,
     match_monthly_test_by_equipment,
     build_vibration_agent_input,
+    update_vibration_asset,
 )
 
 
@@ -131,6 +132,43 @@ class BuildVibrationAgentInputTests(unittest.TestCase):
     def test_missing_velocity_max_defaults_to_zero(self):
         result = build_vibration_agent_input({})
         self.assertEqual(result, {"overall_rms": 0.0})
+
+
+class UpdateVibrationAssetTests(unittest.TestCase):
+    """Round-trips a real asset's status so the checked-in DB ends up unchanged."""
+
+    def setUp(self):
+        self.asset_id = 'AST-001'
+        original = get_vibration_asset(self.asset_id)
+        self.assertIsNotNone(original, 'fixture asset AST-001 must exist for this test')
+        self.original_status = original['status_vibrasi']
+
+    def tearDown(self):
+        update_vibration_asset(self.asset_id, {'status_vibrasi': self.original_status})
+
+    def test_update_changes_status_and_persists(self):
+        new_status = 'ALARM' if self.original_status != 'ALARM' else 'NORMAL'
+        updated = update_vibration_asset(self.asset_id, {'status_vibrasi': new_status})
+        self.assertTrue(updated)
+        self.assertEqual(get_vibration_asset(self.asset_id)['status_vibrasi'], new_status)
+
+    def test_update_missing_asset_returns_false(self):
+        updated = update_vibration_asset('AST-999-DOES-NOT-EXIST', {'status_vibrasi': 'ALARM'})
+        self.assertFalse(updated)
+
+    def test_update_ignores_non_editable_fields(self):
+        updated = update_vibration_asset(self.asset_id, {'asset_id': 'AST-HACKED'})
+        self.assertFalse(updated)
+        self.assertEqual(get_vibration_asset(self.asset_id)['asset_id'], self.asset_id)
+
+    def test_update_only_touches_targeted_asset(self):
+        other = get_vibration_asset('AST-002')
+        if other is None:
+            self.skipTest('AST-002 fixture not present')
+        other_status_before = other['status_vibrasi']
+        new_status = 'ALARM' if self.original_status != 'ALARM' else 'NORMAL'
+        update_vibration_asset(self.asset_id, {'status_vibrasi': new_status})
+        self.assertEqual(get_vibration_asset('AST-002')['status_vibrasi'], other_status_before)
 
 
 if __name__ == '__main__':

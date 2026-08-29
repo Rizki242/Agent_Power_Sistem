@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 import pandas as pd
 from src.data_loader import get_data_path
+from src.domain_overrides import DomainOverrideStore
 
 DEFAULT_TRIBOLOGY_SAMPLES = [
     {
@@ -242,7 +243,7 @@ def evaluate_tribology_sample(sample: Dict[str, Any]) -> Dict[str, Any]:
 
 def get_tribology_summary() -> Dict[str, Any]:
     """Returns summary counts for tribology fleet."""
-    samples = load_tribology_monthly_tests()
+    samples = _merged_samples()
     by_unit = {}
     by_status = {"NORMAL": 0, "PREWARNING": 0, "WARNING": 0, "HIGH": 0, "STANDBY": 0}
     by_grade = {}
@@ -264,9 +265,34 @@ def get_tribology_summary() -> Dict[str, Any]:
         "by_grade": by_grade
     }
 
+def _override_store() -> DomainOverrideStore:
+    return DomainOverrideStore(get_data_path('config', 'tribology_overrides.json'))
+
+
+def _merged_samples() -> List[Dict[str, Any]]:
+    """load_tribology_monthly_tests() (Excel, or DEFAULT_TRIBOLOGY_SAMPLES if that
+    Excel is missing/unparseable) with any recorded overrides applied on top - an
+    override whose sample_id matches an existing record replaces it, a new
+    sample_id adds a new sample."""
+    base = load_tribology_monthly_tests()
+    overrides = _override_store().all()
+    known_ids = {s.get('sample_id') for s in base}
+    merged = [dict(overrides.get(s.get('sample_id'), s)) for s in base]
+    merged.extend(dict(record) for sid, record in overrides.items() if sid not in known_ids)
+    return merged
+
+
+def save_tribology_sample(sample_id: str, fields: Dict[str, Any]) -> None:
+    """Add a new sample or edit an existing one (Excel-sourced, default, or
+    previously-overridden)."""
+    record = dict(fields)
+    record['sample_id'] = sample_id
+    _override_store().set(sample_id, record)
+
+
 def search_tribology_samples(unit: Optional[str] = None, status: Optional[str] = None, oil_type: Optional[str] = None, search: Optional[str] = None) -> List[Dict[str, Any]]:
     """Filters tribology sample records."""
-    samples = load_tribology_monthly_tests()
+    samples = _merged_samples()
     results = []
     for s in samples:
         if unit and unit.upper() != "ALL" and s["unit"].upper() != unit.upper():
@@ -291,7 +317,7 @@ def search_tribology_samples(unit: Optional[str] = None, status: Optional[str] =
 
 def get_tribology_sample_detail(sample_id: str) -> Optional[Dict[str, Any]]:
     """Returns detailed sample analysis with multi-parameter diagnostic & historical trend."""
-    samples = load_tribology_monthly_tests()
+    samples = _merged_samples()
     target = None
     for s in samples:
         if s.get("sample_id", "").upper() == sample_id.upper():
