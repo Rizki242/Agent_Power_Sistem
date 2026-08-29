@@ -13,12 +13,15 @@ reflects real manifest validation/load status.
 """
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 from pple.core.exceptions import ModuleNotRegisteredError
 from pple.engineering.base import EngineeringModule
+from pple.engineering.equipment_modules import EquipmentModuleStore
 from pple.engineering.loader import load_modules_from_manifests
 
 _registry, _load_results = load_modules_from_manifests()
+_equipment_module_store = EquipmentModuleStore()
 
 router = APIRouter(prefix="/api/v2", tags=["engineering-modules-v2"])
 
@@ -50,3 +53,40 @@ def get_module(module_id: str):
 def module_load_report():
     """Per-manifest load status (ACTIVE/DISABLED/ERROR/INCOMPATIBLE)."""
     return {"results": [r.to_dict() for r in _load_results]}
+
+
+class SetEquipmentModuleRequest(BaseModel):
+    enabled: bool
+
+
+@router.get("/equipment/{equipment_id}/modules")
+def list_equipment_modules(equipment_id: str):
+    """Which engineering modules are enabled for this equipment instance
+    (docs/final.md Phase 8) - same data the `pple equipment modules` CLI
+    command shows, read from the same EquipmentModuleStore."""
+    return {
+        "equipment_id": equipment_id,
+        "modules": [
+            {
+                "module_id": m.id,
+                "name": m.name,
+                "enabled": _equipment_module_store.is_enabled(equipment_id, m.id),
+            }
+            for m in _registry.list()
+        ],
+    }
+
+
+@router.put("/equipment/{equipment_id}/modules/{module_id}")
+def set_equipment_module(equipment_id: str, module_id: str, body: SetEquipmentModuleRequest):
+    """Enable/disable one engineering module for one equipment instance -
+    same effect as `pple equipment module-add`/`module-remove`. Does not
+    itself change any currently-running analysis; SubAgentCoordinator and
+    ReliabilityFusionAgent each read the store fresh via
+    EquipmentModuleStore().is_enabled() the next time they run."""
+    try:
+        _registry.get(module_id)
+    except ModuleNotRegisteredError:
+        raise HTTPException(status_code=404, detail=f"Engineering module '{module_id}' not found")
+    _equipment_module_store.set_enabled(equipment_id, module_id, body.enabled)
+    return {"equipment_id": equipment_id, "module_id": module_id, "enabled": body.enabled}
