@@ -68,6 +68,7 @@ try:
     from src.analytics import calculate_equipment_health_score, detect_equipment_anomalies
     from src.components.sidebar import render_sidebar
     from src.pages.chatbot_page import render_chatbot_page
+    from src.pages.condition_control_page import render_condition_control_page
     from src.pages.dashboard_page import render_dashboard_page
     from src.pages.data_management_page import render_data_management_page
     from src.pages.materi_page import render_materi_page
@@ -150,7 +151,7 @@ if df is None or df_latest_all is None or min_date is None or max_date is None:
     st.error("Cache data tidak valid. Silakan refresh aplikasi.")
     st.stop()
 
-NAV_OPTIONS = ["Dashboard", "Manajemen Data", "Sync Laporan Word", "Quality Check Laporan", "Materi Training", "Chatbot", "Laporan PPT", "Laporan Word"]
+NAV_OPTIONS = ["Dashboard", "Control condition", "Manajemen Data", "Sync Laporan Word", "Quality Check Laporan", "Materi Training", "Chatbot", "Laporan PPT", "Laporan Word"]
 st.session_state["_mcsa_available_dates"] = df["Date"].dropna().tolist()
 sidebar_state = render_sidebar(st, NAV_OPTIONS, min_date, max_date)
 page = sidebar_state["page"]
@@ -600,6 +601,9 @@ elif page == "Quality Check Laporan":
 
 elif page == "Materi Training":
     render_materi_page(st)
+
+elif page == "Control condition":
+    render_condition_control_page(st)
 
 # --- CHATBOT PAGE ---
 elif page == "Chatbot":

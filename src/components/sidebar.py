@@ -5,7 +5,7 @@ from src.components.theme import get_modern_theme_css
 
 
 NAV_GROUPS = {
-    "Monitoring": [("Dashboard", ":material/dashboard:"), ("Quality Check Laporan", ":material/fact_check:")],
+    "Monitoring": [("Dashboard", ":material/dashboard:"), ("Control condition", ":material/tune:"), ("Quality Check Laporan", ":material/fact_check:")],
     "Data": [("Manajemen Data", ":material/database:"), ("Sync Laporan Word", ":material/upload_file:")],
     "Laporan": [("Laporan PPT", ":material/slideshow:"), ("Laporan Word", ":material/description:")],
     "Referensi": [("Materi Training", ":material/menu_book:"), ("Chatbot", ":material/smart_toy:")],
