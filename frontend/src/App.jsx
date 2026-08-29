@@ -13,6 +13,7 @@ import DGAWorkspace from './pages/DGAWorkspace';
 import KnowledgeWorkspace from './pages/KnowledgeWorkspace';
 import WorkOrderCenter from './pages/WorkOrderCenter';
 import DigitalTwinWorkspace from './pages/DigitalTwinWorkspace';
+import EngineeringModules from './pages/EngineeringModules';
 
 function AppContent() {
   const [isDark, setIsDark] = useState(true);
@@ -43,6 +44,7 @@ function AppContent() {
             <Route path="/dga" element={<DGAWorkspace />} />
             <Route path="/knowledge" element={<KnowledgeWorkspace />} />
             <Route path="/workorders" element={<WorkOrderCenter />} />
+            <Route path="/engineering-modules" element={<EngineeringModules />} />
             {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

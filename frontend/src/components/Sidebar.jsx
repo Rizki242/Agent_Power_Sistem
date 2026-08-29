@@ -73,6 +73,15 @@ export default function Sidebar() {
             </NavLink>
           </nav>
         </div>
+
+        <div>
+          <div className="text-[10px] text-muted uppercase tracking-[0.16em] px-3 mb-2 font-bold">System</div>
+          <nav className="flex flex-col gap-1">
+            <NavLink to="/engineering-modules" className={({isActive}) => isActive ? activeClass : inactiveClass}>
+              <span className="w-2 h-2 rounded-full bg-teal-400"></span> Engineering Modules
+            </NavLink>
+          </nav>
+        </div>
       </div>
 
       <div className="p-3 border border-line rounded-xl bg-panel text-xs text-muted flex items-center justify-between">
