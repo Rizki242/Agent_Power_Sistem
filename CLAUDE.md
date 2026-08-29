@@ -14,8 +14,9 @@ Windows-first repo; `.bat` scripts create/use `.venv` with Python 3.11 (`py -3.1
 - RAG index (optional deps): `python build_rag_index.py [--force] [--test "<query>"]`
 - Frontend lint uses **oxlint** (not eslint): `npm --prefix frontend run lint`; build: `npm --prefix frontend run build`
 - Run: `run.bat` (Streamlit :8501), `run_api.bat` (FastAPI :8000, Swagger at `/docs`), `run_frontend.bat` (Vite :5173), `run_all.bat` (backend + frontend)
+- `pple` CLI (additive, see `pple/` below): `pip install -e .` once (registers the console script via `pyproject.toml`, no other deps declared there), then `pple status`, `pple doctor`, `pple module list` / `pple module show <id>`, `pple analyze <module_id> <equipment> --data '<json>'`, `pple equipment modules <equipment>` / `module-add` / `module-remove`.
 
-Tests use `unittest`, not pytest. `tests/test_api_server.py` uses FastAPI `TestClient` — no live server needed. Knowledge-retriever tests assert against actual `Materi/*.json` content, so renaming/removing those files can break them.
+Tests use `unittest`, not pytest. `tests/test_api_server.py` uses FastAPI `TestClient` — no live server needed. Knowledge-retriever tests assert against actual `Materi/*.json` content, so renaming/removing those files can break them. For Streamlit UI changes, verify with `streamlit.testing.v1.AppTest` (see `tests/test_streamlit_app.py`) — `AppTest.from_file("app.py")` for a full app load, `AppTest.from_function(...)` to exercise one `render_*` page function directly without needing a real nav route.
 
 ## Architecture
 
@@ -23,7 +24,7 @@ This is PPLE Agent — an integrated Predictive Maintenance (PdM) / Condition-Ba
 
 Two UIs share one Python core:
 
-- **Streamlit dashboard**: `app.py` + `src/pages/`. `app.py` imports every page module up front — one broken import kills the whole app with the venv-repair screen, so guard new page imports carefully.
+- **Streamlit dashboard**: `app.py` + `src/pages/`. `app.py` imports every page module up front — one broken import kills the whole app with the venv-repair screen, so guard new page imports carefully. Routing uses `st.navigation`/`st.Page`, grouped to match `docs/desain.png`'s target IA (Command Center/Asset Management/Engineering/Reliability/AI Agent/Knowledge/Reports/Work Orders/Settings/Help & Support); each nav entry is a no-arg closure built in `app.py` that closes over variables the script computes earlier, so individual `render_*` page functions still just take `st` (+ explicit data) as before.
 - **React/Vite frontend** (`frontend/`) calling **FastAPI** `api_server.py` (thin HTTP layer over the same `src/` modules; do not duplicate business logic there).
 
 `src/` layers:
@@ -33,6 +34,16 @@ Two UIs share one Python core:
 - `src/agent_memory.py` — SQLite-backed conversation history (`data/agent_memory.db`). `src/agent_cron.py` — background daemon that periodically runs the `self_improvement` cycle and mines new measurement data for precursor patterns; every cycle is error-safe so a failing run never kills the daemon.
 
 Rule-based logic is the source of truth. The LLM (`src/llm_assistant.py`) is an optional enhancement that always falls back to the rule answer on failure — never let it become a required dependency.
+
+## PPLE V2 migration (`pple/` package)
+
+An incremental migration toward a dynamic, plugin-based module architecture is underway alongside (not replacing) `src/`, following the 30-phase plan in `docs/final.md` (baseline + gap analysis in `docs/pple_v2_baseline.md`). `pple/core` must never import Streamlit/React; FastAPI, Streamlit, and the CLI are meant to converge on the same service layer over time.
+
+- `pple/engineering/`: `base.py` (`EngineeringModule` ABC — validate/analyze/diagnose/recommend), `schemas.py` (`DiagnosticResult`, the target standard output shape), `legacy_adapter.py` (`LegacyAgentAdapterModule` wraps the existing `src.agents.specialist_agents.*Agent.evaluate()` calls unchanged — the 6 domain modules under `modules/` are thin metadata declarations on this base, not reimplementations), `manifests/*.yaml` + `loader.load_modules_from_manifests()` (declarative id/applicable_equipment/capabilities/standards per module; a broken manifest reports `ERROR` in the load result but never crashes the scan), `registry.py` (`ModuleRegistry`: register/get/list/get_for_equipment), `equipment_modules.py` (`EquipmentModuleStore`: JSON-backed per-equipment-instance module enable/disable override, default opt-out).
+- `src/agents/fusion_engine.py`'s `ReliabilityFusionAgent` and `src/agents/subagent_coordinator.py`'s `SubAgentCoordinator` each build their own `ModuleRegistry` + `EquipmentModuleStore` and consult them live — a disabled module is excluded exactly like a domain with no data, never given a fabricated score.
+- `pple/api/router.py`: additive `/api/v2/*` FastAPI routes (modules, module-load-report, equipment/{id}/modules), mounted in `api_server.py` alongside legacy `/api/*` — never replaces or duplicates a legacy endpoint.
+- `pple/cli/main.py`: Typer + Rich CLI (see the `pple` command above).
+- No database yet — deliberately deferred (`docs/final.md` Phase 2-4) as the highest-risk, non-critical-path piece; equipment-module overrides and manifests stay file-based (JSON/YAML) in the meantime.
 
 ## Knowledge Base (Materi/)
 
