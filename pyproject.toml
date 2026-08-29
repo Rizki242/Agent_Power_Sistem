@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pple-agent"
+version = "0.1.0"
+description = "PPLE Agent CLI (docs/final.md Phase 12+) - reuses the existing pple.engineering module layer."
+requires-python = ">=3.11"
+# Intentionally no [project.dependencies]: this repo's dependencies stay
+# authoritative in requirements.txt (`pip install -r requirements.txt`).
+# `pip install -e .` only registers the `pple` console script below.
+
+[project.scripts]
+pple = "pple.cli.main:app"
+
+[tool.setuptools.packages.find]
+include = ["pple*"]
