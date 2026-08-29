@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 import pandas as pd
 from src.data_loader import get_data_path
+from src.domain_overrides import DomainOverrideStore
 
 def load_thermal_irt_tests(excel_path: Optional[str] = None) -> List[Dict[str, Any]]:
     """Loads 110+ Thermal IRT inspection points across Unit 1, 2, 3 and Common."""
@@ -58,9 +59,80 @@ def load_thermal_irt_tests(excel_path: Optional[str] = None) -> List[Dict[str, A
         print(f"Error loading thermal IRT tests: {e}")
         return []
 
+def _override_store() -> DomainOverrideStore:
+    return DomainOverrideStore(get_data_path('config', 'thermal_overrides.json'))
+
+
+def _merged_records() -> List[Dict[str, Any]]:
+    """load_thermal_irt_tests() (real IRT inspection points parsed from Excel)
+    with any recorded overrides applied on top - an override whose id matches
+    an existing record replaces it, a new id adds a new inspection point."""
+    base = load_thermal_irt_tests()
+    overrides = _override_store().all()
+    known_ids = {r['id'] for r in base}
+    merged = [dict(overrides.get(r['id'], r)) for r in base]
+    merged.extend(dict(record) for rid, record in overrides.items() if rid not in known_ids)
+    return merged
+
+
+def save_thermal_record(record_id: str, fields: Dict[str, Any]) -> None:
+    """Add a new inspection point or edit an existing one."""
+    record = dict(fields)
+    record['id'] = record_id
+    _override_store().set(record_id, record)
+
+
+def search_thermal_records(unit: Optional[str] = None, status: Optional[str] = None, search: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Filters thermal IRT inspection records."""
+    results = []
+    for r in _merged_records():
+        if unit and unit.upper() != "ALL" and r.get("unit", "").upper() != unit.upper():
+            continue
+        if status and status.upper() != "ALL" and r.get("status", "").upper() != status.upper():
+            continue
+        if search and search.strip():
+            s = search.lower().strip()
+            if s not in r.get("equipment", "").lower() and s not in r.get("id", "").lower() and s not in r.get("kks", "").lower():
+                continue
+        results.append(r)
+    return results
+
+
+def get_thermal_record_detail(record_id: str) -> Optional[Dict[str, Any]]:
+    """Returns one inspection record plus a status-based recommendation.
+
+    Deliberately does NOT call ThermalAgent: that agent expects numeric
+    readings (bearing_temp, winding_temp, delta_t_phase, ...) that this data
+    source doesn't carry - only a pre-computed status from the source Excel.
+    Calling the agent with fabricated defaults would always score "healthy"
+    regardless of the real status, which is worse than not scoring at all.
+    """
+    target = None
+    for r in _merged_records():
+        if str(r.get("id", "")).upper() == record_id.upper():
+            target = dict(r)
+            break
+    if not target:
+        return None
+
+    status = str(target.get("status", "NORMAL")).upper()
+    if status == "HIGH":
+        rec = "Delta-T kritis. Rencanakan tindakan segera: verifikasi beban, periksa koneksi/terminal, dan jadwalkan inspeksi ulang dalam 48 jam."
+    elif status == "WARNING":
+        rec = "Delta-T tinggi. Tingkatkan frekuensi inspeksi thermografi dan periksa kondisi pendinginan/ventilasi terkait."
+    elif status == "PREWARNING":
+        rec = "Delta-T mulai meningkat. Jadwalkan inspeksi ulang dalam 30 hari dan pantau tren pada titik yang sama."
+    elif status == "STANDBY":
+        rec = "Equipment standby - tidak perlu tindakan thermal saat ini."
+    else:
+        rec = "Kondisi thermal normal. Lanjutkan inspeksi rutin sesuai jadwal IRT."
+    target["recommendation"] = rec
+    return target
+
+
 def get_thermal_summary() -> Dict[str, Any]:
     """Returns summary statistics for thermal IRT inspections."""
-    records = load_thermal_irt_tests()
+    records = _merged_records()
     by_unit = {}
     by_status = {"NORMAL": 0, "PREWARNING": 0, "WARNING": 0, "HIGH": 0, "STANDBY": 0}
     

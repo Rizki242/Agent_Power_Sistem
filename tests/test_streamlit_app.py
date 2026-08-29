@@ -164,6 +164,54 @@ class TestDomainDashboards(unittest.TestCase):
         at = AppTest.from_function(_script, default_timeout=30).run()
         self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
 
+    def test_thermal_page_renders_without_disclaimer(self):
+        def _script():
+            import streamlit as st
+
+            from src.pages.thermal_page import render_thermal_page
+
+            render_thermal_page(st)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertFalse(list(at.warning), "Thermal data is real (parsed Excel) - it should not show the disclaimer banner")
+
+    def test_thermal_page_rekomendasi_tab_renders(self):
+        def _script():
+            import streamlit as st
+
+            from src.pages.thermal_page import render_thermal_page
+
+            st.session_state["thermal_detail_view"] = "Rekomendasi"
+            render_thermal_page(st)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+    def test_pd_page_renders_with_disclaimer(self):
+        def _script():
+            import streamlit as st
+
+            from src.pages.pd_page import render_pd_page
+
+            render_pd_page(st)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertTrue(list(at.warning), "expected the data disclaimer banner to render")
+
+    def test_pd_page_rekomendasi_tab_renders(self):
+        def _script():
+            import streamlit as st
+
+            from src.pages.pd_page import render_pd_page
+
+            st.session_state["pd_detail_view"] = "Rekomendasi"
+            render_pd_page(st)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
 
 if __name__ == "__main__":
     unittest.main()
