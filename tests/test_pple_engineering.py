@@ -1,8 +1,19 @@
 import unittest
 
+from pple.engineering.modules.dga import DGAModule
 from pple.engineering.modules.mcsa import MCSAModule
+from pple.engineering.modules.partial_discharge import PartialDischargeModule
+from pple.engineering.modules.thermal import ThermalModule
+from pple.engineering.modules.tribology import TribologyModule
 from pple.engineering.modules.vibration import VibrationModule
-from src.agents.specialist_agents import MCSAAgent, VibrationAgent
+from src.agents.specialist_agents import (
+    DGAAgent,
+    MCSAAgent,
+    PDAgent,
+    ThermalAgent,
+    TribologyAgent,
+    VibrationAgent,
+)
 
 
 class PplePackageImportTests(unittest.TestCase):
@@ -17,6 +28,10 @@ class PplePackageImportTests(unittest.TestCase):
         import pple.engineering.registry
         import pple.engineering.modules.vibration
         import pple.engineering.modules.mcsa
+        import pple.engineering.modules.dga
+        import pple.engineering.modules.partial_discharge
+        import pple.engineering.modules.tribology
+        import pple.engineering.modules.thermal
         import pple.assets
         import pple.agents
         import pple.reliability
@@ -91,13 +106,56 @@ class MCSAModuleAdapterTests(_LegacyAdapterEquivalenceMixin, unittest.TestCase):
     one_applicable_equipment = "MOTOR"
 
 
+class DGAModuleAdapterTests(_LegacyAdapterEquivalenceMixin, unittest.TestCase):
+    module_cls = DGAModule
+    agent_cls = DGAAgent
+    defect_data = {"c2h2": 15.0, "c2h4": 80.0, "ch4": 40.0}
+    expected_severity = "CRITICAL"  # legacy severity 4 (C2H2 >= 5.0)
+    expected_module_id = "dga"
+    one_applicable_equipment = "TRANSFORMER"
+
+
+class PartialDischargeModuleAdapterTests(_LegacyAdapterEquivalenceMixin, unittest.TestCase):
+    module_cls = PartialDischargeModule
+    agent_cls = PDAgent
+    defect_data = {"pulse_magnitude_pc": 1800.0, "nqn": 120.0}
+    expected_severity = "CRITICAL"  # legacy severity 4
+    expected_module_id = "partial_discharge"
+    one_applicable_equipment = "GENERATOR"
+
+
+class TribologyModuleAdapterTests(_LegacyAdapterEquivalenceMixin, unittest.TestCase):
+    module_cls = TribologyModule
+    agent_cls = TribologyAgent
+    defect_data = {"fe_ppm": 85.0, "water_ppm": 600.0}
+    expected_severity = "CRITICAL"  # legacy severity 4
+    expected_module_id = "tribology"
+    one_applicable_equipment = "MOTOR"
+
+
+class ThermalModuleAdapterTests(_LegacyAdapterEquivalenceMixin, unittest.TestCase):
+    module_cls = ThermalModule
+    agent_cls = ThermalAgent
+    defect_data = {"bearing_temp": 88.0, "delta_t_phase": 18.0}
+    expected_severity = "ALARM"  # legacy severity 3
+    expected_module_id = "thermal"
+    one_applicable_equipment = "MOTOR"
+
+
 class ModuleRegistryTests(unittest.TestCase):
     def setUp(self):
         from pple.engineering.registry import ModuleRegistry
 
         self.registry = ModuleRegistry()
-        self.registry.register(VibrationModule())
-        self.registry.register(MCSAModule())
+        for module_cls in (
+            VibrationModule,
+            MCSAModule,
+            DGAModule,
+            PartialDischargeModule,
+            TribologyModule,
+            ThermalModule,
+        ):
+            self.registry.register(module_cls())
 
     def test_get_registered_module(self):
         module = self.registry.get("vibration")
@@ -110,18 +168,20 @@ class ModuleRegistryTests(unittest.TestCase):
             self.registry.get("does-not-exist")
 
     def test_get_for_equipment_filters_by_applicability(self):
-        # Both vibration and mcsa declare MOTOR as applicable.
-        self.assertEqual(len(self.registry.get_for_equipment("MOTOR")), 2)
-        self.assertEqual(len(self.registry.get_for_equipment("TRANSFORMER")), 0)
-        # Only vibration declares TURBINE.
-        self.assertEqual(len(self.registry.get_for_equipment("TURBINE")), 1)
+        # vibration, mcsa, partial_discharge, tribology, thermal all declare MOTOR.
+        self.assertEqual(len(self.registry.get_for_equipment("MOTOR")), 5)
+        # dga, partial_discharge, thermal declare TRANSFORMER.
+        self.assertEqual(len(self.registry.get_for_equipment("TRANSFORMER")), 3)
+        self.assertEqual(len(self.registry.get_for_equipment("NONEXISTENT_TYPE")), 0)
 
     def test_list_returns_all_registered(self):
-        self.assertEqual(len(self.registry.list()), 2)
+        self.assertEqual(len(self.registry.list()), 6)
 
     def test_unregister(self):
         self.registry.unregister("vibration")
-        self.assertEqual({m.id for m in self.registry.list()}, {"mcsa"})
+        ids = {m.id for m in self.registry.list()}
+        self.assertNotIn("vibration", ids)
+        self.assertEqual(len(ids), 5)
 
 
 if __name__ == "__main__":
