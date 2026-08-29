@@ -32,6 +32,21 @@ export default function MCSAWorkspace() {
       .catch(() => {});
   }, []);
 
+  const loadEquipmentDetail = useCallback((eqName) => {
+    setSelectedEquipment(eqName);
+    setLoadingDetail(true);
+    fetch(apiUrl(`/api/equipment/${encodeURIComponent(eqName)}`))
+      .then(res => res.json())
+      .then(data => {
+        setEqDetail(data);
+        setLoadingDetail(false);
+      })
+      .catch(err => {
+        console.error('Gagal memuat detail equipment:', err);
+        setLoadingDetail(false);
+      });
+  }, []);
+
   const fetchEquipment = useCallback(() => {
     setLoading(true);
     let url = apiUrl('/api/equipment?');
@@ -53,7 +68,7 @@ export default function MCSAWorkspace() {
         console.error('Gagal mengambil data equipment:', err);
         setLoading(false);
       });
-  }, [unitFilter, voltageFilter, statusFilter, search, selectedEquipment]);
+  }, [unitFilter, voltageFilter, statusFilter, search, selectedEquipment, loadEquipmentDetail]);
 
   useEffect(() => {
     fetchEquipment();
@@ -62,21 +77,6 @@ export default function MCSAWorkspace() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     fetchEquipment();
-  };
-
-  const loadEquipmentDetail = (eqName) => {
-    setSelectedEquipment(eqName);
-    setLoadingDetail(true);
-    fetch(apiUrl(`/api/equipment/${encodeURIComponent(eqName)}`))
-      .then(res => res.json())
-      .then(data => {
-        setEqDetail(data);
-        setLoadingDetail(false);
-      })
-      .catch(err => {
-        console.error('Gagal memuat detail equipment:', err);
-        setLoadingDetail(false);
-      });
   };
 
   const handleCalculateRotorBar = async (e) => {

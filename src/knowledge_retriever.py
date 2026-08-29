@@ -33,7 +33,11 @@ def load_knowledge_base(force_reload: bool = False) -> list[dict]:
 
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     materi_dir = os.path.join(root_dir, "Materi")
-    config_dir = os.path.join(root_dir, "data", "config")
+    data_root = os.environ.get("MCSA_DATA_DIR") or os.path.join(root_dir, "data")
+    config_dir = os.path.join(data_root, "config")
+    if not os.path.exists(config_dir):
+        # Real config lives under the MCSA subfolder (see get_data_path fallback in data_loader.py)
+        config_dir = os.path.join(data_root, "MCSA", "config")
 
     documents = []
 
