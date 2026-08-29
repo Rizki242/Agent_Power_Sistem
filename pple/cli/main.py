@@ -8,10 +8,11 @@ duplicates analysis logic.
 Invoke directly: `python -m pple.cli.main <command>`. `pyproject.toml`
 registers this as the `pple` console script for `pip install -e .`.
 
-Scope of this slice: status, doctor, module list/show, analyze. Asset/
-equipment/plant/unit commands are out of scope until the database layer
-(final.md Phase 2-4) exists - there is nowhere durable to write them to
-yet.
+Scope of this slice: status, doctor, module list/show, analyze, equipment
+modules/module-add/module-remove (Phase 8 - per-equipment module overrides,
+file-backed, see pple.engineering.equipment_modules). Full asset/plant/unit
+CRUD commands are still out of scope until the database layer (final.md
+Phase 2-4) exists - there is nowhere durable to write them to yet.
 """
 
 import json
@@ -22,11 +23,14 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from pple.engineering.equipment_modules import EquipmentModuleStore
 from pple.engineering.loader import ModuleStatus, load_modules_from_manifests
 
 app = typer.Typer(name="pple", help="PPLE Reliability Engineering Agent CLI", no_args_is_help=True)
 module_app = typer.Typer(help="Inspect engineering modules loaded from manifests.")
 app.add_typer(module_app, name="module")
+equipment_app = typer.Typer(help="Manage per-equipment engineering module overrides (Phase 8).")
+app.add_typer(equipment_app, name="equipment")
 
 console = Console()
 
@@ -131,20 +135,61 @@ def module_list():
     console.print(table)
 
 
+def _get_active_module(registry, module_id: str):
+    """Look up a module and exit(1) with a consistent message if it's missing/inactive."""
+    try:
+        return registry.get(module_id)
+    except Exception:
+        console.print(f"[red]Engineering module '{module_id}' not found or not ACTIVE.[/red]")
+        raise typer.Exit(code=1)
+
+
 @module_app.command("show")
 def module_show(module_id: str):
     """Show detail for one engineering module."""
     registry, results = load_modules_from_manifests()
-    try:
-        m = registry.get(module_id)
-    except Exception:
-        console.print(f"[red]Engineering module '{module_id}' not found or not ACTIVE.[/red]")
-        raise typer.Exit(code=1)
+    m = _get_active_module(registry, module_id)
 
     report = next((r for r in results if r.module_id == module_id), None)
     console.print(f"[bold]{m.name}[/bold] ({m.id}) v{m.version}")
     console.print(f"Status: {report.status.value if report else '?'}")
     console.print(f"Applicable equipment: {', '.join(m.applicable_equipment) or 'any'}")
+
+
+@equipment_app.command("modules")
+def equipment_modules(equipment: str = typer.Argument(..., help="Equipment name/id, e.g. CWP-1A")):
+    """List which engineering modules are enabled for this equipment."""
+    registry, _ = load_modules_from_manifests()
+    store = EquipmentModuleStore()
+    console.print(f"\n[bold]{equipment}[/bold] Engineering Modules\n")
+    for module_id, enabled in store.list_for_equipment(equipment, registry):
+        m = registry.get(module_id)
+        mark = "[green]✓[/green]" if enabled else "[red]✗[/red]"
+        console.print(f"{mark} {m.name}")
+
+
+@equipment_app.command("module-add")
+def equipment_module_add(
+    equipment: str = typer.Argument(..., help="Equipment name/id, e.g. CWP-1A"),
+    module_id: str = typer.Argument(..., help="Engineering module id, e.g. vibration"),
+):
+    """Enable an engineering module for this equipment (clears any prior disable)."""
+    registry, _ = load_modules_from_manifests()
+    m = _get_active_module(registry, module_id)
+    EquipmentModuleStore().add_module(equipment, module_id)
+    console.print(f"[green]Enabled[/green] {m.name} for {equipment}")
+
+
+@equipment_app.command("module-remove")
+def equipment_module_remove(
+    equipment: str = typer.Argument(..., help="Equipment name/id, e.g. CWP-1A"),
+    module_id: str = typer.Argument(..., help="Engineering module id, e.g. vibration"),
+):
+    """Disable an engineering module for this equipment."""
+    registry, _ = load_modules_from_manifests()
+    m = _get_active_module(registry, module_id)
+    EquipmentModuleStore().remove_module(equipment, module_id)
+    console.print(f"[yellow]Disabled[/yellow] {m.name} for {equipment}")
 
 
 @app.command()
@@ -168,11 +213,7 @@ def analyze(
         payload = {}
 
     registry, _ = load_modules_from_manifests()
-    try:
-        m = registry.get(module_id)
-    except Exception:
-        console.print(f"[red]Engineering module '{module_id}' not found or not ACTIVE.[/red]")
-        raise typer.Exit(code=1)
+    m = _get_active_module(registry, module_id)
 
     result = m.run(equipment, payload)
 
