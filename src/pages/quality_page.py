@@ -63,27 +63,27 @@ def render_quality_check_page(st, get_data_path, get_folder_metadata, parse_all_
             st.subheader("File dikarantina: tindakan diperlukan")
             failed = pd.DataFrame(summary["failed_files"]).rename(columns={"file": "File", "error": "Alasan karantina"})
             st.error("File berikut tidak masuk ke dashboard. Periksa alasan karantina, lalu perbaiki dokumen atau metadata equipment sebelum unggah ulang.")
-            st.dataframe(failed, use_container_width=True, hide_index=True)
+            st.dataframe(failed, width="stretch", hide_index=True)
 
         if summary["missing_parameter_rows"]:
             st.subheader("Parameter Wajib Hilang")
-            st.dataframe(pd.DataFrame(summary["missing_parameter_rows"]), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(summary["missing_parameter_rows"]), width="stretch", hide_index=True)
 
         if summary["weird_date_rows"]:
             st.subheader("Tanggal Tidak Wajar")
-            st.dataframe(pd.DataFrame(summary["weird_date_rows"]), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(summary["weird_date_rows"]), width="stretch", hide_index=True)
 
         if summary["duplicate_rows"]:
             st.subheader("Duplikasi Equipment/Parameter/Tanggal")
-            st.dataframe(pd.DataFrame(summary["duplicate_rows"]), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(summary["duplicate_rows"]), width="stretch", hide_index=True)
 
         if summary["missing_metadata_rows"]:
             st.subheader("Metadata Unit/Voltage Belum Lengkap")
-            st.dataframe(pd.DataFrame(summary["missing_metadata_rows"]), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(summary["missing_metadata_rows"]), width="stretch", hide_index=True)
 
         if summary["numeric_flag_rows"]:
             st.subheader("Flag Nilai Numerik")
-            st.dataframe(pd.DataFrame(summary["numeric_flag_rows"]), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(summary["numeric_flag_rows"]), width="stretch", hide_index=True)
 
         export = build_word_qc_export(summary, rep)
         st.download_button(
@@ -91,7 +91,7 @@ def render_quality_check_page(st, get_data_path, get_folder_metadata, parse_all_
             data=export.to_csv(index=False).encode("utf-8-sig"),
             file_name="ringkasan_qc_laporan_word.csv",
             mime="text/csv",
-            use_container_width=True,
+            width="stretch",
         )
 
         if result["df_word_empty"]:

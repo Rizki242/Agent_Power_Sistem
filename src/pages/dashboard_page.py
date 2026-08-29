@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.express as px
 
 from src.analytics import calculate_equipment_health_score, detect_equipment_anomalies
+from src.components.status_colors import STATUS_BADGE_BG, STATUS_BADGE_FG, STATUS_PIE_COLORS
 from src.components.theme import render_page_header
 from src.data_loader import filter_mcsa_data, get_data_path, load_nameplate_csv
 from src.standards import (
@@ -249,7 +250,7 @@ def render_dashboard_page(
 
                 if missing_cnt:
                     miss_df = pd.DataFrame({"Equipment": missing_visible})
-                    st.dataframe(miss_df, use_container_width=True, hide_index=True)
+                    st.dataframe(miss_df, width="stretch", hide_index=True)
                     st.download_button(
                         "Download CSV (Belum Update)",
                         data=miss_df.to_csv(index=False).encode("utf-8"),
@@ -347,13 +348,7 @@ def render_dashboard_page(
     plot_df["Count"] = plot_df["Status"].map(lambda s: int(status_counts.get(s, 0)))
     plot_df = plot_df[plot_df["Count"] > 0]
     if not plot_df.empty:
-        color_map = {
-            "Normal": "#16a34a",
-            "Alarm": "#facc15",
-            "High": "#dc2626",
-            "Standby": "#9ca3af",
-            "Unknown": "#e5e7eb",
-        }
+        color_map = STATUS_PIE_COLORS
         fig = px.pie(
             plot_df,
             names="Status",
@@ -369,7 +364,7 @@ def render_dashboard_page(
             margin=dict(l=10, r=10, t=40, b=10),
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     else:
         st.info("Tidak ada data untuk filter ini.")
 
@@ -455,20 +450,8 @@ def render_dashboard_page(
                 u_volt = ref.get("Voltage_Level") or u_volt
 
         eq_status = status_by_norm.get(sel_norm, "Unknown") if isinstance(status_by_norm, dict) else "Unknown"
-        badge_bg = {
-            "Normal": "#dcfce7",
-            "Alarm": "#fef9c3",
-            "High": "#fee2e2",
-            "Standby": "#e5e7eb",
-            "Unknown": "#f3f4f6",
-        }.get(eq_status, "#f3f4f6")
-        badge_fg = {
-            "Normal": "#166534",
-            "Alarm": "#854d0e",
-            "High": "#991b1b",
-            "Standby": "#374151",
-            "Unknown": "#374151",
-        }.get(eq_status, "#374151")
+        badge_bg = STATUS_BADGE_BG.get(eq_status, STATUS_BADGE_BG["Unknown"])
+        badge_fg = STATUS_BADGE_FG.get(eq_status, STATUS_BADGE_FG["Unknown"])
         st.markdown(
             f"""
             <div style="display:flex; align-items:center; gap:12px;">
@@ -604,28 +587,16 @@ def render_dashboard_page(
         if health_summary["drivers"]:
             st.caption("Driver utama: " + ", ".join(health_summary["drivers"]))
         if anomaly_rows:
-            st.dataframe(pd.DataFrame(anomaly_rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(anomaly_rows), width="stretch", hide_index=True)
 
         def _style_status_cell(v: str) -> str:
-            bg = {
-                "Normal": "#dcfce7",
-                "Alarm": "#fef9c3",
-                "High": "#fee2e2",
-                "Standby": "#e5e7eb",
-                "Unknown": "#f3f4f6",
-            }.get(str(v), "#f3f4f6")
-            fg = {
-                "Normal": "#166534",
-                "Alarm": "#854d0e",
-                "High": "#991b1b",
-                "Standby": "#374151",
-                "Unknown": "#374151",
-            }.get(str(v), "#374151")
+            bg = STATUS_BADGE_BG.get(str(v), STATUS_BADGE_BG["Unknown"])
+            fg = STATUS_BADGE_FG.get(str(v), STATUS_BADGE_FG["Unknown"])
             return f"background-color: {bg}; color: {fg}; font-weight: 700;"
 
         st.dataframe(
             table_df.style.map(_style_status_cell, subset=["Status"]),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
 
@@ -683,7 +654,7 @@ def render_dashboard_page(
                     with col_ai1:
                         st.caption(f"Provider: **{ai_provider.upper()}** | Model: `{active_model}`")
                     with col_ai2:
-                        gen_btn = st.button("Generate Analisis AI", icon=":material/psychology:", use_container_width=True)
+                        gen_btn = st.button("Generate Analisis AI", icon=":material/psychology:", width="stretch")
 
                     if gen_btn:
                         with st.spinner(f"Model LLM ({provider_label}) sedang menganalisis data riwayat {selected_eq} & standar MCSA..."):
@@ -719,7 +690,7 @@ def render_dashboard_page(
                     for col in ind_df.columns:
                         if ind_df[col].dtype == object:
                             ind_df[col] = ind_df[col].astype(str)
-                st.dataframe(ind_df, use_container_width=True, hide_index=True)
+                st.dataframe(ind_df, width="stretch", hide_index=True)
 
             def _to_num(v):
                 if v is None:
@@ -766,7 +737,7 @@ def render_dashboard_page(
                         markers=True,
                         title="Trend Parameter Kunci",
                     )
-                    st.plotly_chart(fig_trend, use_container_width=True)
+                    st.plotly_chart(fig_trend, width="stretch")
             recs = analysis.get("recommendations") or []
             if recs:
                 st.markdown("\n".join([f"- {r}" for r in recs]))
@@ -837,7 +808,7 @@ def render_dashboard_page(
                     continue
                 status_items.append({"Indikator": k, "Status": v})
             if status_items:
-                st.dataframe(pd.DataFrame(status_items), use_container_width=True, hide_index=True)
+                st.dataframe(pd.DataFrame(status_items), width="stretch", hide_index=True)
 
             recs = esa_quick.get("recommendations") or []
             if recs:
@@ -855,20 +826,20 @@ def render_dashboard_page(
 
             st.subheader("Materi Terkait")
             colm1, colm2, colm3, colm4, colm5 = st.columns(5)
-            if colm1.button("SOP Pengukuran", use_container_width=True):
+            if colm1.button("SOP Pengukuran", width="stretch"):
                 _open_materi("sop", "sop")
-            if colm2.button("Rotor Bar", use_container_width=True):
+            if colm2.button("Rotor Bar", width="stretch"):
                 _open_materi("rotor bar", "mcsa")
-            if colm3.button("Bearing", use_container_width=True):
+            if colm3.button("Bearing", width="stretch"):
                 _open_materi("bearing", "mcsa")
-            if colm4.button("Power Quality", use_container_width=True):
+            if colm4.button("Power Quality", width="stretch"):
                 _open_materi("power quality", "power")
-            if colm5.button("Pattern Recognition", use_container_width=True):
+            if colm5.button("Pattern Recognition", width="stretch"):
                 _open_materi("pattern", "pattern")
 
             if cond_class in {"alarm", "high"}:
                 label = "Tindak Lanjut (Alarm/High)"
-                if st.button(label, use_container_width=True):
+                if st.button(label, width="stretch"):
                     _open_materi("tindak lanjut", "sop")
 
             perf_rows = eq_data[eq_data["Parameter"].astype(str).str.startswith("Ringkasan Kinerja")].copy()
@@ -881,7 +852,7 @@ def render_dashboard_page(
                 perf_rows["Bagian"] = perf_rows["Parameter"].astype(str).str.replace("Ringkasan Kinerja -", "", regex=False).str.strip()
                 show_perf = perf_rows[["Bagian", "Raw_Value"]].rename(columns={"Raw_Value": "Ringkasan"}).drop_duplicates(subset=["Bagian"], keep="last")
                 show_perf = show_perf.sort_values("Bagian")
-                st.dataframe(show_perf, use_container_width=True, hide_index=True)
+                st.dataframe(show_perf, width="stretch", hide_index=True)
 
         if detail_view == "Spektrum":
             st.subheader("Analisis Spektrum")
@@ -902,7 +873,7 @@ def render_dashboard_page(
                     sel_img = st.selectbox("Pilih Gambar Spektrum", spectrum_images)
                 with c_img2:
                     if sel_img:
-                        st.image(os.path.join(img_dir, sel_img), caption=sel_img, use_container_width=True)
+                        st.image(os.path.join(img_dir, sel_img), caption=sel_img, width="stretch")
             else:
                 st.info("Tidak ada gambar spektrum yang tersedia untuk equipment ini.")
 
@@ -969,7 +940,7 @@ def render_dashboard_page(
                         markers=True,
                         hover_data={"Status_Category": True, "Raw_Value": True},
                     )
-                    st.plotly_chart(fig_trend, use_container_width=True)
+                    st.plotly_chart(fig_trend, width="stretch")
                 else:
                     st.info("Belum ada data untuk menampilkan trend parameter ini.")
             else:
@@ -990,7 +961,7 @@ def render_dashboard_page(
 
                 if not show.empty and show[y_col].notna().any():
                     fig_trend = px.line(show, x=x_col, y=y_col, title=title, markers=True)
-                    st.plotly_chart(fig_trend, use_container_width=True)
+                    st.plotly_chart(fig_trend, width="stretch")
                 else:
                     st.info("Belum ada data numerik untuk menampilkan trend parameter ini.")
 
@@ -1056,7 +1027,7 @@ def render_dashboard_page(
 
                         st.dataframe(
                             monthly[["YearMonth", "Status_Category", "Raw_Value"]].sort_values("YearMonth", ascending=False).head(24),
-                            use_container_width=True,
+                            width="stretch",
                         )
                 else:
                     monthly["Value_num"] = pd.to_numeric(monthly.get("Value", pd.NA), errors="coerce")
@@ -1134,7 +1105,7 @@ def render_dashboard_page(
                             table_cols.append("Raw_Value")
                         st.dataframe(
                             monthly[table_cols].sort_values("YearMonth", ascending=False).head(24),
-                            use_container_width=True,
+                            width="stretch",
                         )
     else:
         st.warning("Tidak ada equipment yang sesuai filter.")

@@ -44,10 +44,10 @@ def render_dga_page(st) -> None:
     # --- KPI cards -----------------------------------------------------------
     cols = st.columns(5)
     cols[0].metric("Total Transformer", len(transformers))
-    cols[1].metric("Normal", status_counts.get("Normal", 0))
-    cols[2].metric("Alarm", status_counts.get("Alarm", 0), delta_color="inverse")
-    cols[3].metric("High", status_counts.get("High", 0), delta_color="inverse")
-    cols[4].metric("Standby", status_counts.get("Standby", 0))
+    cols[1].metric("Normal (Hijau)", status_counts.get("Normal", 0))
+    cols[2].metric("Standby", status_counts.get("Standby", 0))
+    cols[3].metric("Alarm (Kuning)", status_counts.get("Alarm", 0), delta_color="inverse")
+    cols[4].metric("High (Merah)", status_counts.get("High", 0), delta_color="inverse")
 
     # --- Pie chart -------------------------------------------------------------
     plot_order = ["Normal", "Alarm", "High", "Standby", "Unknown"]
@@ -61,7 +61,7 @@ def render_dga_page(st) -> None:
         fig.update_traces(hole=0.45, textinfo="percent+label", textposition="inside")
         fig.update_layout(height=380, margin=dict(l=10, r=10, t=40, b=10),
                            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # --- Filter + selector -------------------------------------------------
     units = ["All"] + sorted({t["unit"] for t in transformers})

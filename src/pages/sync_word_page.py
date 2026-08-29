@@ -57,7 +57,7 @@ def render_sync_word_page(st, df, edit_mode, get_data_path, get_folder_metadata,
     uploaded_files = st.file_uploader("Pilih file laporan", type=["docx", "docm"], accept_multiple_files=True, help="Setiap proses upload disimpan sebagai satu batch terpisah.")
     if not uploaded_files and "word_batch_manifest" not in st.session_state:
         st.info("Belum ada laporan dipilih. Tambahkan satu atau beberapa laporan Word, lalu pilih **Siapkan preview**.")
-    if st.button("Siapkan preview", type="primary", disabled=not edit_mode or not uploaded_files, use_container_width=True):
+    if st.button("Siapkan preview", type="primary", disabled=not edit_mode or not uploaded_files, width="stretch"):
         with st.spinner("Menyimpan batch dan memeriksa isi laporan..."):
             batch_path, _ = create_batch(laporan_root, uploaded_files)
             preview_df, manifest = preview_batch(batch_path, master_df=load_equipment_master(), folder_metadata=get_folder_metadata(laporan_root))
@@ -76,16 +76,16 @@ def render_sync_word_page(st, df, edit_mode, get_data_path, get_folder_metadata,
         c1.metric("File batch", len(preview_rows))
         c2.metric("Siap disimpan", valid_count)
         c3.metric("Karantina", failed_count)
-        st.dataframe(pd.DataFrame(preview_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(preview_rows), width="stretch", hide_index=True)
         if failed_count:
             st.warning("File karantina tetap tersimpan di arsip batch, tetapi tidak masuk dashboard.")
             st.subheader("Alasan karantina")
-            st.dataframe(pd.DataFrame(_quarantine_rows(manifest)), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(_quarantine_rows(manifest)), width="stretch", hide_index=True)
         elif valid_count:
             st.success("Preview siap. Tinjau data di atas, lalu konfirmasi untuk memperbarui dashboard.")
         if valid_count == 0:
             st.error("Tidak ada laporan yang siap dikonfirmasi. Perbaiki alasan karantina, lalu unggah ulang file tersebut.")
-        if st.button("Konfirmasi dan perbarui dashboard", disabled=not edit_mode or valid_count == 0, use_container_width=True):
+        if st.button("Konfirmasi dan perbarui dashboard", disabled=not edit_mode or valid_count == 0, width="stretch"):
             with st.spinner("Menyimpan data batch..."):
                 _, committed = commit_batch(batch_path, preview_df, df, save_mcsa_data, file_path)
             valid_items = [item for item in committed["files"] if item.get("parse_status") == "valid"]
@@ -109,7 +109,7 @@ def render_sync_word_page(st, df, edit_mode, get_data_path, get_folder_metadata,
         for batch in recent:
             files = batch.get("files", [])
             history.append({"Batch": batch.get("batch_id"), "Waktu upload": batch.get("uploaded_at"), "Status": batch.get("status"), "File": len(files), "Valid": sum(item.get("parse_status") == "valid" for item in files), "Karantina": sum(item.get("parse_status") == "quarantined" for item in files)})
-        st.dataframe(pd.DataFrame(history), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(history), width="stretch", hide_index=True)
     else:
         st.info("Belum ada riwayat batch. Setelah preview dikonfirmasi, batch akan tampil di sini untuk audit.")
 
@@ -121,7 +121,7 @@ def render_sync_word_page(st, df, edit_mode, get_data_path, get_folder_metadata,
                 summary = summarize_word_report_quality(df_word, rep, REQUIRED_PARAMETERS)
             st.write(f"Total {rep.get('total_files', 0)} file; berhasil {rep.get('parsed_files', 0)}; gagal {rep.get('failed_files', 0)}.")
             if summary["failed_files"]:
-                st.dataframe(pd.DataFrame(summary["failed_files"]), use_container_width=True, hide_index=True)
+                st.dataframe(pd.DataFrame(summary["failed_files"]), width="stretch", hide_index=True)
             if not df_word.empty:
                 merged = pd.concat([df, df_word], ignore_index=True)
                 merged["Date"] = pd.to_datetime(merged.get("Date", pd.NaT), errors="coerce")

@@ -34,10 +34,10 @@ def render_vibration_page(st) -> None:
     counts = assets_df["_status_canon"].value_counts()
     cols = st.columns(5)
     cols[0].metric("Total Aset", len(assets_df))
-    cols[1].metric("Normal", int(counts.get("Normal", 0)))
-    cols[2].metric("Alarm", int(counts.get("Alarm", 0)), delta_color="inverse")
-    cols[3].metric("High", int(counts.get("High", 0)), delta_color="inverse")
-    cols[4].metric("Standby", int(counts.get("Standby", 0)))
+    cols[1].metric("Normal (Hijau)", int(counts.get("Normal", 0)))
+    cols[2].metric("Standby", int(counts.get("Standby", 0)))
+    cols[3].metric("Alarm (Kuning)", int(counts.get("Alarm", 0)), delta_color="inverse")
+    cols[4].metric("High (Merah)", int(counts.get("High", 0)), delta_color="inverse")
 
     # --- Pie chart -----------------------------------------------------------
     import plotly.express as px
@@ -55,7 +55,7 @@ def render_vibration_page(st) -> None:
         fig.update_traces(hole=0.45, textinfo="percent+label", textposition="inside")
         fig.update_layout(height=380, margin=dict(l=10, r=10, t=40, b=10),
                            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     # --- Filter + selector ---------------------------------------------------
     units = ["All"] + sorted(assets_df["unit_group"].dropna().unique().tolist())

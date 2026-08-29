@@ -226,7 +226,7 @@ def render_materi_page(st):
             custom_source = st.text_input("Sumber / Referensi (Opsional)", placeholder="misal: Tim Predictive Maintenance", disabled=not edit_mode)
 
         if uploaded_file is not None and edit_mode:
-            if st.button("🚀 Proses & Simpan ke Memori AI", type="primary", use_container_width=True):
+            if st.button("🚀 Proses & Simpan ke Memori AI", type="primary", width="stretch"):
                 with st.spinner(f"Memproses dan mengekstrak '{uploaded_file.name}'..."):
                     tags_list = [t.strip() for t in custom_tags_str.split(",") if t.strip()] if custom_tags_str else None
                     success, msg, doc_data = process_and_save_knowledge_file(
@@ -260,7 +260,7 @@ def render_materi_page(st):
                     "Terakhir Diperbarui": mod_time,
                 })
 
-            st.dataframe(pd.DataFrame(file_records), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(file_records), width="stretch", hide_index=True)
 
             # Option to delete custom file
             with st.expander("🗑️ Hapus Dokumen Knowledge Base", expanded=False):
@@ -318,7 +318,7 @@ def render_materi_page(st):
                     st.warning("⚠️ Index RAG belum dibuat.")
 
             with col2:
-                if st.button("🔄 Build / Rebuild Index", type="primary", use_container_width=True):
+                if st.button("🔄 Build / Rebuild Index", type="primary", width="stretch"):
                     with st.spinner("Membuat index RAG dari dokumen VIBRASI & TRIBOLOGY..."):
                         success, message = engine.build_index(force=True)
                         if success:

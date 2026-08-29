@@ -139,11 +139,11 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
                 data=chat_md.encode("utf-8"),
                 file_name=f"mcsa_chat_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
                 mime="text/markdown",
-                use_container_width=True,
+                width="stretch",
             )
 
     with col_btn_clear:
-        if st.button("🗑️ Hapus Chat", use_container_width=True):
+        if st.button("🗑️ Hapus Chat", width="stretch"):
             st.session_state["messages"] = []
             st.session_state["_chat_file_context"] = ""
             st.session_state["_chat_attached_filename"] = ""

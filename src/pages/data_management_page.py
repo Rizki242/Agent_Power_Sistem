@@ -37,12 +37,12 @@ def render_data_management_page(st, df, df_latest_all, edit_mode):
         bad_dates = audit.get("invalid_date_sample")
         if isinstance(bad_dates, pd.DataFrame) and not bad_dates.empty:
             st.subheader("Contoh Date tidak valid")
-            st.dataframe(bad_dates, use_container_width=True, hide_index=True)
+            st.dataframe(bad_dates, width="stretch", hide_index=True)
 
         dup = audit.get("duplicate_key_sample")
         if isinstance(dup, pd.DataFrame) and not dup.empty:
             st.subheader("Contoh duplikat (Equipment, Parameter, Date)")
-            st.dataframe(dup, use_container_width=True, hide_index=True)
+            st.dataframe(dup, width="stretch", hide_index=True)
 
         if st.button("Perbaiki Otomatis (ringan)", disabled=not edit_mode):
             fixed_df, rep = fix_mcsa_dataframe(df)
