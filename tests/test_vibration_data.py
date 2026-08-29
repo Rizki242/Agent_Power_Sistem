@@ -9,6 +9,8 @@ from src.vibration_data import (
     get_equipment_class_list,
     get_asset_ids_for_unit,
     get_bearing_info,
+    match_monthly_test_by_equipment,
+    build_vibration_agent_input,
 )
 
 
@@ -92,6 +94,43 @@ class VibrationDataTests(unittest.TestCase):
     def test_bearing_info_missing_asset(self):
         info = get_bearing_info('AST-999')
         self.assertIsNone(info)
+
+
+class MatchMonthlyTestByEquipmentTests(unittest.TestCase):
+    def setUp(self):
+        self.monthly_tests = [
+            {"equipment": "Motor ID Fan 1#1", "velocity_max": 1.39},
+            {"equipment": "Motor Primary Air Fan 1#1", "velocity_max": 2.9},
+        ]
+
+    def test_exact_match(self):
+        result = match_monthly_test_by_equipment("Motor ID Fan 1#1", self.monthly_tests)
+        self.assertIsNotNone(result)
+        self.assertEqual(result["velocity_max"], 1.39)
+
+    def test_case_insensitive_match(self):
+        result = match_monthly_test_by_equipment("motor id fan 1#1", self.monthly_tests)
+        self.assertIsNotNone(result)
+        self.assertEqual(result["velocity_max"], 1.39)
+
+    def test_no_match_returns_none(self):
+        result = match_monthly_test_by_equipment("Nonexistent Equipment XYZ", self.monthly_tests)
+        self.assertIsNone(result)
+
+    def test_empty_inputs_return_none(self):
+        self.assertIsNone(match_monthly_test_by_equipment("", self.monthly_tests))
+        self.assertIsNone(match_monthly_test_by_equipment("Motor ID Fan 1#1", []))
+
+
+class BuildVibrationAgentInputTests(unittest.TestCase):
+    def test_maps_velocity_max_to_overall_rms_only(self):
+        record = {"equipment": "Motor ID Fan 1#1", "velocity_max": 5.2, "points": {"1V": 0.63}}
+        result = build_vibration_agent_input(record)
+        self.assertEqual(result, {"overall_rms": 5.2})
+
+    def test_missing_velocity_max_defaults_to_zero(self):
+        result = build_vibration_agent_input({})
+        self.assertEqual(result, {"overall_rms": 0.0})
 
 
 if __name__ == '__main__':

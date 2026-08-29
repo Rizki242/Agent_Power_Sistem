@@ -435,3 +435,36 @@ def load_vibration_monthly_tests(excel_path: Optional[str] = None) -> List[Dict[
         print(f"Error loading monthly vibration tests: {e}")
         return []
 
+
+def match_monthly_test_by_equipment(
+    equipment_name: str,
+    monthly_tests: List[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    """Best-effort match of an asset's equipment name to a monthly test record.
+
+    The asset register and the periodic-test Excel export share no common ID,
+    only equipment-name text - so this tries an exact case-insensitive match
+    first, then falls back to a substring match in either direction.
+    """
+    if not equipment_name or not monthly_tests:
+        return None
+    target = equipment_name.strip().upper()
+    for record in monthly_tests:
+        if str(record.get("equipment", "")).strip().upper() == target:
+            return record
+    for record in monthly_tests:
+        candidate = str(record.get("equipment", "")).strip().upper()
+        if candidate and (candidate in target or target in candidate):
+            return record
+    return None
+
+
+def build_vibration_agent_input(record: Dict[str, Any]) -> Dict[str, float]:
+    """Map a monthly-test record to VibrationAgent's input shape.
+
+    Only overall_rms (velocity_max) is available from this data source today;
+    spectral parameters (1X/2X/BPFO/BPFI) are left for VibrationAgent's own
+    defaults since the periodic-test export doesn't carry them.
+    """
+    return {"overall_rms": float(record.get("velocity_max", 0.0))}
+

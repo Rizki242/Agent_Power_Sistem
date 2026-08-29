@@ -304,3 +304,8 @@ def render_page_header(st, title: str, subtitle: str = "", badge: str = ""):
     if subtitle:
         st.caption(subtitle)
     st.divider()
+
+
+def render_data_disclaimer_banner(st, message: str = "Data Contoh - Belum Terverifikasi dari Sumber Asli") -> None:
+    """Persistent warning banner for pages whose underlying data is not yet sourced from real measurements."""
+    st.warning(message, icon=":material/report:")

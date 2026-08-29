@@ -72,12 +72,15 @@ try:
     from src.pages.condition_control_page import render_condition_control_page
     from src.pages.dashboard_page import render_dashboard_page
     from src.pages.data_management_page import render_data_management_page
+    from src.pages.dga_page import render_dga_page
     from src.pages.materi_page import render_materi_page
     from src.pages.placeholder_page import render_placeholder_page
     from src.pages.quality_page import render_quality_check_page
     from src.pages.report_page import render_ppt_page, render_word_page
     from src.pages.settings_page import render_settings_page
     from src.pages.sync_word_page import render_sync_word_page
+    from src.pages.tribology_page import render_tribology_page
+    from src.pages.vibration_page import render_vibration_page
 except BaseException as exc:
     _fatal_dependency_error("modul internal (src/*)", exc)
 import json
@@ -223,6 +226,18 @@ def _condition_control_entry():
     render_condition_control_page(st)
 
 
+def _vibration_entry():
+    render_vibration_page(st)
+
+
+def _dga_entry():
+    render_dga_page(st)
+
+
+def _tribology_entry():
+    render_tribology_page(st)
+
+
 def _chatbot_entry():
     render_chatbot_page(st, df_latest_augmented=df_latest_augmented, df_all=df)
 
@@ -256,6 +271,9 @@ PAGES["dashboard"] = st.Page(_dashboard_entry, title="Command Center", icon=":ma
 PAGES["data_management"] = st.Page(_data_management_entry, title="Manajemen Data", icon=":material/database:")
 PAGES["sync_word"] = st.Page(_sync_word_entry, title="Sync Laporan Word", icon=":material/upload_file:")
 PAGES["quality"] = st.Page(_quality_entry, title="Quality Check Laporan", icon=":material/fact_check:")
+PAGES["vibrasi"] = st.Page(_vibration_entry, title="Vibrasi", icon=":material/vibration:")
+PAGES["dga"] = st.Page(_dga_entry, title="DGA", icon=":material/science:")
+PAGES["tribology"] = st.Page(_tribology_entry, title="Tribology", icon=":material/oil_barrel:")
 PAGES["engineering"] = st.Page(_condition_control_entry, title="Control condition", icon=":material/tune:")
 PAGES["reliability"] = st.Page(_reliability_entry, title="Reliability", icon=":material/insights:")
 PAGES["chatbot"] = st.Page(_chatbot_entry, title="Chatbot", icon=":material/smart_toy:")
@@ -270,7 +288,7 @@ active_page = st.navigation(
     {
         "Command Center": [PAGES["dashboard"]],
         "Asset Management": [PAGES["data_management"], PAGES["sync_word"], PAGES["quality"]],
-        "Engineering": [PAGES["engineering"]],
+        "Engineering": [PAGES["vibrasi"], PAGES["dga"], PAGES["tribology"], PAGES["engineering"]],
         "Reliability": [PAGES["reliability"]],
         "AI Agent": [PAGES["chatbot"]],
         "Knowledge": [PAGES["materi"]],

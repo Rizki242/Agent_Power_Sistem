@@ -4,6 +4,7 @@ Provides asset lubricant samples, ASTM D445 / D664 / ISO 4406 cleanliness evalua
 Loads periodic test reports from data/vibrasi/pengujian/EXSUM TRIBOLOGY  BULAN JULI 2026.xlsx.
 """
 
+import re
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import pandas as pd
@@ -318,6 +319,33 @@ def get_tribology_sample_detail(sample_id: str) -> Optional[Dict[str, Any]]:
             rec = "Parameter pelumas termonitor meningkat. Lakukan pengujian ulang dalam 30 hari dan periksa suhu kerja pelumasan pada bearing."
         else:
             rec = "Monitoring Tribology sesuai jadwal 52 week rute pemeliharaan prediktif."
-            
+
     target["recommendation"] = rec
     return target
+
+
+def parse_iso_vg_nominal(oil_type: str) -> float:
+    """Extract the nominal viscosity grade from an ISO VG label, e.g. 'ISO VG 46' -> 46.0.
+
+    Falls back to 46.0 (a common turbine/gear-oil grade) when the label is
+    missing or unparseable, so callers always get a usable deviation baseline.
+    """
+    match = re.search(r"(\d+(?:\.\d+)?)", str(oil_type or ""))
+    return float(match.group(1)) if match else 46.0
+
+
+def build_tribology_agent_input(sample: Dict[str, Any]) -> Dict[str, Any]:
+    """Map a tribology sample dict to TribologyAgent's input shape.
+
+    Field names differ between this module's data (wear_fe/wear_cu) and
+    TribologyAgent's expected input (fe_ppm/cu_ppm) - this is the adapter.
+    """
+    return {
+        "viscosity_40c": sample.get("viscosity_40c"),
+        "nominal_viscosity": parse_iso_vg_nominal(sample.get("oil_type", "")),
+        "tan": sample.get("tan"),
+        "water_ppm": sample.get("water_ppm"),
+        "fe_ppm": sample.get("wear_fe"),
+        "cu_ppm": sample.get("wear_cu"),
+        "iso_cleanliness": sample.get("iso_cleanliness"),
+    }
