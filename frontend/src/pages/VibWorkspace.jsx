@@ -57,6 +57,21 @@ export default function VibWorkspace() {
       });
   }, [unitFilter, statusFilter, search, selectedTest]);
 
+  const loadEquipmentDetail = useCallback((assetId) => {
+    setSelectedAssetId(assetId);
+    setLoadingDetail(true);
+    fetch(apiUrl(`/api/vibration/equipment/${encodeURIComponent(assetId)}`))
+      .then(res => res.json())
+      .then(data => {
+        setEqDetail(data);
+        setLoadingDetail(false);
+      })
+      .catch(err => {
+        console.error('Gagal memuat detail equipment:', err);
+        setLoadingDetail(false);
+      });
+  }, []);
+
   // --- Fetch Asset Database ---
   const fetchEquipment = useCallback(() => {
     setLoading(true);
@@ -78,7 +93,7 @@ export default function VibWorkspace() {
         console.error('Gagal mengambil data vibration assets:', err);
         setLoading(false);
       });
-  }, [unitFilter, statusFilter, search, selectedAssetId]);
+  }, [unitFilter, statusFilter, search, selectedAssetId, loadEquipmentDetail]);
 
   // --- Fetch summary ---
   useEffect(() => {
@@ -95,21 +110,6 @@ export default function VibWorkspace() {
       fetchEquipment();
     }
   }, [dataView, fetchTests, fetchEquipment]);
-
-  const loadEquipmentDetail = (assetId) => {
-    setSelectedAssetId(assetId);
-    setLoadingDetail(true);
-    fetch(apiUrl(`/api/vibration/equipment/${encodeURIComponent(assetId)}`))
-      .then(res => res.json())
-      .then(data => {
-        setEqDetail(data);
-        setLoadingDetail(false);
-      })
-      .catch(err => {
-        console.error('Gagal memuat detail equipment:', err);
-        setLoadingDetail(false);
-      });
-  };
 
   const handleSelectTest = (test) => {
     setSelectedTest(test);

@@ -23,6 +23,22 @@ export default function ReliabilityCommandCenter() {
   const [collabLoading, setCollabLoading] = useState(false);
   const [collabResult, setCollabResult] = useState(null);
 
+  const loadEquipmentFusion = (eqName) => {
+    setSelectedEq(eqName);
+    setLoadingDetail(true);
+    setWoSuccessMsg('');
+    fetch(apiUrl(`/api/reliability/fusion/${encodeURIComponent(eqName)}`))
+      .then(res => res.json())
+      .then(data => {
+        setFusionDetail(data);
+        setLoadingDetail(false);
+      })
+      .catch(err => {
+        console.error('Failed to load fusion detail:', err);
+        setLoadingDetail(false);
+      });
+  };
+
   // Fetch fleet summary
   useEffect(() => {
     setLoadingFleet(true);
@@ -40,22 +56,6 @@ export default function ReliabilityCommandCenter() {
         setLoadingFleet(false);
       });
   }, []);
-
-  const loadEquipmentFusion = (eqName) => {
-    setSelectedEq(eqName);
-    setLoadingDetail(true);
-    setWoSuccessMsg('');
-    fetch(apiUrl(`/api/reliability/fusion/${encodeURIComponent(eqName)}`))
-      .then(res => res.json())
-      .then(data => {
-        setFusionDetail(data);
-        setLoadingDetail(false);
-      })
-      .catch(err => {
-        console.error('Failed to load fusion detail:', err);
-        setLoadingDetail(false);
-      });
-  };
 
   const handleRunMultiAgentCollab = async (eqName) => {
     const target = eqName || selectedEq || 'BFP 1A';

@@ -23,6 +23,21 @@ export default function DGAWorkspace() {
   const [file, setFile] = useState(null);
   const [uploadLoading, setUploadLoading] = useState(false);
 
+  const loadTransformerDetail = useCallback((id) => {
+    setSelectedId(id);
+    setLoadingDetail(true);
+    fetch(apiUrl(`/api/dga/transformers/${encodeURIComponent(id)}`))
+      .then(res => res.json())
+      .then(data => {
+        setTrfDetail(data);
+        setLoadingDetail(false);
+      })
+      .catch(err => {
+        console.error('Gagal memuat detail trafo:', err);
+        setLoadingDetail(false);
+      });
+  }, []);
+
   // --- Fetch Transformers ---
   const fetchTransformers = useCallback(() => {
     setLoading(true);
@@ -44,7 +59,7 @@ export default function DGAWorkspace() {
         console.error('Gagal mengambil data trafo:', err);
         setLoading(false);
       });
-  }, [unitFilter, statusFilter, search, selectedId]);
+  }, [unitFilter, statusFilter, search, selectedId, loadTransformerDetail]);
 
   // --- Fetch Summary ---
   useEffect(() => {
@@ -57,21 +72,6 @@ export default function DGAWorkspace() {
   useEffect(() => {
     fetchTransformers();
   }, [fetchTransformers]);
-
-  const loadTransformerDetail = (id) => {
-    setSelectedId(id);
-    setLoadingDetail(true);
-    fetch(apiUrl(`/api/dga/transformers/${encodeURIComponent(id)}`))
-      .then(res => res.json())
-      .then(data => {
-        setTrfDetail(data);
-        setLoadingDetail(false);
-      })
-      .catch(err => {
-        console.error('Gagal memuat detail trafo:', err);
-        setLoadingDetail(false);
-      });
-  };
 
   const handleUpload = async (e) => {
     e.preventDefault();

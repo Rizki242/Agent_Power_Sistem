@@ -25,6 +25,21 @@ export default function TribologyWorkspace() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('params'); // 'params' | 'wear' | 'history' | 'evaluator'
 
+  const loadSampleDetail = useCallback((id) => {
+    setSelectedSampleId(id);
+    setLoadingDetail(true);
+    fetch(apiUrl(`/api/tribology/samples/${encodeURIComponent(id)}`))
+      .then(res => res.json())
+      .then(data => {
+        setSampleDetail(data);
+        setLoadingDetail(false);
+      })
+      .catch(err => {
+        console.error('Gagal memuat detail sample:', err);
+        setLoadingDetail(false);
+      });
+  }, []);
+
   // --- Fetch Samples ---
   const fetchSamples = useCallback(() => {
     setLoading(true);
@@ -47,7 +62,7 @@ export default function TribologyWorkspace() {
         console.error('Gagal mengambil data tribology samples:', err);
         setLoading(false);
       });
-  }, [unitFilter, statusFilter, oilTypeFilter, search, selectedSampleId]);
+  }, [unitFilter, statusFilter, oilTypeFilter, search, selectedSampleId, loadSampleDetail]);
 
   // --- Fetch Summary ---
   useEffect(() => {
@@ -60,21 +75,6 @@ export default function TribologyWorkspace() {
   useEffect(() => {
     fetchSamples();
   }, [fetchSamples]);
-
-  const loadSampleDetail = (id) => {
-    setSelectedSampleId(id);
-    setLoadingDetail(true);
-    fetch(apiUrl(`/api/tribology/samples/${encodeURIComponent(id)}`))
-      .then(res => res.json())
-      .then(data => {
-        setSampleDetail(data);
-        setLoadingDetail(false);
-      })
-      .catch(err => {
-        console.error('Gagal memuat detail sample:', err);
-        setLoadingDetail(false);
-      });
-  };
 
   const tribTabs = [
     { id: 'params', label: 'Sifat Fisikokimia (ASTM)', icon: '🧪' },
