@@ -10,6 +10,7 @@ from .fusion_engine import ReliabilityFusionAgent
 from .safety_guard import SafetyGuardrailAgent
 from .asset_graph import AssetKnowledgeGraph
 from .continuous_learning import PowerPlantSkillLearner
+from pple.engineering.equipment_modules import EquipmentModuleStore
 from pple.engineering.registry import ModuleRegistry
 from pple.engineering.modules.vibration import VibrationModule
 from pple.engineering.modules.mcsa import MCSAModule
@@ -71,6 +72,11 @@ class SubAgentCoordinator:
             ThermalModule,
         ):
             self.module_registry.register(module_cls())
+
+        # Per-equipment module enable/disable overrides (docs/final.md Phase 8) -
+        # gates the trace-building _analyze() calls below the same way
+        # ReliabilityFusionAgent gates its own specialist_results.
+        self.equipment_module_store = EquipmentModuleStore()
 
         self.fusion_agent = ReliabilityFusionAgent()
         self.safety_guard = SafetyGuardrailAgent()
@@ -269,51 +275,58 @@ class SubAgentCoordinator:
         oil_data = data.get("oil") or {"viscosity_40c": 46.0, "fe_ppm": 12.0, "water_ppm": 60.0}
         thermal_data = data.get("thermal") or {"bearing_temp": 58.0, "delta_t_phase": 2.5}
 
-        # 1. Run Specialist Sub-Agents
+        # 1. Run Specialist Sub-Agents - a module disabled for this equipment
+        # (EquipmentModuleStore, Phase 8) is left out of the trace entirely,
+        # the same way ReliabilityFusionAgent excludes it from health weighting.
         traces = []
-        
+        store = self.equipment_module_store
+
         # Vibration Sub-Agent
-        vib_eval = self._analyze("vibration", equipment, vib_data)
-        traces.append({
-            "subagent": self._registry["vibration"].to_dict(),
-            "evaluation": vib_eval,
-            "status": vib_eval.get("condition", "HEALTHY"),
-            "health_score": vib_eval.get("health_score", 90.0),
-            "key_finding": f"ISO 10816 RMS: {vib_data.get('overall_rms', 2.6)} mm/s | Failure Mode: {vib_eval.get('failure_mode')}"
-        })
+        if store.is_enabled(equipment, "vibration"):
+            vib_eval = self._analyze("vibration", equipment, vib_data)
+            traces.append({
+                "subagent": self._registry["vibration"].to_dict(),
+                "evaluation": vib_eval,
+                "status": vib_eval.get("condition", "HEALTHY"),
+                "health_score": vib_eval.get("health_score", 90.0),
+                "key_finding": f"ISO 10816 RMS: {vib_data.get('overall_rms', 2.6)} mm/s | Failure Mode: {vib_eval.get('failure_mode')}"
+            })
 
         # MCSA Sub-Agent
-        mcsa_eval = self._analyze("mcsa", equipment, mcsa_data)
-        traces.append({
-            "subagent": self._registry["mcsa"].to_dict(),
-            "evaluation": mcsa_eval,
-            "status": mcsa_eval.get("condition", "HEALTHY"),
-            "health_score": mcsa_eval.get("health_score", 90.0),
-            "key_finding": f"Upper SB: {mcsa_data.get('upper_sb', -56.0)} dB (Level {mcsa_eval.get('severity', 1)}) | Rotor Bar: {mcsa_eval.get('condition')}"
-        })
+        if store.is_enabled(equipment, "mcsa"):
+            mcsa_eval = self._analyze("mcsa", equipment, mcsa_data)
+            traces.append({
+                "subagent": self._registry["mcsa"].to_dict(),
+                "evaluation": mcsa_eval,
+                "status": mcsa_eval.get("condition", "HEALTHY"),
+                "health_score": mcsa_eval.get("health_score", 90.0),
+                "key_finding": f"Upper SB: {mcsa_data.get('upper_sb', -56.0)} dB (Level {mcsa_eval.get('severity', 1)}) | Rotor Bar: {mcsa_eval.get('condition')}"
+            })
 
         # Tribology Sub-Agent
-        oil_eval = self._analyze("tribology", equipment, oil_data)
-        traces.append({
-            "subagent": self._registry["tribology"].to_dict(),
-            "evaluation": oil_eval,
-            "status": oil_eval.get("condition", "HEALTHY"),
-            "health_score": oil_eval.get("health_score", 90.0),
-            "key_finding": f"Viscosity: {oil_data.get('viscosity_40c', 46.0)} cSt | Wear Fe: {oil_data.get('fe_ppm', 12.0)} ppm"
-        })
+        if store.is_enabled(equipment, "tribology"):
+            oil_eval = self._analyze("tribology", equipment, oil_data)
+            traces.append({
+                "subagent": self._registry["tribology"].to_dict(),
+                "evaluation": oil_eval,
+                "status": oil_eval.get("condition", "HEALTHY"),
+                "health_score": oil_eval.get("health_score", 90.0),
+                "key_finding": f"Viscosity: {oil_data.get('viscosity_40c', 46.0)} cSt | Wear Fe: {oil_data.get('fe_ppm', 12.0)} ppm"
+            })
 
         # Thermal Sub-Agent
-        therm_eval = self._analyze("thermal", equipment, thermal_data)
-        traces.append({
-            "subagent": self._registry["thermal"].to_dict(),
-            "evaluation": therm_eval,
-            "status": therm_eval.get("condition", "HEALTHY"),
-            "health_score": therm_eval.get("health_score", 90.0),
-            "key_finding": f"Bearing Temp: {thermal_data.get('bearing_temp', 58.0)}°C | Delta-T: {thermal_data.get('delta_t_phase', 2.5)}°C"
-        })
+        if store.is_enabled(equipment, "thermal"):
+            therm_eval = self._analyze("thermal", equipment, thermal_data)
+            traces.append({
+                "subagent": self._registry["thermal"].to_dict(),
+                "evaluation": therm_eval,
+                "status": therm_eval.get("condition", "HEALTHY"),
+                "health_score": therm_eval.get("health_score", 90.0),
+                "key_finding": f"Bearing Temp: {thermal_data.get('bearing_temp', 58.0)}°C | Delta-T: {thermal_data.get('delta_t_phase', 2.5)}°C"
+            })
 
         # DGA Sub-Agent (for Transformers) or PD Sub-Agent
-        if "transformer" in equipment.lower() or "trafo" in equipment.lower():
+        if ("transformer" in equipment.lower() or "trafo" in equipment.lower()) and store.is_enabled(equipment, "dga"):
             dga_eval = self._analyze("dga", equipment, dga_data)
             traces.append({
                 "subagent": self._registry["dga"].to_dict(),

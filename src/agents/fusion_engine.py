@@ -7,6 +7,7 @@ from typing import Dict, Any, List, Optional
 import math
 from datetime import datetime, timedelta
 
+from pple.engineering.equipment_modules import EquipmentModuleStore
 from pple.engineering.registry import ModuleRegistry
 from pple.engineering.modules.vibration import VibrationModule
 from pple.engineering.modules.mcsa import MCSAModule
@@ -342,6 +343,11 @@ class ReliabilityFusionAgent:
         ):
             self.module_registry.register(module_cls())
 
+        # Per-equipment module enable/disable overrides (docs/final.md Phase 8).
+        # A module disabled for this equipment is excluded below the same way
+        # a domain with no data at all already is - see run_full_fusion().
+        self.equipment_module_store = EquipmentModuleStore()
+
         self.diagnosis_agent = FailureModeDiagnosisAgent()
         self.rul_predictor = RULPredictor()
         self.risk_engine = RiskEngine()
@@ -372,23 +378,27 @@ class ReliabilityFusionAgent:
         specialist_results = {}
         health_weights = {}
 
-        # 1. Run individual specialist evaluations
-        if vibration_data is not None:
+        # 1. Run individual specialist evaluations - a module disabled for this
+        # equipment (EquipmentModuleStore, Phase 8) is treated the same as data
+        # not being provided at all: excluded from both the result set and the
+        # health-index weighting below, never given a fabricated score.
+        store = self.equipment_module_store
+        if vibration_data is not None and store.is_enabled(equipment, "vibration"):
             specialist_results["Vibration"] = self._analyze("vibration", equipment, vibration_data)
             health_weights["Vibration"] = 0.28
-        if mcsa_data is not None:
+        if mcsa_data is not None and store.is_enabled(equipment, "mcsa"):
             specialist_results["MCSA"] = self._analyze("mcsa", equipment, mcsa_data)
             health_weights["MCSA"] = 0.28
-        if thermal_data is not None:
+        if thermal_data is not None and store.is_enabled(equipment, "thermal"):
             specialist_results["Thermal"] = self._analyze("thermal", equipment, thermal_data)
             health_weights["Thermal"] = 0.20
-        if oil_data is not None:
+        if oil_data is not None and store.is_enabled(equipment, "tribology"):
             specialist_results["Tribology"] = self._analyze("tribology", equipment, oil_data)
             health_weights["Tribology"] = 0.14
-        if dga_data is not None:
+        if dga_data is not None and store.is_enabled(equipment, "dga"):
             specialist_results["DGA"] = self._analyze("dga", equipment, dga_data)
             health_weights["DGA"] = 0.35
-        if pd_data is not None:
+        if pd_data is not None and store.is_enabled(equipment, "partial_discharge"):
             specialist_results["Partial Discharge"] = self._analyze("partial_discharge", equipment, pd_data)
             health_weights["Partial Discharge"] = 0.25
 
