@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from src.agents.specialist_agents import DGAAgent, TribologyAgent, VibrationAgent
+from src.components.theme import render_page_header
 
 
 def _render_result(st, result: Dict[str, Any], metric_labels: Dict[str, str]) -> None:
@@ -110,7 +111,7 @@ def _render_tribology_control(st) -> None:
 
 def render_condition_control_page(st) -> None:
     """Render manual, non-actuating controls for three CBM specialist domains."""
-    st.header("Control condition", anchor=False)
+    render_page_header(st, "Engineering", "Control condition - rule-based screening Vibration/DGA/Tribology.")
     st.write("Masukkan data pengukuran untuk screening rule-based pada domain yang dipilih.")
     st.info("Pastikan data berasal dari pengukuran atau sampel yang valid dan comparable. Halaman ini tidak mengirim perintah ke peralatan pembangkit.", icon=":material/verified_user:")
     vibration_tab, dga_tab, tribology_tab = st.tabs(["Vibrasi", "DGA", "Tribology"])

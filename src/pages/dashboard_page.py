@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.express as px
 
 from src.analytics import calculate_equipment_health_score, detect_equipment_anomalies
+from src.components.theme import render_page_header
 from src.data_loader import filter_mcsa_data, get_data_path, load_nameplate_csv
 from src.standards import (
     calculate_condition,
@@ -131,8 +132,9 @@ def render_dashboard_page(
     eq_master_df: pd.DataFrame,
     master_norm_to_unit: dict,
     master_norm_to_volt: dict,
+    materi_page=None,
 ):
-    st.header("Overview Kondisi Equipment")
+    render_page_header(st, "Command Center", "Overview kondisi equipment MCSA.")
 
     st.caption(f"Periode: {date_start} s/d {date_end}")
 
@@ -787,8 +789,10 @@ def render_dashboard_page(
         def _open_materi(query_text: str = "", prefer_name_contains: Optional[str] = None):
             st.session_state["materi_query"] = query_text
             st.session_state["materi_prefer_name_contains"] = prefer_name_contains
-            st.session_state["page"] = "Materi Training"
-            st.rerun()
+            if materi_page is not None:
+                st.switch_page(materi_page)
+            else:
+                st.rerun()
 
         cond_now = ""
         cond_row = eq_data[eq_data["Parameter"] == "Kondisi"]

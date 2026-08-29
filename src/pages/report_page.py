@@ -1,9 +1,11 @@
 import pandas as pd
 
+from src.components.theme import render_page_header
+
 
 def render_ppt_page(st, filtered_df, df_latest, sel_unit, sel_volt, date_start, date_end,
                     create_ppt, history_df=None):
-    st.header("Generate Laporan PPT")
+    render_page_header(st, "Reports", "Generate laporan PPT.")
     st.write("Klik tombol di bawah untuk mengunduh laporan status equipment dalam format PowerPoint (16:9).")
 
     unit_label = sel_unit if sel_unit != "All" else "PLTU Jeranjang"
@@ -72,7 +74,7 @@ def render_ppt_page(st, filtered_df, df_latest, sel_unit, sel_volt, date_start, 
 
 
 def render_word_page(st, filtered_df, df_latest, sel_unit, sel_volt, date_start, date_end, standby_report, create_docx):
-    st.header("Generate Laporan Bulanan (Word)")
+    render_page_header(st, "Reports", "Generate laporan bulanan (Word).")
     st.write("Klik tombol di bawah untuk mengunduh laporan bulanan status equipment dalam format Word (.docx).")
 
     unit_label = sel_unit if sel_unit != "All" else "PLTU Jeranjang"

@@ -3,6 +3,7 @@ import os
 import pandas as pd
 
 from src.analytics import summarize_word_report_quality
+from src.components.theme import render_page_header
 from src.data_loader import load_equipment_master
 from src.report_batches import commit_batch, create_batch, list_recent_batches, preview_batch
 
@@ -42,8 +43,8 @@ def _render_sync_flow(st):
         column.markdown(f"**{title}**\n\n{description}")
 
 
-def render_sync_word_page(st, df, edit_mode, get_data_path, get_folder_metadata, parse_all_reports_with_report, save_mcsa_data, load_mcsa_data):
-    st.header("Sinkronisasi laporan Word")
+def render_sync_word_page(st, df, edit_mode, get_data_path, get_folder_metadata, parse_all_reports_with_report, save_mcsa_data, load_mcsa_data, dashboard_page=None):
+    render_page_header(st, "Asset Management", "Sinkronisasi laporan Word.")
     st.caption("Unggah, periksa, lalu konfirmasi laporan sebelum data masuk ke dashboard.")
     _render_sync_flow(st)
     if not edit_mode:
@@ -93,10 +94,12 @@ def render_sync_word_page(st, df, edit_mode, get_data_path, get_folder_metadata,
             if dates:
                 st.session_state["filter_focus_range"] = (min(dates), max(dates))
             st.session_state["filter_focus_equipment"] = sorted({item.get("equipment") for item in valid_items if item.get("equipment")})
-            st.session_state.page = "Dashboard"
             for key in ["word_batch_path", "word_batch_preview", "word_batch_manifest", "_mcsa_data_key"]:
                 st.session_state.pop(key, None)
-            st.rerun()
+            if dashboard_page is not None:
+                st.switch_page(dashboard_page)
+            else:
+                st.rerun()
 
     st.markdown("---")
     st.subheader("Riwayat batch")

@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 from src.chatbot import MCSAChatbot
+from src.components.theme import render_page_header
 from src.knowledge_processor import process_and_save_knowledge_file
 from src.llm_assistant import (
     DEFAULT_GEMINI_MODEL,
@@ -62,7 +63,7 @@ def _extract_file_context(uploaded_file) -> str:
 
 
 def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFrame):
-    st.header("💬 MCSA Virtual Assistant")
+    render_page_header(st, "AI Agent", "MCSA Virtual Assistant.")
 
     if "messages" not in st.session_state:
         st.session_state["messages"] = []

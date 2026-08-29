@@ -1,0 +1,94 @@
+"""Streamlit UI smoke tests using streamlit.testing.v1.AppTest.
+
+There was previously no automated coverage at all for the Streamlit layer
+(app.py, src/pages/, src/components/). These tests don't assert on visual
+layout, just that the entrypoint and the newly-added pages (settings,
+placeholder) execute without raising.
+"""
+
+import os
+import unittest
+
+from streamlit.testing.v1 import AppTest
+
+_APP_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app.py")
+
+
+class TestAppEntrypoint(unittest.TestCase):
+    def test_app_loads_default_page_without_exception(self):
+        at = AppTest.from_file(_APP_PATH, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+
+class TestSettingsPage(unittest.TestCase):
+    def _run_category(self, category):
+        def _script():
+            import streamlit as st
+
+            from src.pages.settings_page import render_settings_page
+
+            st.session_state["_settings_category_quick"] = None
+            st.session_state["_settings_category_more"] = "-"
+            render_settings_page(st)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        return at
+
+    def test_general_category_renders(self):
+        self._run_category("General")
+
+    def test_engineering_modules_category_renders(self):
+        def _script():
+            import streamlit as st
+
+            from src.pages.settings_page import render_settings_page
+
+            st.session_state["_settings_category_quick"] = "Engineering Modules"
+            render_settings_page(st)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+    def test_engineering_modules_equipment_override_renders(self):
+        def _script():
+            import streamlit as st
+
+            from src.pages.settings_page import render_settings_page
+
+            st.session_state["_settings_category_quick"] = "Engineering Modules"
+            st.session_state["_settings_eq_module_id"] = "TEST-EQUIPMENT-1"
+            render_settings_page(st)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertTrue(list(at.checkbox), "expected at least one per-module checkbox for the equipment override table")
+
+    def test_placeholder_category_renders(self):
+        def _script():
+            import streamlit as st
+
+            from src.pages.settings_page import render_settings_page
+
+            st.session_state["_settings_category_more"] = "Database"
+            render_settings_page(st)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+
+class TestPlaceholderPage(unittest.TestCase):
+    def test_placeholder_page_renders(self):
+        def _script():
+            import streamlit as st
+
+            from src.pages.placeholder_page import render_placeholder_page
+
+            render_placeholder_page(st, "Reliability", "Belum tersedia.")
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+
+if __name__ == "__main__":
+    unittest.main()

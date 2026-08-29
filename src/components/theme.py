@@ -247,7 +247,8 @@ def get_modern_theme_css() -> str:
         100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
       }
 
-      .mcsa-nav-section-title {
+      /* Sidebar filter section (below native st.navigation nav) */
+      .mcsa-group {
         font-size: 0.68rem;
         font-weight: 800;
         text-transform: uppercase;
@@ -256,18 +257,13 @@ def get_modern_theme_css() -> str:
         margin: 16px 0 6px 4px;
       }
 
-      .mcsa-nav-active-item {
-        background-color: var(--mcsa-primary-light);
-        color: var(--mcsa-primary-text);
-        font-weight: 700;
-        font-size: 0.85rem;
+      .mcsa-period {
+        background-color: var(--mcsa-slate-100);
+        color: var(--mcsa-slate-700);
+        font-size: 0.78rem;
         padding: 8px 12px;
         border-radius: var(--radius-sm);
-        border-left: 3px solid var(--mcsa-primary);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 4px;
+        margin-top: 6px;
       }
 
       /* Custom scrollbars */
@@ -290,17 +286,21 @@ def get_modern_theme_css() -> str:
 
 
 def render_page_header(st, title: str, subtitle: str = "", badge: str = ""):
-    """Render a clean modern hero header with optional live badge."""
-    badge_html = f'<span style="background:#e0f2fe; color:#0369a1; font-size:0.75rem; font-weight:700; padding:4px 10px; border-radius:12px; margin-left:10px;">{badge}</span>' if badge else ""
-    st.markdown(
-        f"""
-        <div style="margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--mcsa-border);">
-            <div style="display:flex; align-items:center;">
-                <h1 style="margin:0; font-size:1.75rem; font-weight:800; color:#0f172a;">{title}</h1>
-                {badge_html}
-            </div>
-            <p style="margin:4px 0 0; color:#64748b; font-size:0.9rem;">{subtitle}</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    """Render a page header using native Streamlit elements.
+
+    Deliberately not raw HTML: Streamlit's markdown renderer auto-promotes a
+    bare <h1>..<h6> into its own anchor-linked heading widget, which breaks
+    when nested inside a custom flex <div> (observed: the heading collapses
+    to a near-zero-width column and wraps one character per line).
+    """
+    if badge:
+        col_title, col_badge = st.columns([5, 1], vertical_alignment="center")
+        with col_title:
+            st.title(title, anchor=False)
+        with col_badge:
+            st.badge(badge)
+    else:
+        st.title(title, anchor=False)
+    if subtitle:
+        st.caption(subtitle)
+    st.divider()

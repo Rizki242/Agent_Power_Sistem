@@ -2,10 +2,11 @@ import os
 import pandas as pd
 
 from src.analytics import build_word_qc_export, summarize_word_report_quality
+from src.components.theme import render_page_header
 
 
 def render_quality_check_page(st, get_data_path, get_folder_metadata, parse_all_reports_with_report):
-    st.header("Quality Check Laporan")
+    render_page_header(st, "Asset Management", "Quality check laporan Word.")
 
     laporan_root = get_data_path("Laporan")
     if not os.path.exists(laporan_root):

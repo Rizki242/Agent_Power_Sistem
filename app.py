@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 import sys
 import traceback
 
@@ -66,18 +67,19 @@ try:
     from src.docx_generator import create_docx
     from src.standards import calculate_condition, generate_esa_mcsa_quick_recommendations, generate_initial_analysis
     from src.analytics import calculate_equipment_health_score, detect_equipment_anomalies
-    from src.components.sidebar import render_sidebar
+    from src.components.sidebar import render_sidebar, render_sidebar_brand
     from src.pages.chatbot_page import render_chatbot_page
     from src.pages.condition_control_page import render_condition_control_page
     from src.pages.dashboard_page import render_dashboard_page
     from src.pages.data_management_page import render_data_management_page
     from src.pages.materi_page import render_materi_page
+    from src.pages.placeholder_page import render_placeholder_page
     from src.pages.quality_page import render_quality_check_page
     from src.pages.report_page import render_ppt_page, render_word_page
+    from src.pages.settings_page import render_settings_page
     from src.pages.sync_word_page import render_sync_word_page
 except BaseException as exc:
     _fatal_dependency_error("modul internal (src/*)", exc)
-import os
 import json
 import re
 from typing import Optional
@@ -85,9 +87,6 @@ from datetime import datetime
 
 # Page Config
 st.set_page_config(page_title="MCSA Dashboard & Chatbot", layout="wide")
-
-# Title
-st.title("MCSA Condition Monitoring")
 
 # Data Loading
 @st.cache_data(show_spinner=False)
@@ -151,10 +150,139 @@ if df is None or df_latest_all is None or min_date is None or max_date is None:
     st.error("Cache data tidak valid. Silakan refresh aplikasi.")
     st.stop()
 
-NAV_OPTIONS = ["Dashboard", "Control condition", "Manajemen Data", "Sync Laporan Word", "Quality Check Laporan", "Materi Training", "Chatbot", "Laporan PPT", "Laporan Word"]
 st.session_state["_mcsa_available_dates"] = df["Date"].dropna().tolist()
-sidebar_state = render_sidebar(st, NAV_OPTIONS, min_date, max_date)
-page = sidebar_state["page"]
+render_sidebar_brand(st)
+
+# Nav destinations, grouped to match docs/desain.png's target information
+# architecture. Each entry is a closure so it can be built now and reference
+# variables (df_latest_augmented, filtered_df, ...) that this script only
+# finishes computing further down - Python resolves those names at call time,
+# and .run() is only invoked at the very end of the script.
+PAGES = {}
+
+
+def _dashboard_entry():
+    render_dashboard_page(
+        st,
+        df=df,
+        df_latest=df_latest,
+        df_latest_all=df_latest_all,
+        filtered_df=filtered_df,
+        df_month=df_month,
+        date_start=date_start,
+        date_end=date_end,
+        sel_unit=sel_unit,
+        sel_volt=sel_volt,
+        sel_equipment=sel_equipment,
+        standby_enabled=standby_enabled,
+        standby_report=standby_report,
+        eq_master_df=eq_master_df,
+        master_norm_to_unit=master_norm_to_unit,
+        master_norm_to_volt=master_norm_to_volt,
+        materi_page=PAGES.get("materi"),
+    )
+
+
+def _data_management_entry():
+    render_data_management_page(
+        st,
+        df=df,
+        df_latest_all=df_latest_all,
+        edit_mode=bool(st.session_state.get('edit_mode', False)),
+    )
+
+
+def _sync_word_entry():
+    render_sync_word_page(
+        st,
+        df=df,
+        edit_mode=bool(st.session_state.get('edit_mode', False)),
+        get_data_path=get_data_path,
+        get_folder_metadata=get_folder_metadata,
+        parse_all_reports_with_report=parse_all_reports_with_report,
+        save_mcsa_data=save_mcsa_data,
+        load_mcsa_data=load_mcsa_data,
+        dashboard_page=PAGES.get("dashboard"),
+    )
+
+
+def _quality_entry():
+    render_quality_check_page(
+        st,
+        get_data_path=get_data_path,
+        get_folder_metadata=get_folder_metadata,
+        parse_all_reports_with_report=parse_all_reports_with_report,
+    )
+
+
+def _materi_entry():
+    render_materi_page(st)
+
+
+def _condition_control_entry():
+    render_condition_control_page(st)
+
+
+def _chatbot_entry():
+    render_chatbot_page(st, df_latest_augmented=df_latest_augmented, df_all=df)
+
+
+def _ppt_entry():
+    render_ppt_page(st, filtered_df, df_latest, sel_unit, sel_volt, date_start, date_end, create_ppt,
+                    history_df=df_period)
+
+
+def _word_entry():
+    render_word_page(st, filtered_df, df_latest, sel_unit, sel_volt, date_start, date_end, standby_report, create_docx)
+
+
+def _settings_entry():
+    render_settings_page(st)
+
+
+def _reliability_entry():
+    render_placeholder_page(st, "Reliability", "Reliability fusion engine (health index, risk, RUL) belum tersedia di Streamlit UI.")
+
+
+def _work_orders_entry():
+    render_placeholder_page(st, "Work Orders", "Integrasi Work Order / EAM belum tersedia di Streamlit UI.")
+
+
+def _help_entry():
+    render_placeholder_page(st, "Help & Support", "Dokumentasi dan bantuan akan hadir di rilis mendatang.")
+
+
+PAGES["dashboard"] = st.Page(_dashboard_entry, title="Command Center", icon=":material/dashboard:", default=True)
+PAGES["data_management"] = st.Page(_data_management_entry, title="Manajemen Data", icon=":material/database:")
+PAGES["sync_word"] = st.Page(_sync_word_entry, title="Sync Laporan Word", icon=":material/upload_file:")
+PAGES["quality"] = st.Page(_quality_entry, title="Quality Check Laporan", icon=":material/fact_check:")
+PAGES["engineering"] = st.Page(_condition_control_entry, title="Control condition", icon=":material/tune:")
+PAGES["reliability"] = st.Page(_reliability_entry, title="Reliability", icon=":material/insights:")
+PAGES["chatbot"] = st.Page(_chatbot_entry, title="Chatbot", icon=":material/smart_toy:")
+PAGES["materi"] = st.Page(_materi_entry, title="Materi Training", icon=":material/menu_book:")
+PAGES["ppt"] = st.Page(_ppt_entry, title="Laporan PPT", icon=":material/slideshow:")
+PAGES["word"] = st.Page(_word_entry, title="Laporan Word", icon=":material/description:")
+PAGES["work_orders"] = st.Page(_work_orders_entry, title="Work Orders", icon=":material/assignment:")
+PAGES["settings"] = st.Page(_settings_entry, title="Settings", icon=":material/settings:")
+PAGES["help"] = st.Page(_help_entry, title="Help & Support", icon=":material/help:")
+
+active_page = st.navigation(
+    {
+        "Command Center": [PAGES["dashboard"]],
+        "Asset Management": [PAGES["data_management"], PAGES["sync_word"], PAGES["quality"]],
+        "Engineering": [PAGES["engineering"]],
+        "Reliability": [PAGES["reliability"]],
+        "AI Agent": [PAGES["chatbot"]],
+        "Knowledge": [PAGES["materi"]],
+        "Reports": [PAGES["ppt"], PAGES["word"]],
+        "Work Orders": [PAGES["work_orders"]],
+        "Settings": [PAGES["settings"]],
+        "Help & Support": [PAGES["help"]],
+    },
+    expanded=True,
+)
+
+sidebar_state = render_sidebar(st, min_date, max_date)
 date_start = sidebar_state["date_start"]
 date_end = sidebar_state["date_end"]
 
@@ -360,7 +488,7 @@ sel_equipment = st.sidebar.multiselect(
 standby_enabled = False
 standby_scope = None
 required_month_params = ['Kondisi']
-if page in ["Dashboard", "Laporan Word"]:
+if active_page in (PAGES["dashboard"], PAGES["word"]):
     standby_enabled = st.sidebar.checkbox('Standby otomatis jika tidak ada data bulan ini', value=True)
     if standby_enabled:
         standby_scope = st.sidebar.selectbox('Cakupan Standby', ['Per Unit (mengikuti filter Unit/Voltage)', 'Semua Unit (abaikan filter Unit)'])
@@ -380,7 +508,7 @@ df_latest_augmented = df_latest.copy()
 standby_report = None
 df_month = None
 meta_df = None
-if page in ["Dashboard", "Laporan Word"] and standby_enabled:
+if active_page in (PAGES["dashboard"], PAGES["word"]) and standby_enabled:
     standby_key = (period_key, standby_scope, sel_unit, sel_volt, tuple(required_month_params))
     cached_key = st.session_state.get('_mcsa_standby_key')
     cached_aug = st.session_state.get('_mcsa_df_latest_augmented')
@@ -527,7 +655,7 @@ if page in ["Dashboard", "Laporan Word"] and standby_enabled:
         st.session_state['_mcsa_meta_df'] = meta_df
 
 # Apply filters
-filtered_key_base = st.session_state.get('_mcsa_standby_key') if (page == "Dashboard" and standby_enabled) else period_key
+filtered_key_base = st.session_state.get('_mcsa_standby_key') if (active_page is PAGES["dashboard"] and standby_enabled) else period_key
 filtered_key = (filtered_key_base, sel_unit, sel_volt, tuple(sel_equipment))
 filtered_df = st.session_state.get('_mcsa_filtered_df')
 if st.session_state.get('_mcsa_filtered_key') != filtered_key or filtered_df is None:
@@ -549,72 +677,7 @@ if st.session_state.get('_mcsa_filtered_key') != filtered_key or filtered_df is 
 
 # Use filtered_df for Dashboard, but keep full df for management if needed (or filter there too)
 
-# --- DASHBOARD PAGE ---
-if page == "Dashboard":
-    render_dashboard_page(
-        st,
-        df=df,
-        df_latest=df_latest,
-        df_latest_all=df_latest_all,
-        filtered_df=filtered_df,
-        df_month=df_month,
-        date_start=date_start,
-        date_end=date_end,
-        sel_unit=sel_unit,
-        sel_volt=sel_volt,
-        sel_equipment=sel_equipment,
-        standby_enabled=standby_enabled,
-        standby_report=standby_report,
-        eq_master_df=eq_master_df,
-        master_norm_to_unit=master_norm_to_unit,
-        master_norm_to_volt=master_norm_to_volt,
-    )
-
-# --- MANAJEMEN DATA ---
-elif page == "Manajemen Data":
-    render_data_management_page(
-        st,
-        df=df,
-        df_latest_all=df_latest_all,
-        edit_mode=bool(st.session_state.get('edit_mode', False)),
-    )
-
-elif page == "Sync Laporan Word":
-    render_sync_word_page(
-        st,
-        df=df,
-        edit_mode=bool(st.session_state.get('edit_mode', False)),
-        get_data_path=get_data_path,
-        get_folder_metadata=get_folder_metadata,
-        parse_all_reports_with_report=parse_all_reports_with_report,
-        save_mcsa_data=save_mcsa_data,
-        load_mcsa_data=load_mcsa_data,
-    )
-
-elif page == "Quality Check Laporan":
-    render_quality_check_page(
-        st,
-        get_data_path=get_data_path,
-        get_folder_metadata=get_folder_metadata,
-        parse_all_reports_with_report=parse_all_reports_with_report,
-    )
-
-elif page == "Materi Training":
-    render_materi_page(st)
-
-elif page == "Control condition":
-    render_condition_control_page(st)
-
-# --- CHATBOT PAGE ---
-elif page == "Chatbot":
-    render_chatbot_page(st, df_latest_augmented=df_latest_augmented, df_all=df)
-
-# --- REPORT PAGE ---
-elif page == "Laporan PPT":
-    render_ppt_page(st, filtered_df, df_latest, sel_unit, sel_volt, date_start, date_end, create_ppt,
-                    history_df=df_period)
-
-# --- WORD REPORT PAGE ---
-elif page == "Laporan Word":
-    render_word_page(st, filtered_df, df_latest, sel_unit, sel_volt, date_start, date_end, standby_report, create_docx)
+# All the nav entry closures defined above reference these variables by name,
+# so they only need to be correct now, at the point .run() actually calls them.
+active_page.run()
 

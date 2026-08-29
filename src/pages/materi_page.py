@@ -4,6 +4,7 @@ from typing import Optional
 
 import pandas as pd
 
+from src.components.theme import render_page_header
 from src.knowledge_processor import delete_knowledge_file, process_and_save_knowledge_file
 
 
@@ -65,7 +66,7 @@ def _load_json_data(file_path: str, mtime_key: Optional[float]):
 
 
 def render_materi_page(st):
-    st.header("📚 Knowledge Base & Materi Training")
+    render_page_header(st, "Knowledge", "Knowledge base & materi training.")
 
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     materi_dir = os.path.join(base_dir, "Materi")

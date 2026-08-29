@@ -1,6 +1,7 @@
 from datetime import datetime
 import pandas as pd
 
+from src.components.theme import render_page_header
 from src.data_loader import (
     audit_mcsa_dataframe,
     fix_mcsa_dataframe,
@@ -13,7 +14,7 @@ from src.utils import safe_float
 
 
 def render_data_management_page(st, df, df_latest_all, edit_mode):
-    st.header("📝 Manajemen Data MCSA")
+    render_page_header(st, "Asset Management", "Manajemen data MCSA.")
     st.info("Update nilai parameter, info Unit, atau hapus data equipment.")
 
     if not edit_mode:
