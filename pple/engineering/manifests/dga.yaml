@@ -1,0 +1,19 @@
+id: dga
+name: Dissolved Gas Analysis
+version: 1.0.0
+category: condition_monitoring
+enabled: true
+
+applicable_equipment:
+  - TRANSFORMER
+
+capabilities:
+  - tdcg_calculation
+  - duval_triangle_1_mapping
+  - rogers_iec60599_ratio_diagnostics
+  - co2_co_paper_degradation_assessment
+
+standards:
+  - IEEE C57.104-2019
+  - IEC 60599
+  - Duval Triangle 1

@@ -1,0 +1,22 @@
+id: mcsa
+name: Motor Current Signature Analysis
+version: 1.0.0
+category: condition_monitoring
+enabled: true
+
+applicable_equipment:
+  - MOTOR
+  - PUMP
+  - FAN
+  - GENERATOR
+
+capabilities:
+  - pole_pass_sideband_severity_level
+  - air_gap_eccentricity_evaluation
+  - voltage_current_unbalance_pct
+  - thd_compliance_monitoring
+
+standards:
+  - IEEE 519
+  - EPRI MCSA Standards
+  - NEMA MG-1

@@ -1,0 +1,25 @@
+id: thermal
+name: Thermography & RTD Monitoring
+version: 1.0.0
+category: condition_monitoring
+enabled: true
+
+applicable_equipment:
+  - MOTOR
+  - PUMP
+  - FAN
+  - TURBINE
+  - GENERATOR
+  - GEARBOX
+  - TRANSFORMER
+  - SWITCHGEAR
+
+capabilities:
+  - delta_t_phase_evaluation
+  - bearing_stator_rtd_limit_monitoring
+  - connection_hotspot_localization
+
+standards:
+  - ISO 18434-1
+  - NFPA 70B
+  - NETA MTS

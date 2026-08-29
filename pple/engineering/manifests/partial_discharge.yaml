@@ -1,0 +1,21 @@
+id: partial_discharge
+name: Partial Discharge
+version: 1.0.0
+category: condition_monitoring
+enabled: true
+
+applicable_equipment:
+  - GENERATOR
+  - TRANSFORMER
+  - MOTOR
+  - SWITCHGEAR
+
+capabilities:
+  - prpd_clustering
+  - pulse_magnitude_nqn_tracking
+  - discharge_type_classification
+
+standards:
+  - IEC 60270
+  - IEEE 1434
+  - CIGRE WG D1.33

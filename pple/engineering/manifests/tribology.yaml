@@ -1,0 +1,22 @@
+id: tribology
+name: Tribology & Oil Condition
+version: 1.0.0
+category: condition_monitoring
+enabled: true
+
+applicable_equipment:
+  - MOTOR
+  - PUMP
+  - TURBINE
+  - GEARBOX
+
+capabilities:
+  - viscosity_deviation_tracking
+  - tan_oxidation_evaluation
+  - water_contamination_monitoring
+  - wear_debris_spectrometry
+
+standards:
+  - ASTM D445
+  - ASTM D6304
+  - ISO 4406:2021

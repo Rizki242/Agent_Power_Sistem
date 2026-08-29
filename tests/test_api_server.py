@@ -75,6 +75,13 @@ class TestAPIServer(unittest.TestCase):
         res = self.client.get("/api/v2/modules/does-not-exist")
         self.assertEqual(res.status_code, 404)
 
+    def test_v2_module_load_report_endpoint(self):
+        res = self.client.get("/api/v2/module-load-report")
+        self.assertEqual(res.status_code, 200)
+        results = res.json()["results"]
+        self.assertEqual(len(results), 6)
+        self.assertTrue(all(r["status"] == "ACTIVE" for r in results))
+
     def test_assessment_report_endpoint(self):
         res = self.client.get("/api/reports/assessment/BFP%201A")
         self.assertEqual(res.status_code, 200)

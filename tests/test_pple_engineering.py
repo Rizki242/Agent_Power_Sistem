@@ -1,3 +1,5 @@
+import os
+import tempfile
 import unittest
 
 from pple.engineering.modules.dga import DGAModule
@@ -26,6 +28,9 @@ class PplePackageImportTests(unittest.TestCase):
         import pple.engineering.base
         import pple.engineering.legacy_adapter
         import pple.engineering.registry
+        import pple.engineering.manifest
+        import pple.engineering.loader
+        import pple.engineering.bootstrap
         import pple.engineering.modules.vibration
         import pple.engineering.modules.mcsa
         import pple.engineering.modules.dga
@@ -140,6 +145,91 @@ class ThermalModuleAdapterTests(_LegacyAdapterEquivalenceMixin, unittest.TestCas
     expected_severity = "ALARM"  # legacy severity 3
     expected_module_id = "thermal"
     one_applicable_equipment = "MOTOR"
+
+
+class ManifestLoaderTests(unittest.TestCase):
+    def _write_manifest(self, tmpdir, filename, content):
+        path = os.path.join(tmpdir, filename)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
+        return path
+
+    def test_real_manifests_all_load_active(self):
+        from pple.engineering.loader import ModuleStatus, load_modules_from_manifests
+
+        registry, results = load_modules_from_manifests()
+
+        self.assertEqual(len(results), 6)
+        self.assertTrue(all(r.status == ModuleStatus.ACTIVE for r in results))
+        self.assertEqual(
+            {m.id for m in registry.list()},
+            {"vibration", "mcsa", "dga", "partial_discharge", "tribology", "thermal"},
+        )
+
+    def test_disabled_manifest_is_not_registered(self):
+        from pple.engineering.loader import ModuleStatus, load_modules_from_manifests
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._write_manifest(tmpdir, "vibration.yaml", """
+id: vibration
+name: Vibration Analysis
+version: 1.0.0
+enabled: false
+""")
+            registry, results = load_modules_from_manifests(tmpdir)
+
+            self.assertEqual(results[0].status, ModuleStatus.DISABLED)
+            self.assertEqual(registry.list(), [])
+
+    def test_malformed_yaml_does_not_crash_the_scan(self):
+        from pple.engineering.loader import ModuleStatus, load_modules_from_manifests
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._write_manifest(tmpdir, "broken.yaml", "id: [this is not: valid: yaml")
+            self._write_manifest(tmpdir, "vibration.yaml", """
+id: vibration
+name: Vibration Analysis
+version: 1.0.0
+""")
+            registry, results = load_modules_from_manifests(tmpdir)
+
+            statuses = {r.module_id: r.status for r in results}
+            self.assertEqual(statuses["broken.yaml"], ModuleStatus.ERROR)
+            self.assertEqual(statuses["vibration"], ModuleStatus.ACTIVE)
+            # The broken manifest must not prevent the valid one from loading.
+            self.assertEqual({m.id for m in registry.list()}, {"vibration"})
+
+    def test_manifest_missing_required_field_is_an_error(self):
+        from pple.engineering.loader import ModuleStatus, load_modules_from_manifests
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._write_manifest(tmpdir, "incomplete.yaml", "id: vibration\n")  # missing name/version
+            registry, results = load_modules_from_manifests(tmpdir)
+
+            self.assertEqual(results[0].status, ModuleStatus.ERROR)
+            self.assertEqual(registry.list(), [])
+
+    def test_unknown_module_id_is_incompatible(self):
+        from pple.engineering.loader import ModuleStatus, load_modules_from_manifests
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self._write_manifest(tmpdir, "future.yaml", """
+id: boiler_tube_inspection
+name: Boiler Tube Inspection
+version: 0.1.0
+""")
+            registry, results = load_modules_from_manifests(tmpdir)
+
+            self.assertEqual(results[0].status, ModuleStatus.INCOMPATIBLE)
+            self.assertEqual(registry.list(), [])
+
+    def test_nonexistent_manifest_dir_returns_empty_without_error(self):
+        from pple.engineering.loader import load_modules_from_manifests
+
+        registry, results = load_modules_from_manifests("/no/such/directory")
+
+        self.assertEqual(registry.list(), [])
+        self.assertEqual(results, [])
 
 
 class ModuleRegistryTests(unittest.TestCase):

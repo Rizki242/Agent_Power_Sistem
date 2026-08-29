@@ -1,8 +1,9 @@
 """In-memory EngineeringModule registry (docs/final.md Phase 7).
 
-Phase 1 scope: a plain dict-backed registry. Manifest-file scanning
-(plugins/*/manifest.yaml) and ACTIVE/DISABLED/ERROR status tracking are
-later-phase additions - see docs/pple_v2_baseline.md.
+A plain dict-backed registry with no global default instance - each
+consumer builds its own (SubAgentCoordinator, ReliabilityFusionAgent,
+and pple.engineering.loader.load_modules_from_manifests() each do this
+independently, since none of them need to share state with each other).
 """
 
 from pple.core.exceptions import ModuleNotRegisteredError
@@ -34,6 +35,3 @@ class ModuleRegistry:
             m for m in self._modules.values()
             if not m.applicable_equipment or equipment_type in m.applicable_equipment
         ]
-
-
-registry = ModuleRegistry()

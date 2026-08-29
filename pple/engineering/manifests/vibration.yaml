@@ -1,0 +1,24 @@
+id: vibration
+name: Vibration Analysis
+version: 1.0.0
+category: condition_monitoring
+enabled: true
+
+applicable_equipment:
+  - MOTOR
+  - PUMP
+  - FAN
+  - TURBINE
+  - GENERATOR
+  - GEARBOX
+
+capabilities:
+  - overall_rms_zone_evaluation
+  - unbalance_misalignment_spectral_detection
+  - bearing_defect_frequency_analysis
+  - looseness_resonance_detection
+
+standards:
+  - ISO 10816-3
+  - ISO 13373-1
+  - VDI 2056

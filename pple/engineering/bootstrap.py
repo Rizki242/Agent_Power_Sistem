@@ -1,13 +1,10 @@
-"""Populates the shared pple.engineering.registry.registry singleton with
-every built-in engineering module.
+"""The set of built-in EngineeringModule classes (docs/final.md Phase 1).
 
-SubAgentCoordinator and ReliabilityFusionAgent each build their own private
-ModuleRegistry instance (they don't need to share state with anything else).
-This module exists for callers that DO need one shared, queryable registry -
-currently just pple.api's /api/v2/modules endpoints.
+pple.engineering.loader cross-references this against manifest ids to
+decide whether a manifest is loadable (ACTIVE), unimplemented
+(INCOMPATIBLE), or references code that doesn't exist here yet.
 """
 
-from pple.engineering.registry import registry
 from pple.engineering.modules.vibration import VibrationModule
 from pple.engineering.modules.mcsa import MCSAModule
 from pple.engineering.modules.dga import DGAModule
@@ -23,10 +20,3 @@ BUILTIN_MODULES = (
     TribologyModule,
     ThermalModule,
 )
-
-
-def register_builtin_modules() -> None:
-    """Idempotent: ModuleRegistry.register() overwrites by id, so calling
-    this more than once (e.g. from multiple importers) is harmless."""
-    for module_cls in BUILTIN_MODULES:
-        registry.register(module_cls())
