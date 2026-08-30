@@ -62,6 +62,18 @@ def _extract_file_context(uploaded_file) -> str:
         return f"Error membaca file '{fn}': {exc}"
 
 
+def _basic_file_answer(filename: str, file_context: str) -> str:
+    """Rule-based fallback description of an attached file when the LLM is off/unavailable."""
+    preview = file_context.strip()
+    if len(preview) > 1200:
+        preview = preview[:1200].rstrip() + " ..."
+    return (
+        f"📎 **Ringkasan Dasar File '{filename}'** (Mode Rule-Based/Offline):\n\n"
+        f"{preview}\n\n"
+        "_Aktifkan Model LLM di sidebar untuk analisis file yang lebih mendalam._"
+    )
+
+
 def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFrame):
     render_page_header(st, "AI Agent", "MCSA Virtual Assistant.")
 
@@ -147,39 +159,30 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
             st.session_state["messages"] = []
             st.session_state["_chat_file_context"] = ""
             st.session_state["_chat_attached_filename"] = ""
+            st.session_state["_chat_attached_files_raw"] = []
             st.rerun()
 
-    # File attachment expander
-    with st.expander("📎 Lampirkan Dokumen / Data ke Chat (PDF, Markdown, Excel, CSV, DOCX, TXT)", expanded=False):
-        chat_file = st.file_uploader(
-            "Upload file untuk dianalisa langsung dalam chat",
-            type=["pdf", "md", "docx", "csv", "xlsx", "xls", "txt", "json"],
-            key="_chat_file_uploader",
-        )
-        if chat_file is not None:
-            extracted_text = _extract_file_context(chat_file)
-            st.session_state["_chat_file_context"] = extracted_text
-            st.session_state["_chat_attached_filename"] = chat_file.name
-            st.success(f"📄 File '{chat_file.name}' berhasil dilampirkan ke sesi chat ({round(len(chat_file.getvalue())/1024, 1)} KB).")
-
-            c_perm1, c_perm2 = st.columns([3, 2])
-            with c_perm1:
-                st.caption("Ingin menyimpan dokumen ini permanen ke Knowledge Base / Memori AI?")
-            with c_perm2:
-                if st.button("💾 Simpan ke Knowledge Base", key="_save_chat_file_to_kb"):
-                    ok, msg, _ = process_and_save_knowledge_file(
-                        file_name=chat_file.name,
-                        file_bytes=chat_file.getvalue(),
-                    )
+    # Attached file banner + actions (file itself is attached via the paperclip
+    # icon next to the chat input below, not a separate uploader widget)
+    attached_fn = st.session_state.get("_chat_attached_filename")
+    if attached_fn:
+        c_info, c_save, c_clear = st.columns([5, 2, 1])
+        with c_info:
+            st.caption(f"📎 *File aktif dalam percakapan: **{attached_fn}*** (konteks otomatis disertakan dalam jawaban)")
+        with c_save:
+            if st.button("💾 Simpan ke Knowledge Base", key="_save_chat_file_to_kb", width="stretch"):
+                for fname, fbytes in st.session_state.get("_chat_attached_files_raw", []):
+                    ok, msg, _ = process_and_save_knowledge_file(file_name=fname, file_bytes=fbytes)
                     if ok:
                         st.success(msg)
                     else:
                         st.error(msg)
-
-    # Attached file banner
-    attached_fn = st.session_state.get("_chat_attached_filename")
-    if attached_fn:
-        st.caption(f"📎 *File aktif dalam percakapan: **{attached_fn}*** (Konteks otomatis disertakan dalam prompt LLM)")
+        with c_clear:
+            if st.button("🗑️", key="_detach_chat_file", help="Lepas file dari sesi chat", width="stretch"):
+                st.session_state["_chat_file_context"] = ""
+                st.session_state["_chat_attached_filename"] = ""
+                st.session_state["_chat_attached_files_raw"] = []
+                st.rerun()
 
     # Render conversation history
     for message in st.session_state.get("messages", []):
@@ -191,9 +194,32 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
                         st.markdown(f"**{cit['title']} — {cit['heading']}** ({cit['source']})")
                         st.caption(cit.get("preview", ""))
 
-    # Chat Input & Response Loop
-    if prompt := st.chat_input("Tanya kondisi motor, SOP, atau analisis file (contoh: 'Status BC 10.1', 'Jelaskan isi file lampiran')..."):
-        st.chat_message("user").markdown(prompt)
+    # Chat Input & Response Loop - paperclip icon next to the text box lets
+    # the user attach a file in the same action as sending a message.
+    chat_val = st.chat_input(
+        "Tanya kondisi motor, SOP, atau lampirkan file untuk dianalisis...",
+        accept_file="multiple",
+        file_type=["pdf", "md", "docx", "csv", "xlsx", "xls", "txt", "json"],
+    )
+
+    if chat_val:
+        prompt = (chat_val.text or "").strip()
+        uploaded_files = list(chat_val.files or [])
+
+        if uploaded_files:
+            names = [uf.name for uf in uploaded_files]
+            st.session_state["_chat_file_context"] = "\n\n---\n\n".join(
+                _extract_file_context(uf) for uf in uploaded_files
+            )
+            st.session_state["_chat_attached_filename"] = ", ".join(names)
+            st.session_state["_chat_attached_files_raw"] = [(uf.name, uf.getvalue()) for uf in uploaded_files]
+            if not prompt:
+                prompt = f"Analisakan file '{', '.join(names)}' yang baru saya lampirkan."
+
+        with st.chat_message("user"):
+            st.markdown(prompt)
+            for uf in uploaded_files:
+                st.caption(f"📎 {uf.name}")
         st.session_state["messages"].append({"role": "user", "content": prompt})
 
         # 1. Rule-based analysis & intent processing
@@ -222,6 +248,16 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
             include_knowledge=True,
             extra_file_context=extra_context,
         )
+
+        # Rule-based fallback: when the LLM is off/unavailable, don't answer a
+        # file question with the generic "no match" message - give at least a
+        # basic local preview of the attached file instead.
+        if (
+            extra_context
+            and response.strip() == rule_response.strip()
+            and rule_response.startswith("Maaf, saya belum menemukan")
+        ):
+            response = _basic_file_answer(st.session_state.get("_chat_attached_filename", ""), extra_context)
 
         with st.chat_message("assistant"):
             st.markdown(response)

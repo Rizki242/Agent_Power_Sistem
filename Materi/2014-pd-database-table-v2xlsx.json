@@ -1,0 +1,19 @@
+{
+  "id": "2014-pd-database-table-v2xlsx",
+  "title": "2014 PD Database table V2.xlsx",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: 2014 PD Database Statistical Analysis",
+      "content": "Air-cooled Capacitors\nPDA 6-9 PDA 10-12 PDA 13-15 PDA 16-18 PDA >19 BUS 2-5 BUS 6-9 BUS 10-12 BUS 13-15 BUS 16-18 BUS >=19\nNegligible < 25th 12 19 35 26 107 8 28 41 55 41 42\nLow < 50th 31 50 90 83 208 22 75 89 124 72 85\nTypical < 75th 72 114 190 218 698 65 177 196 265 157 165\nModerate < 90th 184 245 373 543 886 243 353 385 529 310 504\nHigh < 95th 308 391 562 727 990 391 553 638 778 579 750\nAir-cooled SSC - Slot PD Air-cooled SSC - EW PD\n11-15kV >=16kV 11-15kV >=16kV\nNegligible < 25th 0 0 0 0\nLow < 50th 15 1 0 0\nTypical < 75th 37 13 12 1\nModerate < 90th 87 77 41 8\nHigh < 95th 119 122 64 22\nBus-Hydrogen-Cooled (TGA)\nRated kV\nH2 (psi) 11-20 21-30 >=31 11-20 21-30 31-50 >=51 21-30 31-50 >=51\nNegligible < 25th 33 20 16 17 34 24 9 43 23 9\nLow < 50th 91 46 43 81 86 43 18 89 55 28\nTypical < 75th 189 94 81 146 333 85 38 163 108 77\nModerate < 90th 438 198 198 268 791 194 141 203 161 548\nHigh < 95th 756 393 485 389 976 307 322 229 206 951\nSSC Slot-Hydrogen-Cooled (TGA)\nRated kV\nH2 (psi) 11-20 21-30 >=31 11-30 31-50 >=51 11-30 31-50 >=51 31-50 >=51\nNegligible < 25th 0 0 0 0 0 0 1 0 0 0 0\nLow < 50th 9 0 9 0 5 2 9 7 3 8 3\nTypical < 75th 31 14 17 13 15 10 23 19 11 31 9\nModerate < 90th 48 66 32 58 22 24 97 41 25 66 18\nHigh < 95th 60 92 47 90 34 32 229 57 39 100 29\nSSC EW-Hydrogen-Cooled (TGA)\nRated kV\nH2 (psi) 11-20 21-30 >=31 11-30 31-50 >=51 11-30 31-50 >=51 31-50 >=51\nNegligible < 25th 0 0 0 0 0 0 0 0 0 0 0\nLow < 50th 0 0 0 0 0 0 0 0 0 0 0\nTypical < 75th 0 0 4 0 2 0 1 1 4 0 0\nModerate < 90th 20 9 10 14 12 9 9 11 16 3 6\nHigh < 95th 34 19 15 20 18 29 28 19 35 8 28\nVariable from 2010 results - be sure to \ncomment in report\n13-15kV\n16-18kV 19-22kV 23-27kV\n16-18kV 19-22kV 23-27kV\n13-15kV 16-18kV >=19kV\n13-15kV\nVariable from 2012 results - be sure to \ncomment in report\nIris Power LP Confidential"
+    }
+  ]
+}

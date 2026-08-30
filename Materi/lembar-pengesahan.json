@@ -1,0 +1,54 @@
+{
+  "id": "lembar-pengesahan",
+  "title": "LEMBAR PENGESAHAN",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: SISTEM MANAJEMEN TERPADU",
+      "content": "INSTRUKSI KERJA \n \n \nDownload data Partial \nDischarge dari BusTrac II \n \n \nNOMOR DOKUMEN : IK.JRG.F.05.006 \nTANGGAL : 9 DESEMBER 2016 \nREVISI : 00 \nHALAMAN : 9 halaman \n \n \nPT INDONESIA POWER \nUNIT JASA PEMBANGKITAN JERANJANG \n \n \n \nUNIT JASA PEMBANGKITAN JERANJANG \nDokumen ini milik PT. Indonesia Power Unit Jasa Pembangkitan Jeranjang & dilarang \nmemperbanyak tanpa seijin dari Sistem Manajemen Terpadu"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: PT. INDONESIA POWER No. Dokumen : IK.JRG.F.05.006",
+      "content": "UNIT JASA PEMBANGKITAN PLTU JERANJANG Tanggal : 9 Des 2016 \nBIDANG ENJINERING Revisi : 00 \nIK PdM Halaman : 2 dari 9 hlm \n \n \n \nUJP PLTU JERANJANG \n \n1. Sasaran : Memberikan pedoman kepada pengguna dalam melakukan \nDownload data pada Bustrac II di li ngkungan PT Indonesia \nPower UJP PLTU Jeranjang. \n \n2. Ruang Lingkup : Instruksi kerja meliputi proses pengambilan data pada \nBustrac II dengan Software IAM (IRIS Aplication Manager) \ndilakukan oleh personil PdM yang ada di area PT Indonesia \nPower UJP PLTU Jeranjang untuk Condition Monitoring. \n \n3. Definisi : Download data adalah mengambil data dari Memory Card \nsuatu instrumen/alat ke Perangkat lain (dalam hal ini PC yang \nterdapat software IAM) \n \n4. Dokumen Referensi : Manual Book"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: PT. INDONESIA POWER No. Dokumen : IK.JRG.F.05.006",
+      "content": "UNIT JASA PEMBANGKITAN PLTU JERANJANG Tanggal : 9 Des 2016 \nBIDANG ENJINERING Revisi : 00 \nIK PdM Halaman : 3 dari 9 hlm \n \n \n \nUJP PLTU JERANJANG \n \n5. Rincian Proses \nP ersiapa n\nALIRAN AKTIVITAS PENANGGUNG JAWAB\nDAN REKAMAN\nTransfer Data\n\n\nPelaksana Senior CBM\nCat 1\nCat 2\n\n\nAmu CBM\nTransfer da ta dari ala t ke S oftware \nQuik R eport\n \n \n \nPelaksana PdM \nAMA ENGINEERING"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: PT. INDONESIA POWER No. Dokumen : IK.JRG.F.05.006",
+      "content": "UNIT JASA PEMBANGKITAN PLTU JERANJANG Tanggal : 9 Des 2016 \nBIDANG ENJINERING Revisi : 00 \nIK PdM Halaman : 4 dari 9 hlm \n \n \n \nUJP PLTU JERANJANG \n \n6. Catatan Tambahan : \nCatatan 1 : \n Persiapan \n1. Hidupkan Komputer / Laptop \n2. Pastikan Komputer telah terinstall software IAM, start IAM \nCatatan 2 : \n Download Data \n Hubungkan USB Cable ke Panel Bustrac II dan hubungkan juga salah satu \nujungnya ke port USB Notebook. \n Setelah USB terhubung dengan Notebook dan Bustrac II, pada Software IAM \nbuka data base peralatan dengan cara pilih open lalu pilih data base atau \npilih Open existing data base dan double klik misal “PD PLTU JER ANJANG \nUNIT 3.iid”"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5: PT. INDONESIA POWER No. Dokumen : IK.JRG.F.05.006",
+      "content": "UNIT JASA PEMBANGKITAN PLTU JERANJANG Tanggal : 9 Des 2016 \nBIDANG ENJINERING Revisi : 00 \nIK PdM Halaman : 5 dari 9 hlm \n \n \n \nUJP PLTU JERANJANG \n \n Pilih PD PLTU JERANJANG UNIT 3, double klik PLTU JERANJANG, double \nklik GENERATOR, double klik Partial Discharge dan double klik BusTrac II. \n Klik kanan pada BusTracII pilih Download. \n \n \n Akan muncul tampilan seperti berikut, lalu klik Connect. \n \n \n \n \n Setelah itu muncul pilihan download data, pilih salah satu dari 5 pilihan \nberikut, diantaranya : \n Since last Download : Untuk mendownload data dari pengkuran terakhir. \n All measurement : Untuk mendownload data Partial Discharge dari \npengukuran peratama sampai pengukuran terbaru."
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6: PT. INDONESIA POWER No. Dokumen : IK.JRG.F.05.006",
+      "content": "UNIT JASA PEMBANGKITAN PLTU JERANJANG Tanggal : 9 Des 2016 \nBIDANG ENJINERING Revisi : 00 \nIK PdM Halaman : 6 dari 9 hlm \n \n \n \nUJP PLTU JERANJANG \n \n Last month : Untuk mendownload data Partial Discharge dari 1 \nbulan terakhir sebelum pengukuran data terbaru. \n Last week : Untuk mendownload data Partial Discharge dari 1 \nMinggu terakhir sebelum pengambilan data terbaru. \n Custom : Untuk mendownload data Partial Discharge sesuai \ndengan settingan User. \n \n \n \n Setelah itu maka akan muncul tampilan Progres Download seperti berikut, \ntunggu sampai 100% kemudain klik Save to Database"
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7: PT. INDONESIA POWER No. Dokumen : IK.JRG.F.05.006",
+      "content": "UNIT JASA PEMBANGKITAN PLTU JERANJANG Tanggal : 9 Des 2016 \nBIDANG ENJINERING Revisi : 00 \nIK PdM Halaman : 7 dari 9 hlm \n \n \n \nUJP PLTU JERANJANG \n \n Tunggu hingga measurement insertion completed successfully, lalu klik ok \n \n \n \n Download data selesai"
+    },
+    {
+      "id": "page-9",
+      "heading": "Halaman 9: PT. INDONESIA POWER No. Dokumen : IK.JRG.F.05.006",
+      "content": "UNIT JASA PEMBANGKITAN PLTU JERANJANG Tanggal : 9 Des 2016 \nBIDANG ENJINERING Revisi : 00 \nIK PdM Halaman : 9 dari 9 hlm \n \n \n \nUJP PLTU JERANJANG \n \n8. Proses Administrasi \n1. Semua proses pekerjaan yang tercantum dalam Instruksi Kerja ini dinyatakan \ndalam Formulir terkait yang releevan. Isilah formulir tersebut sesuai perintahnya \ndengan tepat dan benar, karena hal tersebut menunjukan bahwa Instruksi Kerja \nini telah dilaksanakan. \n2. Simpan formulir & laporan terkait sebagai dokumen terkendali Sistem \nManajemen Unit Bisnis Operasi dan Pemeliharaan PLTU Jeranjang. \n \n9. Potensi Bahaya \nNo Hazards Risk Precautions \n1 Peralatan listrik Tersengat arus listrik - Memakai isolasi pada \nperalatan \n- Berhati-hati saat melakukan \npekerjaan \n2 Kebisingan Mengalami gangguan \npendengaran \nMemakai ear plug/ear muff \n(pelindung telinga)"
+    }
+  ]
+}

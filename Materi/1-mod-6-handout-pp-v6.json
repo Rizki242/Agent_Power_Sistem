@@ -1,0 +1,134 @@
+{
+  "id": "1-mod-6-handout-pp-v6",
+  "title": "1-Mod 6 Handout Pp V6",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: 17-Jan-12",
+      "content": "1 \nDATA AND PRESENTATION \nData Types (Pulse Zoning) \nInstrument Pulse Categories \nPDA Differential C1 C2 System Discharge \nBUS Directional Machine PD Between Discharge System Discharge \nSSC Directional Endwinding Under Slot \nGraph 1 \nGraph 2"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: 17-Jan-12",
+      "content": "2 \nLook Around the Pulse \n340 mV 340 mV \n320 mV 320 mV \n300 mV 300 mV \n280 mV 280 mV \n260 mV 260 mV \n240 mV 240 mV \n220 mV 220 mV \n200 mV 200 mV \n180 mV 180 mV \n160 mV 160 mV \n140 mV 140 mV \n120 mV 120 mV \n100 mV 100 mV \n80 mV 80 mV \n60 mV 60 mV \n40 mV 40 mV \n20 mV 20 mV \nQuantity, n \nMagnitude \n(Amplitude), mV \nPolarity, +/– \nPhase angle, ø° \nJust A Half-empty Table of Numbers for $$$? \n356.4-360° C1/Machine/Endwinding C2/Total System/Total Slot \n+ – + – \n20-40 mV \n40-60 mV ? \n60-80 mV \n80-100 mV \n100-120 mV \n120-140 mV \n140-160 mV \n160-180 mV \n180-200 mV \n200-220 mV \n220-240 mV \n240-260 mV \n280-300 mV \n300-320 mV \n320-340 mV \n352.8-356.4° C1/Machine/Endwinding C2/Total System/Total Slot \n+ – + – \n20-40 mV \n40-60 mV ? \n60-80 mV \n80-100 mV \n100-120 mV \n120-140 mV \n140-160 mV \n160-180 mV \n180-200 mV \n200-220 mV \n220-240 mV \n240-260 mV \n280-300 mV \n300-320 mV \n320-340 mV \n7.2 - 10.8° C1/Machine/Endwinding C2/Total System/Total Slot \n+ – + – \n20-40 mV \n40-60 mV ? \n60-80 mV \n80-100 mV \n100-120 mV \n120-140 mV \n140-160 mV \n160-180 mV \n180-200 mV \n200-220 mV \n220-240 mV \n240-260 mV \n280-300 mV \n300-320 mV \n320-340 mV \n3.6 - 7.2° C1/Machine/Endwinding C2/Total System/Total Slot \n+ – + – \n20-40 mV \n40-60 mV \n60-80 mV \n80-100 mV \n100-120 mV \n120-140 mV \n140-160 mV \n160-180 mV \n180-200 mV \n200-220 mV \n220-240 mV \n240-260 mV \n280-300 mV \n300-320 mV \n320-340 mV \nLooking Through Database in 3D \n0 - 3.6° \nC1/Machine/Endwinding C2/Total System/Total Slot \n+ – + – \n20-40 mV \n40-60 mV ? \n60-80 mV \n80-100 mV \n100-120 mV \n120-140 mV \n140-160 mV \n160-180 mV \n180-200 mV \n200-220 mV \n220-240 mV \n240-260 mV \n280-300 mV \n300-320 mV \n320-340 mV"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: 17-Jan-12",
+      "content": "3 \nPulse Height Analysis (2D Graph) \nQuantity \nMagnitude \nPolarity \nPhase angle \n110\n210\n310\n410\n100 200 300 400 500 600 700 800\nPulse Height Analysis Plot\nP u ls e C o u n t R a t e [ P P S ]\nPulse Magnitude [mV]\nMeas Id: 237, Machine PD + Meas Id: 237, Machine PD -\nQuantity  \nMagnitude  \nPolarity  \nPhase angle \n110\n210\n310\n410\n100 200 300 400 500 600 700 800\nPulse Height Analysis Plot\nP u ls e C o u n t R a t e [ P P S ]\nPulse Magnitude [mV]\nMeas Id: 237, Machine PD + Meas Id: 237, Machine PD -\nLet’s Play Hangman \nW __ __ __ __ __ __ __ __ __ \nW __ __ __ __ \n110\n210\n310\n410\n100 200 300 400 500 600 700 800\nPulse Height Analysis Plot\nP u ls e C o u n t R a t e [ P P S ]\nPulse Magnitude [mV]\nMeas Id: 237, Machine PD + Meas Id: 237, Machine PD -\nRead the Small Print \nOnly negative pulses that occur from -15 to 135 and positive pulses from 165 to 315 are displayed in the 2-D plot. \n+ \n–"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: 17-Jan-12",
+      "content": "4 \nWhich One Is Worse or \nHow Much More Deteriorated? \n110\n210\n310\n410\n100 200 300 400 500 600 700 800\nPulse Height Analysis Plot\nP u ls e C o u n t R a t e [ P P S ]\nPulse Magnitude [mV]\nMeas Id: 239, Machine PD + Meas Id: 239, Machine PD -\n110\n210\n310\n410\n100 200 300 400 500 600 700 800\nPulse Height Analysis Plot\nP u ls e C o u n t R a t e [ P P S ]\nPulse Magnitude [mV]\nMeas Id: 237, Machine PD + Meas Id: 237, Machine PD -\nUnit 1 \nPhase A \n2010 \nUnit 2 \nPhase B \n2011 \nHow to report to the boss in 5 seconds with no \nquestions asked? \nHow To Describe Curves? \nPulse Phase Analysis (3D Graph) \nQuantity  \nMagnitude  \nPolarity \nPhase angle  \n294.0 \n50\n1 00\n150\n2 0 0\n2 5 0\n3 0 0\nP u ls e M a g n it u d e [ m V ]\n1\n10\n100\n1000\nP u ls e C o u n t R a t e [ P P S ]\n0\n45\n90\n135\n180\n2 2 5\n2 7 0\n315\n3 6 0\nP h a s e A n g le [d e g ]\nPulse Phase Analysis Plot\nMeas: 234, Absolute Machine PD"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5: 17-Jan-12",
+      "content": "5 \nLinear Pulse Density Plot \n-30\n-20\n-10\n0\n10\n20\n30\n-30\n-20\n-10\n0\n10\n20\n30\n0 45 90 135 180 225 270 315 360\nBipolar Slot Total\nPulse Magnitude [mV]\nPhase Angle [deg]\n0 to 3.16 pps 3.16 to 10 pps 10 to 31.6 pps 31.6 to 100 pps\n100 to 316 pps 316 to 1000 pps > 1000 pps Subset 8\nQuantity  \nMagnitude  \nPolarity  \nPhase angle  \nPortable Instruments \nFor periodic measurement \n3 models: \nPDA-IV for PDA couplers \nTGA-B for BUS couplers \nTGA-S for SSC couplers \n2D and 3D data \nManual control \nTrend Monitors \nBusTrac and HydroTrac \nFor BUS and PDA \ncoupler installations \nPDTrac \nFor single-ended coupler \ninstallations \nContinuous archive of \nQm and NQN numbers \n2D data \nInputs for operating \nparameters \nAlarm output"
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6: 17-Jan-12",
+      "content": "6 \nContinuous Instruments \nBusGuard, HydroGuard and TurboGuard systems \nFor BUS, PDA and SSC coupler installations \n2D and 3D data \nAlarm output \nInputs for operating parameters \nHourly alarm check \nPreset measurements \n based on time intervals \n and operating parameters \nDATA INTERPRETATION \nNow What? \nQuantity \nMagnitude \nPolarity \nPhase angle \nNumber of defects \nSize of defects \n \nLocation of defects"
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7: 17-Jan-12",
+      "content": "7 \nGift-wrap Packaging \n110\n210\n310\n410\n100 200 300 400 500 600 700 800\nPulse Height Analysis Plot\nP u ls e C o u n t R a t e [ P P S ]\nPulse Magnitude [mV]\nMeas Id: 237, Machine PD + Meas Id: 237, Machine PD -\n294.0 \n50\n1 00\n150\n2 0 0\n2 5 0\n3 0 0\nP u ls e M a g n it u d e [ m V ]\n1\n10\n100\n1000\nP u ls e C o u n t R a t e [ P P S ]\n0\n45\n90\n135\n180\n2 2 5\n2 7 0\n315\n3 6 0\nP h a s e A n g le [d e g ]\nPulse Phase Analysis Plot\nMeas: 234, Absolute Machine PD\nRaw data \nn mV \n+/– Ø° \n2D Graph \n3D Graph \nQm and NQN \n \nComparison \n \n \n \nPulse clump \nphase angles \n \nProblems \nValues of a Value \nComparison with self  Trending \nComparison with others  Statistical Analysis \n110\n210\n310\n410\n100 200 300 400 500 600 700 800\nPulse Height Analysis Plot\nP u ls e C o u n t R a t e [ P P S ]\nPulse Magnitude [mV]\nMeas Id: 237, Machine PD + Meas Id: 237, Machine PD -\nQm– \nQm+ \n110\n210\n310\n410\n100 200 300 400 500 600 700 800\nPulse Height Analysis Plot\nP u ls e C o u n t R a t e [ P P S ]\nPulse Magnitude [mV]\nMeas Id: 237, Machine PD + Meas Id: 237, Machine PD -\nWhat Does This Mean? \nIncrease of Qm signifies \nprogression of ageing \nmechanisms, that is, \ndeterioration of \ninsulation condition \nDoubling of Qm within \n6 months is considered \nindicative of rapid \nageing \n2010―――→2011 \n \n2001―――→2011"
+    },
+    {
+      "id": "page-8",
+      "heading": "Halaman 8: 17-Jan-12",
+      "content": "8 \n0 \n100 \n200 \n300 \n400 \n500 \n600 \n700 \n800 \n900 \n1000 \nQm (mV) \n+ PD \n- PD \nCan the Winding Heal Itself? \nDream Machine \n0\n25\n50\n75\n100\n125\n150\n175\n200\nDe c\n2001\nJa n 2 0 0 2 F e b Ma r Ap r Ma y Ju n Ju l Au g Se p Oct No v\nT rend Analys is Plot\nY Axi s\nX Axi s\nMa ch . Qm+ Ma ch . Qm- No i se Qm+ No i se Qm-\nLemon Machine \n0\n50\n100\n150\n200\n250\n300\n2 0 0 0 2 0 0 1 2 0 0 2 2 0 0 3 2 0 0 4\nT rend Analys is Plot\nY Axi s\nX A xi s\nMa ch . Qm+ Ma ch . Qm-"
+    },
+    {
+      "id": "page-9",
+      "heading": "Halaman 9: 17-Jan-12",
+      "content": "9 \nSleep Tight? \n175\n200\n225\n250\n275\n300\n2 0 0 1 2 0 0 2 2 0 0 3\nT rend Analys is Plot\nY Axi s\nX A xi s\nMa ch . Qm+ Ma ch . Qm-\nNot All Roads Go to Rome \nBaseline \nStable \nUpward \nRapid deterioration \nDownward \nDownward due to maintenance \nDownward of new winding \nFluctuations \nApple-to-Apple \nVoltage +/– 200 V \nPower/Load +/– 10% \nWinding temperature +/– 5°C \nPressure +/– 5psi / 35 kPA \nHumidity Uncontrollable"
+    },
+    {
+      "id": "page-10",
+      "heading": "Halaman 10: 17-Jan-12",
+      "content": "10 \nWinding Vitality Indicator \nAs in Real Life, Try To Live Longer \nNew\nBaseline\nProblem\nAfter\nrepair\nProblem\n12 -18\nmonths\nMany years A few\nyears\nMany years A few\nyears\nPD Magnitudes (Qm)\nSounds Familiar with Your New Winding? \nWinding 1? \nWinding 2? \nWinding 3? \n1\n2\n3\nPD Magnitudes (Qm)"
+    },
+    {
+      "id": "page-11",
+      "heading": "Halaman 11: 17-Jan-12",
+      "content": "11 \nIs 300 mV High Qm? \nComparison with similar windings indicates relative \nseverity of ageing mechanisms \nQm above 90% percentile of statistical database is \nconsidered High level \nStatistical Database \nPopulation \nOver 225,000 measurements \nfor 2010 database \nHigh temperature and high \nload measurements selected \nfor database compilation \nSignificant impact \nVoltage class \nCoupler type/installation \nGas coolant pressure \nOperating conditions \n \nLittle influence \nMachine type \nInsulation system \nAnalysis of Statistical Database 2010 \nTurbine \ngenerators \n48% \nMotors \n29% \nHydro \ngenerators \n23% \nBy machine type"
+    },
+    {
+      "id": "page-12",
+      "heading": "Halaman 12: 17-Jan-12",
+      "content": "12 \nHow High Is 300 mV? \nAssume \n13.8 kV \ngenerator \nBUS couplers \nHydrogen-cooled \nat 20 psi-g \nRated kV 13-15 16-18 ≥19 \nH2 (psi) 11-20 21-30 >31 \n25% 43 19 17 \n50% 106 41 39 \n75% 255 83 77 \n90% 503 193 201 \n95% 901 408 537 \nFrom Iris 2010 Statistical Database \nAfter Translation to English … \n< 25% Negligible \n< 50% Low \n< 75% Typical \n< 90% Moderate \n< 95% High \n> 95% Very high \nComparison with Similar Machines \nWhich generator is of more concern? \nTGA 13-15kV (air-cooled)\n0\n100\n200\n300\n400\n500\n600\n700\n800\nUnit A Unit B\nPeak Magnitude (mV)\n+Qm -Qm\nLow\nHigh\nModerate\nTypical\nMaximum Qm Values"
+    },
+    {
+      "id": "page-13",
+      "heading": "Halaman 13: 17-Jan-12",
+      "content": "13 \nDo Not Sit on the Qm \nAlert for action \nHigh, > 90th percentile of database \nRapid increase \nOr both \nA problem is brewing \nDo something \nTest more frequently \nInstall continuous monitoring \nPlan additional testing \nHow To Read 3D Graphs? \nPulse patterns and distribution identify the relative \nlocation of partial discharge sites and the nature of \nthe sources \nSlot Partial Discharge \nCaused by phase-to-ground voltage \n0° - 90°, 180° - 270° \nμ = 45° and 225° \nσ = 15° \nIdealized \n outcome \nPhase Resolved PD Plot (Linear Pulse Density Plot)\n-1.5\n-1\n-0.5\n0\n0.5\n1\n1.5\n0 45 90 135 180 225 270 315 360\nPhase Angle [°]\nPD Magnitude [p.u.]\nPartial Discharges (Slot) Reference AC Voltage"
+    },
+    {
+      "id": "page-14",
+      "heading": "Halaman 14: 17-Jan-12",
+      "content": "14 \nPulse Polarity \nGaps on insulation surface \n +PD > –PD \n \nVoids within insulation \n +PD ≈ –PD \n \nVoids close to copper \nconductor \n +PD < –PD \n \nCopper \nconductor \nGroundwall insulation \nStator core \nNegative Polarity Predominance \nMeaning voids developed \nclose to copper conductor \nWhere? \n \nCopper \nconductor \nGroundwall insulation \n-750\n-500\n-250\n0\n250\n500\n750\n-750\n-500\n-250\n0\n250\n500\n750\n0 45 90 135 180 225 270 315 360\nBipolar Machine PD\nPulse Magnitude [mV]\nPhase Angle [deg]\n0 to 3 .1 6 p ps 3 .1 6 to 1 0 pp s 1 0 to 3 1 .6 pp s 3 1 .6 to 1 0 0 p p s\n1 0 0 to 3 1 6 pp s3 1 6 to 1 0 0 0 p p s> 1 0 0 0 p p s Su b se t 8\nNot All V oids Are the Same! \nCopper \nconductor \nGroundwall insulation Good turn \ninsulation \nCurrent flow \nTurn insulation failure \nComplete circuit path \nCurrent flow \nShort"
+    },
+    {
+      "id": "page-15",
+      "heading": "Halaman 15: 17-Jan-12",
+      "content": "15 \nPositive Polarity Predominance \nMeaning discharge taking \nplace between insulation \nsurface and stator core \nWhy worry? \nPartial Discharge Is Sensitive \nOperating and \nAmbient Conditions \nVoltage \nTemperature \nPower / Load \nHydrogen pressure \nHumidity \nDirect effect \nCondition ↑ PD ↑ \nCondition ↓ PD ↓ \nInverse effect \nCondition ↑ PD ↓ \nCondition ↓ PD ↑ \nNo effect \nWinding Temperature \nMainly affects phase-to-ground \nvoltage partial discharge \nCan significantly affect results \nDifference may be small at ±5°C \nMay show large variances at ±20°C \nRecommended to test at 20°C apart"
+    },
+    {
+      "id": "page-16",
+      "heading": "Halaman 16: 17-Jan-12",
+      "content": "16 \nTemperature Effect \nInverse Effect \nVoids compressed at higher \ntemperature \nPD ↓ \nDirect Effect \nResistance of semi-conductive \ncoating increasing with \ntemperature \nPD ↑ \nLoad Effect \nMostly affects positive phase-\nto-ground voltage PD if loose \nwinding problem is present \nUsually problem for thermoset \ninsulation \nLess problem for thermoplastic \ninsulation as looseness offset \nby thermal expansion \nRecommended to test with at \nleast 40% load change \n \n \nRotor \nWhy Change the Load? \nHydro generator \n13.8 kV 54 MW \n112 rpm \n \n 55 MW \n \n \n \n \n \n5 MW \n-750\n-500\n-250\n0\n250\n500\n750\n-750\n-500\n-250\n0\n250\n500\n750\n0 45 90 135 180 225 270 315 360\nBipolar C2\nPulse Magnitude [mV]\nPhase Angle [deg]\n0 to 3 .1 6 p ps 3 .1 6 to 1 0 pp s 1 0 to 3 1 .6 pp s 3 1 .6 to 1 0 0 p p s\n1 0 0 to 3 1 6 pp s3 1 6 to 1 0 0 0 p p s> 1 0 0 0 p p s Su b se t 8\n-750\n-500\n-250\n0\n250\n500\n750\n-750\n-500\n-250\n0\n250\n500\n750\n0 45 90 135 180 225 270 315 360\nBipolar C2\nPulse Magnitude [mV]\nPhase Angle [deg]\n0 to 3 .1 6 p ps 3 .1 6 to 1 0 pp s 1 0 to 3 1 .6 pp s 3 1 .6 to 1 0 0 p p s\n1 0 0 to 3 1 6 pp s3 1 6 to 1 0 0 0 p p s> 1 0 0 0 p p s Su b se t 8\n225°"
+    },
+    {
+      "id": "page-17",
+      "heading": "Halaman 17: 17-Jan-12",
+      "content": "17 \n \nCase Study 1 - Qm Trend\n0\n100\n200\n300\n400\nJun-00\nAug-00\nOct-00\nDec-00\nFeb-01\nApr-01\nJun-01\nAug-01\nOct-01\nDec-01\nFeb-02\nPeak magnitude (mV) 10\n12\n14\n16\n18\n20\n22\n24\n26\nHydrogen pressure (psi)\nA-Qm+\nA-Qm-\nB-Qm+\nB-Qm-\nC-Qm+\nC-Qm-\nH2\nHydrogen Pressure Effect \nTurbine generator \n13.8 kV 60 MW \n3600 rpm \nHydrogen-cooled \nHumidity Effect \nCan greatly affect surface partial discharge \nEffect unpredictable \nElectrical tracking ↑ PD ↑ \nElectrical breakdown ↑ PD ↓ \nRecord relative humidity as it is not controllable \nRoller Coaster Ride \nNQN and Qm vs Relative Humidity (Air Cooled Motor)\n50\n100\n150\n200\n250\n300\n350\n0\n5\n10\n15\n20\n25\n30\n35\n40\n45\n50\nTime [hours]\nNQN/Qm\n20\n25\n30\n35\n40\n45\n50\n55\n60\nRelative Humidity %\nNQN+ NQN- Qm+ Qm- Relative Humidity"
+    },
+    {
+      "id": "page-18",
+      "heading": "Halaman 18: 17-Jan-12",
+      "content": "18 \nEndwinding Partial Discharge \nCaused by phase-to-\nphase voltage \nPhase shifted 30° from \n phase-to-ground voltage \nangles \nConcurrent clumps \nOpposite polarity \nSimilar shape \nSimilar magnitude \n \n \n-1.5 \n-1 \n-0.5 \n0 \n0.5 \n1 \n1.5 \n0 45 90 135 180 225 270 315 360 \nPhase A - Phase Angle \nPD Magnitude [p.u.] \n \n-1.5 \n-1 \n-0.5 \n0 \n0.5 \n1 \n1.5 \n-120 -75 -30 15 60 105 150 195 240 \nPhase B - Phase Angle \nPD Magnitude [p.u.] \n75° \n255° \n195° \n15° \nExtraneous Pulses \nCross coupling \n“Excitation” pulses \nCross Coupling \nSource on other phase(s) \nImproper phase angle or polarity \nConcurrent clumps \nPolarity may be opposite \nSimilar shape \nReduced magnitude \n \n- 1.5 \n- 1 \n- 0.5 \n0 \n0.5 \n1 \n1.5 \n- 120 - 20 80 180 \n \nPD Magnitude [p.u.] \nPhase B – Phase Angle \n- 1.5 \n- 1 \n- 0.5 \n0 \n0.5 \n1 \n1.5 \n- 240 - 195 - 150 - 105 - 60 - 15 30 75 120 \nPhase C – Phase Angle \nPD Magnitude [p.u.] \n- 1.5 \n- 1 \n- 0.5 \n0 \n0.5 \n1 \n1.5 \n0 45 90 135 180 225 270 315 360 \nPhase A – Phase Angle \nPD Magnitude [p.u.] \n- 1.5 \n- 1 \n- 0.5 \n0 \n0.5 \n1 \n1.5 \n0 45 90 135 180 225 270 315 360 \n \n \n- 1.5 \n- 1 \n- 0.5 \n0 \n0.5 \n1 \n1.5 \n0 45 90 135 180 225 270 315 360"
+    },
+    {
+      "id": "page-19",
+      "heading": "Halaman 19: 17-Jan-12",
+      "content": "19 \nExample \nTurbine generator \n15 kV 165 MVA \n3000 rpm \nAir-cooled \n-400\n-300\n-200\n-100\n0\n100\n200\n300\n400\n0 45 90 135 180 225 270 315 360\n[ Bipolar Machine PD - A Phase, Ø° ]\n-400\n-300\n-200\n-100\n0\n100\n200\n300\n400\n-120 -75 -30 15 60 105 150 195 240\n[ Bipolar Machine PD - B Phase, Ø° ]\n-400\n-300\n-200\n-100\n0\n100\n200\n300\n400\n-240 -195 -150 -105 -60 -15 30 75 120\n[ Bipolar Machine PD - C Phase, Ø° ]\n-7 5 0\n-5 0 0\n-2 5 0\n0\n2 5 0\n5 0 0\n7 5 0\n-7 5 0\n-5 0 0\n-2 5 0\n0\n2 5 0\n5 0 0\n7 5 0\n0 45 90 1 3 5 1 8 0 2 2 5 2 7 0 3 1 5 3 6 0\nB ip o la r M a c h in e P D\nP u l s e M a g n i t u d e [ m V ]\nP h a s e A n g le [ d e g ]\n1 to 3 .1 6 p p s 3 .1 6 to 1 0 p p s 1 0 to 3 1 .6 p p s 3 1 .6 to 1 0 0 p p s\n1 0 0 to 3 1 6 p p s 3 1 6 to 1 0 0 0 p p s > 1 0 0 0 p p s S u b s e t 8\nOther Partial Discharge Sources \nMechanically dependent \nProblems due to poor connections \nand at slot exit areas \nPulse clusters near 0° and 180° \n \nOpen-air arcing \nArcing due to sharp \ncorners and edges \nSeverely deteriorated \ninterface between \n semi-conductive and \nstress grading coatings \nPulse around 90° and \n270° \n \n“Excitation” Pulses \nThyristor-firings, from static exciter \nor variable speed drive \nRegular pulse repetitions \nLow magnitude \n- 7 5\n- 5 0\n- 2 5\n0\n25\n50\n75\n- 7 5\n- 5 0\n- 2 5\n0\n25\n50\n75\n0 45 90 135 180 225 270 315 360\nB i p o l a r M a c h i n e P D\nP u l s e M a g n i t u d e [ m V ]\nP h a s e A n g le [ d e g ]\n0 to 3 .1 6 p p s 3 .1 6 to 1 0 p p s 1 0 to 3 1 .6 p p s 3 1 .6 to 1 0 0 p p s\n1 0 0 to 3 1 6 p p s 3 1 6 to 1 0 0 0 p p s > 1 0 0 0 p p s S u b s e t 8"
+    },
+    {
+      "id": "page-20",
+      "heading": "Halaman 20: 17-Jan-12",
+      "content": "20 \n-75\n-50\n-25\n0\n25\n50\n75\n-75\n-50\n-25\n0\n25\n50\n75\n0 45 90 135 180 225 270 315 360\nBipolar Machine PD\nPulse Magnitude [mV]\nPhase Angle [deg]\n0 to 3.16 pps 3.16 to 10 pps 10 to 31.6 pps 31.6 to 100 pps\n100 to 316 pps 316 to 1000 pps > 1000 pps Subset 8\nLife Is Usually Messy and Not So Simple \nSlot PD - Phase Resolved PD Plot\n-1.5\n-1\n-0.5\n0\n0.5\n1\n1.5\n0 45 90 135 180 225 270 315 360\nPhase Angle [°]\nPD Magnitude [p.u.]\nSlot and Endwinding PD - Phase Resolved PD Plot\n-1.5\n-1\n-0.5\n0\n0.5\n1\n1.5\n0 15 30 45 60 75 90 105 120 135 150 165 180 195 210 225 240 255 270 285 300 315 330 345 360\nPhase Angle [°]\nPD Magnitude [p.u.]\nEndwinding PD - Phase Resolved PD Plot\n-1.5\n-1\n-0.5\n0\n0.5\n1\n1.5\n0 15 30 45 60 75 90 105 120 135 150 165 180 195 210 225 240 255 270 285 300 315 330 345 360\nPhase Angle [°]\nPD Magnitude [p.u.]\nTo Deal with Multiple Failure Mechanisms \nLook at the big picture \nLook at other phases \nHow Do the Pulses Look Like? \nAsk these questions: \nWhere are the voids or gaps that partial discharge occur, \nslot or endwinding? \nAre the voids or gaps surrounded by insulation, or one side \nof which is conductor? \nWill the winding temperature change anything? \nAre the voids and gaps affected by vibration? \nThermal deterioration \nSlot / Endwinding \n Insulation-conductor \nInsulation-insulation \nChanged by \ntemperature \n Affected by vibration \nSlot Inside insulation Yes No \n45° / 225° No Inverse None \nPhase Angle \n Polarity \nPredominance \nTemperature \nDependence \n Load Dependence \nSlot / Endwinding \n Insulation-conductor \nInsulation-insulation \nChanged by \ntemperature \n Mechanical forces \nPhase Angle \n Polarity \nPredominance \nTemperature \nDependence \n Load Dependence"
+    },
+    {
+      "id": "page-21",
+      "heading": "Halaman 21: 17-Jan-12",
+      "content": "21 \nHow Do the Pulses Look Like? \nLoose \nwinding \nElectrical slot \ndischarge \nImproper \nimpregnation \nLoad \ncycling \nPhase Angle \n Polarity \nPredominance \nTemperature \nDependence \nLoad \nDependence \nHow Do the Pulses Look Like? \nInterface \nproblem \nContamination \nInsufficient \nspacing \nPhase Angle \n Polarity \nPredominance \nTemperature \nDependence \nLoad \nDependence \nHow To Find the Problem? \nPhase Angle \n Polarity \nPredominance \nTemperature \nDependence \nLoad \nDependence \n45° – Inverse No \nLoad cycling"
+    },
+    {
+      "id": "page-22",
+      "heading": "Halaman 22: 17-Jan-12",
+      "content": "22 \nLast Missing Piece \n? \nPartial \nDischarge Problems \nVoids and \ngaps \nDischarge \nlocation \nFinal Answer? \nWhich generator is of more concern? \nTGA 13-15kV (air-cooled)\n0\n100\n200\n300\n400\n500\n600\n700\n800\nUnit A Unit B\nPeak Magnitude (mV)\n+Qm -Qm\nLow\nHigh\nModerate\nTypical\nMaximum Qm Values\nCheat Sheet Number 1 \nPhase Angle \n Polarity \nPredominance \nTemperature \nDependence \nLoad \nDependence \nFAILURE \nMECHANISMS \n45º/225º \n  \n ↑↓ \n  \nImproper \nimpregnation \n15º/195º \n75º/255º \n  \n ? \n  \nInsufficient coil \nspacing \n225º \n + \n ↑↓ \n ↑↑ \n Loose winding \n45º/225º \n  \n ↑↓ \n  \nThermal \ndeterioration \n45º \n – \n ↑↓ \n  \n Load cycling \n15º/195º \n75º/255º \n  \n ? \n  \n Contamination"
+    },
+    {
+      "id": "page-23",
+      "heading": "Halaman 23: 17-Jan-12",
+      "content": "23 \nCheat Sheet Number 2 \nØ° \n \n \n \n45° \n+ \n225° \n\n\n \n\n \n+ > –  Surface \n \n+ ≈ –  Inside \n \n+ < –  Near Cu \nElectrical slot discharge \n \nLoose winding \n \nThermal deterioration \n \nImproper impregnation \n \nLoad cycling \n \n \nInsufficient spacing \n \nContamination \n \n \n \n15°/195° \n+ \n75°/255° \n Ø - Ø  Endwinding \n Ø - G  Slot \nWhat in the World Do You \nLove and Hate at the Same Time? \nPartial \nDischarge Problems \nVoids and \ngaps \nDischarge \nlocation \nWhat Good Has Iris Done to My Machine? \nRequires NO machine shutdown \nTests at normal operating condition \nDetermines winding quality and workmanship \nProvides prior warning \nAssists predictive \n maintenance \nEnables \n convenient \n maintenance \n planning"
+    },
+    {
+      "id": "page-24",
+      "heading": "Halaman 24: 17-Jan-12",
+      "content": "24 \nPartial Discharge measurement is an effective \npredictive maintenance tool for monitoring the \ncondition of winding insulation"
+    }
+  ]
+}

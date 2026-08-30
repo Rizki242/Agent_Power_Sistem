@@ -90,6 +90,77 @@ class TestPlaceholderPage(unittest.TestCase):
         self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
 
 
+class TestAgentDashboardPage(unittest.TestCase):
+    """Default landing page: agent roster + fleet overview + drill-down diagnosis."""
+
+    @staticmethod
+    def _script():
+        import pandas as pd
+        import streamlit as st
+
+        from src.pages.agent_dashboard_page import render_agent_dashboard_page
+
+        df_latest_all = pd.DataFrame([
+            {"Equipment": "CWP 1A", "Parameter": "Kondisi", "Raw_Value": "Alarm", "Value": None,
+             "Unit_Name": "UNIT 1", "Voltage_Level": "380/400 V"},
+            {"Equipment": "CWP 1A", "Parameter": "Upper Sideband", "Raw_Value": "-52.5", "Value": -52.5,
+             "Unit_Name": "UNIT 1", "Voltage_Level": "380/400 V"},
+        ])
+        render_agent_dashboard_page(st, df_latest_all=df_latest_all)
+
+    def test_agent_dashboard_overview_renders(self):
+        at = AppTest.from_function(self._script, default_timeout=60).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertTrue(list(at.metric), "expected fleet overview metrics to render")
+
+    def test_agent_dashboard_drilldown_diagnosis_renders(self):
+        at = AppTest.from_function(self._script, default_timeout=60).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertTrue(any(sb.key == "agent_diag_equipment" for sb in at.selectbox),
+                        "expected the drill-down equipment selectbox to render")
+        self.assertTrue(list(at.success), "expected the safety-clearance banner to render")
+
+
+class TestMCSADashboardPage(unittest.TestCase):
+    """The legacy Command Center dashboard, now living under Engineering > MCSA."""
+
+    def test_mcsa_dashboard_page_renders_with_real_data(self):
+        def _script():
+            import pandas as pd
+            import streamlit as st
+
+            from src.data_loader import get_data_path, get_latest_data, load_mcsa_data
+            from src.equipment_canon import build_master_norm_maps, load_equipment_master
+            from src.pages.dashboard_page import render_dashboard_page
+
+            df = load_mcsa_data(get_data_path("Report MCSA.xls"))
+            df["Date"] = pd.to_datetime(df.get("Date", pd.NaT), errors="coerce")
+            df_latest_all = get_latest_data(df)
+            eq_master_df = load_equipment_master(get_data_path("config", "equipment_master.json"))
+            unit_map, volt_map = build_master_norm_maps(eq_master_df)
+            render_dashboard_page(
+                st,
+                df=df,
+                df_latest=df_latest_all,
+                df_latest_all=df_latest_all,
+                filtered_df=df_latest_all,
+                df_month=None,
+                date_start=df["Date"].min().date(),
+                date_end=df["Date"].max().date(),
+                sel_unit="All",
+                sel_volt="All",
+                sel_equipment=[],
+                standby_enabled=False,
+                standby_report=None,
+                eq_master_df=eq_master_df,
+                master_norm_to_unit=unit_map,
+                master_norm_to_volt=volt_map,
+            )
+
+        at = AppTest.from_function(_script, default_timeout=120).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+
 class TestDomainDashboards(unittest.TestCase):
     """Vibrasi/DGA/Tribology - ported from feature/domain-dashboards (see docs/agents plan)."""
 

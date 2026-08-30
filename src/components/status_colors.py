@@ -13,11 +13,11 @@ def canon_condition_status(x: Any) -> str:
     s = str(x or "").strip().lower()
     if any(k in s for k in ["high", "bad", "critical", "rusak", "damage", "trip"]):
         return "High"
-    if any(k in s for k in ["alarm", "warning"]):
+    if any(k in s for k in ["alarm", "warning", "prewarning", "alert", "watch"]):
         return "Alarm"
     if "standby" in s:
         return "Standby"
-    if any(k in s for k in ["normal", "ok", "good"]):
+    if any(k in s for k in ["normal", "ok", "good", "satisfactory"]):
         return "Normal"
     return "Unknown"
 

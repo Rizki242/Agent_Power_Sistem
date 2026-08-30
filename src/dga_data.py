@@ -91,14 +91,119 @@ def _override_store() -> DomainOverrideStore:
     return DomainOverrideStore(get_data_path('config', 'dga_overrides.json'))
 
 
+def _dga_history_path() -> Path:
+    return Path(get_data_path('DGA', 'dga_history_cbmai.csv'))
+
+
+def _clean_unit(value: Any) -> str:
+    text = str(value or '').strip().replace('_', ' ')
+    return text.upper() if text else 'UNKNOWN'
+
+
+def load_dga_history(csv_path: Optional[str] = None) -> pd.DataFrame:
+    """Load CBMAI DGA history CSV copied into data/DGA.
+
+    Expected source columns follow CBMAI's template: Date, Unit, Equipment,
+    H2, CH4, C2H6, C2H4, C2H2, CO, CO2, WaterContent, BDV, temperatures, etc.
+    Missing file/columns returns an empty DataFrame so the built-in demo assets
+    and manual overrides remain usable.
+    """
+    path = Path(csv_path) if csv_path else _dga_history_path()
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path)
+    except Exception:
+        return pd.DataFrame()
+    required = {'Date', 'Unit', 'Equipment', 'H2', 'CH4', 'C2H6', 'C2H4', 'C2H2', 'CO', 'CO2'}
+    if not required.issubset(df.columns):
+        return pd.DataFrame()
+    df = df.copy()
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    for col in ('H2', 'CH4', 'C2H6', 'C2H4', 'C2H2', 'CO', 'CO2', 'WaterContent'):
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
+    df = df.dropna(subset=['Date', 'Equipment'])
+    return df.sort_values(['Equipment', 'Date'])
+
+
+def _csv_transformer_id(equipment: str, index: int) -> str:
+    slug = ''.join(ch for ch in equipment.upper() if ch.isalnum())[-10:] or str(index + 1)
+    return f'DGA-CBMAI-{index + 1:03d}-{slug}'
+
+
+def _transformers_from_history() -> List[Dict[str, Any]]:
+    history = load_dga_history()
+    if history.empty:
+        return []
+    records: List[Dict[str, Any]] = []
+    for idx, (equipment, group) in enumerate(history.groupby('Equipment', sort=True)):
+        latest = group.sort_values('Date').iloc[-1]
+        gases = {
+            'H2': float(latest.get('H2', 0.0)),
+            'CH4': float(latest.get('CH4', 0.0)),
+            'C2H6': float(latest.get('C2H6', 0.0)),
+            'C2H4': float(latest.get('C2H4', 0.0)),
+            'C2H2': float(latest.get('C2H2', 0.0)),
+            'CO': float(latest.get('CO', 0.0)),
+            'CO2': float(latest.get('CO2', 0.0)),
+            'H2O': float(latest.get('WaterContent', 0.0)),
+        }
+        diag = calculate_dga_diagnosis(gases)
+        records.append({
+            'transformer_id': _csv_transformer_id(str(equipment), idx),
+            'name': str(equipment).strip(),
+            'unit': _clean_unit(latest.get('Unit')),
+            'voltage_ratio': '-',
+            'rated_capacity': '-',
+            'oil_type': 'Mineral Oil',
+            'oil_volume': '-',
+            'sampling_date': latest['Date'].strftime('%Y-%m-%d'),
+            'gases': gases,
+            'status': diag['status'],
+            'source': 'CBMAI DGA CSV',
+        })
+    return records
+
+
+def _history_for_equipment(equipment: str) -> List[Dict[str, Any]]:
+    history = load_dga_history()
+    if history.empty or not equipment:
+        return []
+    group = history[history['Equipment'].astype(str).str.upper() == str(equipment).upper()]
+    records: List[Dict[str, Any]] = []
+    for _, row in group.sort_values('Date').iterrows():
+        gases = {
+            'H2': float(row.get('H2', 0.0)),
+            'CH4': float(row.get('CH4', 0.0)),
+            'C2H6': float(row.get('C2H6', 0.0)),
+            'C2H4': float(row.get('C2H4', 0.0)),
+            'C2H2': float(row.get('C2H2', 0.0)),
+            'CO': float(row.get('CO', 0.0)),
+            'CO2': float(row.get('CO2', 0.0)),
+        }
+        diag = calculate_dga_diagnosis(gases)
+        records.append({
+            'date': row['Date'].strftime('%Y-%m-%d'),
+            'tdcg': diag['tdcg'],
+            'H2': gases['H2'],
+            'C2H4': gases['C2H4'],
+            'CO': gases['CO'],
+            'status': diag['status'],
+        })
+    return records
+
+
 def _merged_transformers() -> List[Dict[str, Any]]:
-    """DEFAULT_TRANSFORMERS with any recorded overrides applied on top - an
-    override whose transformer_id matches an existing entry replaces it, a
-    new transformer_id adds a new transformer. Order: base list order first,
-    then any override-only additions."""
+    """DEFAULT_TRANSFORMERS + CBMAI CSV records with manual overrides applied.
+
+    Manual override wins by transformer_id. CSV records are additive so the old
+    built-in assets are preserved while CBMAI DGA data appears in the UI.
+    """
     overrides = _override_store().all()
-    merged = [dict(overrides.get(t['transformer_id'], t)) for t in DEFAULT_TRANSFORMERS]
-    known_ids = {t['transformer_id'] for t in DEFAULT_TRANSFORMERS}
+    base = DEFAULT_TRANSFORMERS + _transformers_from_history()
+    merged = [dict(overrides.get(t['transformer_id'], t)) for t in base]
+    known_ids = {t['transformer_id'] for t in base}
     merged.extend(dict(record) for tid, record in overrides.items() if tid not in known_ids)
     return merged
 
@@ -261,12 +366,16 @@ def get_dga_transformer_detail(transformer_id: str) -> Optional[Dict[str, Any]]:
     target["diagnosis"] = diag
     target["status"] = diag["status"]
     
-    # Mock history records for periodic gas trend
-    target["history"] = [
-        {"date": "2025-11-10", "tdcg": max(10, diag["tdcg"] * 0.75), "H2": target["gases"]["H2"] * 0.8, "C2H4": target["gases"]["C2H4"] * 0.7, "CO": target["gases"]["CO"] * 0.9, "status": "NORMAL"},
-        {"date": "2026-03-15", "tdcg": max(15, diag["tdcg"] * 0.88), "H2": target["gases"]["H2"] * 0.9, "C2H4": target["gases"]["C2H4"] * 0.85, "CO": target["gases"]["CO"] * 0.95, "status": "NORMAL"},
-        {"date": target["sampling_date"], "tdcg": diag["tdcg"], "H2": target["gases"]["H2"], "C2H4": target["gases"]["C2H4"], "CO": target["gases"]["CO"], "status": diag["status"]}
-    ]
+    real_history = _history_for_equipment(target.get("name", ""))
+    if real_history:
+        target["history"] = real_history
+    else:
+        # Mock history records for built-in demo assets when no source CSV exists
+        target["history"] = [
+            {"date": "2025-11-10", "tdcg": max(10, diag["tdcg"] * 0.75), "H2": target["gases"]["H2"] * 0.8, "C2H4": target["gases"]["C2H4"] * 0.7, "CO": target["gases"]["CO"] * 0.9, "status": "NORMAL"},
+            {"date": "2026-03-15", "tdcg": max(15, diag["tdcg"] * 0.88), "H2": target["gases"]["H2"] * 0.9, "C2H4": target["gases"]["C2H4"] * 0.85, "CO": target["gases"]["CO"] * 0.95, "status": "NORMAL"},
+            {"date": target["sampling_date"], "tdcg": diag["tdcg"], "H2": target["gases"]["H2"], "C2H4": target["gases"]["C2H4"], "CO": target["gases"]["CO"], "status": diag["status"]}
+        ]
     
     # Recommendations based on status
     if diag["status"] == "HIGH":

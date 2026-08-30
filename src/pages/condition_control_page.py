@@ -2,46 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
-
 from src.agents.specialist_agents import DGAAgent, TribologyAgent, VibrationAgent
+from src.components.agent_result import render_agent_result
 from src.components.theme import render_page_header
-
-
-def _render_result(st, result: Dict[str, Any], metric_labels: Dict[str, str]) -> None:
-    """Render a standard specialist-agent result without unsafe actuation."""
-    severity = int(result.get("severity", 1))
-    condition = str(result.get("condition", "HEALTHY"))
-    confidence = float(result.get("confidence", 0.0))
-    health_score = float(result.get("health_score", 0.0))
-
-    with st.container(border=True):
-        metric_cols = st.columns(3)
-        metric_cols[0].metric("Status", condition)
-        metric_cols[1].metric("Health score", f"{health_score:.0f}/100")
-        metric_cols[2].metric("Confidence", f"{confidence:.0%}")
-        if severity >= 4:
-            st.error(f"Severity {severity}: {result.get('failure_mode', '-')}")
-        elif severity >= 3:
-            st.warning(f"Severity {severity}: {result.get('failure_mode', '-')}")
-        elif severity >= 2:
-            st.info(f"Severity {severity}: {result.get('failure_mode', '-')}")
-        else:
-            st.success(f"Severity {severity}: {result.get('failure_mode', '-')}")
-        evidence = result.get("evidence") or []
-        if evidence:
-            st.markdown("**Bukti rule-based**")
-            for item in evidence:
-                st.write(f"- {item}")
-        recommendations = result.get("recommendation") or []
-        if recommendations:
-            st.markdown("**Rekomendasi tindak lanjut**")
-            for item in recommendations:
-                st.write(f"- {item}")
-        with st.expander("Parameter yang dianalisis", expanded=False):
-            rows = [{"Parameter": metric_labels.get(key, key), "Nilai": value} for key, value in (result.get("metrics") or {}).items()]
-            st.dataframe(rows, hide_index=True, width="stretch")
-    st.caption("Hasil adalah screening rule-based. Keputusan operasi, trip, shutdown, atau perubahan proteksi wajib melalui SOP dan otorisasi engineer.")
 
 
 def _render_vibration_control(st) -> None:
@@ -62,7 +25,7 @@ def _render_vibration_control(st) -> None:
         st.session_state["condition_control_vibration_result"] = VibrationAgent().evaluate(equipment.strip() or "Motor/Pompa", {"overall_rms": overall_rms, "amp_1x": amp_1x, "amp_2x": amp_2x, "axial_1x": axial_1x, "bpfo_amp": bpfo, "bpfi_amp": bpfi})
     result = st.session_state.get("condition_control_vibration_result")
     if result:
-        _render_result(st, result, {"overall_rms": "Overall RMS (mm/s)", "amp_1x": "1X (mm/s)", "amp_2x": "2X (mm/s)", "bpfo_amp": "BPFO (mm/s pk)", "bpfi_amp": "BPFI (mm/s pk)", "axial_1x": "Aksial 1X (mm/s)"})
+        render_agent_result(st, result, {"overall_rms": "Overall RMS (mm/s)", "amp_1x": "1X (mm/s)", "amp_2x": "2X (mm/s)", "bpfo_amp": "BPFO (mm/s pk)", "bpfi_amp": "BPFI (mm/s pk)", "axial_1x": "Aksial 1X (mm/s)"})
 
 
 def _render_dga_control(st) -> None:
@@ -84,7 +47,7 @@ def _render_dga_control(st) -> None:
         st.session_state["condition_control_dga_result"] = DGAAgent().evaluate(equipment.strip() or "Main Transformer", {"h2": h2, "ch4": ch4, "c2h2": c2h2, "c2h4": c2h4, "c2h6": c2h6, "co": co, "co2": co2})
     result = st.session_state.get("condition_control_dga_result")
     if result:
-        _render_result(st, result, {"tdcg_ppm": "TDCG (ppm)", "h2_ppm": "H2 (ppm)", "ch4_ppm": "CH4 (ppm)", "c2h2_ppm": "C2H2 (ppm)", "c2h4_ppm": "C2H4 (ppm)", "c2h6_ppm": "C2H6 (ppm)", "co_ppm": "CO (ppm)", "co2_ppm": "CO2 (ppm)", "duval_zone": "Zona diagnosis"})
+        render_agent_result(st, result, {"tdcg_ppm": "TDCG (ppm)", "h2_ppm": "H2 (ppm)", "ch4_ppm": "CH4 (ppm)", "c2h2_ppm": "C2H2 (ppm)", "c2h4_ppm": "C2H4 (ppm)", "c2h6_ppm": "C2H6 (ppm)", "co_ppm": "CO (ppm)", "co2_ppm": "CO2 (ppm)", "duval_zone": "Zona diagnosis"})
 
 
 def _render_tribology_control(st) -> None:
@@ -106,7 +69,7 @@ def _render_tribology_control(st) -> None:
         st.session_state["condition_control_tribology_result"] = TribologyAgent().evaluate(equipment.strip() or "Pompa/gearbox", {"viscosity_40c": viscosity, "nominal_viscosity": nominal, "tan": tan, "water_ppm": water, "fe_ppm": fe, "cu_ppm": cu, "iso_cleanliness": iso_cleanliness.strip() or "-"})
     result = st.session_state.get("condition_control_tribology_result")
     if result:
-        _render_result(st, result, {"viscosity_40c": "Viskositas 40°C (cSt)", "viscosity_dev_pct": "Deviasi viskositas (%)", "tan_mgkoh_g": "TAN (mg KOH/g)", "water_ppm": "Air (ppm)", "fe_ppm": "Fe (ppm)", "cu_ppm": "Cu (ppm)", "iso_cleanliness": "ISO cleanliness"})
+        render_agent_result(st, result, {"viscosity_40c": "Viskositas 40°C (cSt)", "viscosity_dev_pct": "Deviasi viskositas (%)", "tan_mgkoh_g": "TAN (mg KOH/g)", "water_ppm": "Air (ppm)", "fe_ppm": "Fe (ppm)", "cu_ppm": "Cu (ppm)", "iso_cleanliness": "ISO cleanliness"})
 
 
 def render_condition_control_page(st) -> None:

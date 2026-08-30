@@ -27,6 +27,62 @@ from src.data_loader import get_data_path
 _VIBRASI_DIR = Path(get_data_path('vibrasi', 'asset'))
 _SQLITE_PATH = _VIBRASI_DIR / 'database_aset_vibrasi_PLTU_Jeranjang_dengan_unit.sqlite'
 _EXCEL_PATH = _VIBRASI_DIR / 'database_aset_vibrasi_PLTU_Jeranjang_dengan_unit.xlsx'
+_CBMAI_VIBRATION_PATH = Path(get_data_path('vibrasi', 'vibration_dataset_cbmai.csv'))
+
+
+def load_cbmai_vibration_dataset(csv_path: Optional[str] = None) -> pd.DataFrame:
+    """Load CBMAI vibration telemetry CSV for trend/diagnostic UI panels."""
+    path = Path(csv_path) if csv_path else _CBMAI_VIBRATION_PATH
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path)
+    except Exception:
+        return pd.DataFrame()
+    required = {'timestamp', 'equipment_id', 'velocity_rms_mm_s', 'overall_severity'}
+    if not required.issubset(df.columns):
+        return pd.DataFrame()
+    df = df.copy()
+    df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+    numeric_cols = [
+        'rpm', 'running_frequency_hz', 'velocity_rms_mm_s', 'acceleration_rms_g',
+        'displacement_pk_pk_um', 'peak_acceleration_g', 'crest_factor', 'kurtosis',
+        'temperature_c', '1x_amp_mm_s', '2x_amp_mm_s', '3x_amp_mm_s',
+        '0_5x_amp_mm_s', 'bpfo_amp_g', 'bpfi_amp_g', 'bsf_amp_g', 'ftf_amp_g',
+        'diagnosis_confidence',
+    ]
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    df = df.dropna(subset=['timestamp', 'equipment_id'])
+    return df.sort_values(['equipment_id', 'timestamp'])
+
+
+def get_cbmai_vibration_summary() -> Dict[str, Any]:
+    df = load_cbmai_vibration_dataset()
+    if df.empty:
+        return {'total_records': 0, 'equipment_count': 0, 'by_severity': {}, 'by_condition': {}}
+    return {
+        'total_records': int(len(df)),
+        'equipment_count': int(df['equipment_id'].nunique()),
+        'by_severity': df['overall_severity'].fillna('Unknown').value_counts().to_dict(),
+        'by_condition': df.get('condition', pd.Series(dtype=str)).fillna('Unknown').value_counts().to_dict(),
+    }
+
+
+def latest_cbmai_vibration_record(equipment_id: str) -> Optional[Dict[str, Any]]:
+    df = load_cbmai_vibration_dataset()
+    if df.empty:
+        return None
+    scoped = df[df['equipment_id'].astype(str) == str(equipment_id)]
+    if scoped.empty:
+        return None
+    row = scoped.sort_values('timestamp').iloc[-1].to_dict()
+    ts = row.get('timestamp')
+    if hasattr(ts, 'strftime'):
+        row['timestamp'] = ts.strftime('%Y-%m-%d %H:%M')
+    return row
+
 
 # ---------------------------------------------------------------------------
 # Low-level helpers

@@ -11,6 +11,8 @@ from src.components.theme import render_page_header
 from src.vibration_data import (
     build_vibration_agent_input,
     get_bearing_info,
+    latest_cbmai_vibration_record,
+    load_cbmai_vibration_dataset,
     load_vibration_assets,
     load_vibration_monthly_tests,
     match_monthly_test_by_equipment,
@@ -103,6 +105,44 @@ def render_vibration_page(st) -> None:
         else:
             st.info("Data pengujian periodik belum tersedia/tidak cocok untuk aset ini.")
 
+        cbmai_df = load_cbmai_vibration_dataset()
+        if not cbmai_df.empty:
+            st.markdown("**Dataset Vibrasi CBMAI**")
+            equipment_ids = sorted(cbmai_df["equipment_id"].astype(str).unique().tolist())
+            selected_cbmai_id = st.selectbox(
+                "Pilih equipment ID CBMAI:",
+                equipment_ids,
+                key="vibration_cbmai_equipment_id",
+            )
+            scoped = cbmai_df[cbmai_df["equipment_id"].astype(str) == selected_cbmai_id].copy()
+            latest = latest_cbmai_vibration_record(selected_cbmai_id) or {}
+            cols = st.columns(4)
+            cols[0].metric("Record CBMAI", len(scoped))
+            cols[1].metric("Velocity Terakhir (mm/s)", latest.get("velocity_rms_mm_s", "-"))
+            cols[2].metric("Severity Terakhir", latest.get("overall_severity", "-"))
+            cols[3].metric("Confidence", latest.get("diagnosis_confidence", "-"))
+            trend_fig = px.line(
+                scoped,
+                x="timestamp",
+                y=["velocity_rms_mm_s", "acceleration_rms_g", "temperature_c"],
+                color_discrete_sequence=["#2563eb", "#dc2626", "#f59e0b"],
+                markers=True,
+                title=f"Trend Vibrasi CBMAI - {selected_cbmai_id}",
+            )
+            trend_fig.update_layout(height=380, margin=dict(l=10, r=10, t=45, b=10), legend_title_text="Parameter")
+            st.plotly_chart(trend_fig, width="stretch")
+            latest_rows = scoped.sort_values("timestamp", ascending=False).head(20)
+            st.dataframe(
+                latest_rows[[
+                    "timestamp", "equipment_id", "equipment_type", "condition",
+                    "velocity_rms_mm_s", "acceleration_rms_g", "temperature_c",
+                    "1x_amp_mm_s", "2x_amp_mm_s", "bpfo_amp_g", "bpfi_amp_g",
+                    "overall_severity", "diagnosis_confidence",
+                ]],
+                hide_index=True,
+                width="stretch",
+            )
+
     elif detail_view == "Rekomendasi":
         if matched_record:
             agent_input = build_vibration_agent_input(matched_record)
@@ -113,4 +153,30 @@ def render_vibration_page(st) -> None:
                 "belum tersedia dari sumber data dan menggunakan asumsi standar VibrationAgent."
             )
         else:
-            st.info("Data pengujian belum tersedia untuk aset ini - rekomendasi tidak dapat dihitung.")
+            cbmai_df = load_cbmai_vibration_dataset()
+            if cbmai_df.empty:
+                st.info("Data pengujian belum tersedia untuk aset ini - rekomendasi tidak dapat dihitung.")
+            else:
+                equipment_ids = sorted(cbmai_df["equipment_id"].astype(str).unique().tolist())
+                selected_cbmai_id = st.selectbox(
+                    "Pilih equipment ID CBMAI untuk analisa:",
+                    equipment_ids,
+                    key="vibration_cbmai_reco_equipment_id",
+                )
+                latest = latest_cbmai_vibration_record(selected_cbmai_id) or {}
+                agent_input = {
+                    "overall_rms": latest.get("velocity_rms_mm_s", 0.0),
+                    "amp_1x": latest.get("1x_amp_mm_s", 0.0),
+                    "amp_2x": latest.get("2x_amp_mm_s", 0.0),
+                    "bpfo_amp": latest.get("bpfo_amp_g", 0.0),
+                    "bpfi_amp": latest.get("bpfi_amp_g", 0.0),
+                }
+                result = VibrationAgent().evaluate(selected_cbmai_id, agent_input)
+                render_agent_result(st, result, {
+                    "overall_rms": "Overall RMS (mm/s)",
+                    "amp_1x": "1X amplitude (mm/s)",
+                    "amp_2x": "2X amplitude (mm/s)",
+                    "bpfo_amp": "BPFO amplitude",
+                    "bpfi_amp": "BPFI amplitude",
+                })
+                st.caption(f"Sumber: Dataset vibrasi CBMAI, record terakhir {latest.get('timestamp', '-')}, kondisi label awal {latest.get('condition', '-')}/{latest.get('overall_severity', '-')}")

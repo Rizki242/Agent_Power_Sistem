@@ -26,8 +26,11 @@ def render_sidebar_brand(st):
     )
 
 
-def render_sidebar(st, min_date, max_date):
+def render_sidebar(st, min_date, max_date, show_filters=True):
     st.sidebar.divider()
+    if not show_filters:
+        st.sidebar.toggle("Mode Edit", key="edit_mode", help="Izinkan perubahan data dan upload laporan")
+        return {"edit_mode": bool(st.session_state.get("edit_mode", False)), "date_start": min_date, "date_end": max_date}
     st.sidebar.markdown('<div class="mcsa-group">Filter data</div>', unsafe_allow_html=True)
     focus_range = st.session_state.pop("filter_focus_range", None)
     if focus_range:

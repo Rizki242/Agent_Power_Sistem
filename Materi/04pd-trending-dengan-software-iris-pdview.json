@@ -1,0 +1,44 @@
+{
+  "id": "04pd-trending-dengan-software-iris-pdview",
+  "title": "04.Pd Trending Dengan Software Iris Pdview",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: Version 1.",
+      "content": "0 Created by PT Dielektrika Persada Teknik\n \nPD TRENDING DENGAN SOFTWARE IRIS PDVIEW\n \n1. Buka Database PD seperti gambar dibawah ini\n \n \n2. Untuk \nmela\nku\nkan trending untuk sensitivity range tertentu dilakukan langkah filtering terlebih dahulu"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: Version 1.",
+      "content": "0 Created by PT Dielektrika Persada Teknik\n \n3. Pilih sensitivity range misalnya 5 \n-\n \n85 mV \n \npada \"Measurement list filter\" \nseperti dibawah ini\n \n \n4. Langkah berikutnya adalah enable filter seperti gambar dibawah ini"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: Version 1.",
+      "content": "0 Created by PT Dielektrika Persada Teknik\n \n5. Setelah Enable Filter, akan ditampilkan data hanya untuk sensitivity range 5 \n-\n \n85 mV seperti dibawah \nini\n \n \n6. Pilih Template PD Trend Report \nuntuk melakukan trending"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: Version 1.",
+      "content": "0 Created by PT Dielektrika Persada Teknik\n \n7.\nKlik kanan pada salah satu fasa yang ingin ditrending dan pilih \"Select Entire Phase\"\n \n \n8.Setelah semua fasa A dipilih, lakukan \n\"\ndrag\n \n& drop\" \nke dalam plot diagram yang sudah tersedia. Hal ini \ndapat diulangi untuk fasa \nB dan C."
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5: Version 1.",
+      "content": "0 Created by PT Dielektrika Persada Teknik\n \n9. Pada plot diagram yang sudah terd\napat trending, dapat di zoom dengan cara, klik kiri sebanyak 2x\n \nkemudian klik kanan dan pilih \"Maximaze\"\n \n \n \n10. Tampilan Zoom adalah seperti gambar dibawah ini:"
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6: Version 1.",
+      "content": "0 Created by PT Dielektrika Persada Teknik\n \n11. Klik kiri and drag untuk melihat lebih detail trending plot\n \n \n12. Plot detail akan seperti gambar dibawah ini"
+    }
+  ]
+}

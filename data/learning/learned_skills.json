@@ -1,6 +1,102 @@
 {
   "skills": [
     {
+      "id": "SKILL-PLTU-013",
+      "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-352",
+      "equipment": "BFP 1A",
+      "system": "Adaptive Disturbance & Operational Protection",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Synthetic disturbance: Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+      ],
+      "verified_root_cause": "Terverifikasi melalui EnvRigger rollout validation pada BFP 1A.",
+      "corrective_action_taken": "Penerbitan Work Order terencana dan mitigasi getaran/arus komposit.",
+      "lesson_learned": "Penerapan kontrak Chain-ExtendedLifecycle-352 berhasil melatih agent untuk mendeteksi kopling anomali lebih awal.",
+      "author": "EnvRigger AI Customizer",
+      "verified_at": "2026-08-31",
+      "accuracy_boost_weight": 1.25
+    },
+    {
+      "id": "SKILL-PLTU-012",
+      "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-953",
+      "equipment": "BFP 1A",
+      "system": "Adaptive Disturbance & Operational Protection",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Synthetic disturbance: Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+      ],
+      "verified_root_cause": "Terverifikasi melalui EnvRigger rollout validation pada BFP 1A.",
+      "corrective_action_taken": "Penerbitan Work Order terencana dan mitigasi getaran/arus komposit.",
+      "lesson_learned": "Penerapan kontrak Chain-ExtendedLifecycle-953 berhasil melatih agent untuk mendeteksi kopling anomali lebih awal.",
+      "author": "EnvRigger AI Customizer",
+      "verified_at": "2026-08-31",
+      "accuracy_boost_weight": 1.25
+    },
+    {
+      "id": "SKILL-PLTU-011",
+      "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-774",
+      "equipment": "BFP 1A",
+      "system": "Adaptive Disturbance & Operational Protection",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Synthetic disturbance: Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+      ],
+      "verified_root_cause": "Terverifikasi melalui EnvRigger rollout validation pada BFP 1A.",
+      "corrective_action_taken": "Penerbitan Work Order terencana dan mitigasi getaran/arus komposit.",
+      "lesson_learned": "Penerapan kontrak Chain-ExtendedLifecycle-774 berhasil melatih agent untuk mendeteksi kopling anomali lebih awal.",
+      "author": "EnvRigger AI Customizer",
+      "verified_at": "2026-08-31",
+      "accuracy_boost_weight": 1.25
+    },
+    {
+      "id": "SKILL-PLTU-010",
+      "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-15",
+      "equipment": "BFP 1A",
+      "system": "Adaptive Disturbance & Operational Protection",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Synthetic disturbance: Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+      ],
+      "verified_root_cause": "Terverifikasi melalui EnvRigger rollout validation pada BFP 1A.",
+      "corrective_action_taken": "Penerbitan Work Order terencana dan mitigasi getaran/arus komposit.",
+      "lesson_learned": "Penerapan kontrak Chain-ExtendedLifecycle-15 berhasil melatih agent untuk mendeteksi kopling anomali lebih awal.",
+      "author": "EnvRigger AI Customizer",
+      "verified_at": "2026-08-31",
+      "accuracy_boost_weight": 1.25
+    },
+    {
+      "id": "SKILL-PLTU-009",
+      "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-564",
+      "equipment": "BFP 1A",
+      "system": "Adaptive Disturbance & Operational Protection",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Synthetic disturbance: Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+      ],
+      "verified_root_cause": "Terverifikasi melalui EnvRigger rollout validation pada BFP 1A.",
+      "corrective_action_taken": "Penerbitan Work Order terencana dan mitigasi getaran/arus komposit.",
+      "lesson_learned": "Penerapan kontrak Chain-ExtendedLifecycle-564 berhasil melatih agent untuk mendeteksi kopling anomali lebih awal.",
+      "author": "EnvRigger AI Customizer",
+      "verified_at": "2026-08-31",
+      "accuracy_boost_weight": 1.25
+    },
+    {
+      "id": "SKILL-PLTU-008",
+      "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-761",
+      "equipment": "BFP 1A",
+      "system": "Adaptive Disturbance & Operational Protection",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Synthetic disturbance: Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+      ],
+      "verified_root_cause": "Terverifikasi melalui EnvRigger rollout validation pada BFP 1A.",
+      "corrective_action_taken": "Penerbitan Work Order terencana dan mitigasi getaran/arus komposit.",
+      "lesson_learned": "Penerapan kontrak Chain-ExtendedLifecycle-761 berhasil melatih agent untuk mendeteksi kopling anomali lebih awal.",
+      "author": "EnvRigger AI Customizer",
+      "verified_at": "2026-08-30",
+      "accuracy_boost_weight": 1.25
+    },
+    {
       "id": "SKILL-PLTU-007",
       "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-86",
       "equipment": "BFP 1A",
@@ -122,6 +218,6 @@
       "accuracy_boost_weight": 1.2
     }
   ],
-  "last_updated": "2026-08-27T16:58:06.189722",
-  "total_skills_count": 7
+  "last_updated": "2026-08-31T07:09:12.326771",
+  "total_skills_count": 13
 }

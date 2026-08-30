@@ -77,6 +77,8 @@ from src.llm_assistant import MCSALLMAssistant, resolve_provider_key
 from src.agents.fusion_engine import ReliabilityFusionAgent
 from src.agents.safety_guard import SafetyGuardrailAgent
 from src.agents.asset_graph import AssetKnowledgeGraph
+from src.agents.fusion_inputs import extract_mcsa_fusion_inputs
+from src.fleet_reliability import build_fleet_reliability
 
 fusion_agent = ReliabilityFusionAgent()
 safety_guard = SafetyGuardrailAgent()
@@ -84,108 +86,6 @@ asset_graph = AssetKnowledgeGraph()
 
 # In-memory mirror for callers that inspect module state, backed by JSON storage.
 _work_orders_db = []
-
-
-def _status_from_equipment_rows(eq_data: pd.DataFrame) -> str:
-    if eq_data is None or eq_data.empty or "Parameter" not in eq_data.columns:
-        return "Normal"
-    c_row = eq_data[eq_data["Parameter"].astype(str) == "Kondisi"]
-    if c_row.empty:
-        return "Normal"
-    raw_value = str(c_row.iloc[0].get("Raw_Value", "Normal")).strip().capitalize()
-    return raw_value if raw_value else "Normal"
-
-
-def _numeric_param(eq_data: pd.DataFrame, *param_names: str) -> Optional[float]:
-    if eq_data is None or eq_data.empty or "Parameter" not in eq_data.columns:
-        return None
-    wanted = {p.lower() for p in param_names}
-    rows = eq_data[eq_data["Parameter"].astype(str).str.strip().str.lower().isin(wanted)]
-    if rows.empty:
-        return None
-    for _, row in rows.iterrows():
-        for field in ("Value", "Raw_Value"):
-            try:
-                val = row.get(field)
-                if val is None or (isinstance(val, float) and math.isnan(val)):
-                    continue
-                parsed = float(str(val).strip())
-                if math.isnan(parsed) or math.isinf(parsed):
-                    continue
-                return parsed
-            except (TypeError, ValueError):
-                continue
-    return None
-
-
-def _extract_mcsa_fusion_inputs(eq_data: pd.DataFrame) -> Dict[str, Dict[str, Any]]:
-    """Build fusion inputs only from measured rows present in the dataframe."""
-    cond_val = _status_from_equipment_rows(eq_data)
-
-    mcsa_data = {
-        "bearing_status": cond_val,
-    }
-    mcsa_param_map = {
-        "upper_sb": ("Upper Sideband",),
-        "lower_sb": ("Lower Sideband",),
-        "dev_current": ("Dev Current",),
-        "dev_voltage": ("Dev Voltage",),
-        "thd_current": ("THD Current %",),
-    }
-    for out_key, names in mcsa_param_map.items():
-        val = _numeric_param(eq_data, *names)
-        if val is not None:
-            mcsa_data[out_key] = val
-
-    inputs: Dict[str, Dict[str, Any]] = {"mcsa_data": mcsa_data}
-
-    vibration_map = {
-        "overall_rms": ("Overall Vibration RMS", "Vibration RMS", "Velocity RMS", "RMS Velocity"),
-        "bpfo_amp": ("BPFO", "BPFO Amp", "BPFO Amplitude"),
-        "bpfi_amp": ("BPFI", "BPFI Amp", "BPFI Amplitude"),
-        "amp_1x": ("1X", "Amp 1X", "1X Amplitude"),
-        "amp_2x": ("2X", "Amp 2X", "2X Amplitude"),
-        "axial_1x": ("Axial 1X",),
-    }
-    vibration_data = {
-        out_key: val
-        for out_key, names in vibration_map.items()
-        if (val := _numeric_param(eq_data, *names)) is not None
-    }
-    if vibration_data:
-        inputs["vibration_data"] = vibration_data
-
-    thermal_map = {
-        "bearing_temp": ("Bearing Temperature", "Bearing Temp", "Thermal Bearing Temp"),
-        "winding_temp": ("Winding Temperature", "Winding Temp"),
-        "ambient_temp": ("Ambient Temperature", "Ambient Temp"),
-        "delta_t_phase": ("Delta T Phase", "Delta-T Phase", "Phase Delta T"),
-        "hotspot_temp": ("Hotspot Temperature", "Hotspot Temp"),
-    }
-    thermal_data = {
-        out_key: val
-        for out_key, names in thermal_map.items()
-        if (val := _numeric_param(eq_data, *names)) is not None
-    }
-    if thermal_data:
-        inputs["thermal_data"] = thermal_data
-
-    oil_map = {
-        "viscosity_40c": ("Viscosity 40C", "Viscosity 40°C", "Visk 40C"),
-        "water_ppm": ("Water ppm", "Water", "Moisture ppm"),
-        "fe_ppm": ("Fe ppm", "Iron ppm", "Fe"),
-        "cu_ppm": ("Cu ppm", "Copper ppm", "Cu"),
-        "tan": ("TAN", "Total Acid Number"),
-    }
-    oil_data = {
-        out_key: val
-        for out_key, names in oil_map.items()
-        if (val := _numeric_param(eq_data, *names)) is not None
-    }
-    if oil_data:
-        inputs["oil_data"] = oil_data
-
-    return inputs
 
 
 def _seed_work_orders() -> List[Dict[str, Any]]:
@@ -972,60 +872,7 @@ def generate_ppt_report(equipment_name: Optional[str] = None):
 @app.get("/api/reliability/fleet")
 def get_fleet_reliability_summary():
     df_raw, df_latest = get_data_frames()
-    if df_latest.empty:
-        return {"total_assets": 0, "health_summary": {}, "fleet_health_average": 90.0, "asset_matrix": []}
-
-    eq_names = [str(e) for e in df_latest["Equipment"].dropna().unique()]
-    
-    asset_matrix = []
-    health_counts = {"HEALTHY": 0, "WATCH": 0, "WARNING": 0, "ALERT": 0, "CRITICAL": 0}
-    health_sum = 0.0
-
-    for eq in eq_names[:60]: # Top 60 fleet assets
-        eq_data = df_latest[df_latest["Equipment"] == eq]
-        node = asset_graph.get_equipment_node(eq)
-        
-        fusion_inputs = _extract_mcsa_fusion_inputs(eq_data)
-
-        fusion_res = fusion_agent.run_full_fusion(
-            equipment=eq,
-            asset_type=node.get("asset_type", "Electric Motor-Pump"),
-            criticality=node.get("criticality", "A"),
-            **fusion_inputs,
-        )
-
-        h_stat = fusion_res["health_status"]
-        if h_stat in health_counts:
-            health_counts[h_stat] += 1
-        health_sum += fusion_res["health_index"]
-
-        asset_matrix.append({
-            "equipment": eq,
-            "unit": node.get("unit", "UNIT COMMON"),
-            "system": node.get("system", "Auxiliary"),
-            "criticality": node.get("criticality", "A"),
-            "health_index": fusion_res["health_index"],
-            "health_status": h_stat,
-            "health_color": fusion_res["health_color"],
-            "primary_failure_mode": fusion_res["failure_mode_diagnosis"]["primary_failure_mode"],
-            "severity": fusion_res["failure_mode_diagnosis"]["severity"],
-            "confidence": fusion_res["failure_mode_diagnosis"]["confidence"],
-            "rul_days": fusion_res["predictive_rul"]["estimated_rul_days"],
-            "risk_level": fusion_res["risk_assessment"]["risk_level"]
-        })
-
-    avg_health = round(health_sum / len(asset_matrix), 1) if asset_matrix else 90.0
-    
-    # Sort asset matrix by severity descending and health index ascending
-    asset_matrix.sort(key=lambda x: (x["health_index"], -x["severity"]))
-
-    return {
-        "total_assets": len(asset_matrix),
-        "fleet_health_average": avg_health,
-        "health_summary": health_counts,
-        "critical_watchlist": [a for a in asset_matrix if a["health_status"] in ["CRITICAL", "ALERT", "WARNING"]][:10],
-        "asset_matrix": asset_matrix
-    }
+    return build_fleet_reliability(df_latest, fusion_agent, asset_graph)
 
 @app.get("/api/reliability/fusion/{equipment_name}")
 def get_equipment_fusion_diagnosis(equipment_name: str):
@@ -1033,8 +880,8 @@ def get_equipment_fusion_diagnosis(equipment_name: str):
     node = asset_graph.get_equipment_node(equipment_name)
     
     eq_data = df_latest[df_latest["Equipment"].astype(str).str.upper() == equipment_name.upper()]
-    
-    fusion_inputs = _extract_mcsa_fusion_inputs(eq_data)
+
+    fusion_inputs = extract_mcsa_fusion_inputs(eq_data)
 
     fusion_res = fusion_agent.run_full_fusion(
         equipment=equipment_name,

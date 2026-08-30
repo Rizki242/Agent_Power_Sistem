@@ -1,119 +1,24 @@
 import json
 import os
-import re
 from typing import Optional
 
 import pandas as pd
 import plotly.express as px
 
 from src.analytics import calculate_equipment_health_score, detect_equipment_anomalies
-from src.components.status_colors import STATUS_BADGE_BG, STATUS_BADGE_FG, STATUS_PIE_COLORS
+from src.components.status_colors import STATUS_BADGE_BG, STATUS_BADGE_FG, STATUS_PIE_COLORS, canon_condition_status
 from src.components.theme import render_page_header
 from src.data_loader import filter_mcsa_data, get_data_path, load_nameplate_csv
+from src.equipment_canon import (
+    canon_unit_name,
+    canon_voltage_level,
+    compute_overall_status_from_rows,
+    norm_equipment,
+)
 from src.standards import (
-    calculate_condition,
     generate_esa_mcsa_quick_recommendations,
     generate_initial_analysis,
 )
-
-
-def _norm_equipment(x) -> str:
-    return re.sub(r"[^A-Za-z0-9]", "", str(x or "")).upper()
-
-
-def _canon_unit_name(x) -> str:
-    s = str(x or "").strip().upper()
-    s = re.sub(r"\s+", " ", s)
-    s0 = s.replace(" ", "")
-    if s0 == "UNIT1":
-        return "UNIT 1"
-    if s0 == "UNIT2":
-        return "UNIT 2"
-    if s0 == "UNIT3":
-        return "UNIT 3"
-    if s0 == "UNITCOMMON":
-        return "UNIT COMMON"
-    return s if s else "Unknown"
-
-
-def _canon_voltage_level(x) -> str:
-    s = str(x or "").strip().upper()
-    if not s:
-        return "Unknown"
-    s0 = re.sub(r"\s+", "", s)
-    if "6.3" in s0 and "KV" in s0:
-        return "6.3 KV"
-    if any(k in s0 for k in ["380/400", "380-400", "380400", "400V", "400/380"]):
-        return "380/400 V"
-    if s0 == "UNKNOWN":
-        return "Unknown"
-    return s
-
-
-def _canon_condition_status(x) -> str:
-    s = str(x or "").strip().lower()
-    if any(k in s for k in ["high", "bad", "critical", "rusak", "damage", "trip"]):
-        return "High"
-    if any(k in s for k in ["alarm", "warning"]):
-        return "Alarm"
-    if "standby" in s:
-        return "Standby"
-    if any(k in s for k in ["normal", "ok", "good"]):
-        return "Normal"
-    return "Unknown"
-
-
-def _compute_overall_status_from_rows(rows: pd.DataFrame) -> str:
-    if rows is None or rows.empty:
-        return "Unknown"
-
-    def _safe_float(v):
-        try:
-            if v is None:
-                return None
-            if isinstance(v, float) and pd.isna(v):
-                return None
-            s = str(v).strip()
-            if s == "" or s.lower() in {"nan", "none"}:
-                return None
-            return float(s)
-        except Exception:
-            return None
-
-    def _get_param(name: str):
-        g = rows[rows["Parameter"] == name]
-        if g.empty:
-            return None
-        r = g.iloc[0]
-        v = r.get("Value", None)
-        v2 = _safe_float(v)
-        if v2 is not None:
-            return v2
-        return r.get("Raw_Value", None)
-
-    params = {
-        "Dev Voltage": _get_param("Dev Voltage"),
-        "Dev Current": _get_param("Dev Current"),
-        "THD Voltage %": _get_param("THD Voltage %"),
-        "THD Current %": _get_param("THD Current %"),
-        "Upper Sideband": _get_param("Upper Sideband"),
-        "Lower Sideband": _get_param("Lower Sideband"),
-        "Rotorbar Health": _get_param("Rotorbar Health"),
-        "Se Fund": _get_param("Se Fund"),
-        "Se Harm": _get_param("Se Harm"),
-        "Rotorbar Level %": _get_param("Rotorbar Level %"),
-        "Bearing": _get_param("Bearing"),
-    }
-
-    try:
-        result = calculate_condition(params)
-        return str(result.get("Overall", "Normal"))
-    except Exception:
-        k_rows = rows[rows["Parameter"] == "Kondisi"]
-        if not k_rows.empty:
-            val = k_rows["Raw_Value"].astype(str).iloc[0]
-            return _canon_condition_status(val)
-        return "Unknown"
 
 
 def render_dashboard_page(
@@ -146,7 +51,7 @@ def render_dashboard_page(
     master_by_norm = {}
     if isinstance(eq_master_df, pd.DataFrame) and not eq_master_df.empty:
         tmp = eq_master_df.copy()
-        tmp["_norm"] = tmp["Equipment"].astype(str).map(_norm_equipment)
+        tmp["_norm"] = tmp["Equipment"].astype(str).map(norm_equipment)
         tmp = tmp.drop_duplicates(subset=["_norm"], keep="first")
         for _, r in tmp.iterrows():
             n = r.get("_norm")
@@ -302,15 +207,15 @@ def render_dashboard_page(
         universe_eq = [str(x) for x in standby_report.get("eq_universe")]
     else:
         universe_eq = [str(x) for x in filtered_df.get("Equipment", pd.Series(dtype=str)).dropna().astype(str).unique()]
-    universe_norm = [n for n in (pd.Series(universe_eq).map(_norm_equipment).tolist()) if n and n.lower() not in {"nan", "none"}]
+    universe_norm = [n for n in (pd.Series(universe_eq).map(norm_equipment).tolist()) if n and n.lower() not in {"nan", "none"}]
 
     missing_norm = set()
     if standby_enabled and standby_report and isinstance(standby_report.get("eq_missing"), list):
-        missing_norm = set(pd.Series([str(x) for x in standby_report.get("eq_missing")]).map(_norm_equipment).tolist())
+        missing_norm = set(pd.Series([str(x) for x in standby_report.get("eq_missing")]).map(norm_equipment).tolist())
 
     tmp = filtered_df.copy()
     if "Equipment" in tmp.columns:
-        tmp["_norm"] = tmp["Equipment"].astype(str).map(_norm_equipment)
+        tmp["_norm"] = tmp["Equipment"].astype(str).map(norm_equipment)
     else:
         tmp["_norm"] = ""
     status_by_norm = {}
@@ -318,7 +223,7 @@ def render_dashboard_page(
         for n, g in tmp.groupby("_norm"):
             if not n or str(n).lower() in {"nan", "none"}:
                 continue
-            status_by_norm[n] = _compute_overall_status_from_rows(g)
+            status_by_norm[n] = compute_overall_status_from_rows(g)
 
     status_by_universe = {}
     for n in universe_norm:
@@ -372,13 +277,13 @@ def render_dashboard_page(
     st.subheader("Data Detail")
     detail_df = df_latest.copy()
     if sel_unit != "All":
-        _unit_series = detail_df.get("Unit_Name", pd.Series(dtype=str)).astype(str).map(_canon_unit_name)
-        _norm_series = detail_df.get("Equipment", pd.Series(dtype=str)).astype(str).map(_norm_equipment)
+        _unit_series = detail_df.get("Unit_Name", pd.Series(dtype=str)).astype(str).map(canon_unit_name)
+        _norm_series = detail_df.get("Equipment", pd.Series(dtype=str)).astype(str).map(norm_equipment)
         _unit_series = _norm_series.map(master_norm_to_unit).fillna(_unit_series)
         detail_df = detail_df[_unit_series == sel_unit]
     if sel_volt != "All":
-        _volt_series = detail_df.get("Voltage_Level", pd.Series(dtype=str)).astype(str).map(_canon_voltage_level)
-        _norm_series = detail_df.get("Equipment", pd.Series(dtype=str)).astype(str).map(_norm_equipment)
+        _volt_series = detail_df.get("Voltage_Level", pd.Series(dtype=str)).astype(str).map(canon_voltage_level)
+        _norm_series = detail_df.get("Equipment", pd.Series(dtype=str)).astype(str).map(norm_equipment)
         _volt_series = _norm_series.map(master_norm_to_volt).fillna(_volt_series)
         detail_df = detail_df[_volt_series == sel_volt]
     if sel_equipment:
@@ -392,7 +297,7 @@ def render_dashboard_page(
         eq_meta["Equipment"] = eq_meta["Equipment"].astype(str)
         if "Full_Name" in eq_meta.columns:
             eq_meta["Full_Name"] = eq_meta["Full_Name"].astype(str)
-        eq_meta["_norm"] = eq_meta["Equipment"].map(_norm_equipment)
+        eq_meta["_norm"] = eq_meta["Equipment"].map(norm_equipment)
         if "Full_Name" not in eq_meta.columns:
             eq_meta["Full_Name"] = eq_meta["Equipment"]
 
@@ -428,7 +333,7 @@ def render_dashboard_page(
         selected_eq = display_map[selected_label]
         eq_data = detail_df[detail_df["Equipment"] == selected_eq]
 
-        sel_norm = _norm_equipment(selected_eq)
+        sel_norm = norm_equipment(selected_eq)
         u_name = master_norm_to_unit.get(sel_norm) or (
             eq_data["Unit_Name"].iloc[0]
             if "Unit_Name" in eq_data.columns and not eq_data.empty
@@ -440,7 +345,7 @@ def render_dashboard_page(
             else "-"
         )
         f_name = eq_data["Full_Name"].iloc[0] if "Full_Name" in eq_data.columns else "-"
-        ref = master_by_norm.get(_norm_equipment(selected_eq))
+        ref = master_by_norm.get(norm_equipment(selected_eq))
         if ref:
             if str(f_name).strip() in {"", "-", "Unknown", "nan", "None"}:
                 f_name = ref.get("Full_Name") or f_name
@@ -552,7 +457,7 @@ def render_dashboard_page(
             status_src = tmp.get("Raw_Value")
         status_src = status_src.astype(str)
         status_disp = tmp["Parameter"].map(lambda p: str(p).strip().lower()).isin({"kondisi", "bearing"})
-        status_col = status_src.where(status_disp, tmp.get("Status", status_src)).map(_canon_condition_status)
+        status_col = status_src.where(status_disp, tmp.get("Status", status_src)).map(canon_condition_status)
 
         table_df = pd.DataFrame({
             "Parameter": tmp["Parameter"],

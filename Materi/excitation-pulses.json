@@ -1,0 +1,19 @@
+{
+  "id": "excitation-pulses",
+  "title": "Excitation Pulses",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: Failure Mechanisms",
+      "content": "www.irispower.com\n \nFor lower resistance of the semi\n-\nconductive coating\n,\n \nthe induced cur\nrent\n \nas shown in \nFigure \n16\n \nis of such \nsignificance that the resulting sparks with the help of ozone can lead to accelerated degradation of the coating. \nThis, in turn, will induce slot discharge and the affected machine can eventually fail only after a few years of \noperation.\n \nSince\n \nthe physics of the vibration sparking is not voltage driven, such contact sparking can occur at the low \nvoltage end of the winding and the resulting PD pattern may not be locked to the AC sine wave. For this reason\n,\n \nearly stage detection is complicated th\nough eventually slot discharge should be reliably recognized as in 4.2.2.2.\n \nFailure mechanism\n \nPolarity\n \nLoad Effect\n \nTemperature \nEffect\n \nPhase Location\n \nVibration Sparking\n \nUnknown\n \nDirect\n \nInverse\n \nUnknown\n \n \n4.5\n \nExtraneous Signals\n \nAs described in Section \n3.5\nDisturbances\n \nare electrical pulses\n \nof relatively short duration that may have many \nof the characteristics of stator winding PD pulses \n \nbut in\n \nfact are not s\ntator winding PD\n \n[\n12\n]\n. \n \nSome of these \ndisturbances are synchronized to the AC cycle, and some are not. \n \nSometimes synchronized disturbance \npulses can be suppresse\nd based on their position with respect to the AC \ncycle\n. See Section \n5.1.2\n \nfor more \ninformation about Disturbance separation.\n \nHence\n, as part of the data analysis pr\nocess, it is important to identify whether the pulse patterns displayed \ncontain disturbances from sources within the stator winding environment that could not be separated by the PD \ninstrument or test configuration. Disturbance\n-\nlike sources tend to produc\ne patterns that \noccur\n \nacross the AC \ncycle.\n \nThere are three common disturbance patterns that may occur.\n \n4.5.1\n \nExcitation\n \npulses\n \nPD couplers sometimes detect the high frequency \nthyristor\n-\nfirings of static excitation systems. These \npulses are usually of equal pulse repetitions, low \nmagnitudes and occur repetitively across the AC \ncycle\n \n(\nFigure \n17\n)\n. Usually, they are only discernible \nwhen there is low PD activity on the unit and the \ntest \nrange\n \nof the PD test instrument is set to its most \nsensitive (lowest range) setting. This is not usually \nindi\ncative of a problem\n \nwith a stator winding\n, but if \npulse levels are high this may indicate that there is a \nproblem in the exciter\n.\n \nAlthough this type of pattern is \nmay\n \nalso be \ndetected from \nmachines\n \nclose to vari\nable frequency \ndrives in the electrical system.\n \n \n4.5.2\n \nCross\n-\ncoupling\n \nPD pulses are high frequency pulses that may capacitively couple from one phase to another across the \nendwinding\n \nor circuit ring\ns\n. In addition, a coupler connected to one phase may detect pulses radiated from \na\n \nsource o\nn another phase. This behavio\nu\nr is called cross\n-\ncoupling and can be detected by observing PD pulses \nshifted \n \n \n120\n°\n \nfrom \nthe positions of the source PD. Phase\n-\nto\n-\nground\n \nPD cross\n-\ncoupled from another phase \nwould cluster at 345\n°\n, 105\n°\n, 165\n°\n \nor\n \n285\n°\n. \n \nCross\n-\ncoupled inter\n-\nphas\ne\n \nactivity would be \n \n30\n°\n \nphase\n-\nshifted fro\nm \nthese positions as shown for \nC\n-\nphase (\nmiddle plot \nat \n315\n°\n)\n \nin\n \nFigure \n28\n.\n \n \nDisturbance pulses are not indicative of PD sources within the winding insulation.\n \nFigure \n17\n: Excitation Pulses"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "study-case-tiara",
+  "title": "Study Case-Tiara",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: PT. Tiara Vibrasindo Pratama",
+      "content": "Jl. Penjernihan II No. 5 A, \nBendungan Hilir, Tanah Abang \nJakarta Pusat 10210 \nTlp/Fax :021 – 5704200 / 021 - 5746362 \n \nStudy Case \nPartial Discharge Monitoring System \ndalam mendeteksi gejala Ground Fault pada IPB \nHabib Fajarsyah \nPT. Tiara Vibrasindo Pratama \nhabib@tiaravib.com \n082157285029 \n \nLatar Belakang \nIso Phase Bus (IPB) discharge merupakan suatu gejal a discharge pada IPB yang dapat \nmempengaruhi monitoring PD pada generator. Hal ini disebabkan peletakan sensor PD yang \nlazimnya terpasang p ada terminal generator yang menghubungkan generator dengan IPB. \nSehingga apabila terjadi discharge pada IPB, sinyal pulsa discharge tersebut akan melintasi \nsensor PD yang terpasang tersebut. Tentu saja apabila tidak dipisahkan maka akan \nmempengaruhi anal isis PD pada generator, namun apabila mampu dipisahkan, maka akan \nmemberikan keuntungan berupa identifikasi aktivi tas discharge pada I PB yang bisa merupakan \ngejala terjadinya ground fault pada IPB. \nStudy case ini merupakan identifikasi adanya gejala ground fault discharge yang terjadi pada \nIPB milik suatu pembangkit listrik tenaga uap yang menggunakan asset asset buatan China. \nDischarge pada IPB tersebut tertangkap oleh generator PD online monitoring system yang telah \nterpasang di unit tersebut."
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: PT. Tiara Vibrasindo Pratama",
+      "content": "Jl. Penjernihan II No. 5 A, \nBendungan Hilir, Tanah Abang \nJakarta Pusat 10210 \nTlp/Fax :021 – 5704200 / 021 - 5746362 \n \nDeskripsi PD online monitoring system \nBerikut ini adalah skema single-phase system monitoring PD yang terpasang pada PLTU \ntersebut : \n \nSystem tersebut merupakan double-ended directional system dimana system tersebut \nmenggunakan dua buah sensor per -phasa. Tujuan i mplementasi system ini adalah pengguna \nmampu membedakan sinyal PD dari generator maupun sinyal lain yang berasal dari non -\ngenerator. Pada prakteknya, system ini akan mengklasifikasikan sinyal menjadi PD dari \nMesin/generator, between PD, dan system signal \n \nKemudian, data yang diakuisisi akan ditampilkan dalam beberapa plot, salah satunya adalah \npulse phase analysis plot sebagai berikut :"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: PT. Tiara Vibrasindo Pratama",
+      "content": "Jl. Penjernihan II No. 5 A, \nBendungan Hilir, Tanah Abang \nJakarta Pusat 10210 \nTlp/Fax :021 – 5704200 / 021 - 5746362 \n \n \nLeft activity merupakan machine PD \nBetween activity merupakan discharge pada IPB ditengah kedua coupler yang terpasang \nRight activity merupakan system signal"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: PT. Tiara Vibrasindo Pratama",
+      "content": "Jl. Penjernihan II No. 5 A, \nBendungan Hilir, Tanah Abang \nJakarta Pusat 10210 \nTlp/Fax :021 – 5704200 / 021 - 5746362 \n \nTemuan - Temuan \nPD online monitoring system : \n \nSecara keseluruhan, pada masing masing fasa terlihat right activity (system signal) terlihat \ndominan pada seluruh fasa. Dari right activity pada masing masing fasa tersebut, aktivitas pada \nfasa A jauh lebih dominan dibandingkan dengan fasa lainnya. Hal ini ditunjukkan oleh level Qm \npada fasa A yang jauh lebih tinggi dibandingkan fasa yang lainnya. Lebih lanjut, pola yang \nditunjukkan pada fasa A menunjukkan jenis sinyal tersebut merupakan jenis phase -ground \ndischarge (peak cluster pulsa tersebut pada 45 dan 225). \nPada unit lainnya, dijumpai juga pola-pola sejenis dengan magnitude Qm yang lebih rendah,"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5: PT. Tiara Vibrasindo Pratama",
+      "content": "Jl. Penjernihan II No. 5 A, \nBendungan Hilir, Tanah Abang \nJakarta Pusat 10210 \nTlp/Fax :021 – 5704200 / 021 - 5746362 \n \n \nOperational symptoms : \nDari sisi operasional, ground fault alarm mengalami trigger berkali -kali. Hal ini membuat operator \nmemutuskan untuk men-shut down asset guna mencegah kerusakan lebih lanjut. \n \nOffline test result : \nOffline test yang dilakukan merupakan insulation resistance test/Megger. Pengujian ini dilakukan dalam \nkondisi IPB tidak terhubung dengan generator, transformer, UAT, dan Excitation system. Hasil yang \ndidapatkan adalah sebagai berikut : \nPengukuran semua phasa terhadap ground (RST – G) menunjukkan nilai sekitar 5 MOhms. \nKemudian fasa R diukur terhadap ground (R – G) menunjukkan nilai sekitar 5 MOhms, dan fasa ST diukur \nterhadap Ground (ST – G) menunjukkan nilai sekitar 60 GOhms. \n \nKesimpulan dan rekomendasi \n1. Failure Mode and Effect Analysis pada IPB diperlukan untuk memetakan potensi failure dan \nmitigasinya pada IPB \n2. Pada Fasa A unit tersebut terdapat indikasi adanya ground fault discharge pada IPB pada bagian \nsetelah coupler kedua sebelum transformer \n3. Apabila tidak dapat dipisahkan, sinyal discharge dari IPB ini akan mengganggu pengukuran PD \npada generator. \n4. System monitoring PD pada generator dengan metode double -ended directional memiliki \nkeuntungan selain mampu mengukur PD pada Generator, namun juga mampu mendeteksi \ngejala ground fault discharge pada IPB \n5. Pada Plant ini, Perlu adanya suatu nilai tertentu sebagai suatu patokan pada level berapa plant \npersonnel harus aware terhadap discharge pada IPB (Ground fault discharge). \n6. Perlu adanya metode untuk inspeksi pada IPB sebab saat ini akses yang terbatas menjadi \nkendala saat hendak dilakukan inspeksi pada IPB"
+    }
+  ]
+}

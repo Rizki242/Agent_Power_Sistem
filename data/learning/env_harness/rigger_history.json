@@ -48,5 +48,155 @@
       "decision_reason": "Kandidat wrapper melatih kelemahan spesifik dan episode berhasil diselesaikan secara valid."
     },
     "active_harness_components_count": 4
+  },
+  {
+    "timestamp": "2026-08-30T20:09:21.995465",
+    "equipment": "BFP 1A",
+    "stage_1_observe": {
+      "base_success": true,
+      "steps": 4,
+      "actions_count": 4
+    },
+    "stage_2_diagnose": {
+      "issue": "TASK_HORIZON_TOO_SHORT",
+      "recommendation": "Agent menguasai diagnosa dasar. Terapkan Chain ke mitigasi & WO.",
+      "target_wrapper": "CHAIN"
+    },
+    "stage_3_write": {
+      "wrapper_type": "CHAIN",
+      "name": "Chain-ExtendedLifecycle-761",
+      "description": "Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+    },
+    "stage_4_validate": {
+      "validation_success": true,
+      "accepted": true,
+      "decision_reason": "Kandidat wrapper melatih kelemahan spesifik dan episode berhasil diselesaikan secara valid."
+    },
+    "active_harness_components_count": 4
+  },
+  {
+    "timestamp": "2026-08-31T05:32:44.659289",
+    "equipment": "BFP 1A",
+    "stage_1_observe": {
+      "base_success": true,
+      "steps": 4,
+      "actions_count": 4
+    },
+    "stage_2_diagnose": {
+      "issue": "TASK_HORIZON_TOO_SHORT",
+      "recommendation": "Agent menguasai diagnosa dasar. Terapkan Chain ke mitigasi & WO.",
+      "target_wrapper": "CHAIN"
+    },
+    "stage_3_write": {
+      "wrapper_type": "CHAIN",
+      "name": "Chain-ExtendedLifecycle-564",
+      "description": "Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+    },
+    "stage_4_validate": {
+      "validation_success": true,
+      "accepted": true,
+      "decision_reason": "Kandidat wrapper melatih kelemahan spesifik dan episode berhasil diselesaikan secara valid."
+    },
+    "active_harness_components_count": 4
+  },
+  {
+    "timestamp": "2026-08-31T05:40:15.253643",
+    "equipment": "BFP 1A",
+    "stage_1_observe": {
+      "base_success": true,
+      "steps": 4,
+      "actions_count": 4
+    },
+    "stage_2_diagnose": {
+      "issue": "TASK_HORIZON_TOO_SHORT",
+      "recommendation": "Agent menguasai diagnosa dasar. Terapkan Chain ke mitigasi & WO.",
+      "target_wrapper": "CHAIN"
+    },
+    "stage_3_write": {
+      "wrapper_type": "CHAIN",
+      "name": "Chain-ExtendedLifecycle-15",
+      "description": "Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+    },
+    "stage_4_validate": {
+      "validation_success": true,
+      "accepted": true,
+      "decision_reason": "Kandidat wrapper melatih kelemahan spesifik dan episode berhasil diselesaikan secara valid."
+    },
+    "active_harness_components_count": 4
+  },
+  {
+    "timestamp": "2026-08-31T06:59:34.997477",
+    "equipment": "BFP 1A",
+    "stage_1_observe": {
+      "base_success": true,
+      "steps": 4,
+      "actions_count": 4
+    },
+    "stage_2_diagnose": {
+      "issue": "TASK_HORIZON_TOO_SHORT",
+      "recommendation": "Agent menguasai diagnosa dasar. Terapkan Chain ke mitigasi & WO.",
+      "target_wrapper": "CHAIN"
+    },
+    "stage_3_write": {
+      "wrapper_type": "CHAIN",
+      "name": "Chain-ExtendedLifecycle-774",
+      "description": "Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+    },
+    "stage_4_validate": {
+      "validation_success": true,
+      "accepted": true,
+      "decision_reason": "Kandidat wrapper melatih kelemahan spesifik dan episode berhasil diselesaikan secara valid."
+    },
+    "active_harness_components_count": 4
+  },
+  {
+    "timestamp": "2026-08-31T07:02:33.760507",
+    "equipment": "BFP 1A",
+    "stage_1_observe": {
+      "base_success": true,
+      "steps": 4,
+      "actions_count": 4
+    },
+    "stage_2_diagnose": {
+      "issue": "TASK_HORIZON_TOO_SHORT",
+      "recommendation": "Agent menguasai diagnosa dasar. Terapkan Chain ke mitigasi & WO.",
+      "target_wrapper": "CHAIN"
+    },
+    "stage_3_write": {
+      "wrapper_type": "CHAIN",
+      "name": "Chain-ExtendedLifecycle-953",
+      "description": "Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+    },
+    "stage_4_validate": {
+      "validation_success": true,
+      "accepted": true,
+      "decision_reason": "Kandidat wrapper melatih kelemahan spesifik dan episode berhasil diselesaikan secara valid."
+    },
+    "active_harness_components_count": 4
+  },
+  {
+    "timestamp": "2026-08-31T07:09:12.307294",
+    "equipment": "BFP 1A",
+    "stage_1_observe": {
+      "base_success": true,
+      "steps": 4,
+      "actions_count": 4
+    },
+    "stage_2_diagnose": {
+      "issue": "TASK_HORIZON_TOO_SHORT",
+      "recommendation": "Agent menguasai diagnosa dasar. Terapkan Chain ke mitigasi & WO.",
+      "target_wrapper": "CHAIN"
+    },
+    "stage_3_write": {
+      "wrapper_type": "CHAIN",
+      "name": "Chain-ExtendedLifecycle-352",
+      "description": "Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+    },
+    "stage_4_validate": {
+      "validation_success": true,
+      "accepted": true,
+      "decision_reason": "Kandidat wrapper melatih kelemahan spesifik dan episode berhasil diselesaikan secara valid."
+    },
+    "active_harness_components_count": 4
   }
 ]

@@ -1,0 +1,134 @@
+{
+  "id": "laporan-pd-januari-2024",
+  "title": "Laporan Pd Januari 2024",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1",
+      "content": "2024 \nPT INDONESIA POWER \nPLTU JERANJANG OMU \nJanuari 2024 \nLAPORAN PARTIAL DISCHARGE \nUNIT 1 PLTU JERANJANG"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 1 dari 10 halaman \n \n \n \n \n \n \nI Tujuan \n Pengambilan partial discharge bertujuan memeriksa kondisi \ngenerator secara trending dengan menggunakan analyzer dan \ncoupler yang terpasang di BUS Generator . Dengan pemantaun \naktivitas partial discharge pada generator, diharapakan dapa t \nmemonitoring terhadap aktivitas PD pada Stator Winding Generator. \n \nII Latar Belakang \n- Sebagai penunjang untuk menjaga keandalan unit pembangkit \n- Usia pembangkit yang relative sudah lama \n \nIII Peralatan PDM \n- Partial Discharge \n \n \n \n \n \n \n \n Online Monitoring dengan analizer BussTrac II"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 2 dari 10 halaman \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \n \nLay Out Pemasangan Coupler Partial Discharge"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 3 dari 10 halaman \n \n \n \n \n \n \nEXECUTIVE SUMMARY \nUNIT 1 KESIMPULAN SARAN \nNilai QM Fasa R, \nrelative tidak terjadi \nkenaikan yang \nsignifikan dilihat \ntrending dari bulan \nDesember 2020 \nsampai Januari 2024 \nTidak ada indikasi \naktivitas PD pada \nFasa R \n- Melakukan \npengambilan data \nsesuai jadwal yang \nditentukan \n- Melakukan rekap/ \ntrending data PD, \napabila terdapat \nkenaikan yang \nsignifikan segera \nlaporkan \nNilai QM Fasa S, \nrelative tidak terjadi \nkenaikan yang \nsignifikan dilihat \ntrending dari bulan \nDesember 2020 \nsampa Januari 2024 \nTidak ada indikasi \naktivitas PD pada \nFasa S \nNilai QM Fasa T, \nrelative tidak terjadi \nkenaikan yang \nsignifikan dilihat \ntrending dari bulan \nDesember 2020 \nsampai Januari 2024 \nTidak ada indikasi \naktivitas PD pada \nFasa T \n \nLAPORAN PARTIAL DISCHARGE UNIT 1 UBP JERANJANG \nBULAN JANUARI 2024"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 4 dari 10 halaman \n \n \n \n \n \n \nPHA REPORT PER PHASA KETERANGAN \n \nPHA REPORT PHASA R \n \n \nPenampilan data \nuntuk pengolahan \ndari Pulse Height \nAnalysis \n- Data yang \ndiambil adalah \nyang terbaik \ndengan syarat \npemotongan \npulse magnitude \npada QM positive \ndan Qm Negative \npada pulse count \n101 \n- Sensitivitas 20-\n240 mV \n- Beban : 22.3 MW \n- Temperatur \nwinding : 50 deg \nC \nPHA REPORT PHASA S \nPenampilan data \nuntuk pengolahan \ndari Pulse Higt \nAnalysis \n- Data yang \ndiambil adalah \nyang terbaik \ndengan syarat \npemotongan \npulse magnitude"
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 5 dari 10 halaman \n \n \n \n \n \n \n \npada QM positive \ndan Qm Negative \npada pulse count \n101 \n- Sensitivitas 20-\n240 mV \n- Beban : 22.3 MW \n- Temperatur \nwinding : 55 deg \nC \n \nPHA PHASA T \n \n \n \nPenampilan data \nuntuk pengolahan \ndari Pulse Higt \nAnalysis \n- Data yang \ndiambil adalah \nyang terbaik \ndengan syarat \npemotongan \npulse magnitude \npada QM positive \ndan Qm Negative \npada pulse count \n101 \n- Sensitivitas 20-\n240 mV \n- Beban : 22.3 MW \n- Temperatur \nwinding: 55 deg \nC"
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 6 dari 10 halaman \n \n \n \n \n \n \nPPA REPORT PER PHASA KETERANGAN \nPPA REPORT PHASA R \n \nDengan \nmengguakan Pulse \nPhase Analisys, \npada phasa R dapat \ndiketahui beberapa \nhal : \n- Tidak ada \naktivitas klasik \nPD pada \nmachine side \n- Nilai QM + \ntertinggi adalah \n33 mV \n- Nilai QM - \ntertinggi adalah \n36 mV \n- Berdasarkan \nstandar statistik \ndengan nilai QM \n+ dan QM – yang \ntercatat diatas \ndapat \ndisimpulkan \nbahwa PD yang \nterjadi masih \nNegligible \n(Normal) \n \n \nPPA REPORT PHASA S \nDengan \nmengguakan Pulse \nPhase Analisys,"
+    },
+    {
+      "id": "page-8",
+      "heading": "Halaman 8: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 7 dari 10 halaman \n \n \n \n \n \n \n \npada phasa S dapat \ndiketahui beberapa \nhal : \n- Ada aktivitas \nklasik PD pada \nmachine side \n- Nilai QM + \ntertinggi adalah \n16 mV \n- Nilai QM - \ntertinggi adalah \n19 mV \n- Berdasarkan \nstandar statistik \ndengan nilai QM \n+ dan QM – yang \ntercatat diatas \ndapat \ndisimpulkan \nbahwa PD yang \nterjadi masih \nNegligible \n(Normal)"
+    },
+    {
+      "id": "page-9",
+      "heading": "Halaman 9: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 8 dari 10 halaman \n \n \n \n \n \n \nPengambilan data yang dilakukan untuk monitoring aktivitas partial discharge dilakukan \ntiap bulan dengan sensitivitas yang sama yaitu 20-240 mV. \n \nPPA REPORT PHASA T \n \n \n \nDengan \nmengguakan Pulse \nPhase Analisys, \npada phasa T dapat \ndiketahui beberapa \nhal : \n- Ada aktivitas \nklasik PD pada \nmachine side \n- Nilai QM + \ntertinggi adalah \n27 mV \n- Nilai QM - \ntertinggi adalah \n31 Mv \n- Berdasarkan \nstandar statistik \ndengan nilai QM \n+ dan QM – yang \ntercatat diatas \ndapat \ndisimpulkan \nbahwa PD yang \nterjadi masih \nNegligible \n(Normal)"
+    },
+    {
+      "id": "page-10",
+      "heading": "Halaman 10: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 9 dari 10 halaman \n \n \n \n \n \n \nQM + \nPHASE R\nQM + \nPHASE S\nQM + \nPHASE T\nQM - \nPHASE R\nQM - \nPHASE S\nQM - \nPHASE T\nNQN+ \nPHASE R\nNQN+ \nPHASE S\nNQN+ \nPHASE T\nNQN- \nPHASE R\nNQN- \nPHASE S\nNQN- \nPHASE T\n03 November 2023 36 12 25 20 15 0 32 41 31 29 34 26\n29 November 2023 36 14 33 25 26 15 35 30 31 20 27 27\n20 December 2023 33 27 18 36 24 18 34 24 30 40 28 38\n26 January 2023 33 16 27 36 19 31 34 17 53 40 13 56\nQM - QM + NQN+ NQN-TANGGAL \nPD MACHINE\n \n- Melihat trending selama 4 bulan terakhir tidak terdapat kenaikan magnitude QM \ndan NQN dari sisi machine (generator), dengan status tertinggi di Typical pada \nPhase T (Typical berdasarkan IRMC 2016 PD Database). \n \nAnalisa : \n- Pemantauan dari bulan Desember 2020 sampai dengan bulan Januari 2024 \ndengan menggunakan analizer PD monitoring online Bustrac II tidak terjadi \nkenaikan nilai QM+ dan QM- dan pergeseran pola discharge. \n \nPenunjukan polarity predominant dari nilai PD mengindikasikan tempat terjadinya \ndischarge :"
+    },
+    {
+      "id": "page-11",
+      "heading": "Halaman 11: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 10 dari 10 halaman \n \n \n \n \n \n \n+PD > -PD mengindikasikan terjadi discharge permukaan isolasi \n+PD < -PD mengindikasikan terjadi discharge permukaan isolasi \n+PD ~ -PD mengindikasikan terjadi discharge antara isolasi dengan core \n \nKesimpulan : \n- Dari hasil pengukuran PD pada bulan September 2023, maka kemungkinan \nterjadinya failure mechanisme diatas pada PLTU Jeranjang Unit 1 bisa terjadi. \nPhasa Keterangan \nR \na. Tidak ada aktivitas PD pada Phasa R \nS \na. Tidak ada aktivitas PD pada Phasa S \nT a. Tidak ada aktivitas PD pada Phasa T \n \nRekomendasi : \n1. Monitoring Partial discharge dan parameter operasi secara konsisten."
+    },
+    {
+      "id": "page-12",
+      "heading": "Halaman 12: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 11 dari 10 halaman \n \n \n \n \n \n \n2. Menjaga pola pembebanan generator, meminimalisir naik turun beban yang dapat \nmengakibatkan kenaikan PD. \n3. Melakukan rekap/trend data PD, apabila terjadi kenaikan yang signifikan segera \nlaporkan dan tindaklanjuti. \n \nSumber literatur : \n1. Manual book Iris “BusTrac II” \n2. Interpretation of PD Result V4 \n3. IRMC 2016 PD Database"
+    },
+    {
+      "id": "page-13",
+      "heading": "Halaman 13: PT INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nJanuari 2024 \nLAPORAN PARTIAL DISCHARGE \nUNIT 3 PLTU JERANJANG"
+    },
+    {
+      "id": "page-14",
+      "heading": "Halaman 14: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 1 dari 10 halaman \n \n \nI Tujuan \n Pengambilan partial discharge bertujuan memeriksa kondisi \ngenerator secara trending dengan menggunakan analyzer dan \ncoupler yang terpasang di BUS Generator . Dengan pemantaun \naktivitas partial discharge pada generator, diharapakan dapa t \nmemonitoring terhadap aktivitas PD pada Stator Winding Generator. \n \nII Latar Belakang \n- Sebagai penunjang untuk menjaga keandalan unit pembangkit \n- Usia pembangkit yang relative sudah lama \n \nIII Peralatan PDM \n- Partial Discharge \n \n \n \n \n \n \n \n Online Monitoring dengan analizer BussTrac II"
+    },
+    {
+      "id": "page-15",
+      "heading": "Halaman 15: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 2 dari 10 halaman \n \n \n \n \n \n \n \n \n \n \n \n \n \n \nLay Out Pemasangan Coupler Partial Discharge"
+    },
+    {
+      "id": "page-16",
+      "heading": "Halaman 16: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 3 dari 10 halaman \n \n \nEXECUTIVE SUMMARY \nUNIT 3 Keterangan SARAN \nNilai QM Fasa R, \nrelative terjadi \nkenaikan namun tidak \nsignifikan dilihat \ntrending dari bulan \nAgustus 2016 sampai \nJanuari 2024 \nTidak ada indikasi \naktivitas PD pada \nFasa S \n- R \nNilai QM Fasa S, \nrelative tidak terjadi \nkenaikan yang \nsignifikan dilihat \ntrending dari bulan \nAgustus 2016 sampai \nJanuari 2024 \nTidak ada indikasi \naktivitas PD pada \nFasa S \nNilai QM Fasa T, \nrelative terjadi \nkenaikan namun tidak \nsignifikan dilihat \ntrending dari bulan \nAgustus 2016 sampai \nJanuari 2024 \nTidak ada indikasi \naktivitas PD pada \nFasa T \n \nLAPORAN PARTIAL DISCHARGE UNIT 3 UBP JERANJANG \nJANUARI 2024"
+    },
+    {
+      "id": "page-17",
+      "heading": "Halaman 17: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 4 dari 10 halaman \n \n \nPHA REPORT PER PHASA KETERANGAN \n \nPHA REPORT PHASA R \n \n \nPenampilan data \nuntuk pengolahan \ndari Pulse Height \nAnalysis \n- Data yang \ndiambil adalah \nyang terbaik \ndengan syarat \npemotongan \npulse magnitude \npada QM positive \ndan Qm Negative \npada pulse count \n101 \n- Sensitivitas 5.0-\n85.0 mV \n- Beban : 22.5 MW \n- Temperatur \nwinding : 55.16 \ndeg C \nPHA REPORT PHASA S \nPenampilan data \nuntuk pengolahan \ndari Pulse Higt \nAnalysis \n- Data yang \ndiambil adalah \nyang terbaik \ndengan syarat \npemotongan \npulse magnitude"
+    },
+    {
+      "id": "page-18",
+      "heading": "Halaman 18: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 5 dari 10 halaman \n \n \n \npada QM positive \ndan Qm Negative \npada pulse count \n101 \n- Sensitivitas 5.0-\n85.0 mV \n- Beban : 22.5 MW \n- Temperatur \nwinding : 55.16 \ndeg C \n \nPHA PHASA T \n \nPenampilan data \nuntuk pengolahan \ndari Pulse Higt \nAnalysis \n- Data yang \ndiambil adalah \nyang terbaik \ndengan syarat \npemotongan \npulse magnitude \npada QM positive \ndan Qm Negative \npada pulse count \n101 \n- Sensitivitas 5.0-\n85.0 mV \n- Beban : 22.5 MW \n- Temperatur \nwinding: 56.16 \ndeg C"
+    },
+    {
+      "id": "page-19",
+      "heading": "Halaman 19: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 6 dari 10 halaman \n \n \nPPA REPORT PER PHASA KETERANGAN \nPPA REPORT PHASA R \n \n \nDengan \nmengguakan Pulse \nPhase Analisys, \npada phasa R dapat \ndiketahui beberapa \nhal : \n- Tidak ada \nindikasi aktivitas \nPD di fasa R \n- Nilai QM + \ntertinggi adalah \n19 mV \n- Nilai QM - \ntertinggi adalah \n14 mV \n- Berdasarkan \nstandar statistik \ndengan nilai QM \n+ dan QM – yang \ntercatat diatas \ndapat \ndisimpulkan \nbahwa PD yang \nterjadi masih \nNegligible \n(Normal) \n \nPPA REPORT PHASA S \nDengan \nmengguakan Pulse \nPhase Analisys, \npada phasa S dapat \ndiketahui beberapa"
+    },
+    {
+      "id": "page-20",
+      "heading": "Halaman 20: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 7 dari 10 halaman \n \n \n \n \nhal : \n- Tidak ada \nindikasi aktivitas \nPD di fasa S \n- Nilai QM + \ntertinggi adalah \n18 mV \n- Nilai QM - \ntertinggi adalah \n18 mV"
+    },
+    {
+      "id": "page-21",
+      "heading": "Halaman 21: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 8 dari 10 halaman \n \n \nPengambilan data yang dilakukan untuk monitoring aktivitas partial discharge dilakukan \ntiap bulan dengan sensitivitas yang sama yaitu 5-58 mV. \nQM + \nPHASE R\nQM + \nPHASE S\nQM + \nPHASE T\nQM - \nPHASE R\nQM - \nPHASE S\nQM - \nPHASE T\nNQN+ \nPHASE R\nNQN+ \nPHASE S\nNQN+ \nPHASE T\nNQN- \nPHASE R\nNQN- \nPHASE S\nNQN- \nPHASE T\n10 November 2023 17 13 9 8 15 20 22 15 4 4 6 15\n24 November 2023 0 12 28 27 37 12 4 30 29 30 47 29\n14 December 2023 19 19 11 8 0 13 28 26 17 13 5 21\n31 January 2024 19 18 0 14 18 14 24 22 3 23 17 24\nQM - QM + NQN+ NQN-TANGGAL \nPD MACHINE\n \n \nPPA REPORT PHASA T \n \n \nDengan \nmengguakan Pulse \nPhase Analisys, \npada phasa T dapat \ndiketahui beberapa \nhal : \n- Tidak ada \nindikasi aktivitas \nPD di fasa T \n- Nilai QM + \ntertinggi adalah \n0 mV \n- Nilai QM - \ntertinggi adalah \n14 mV"
+    },
+    {
+      "id": "page-22",
+      "heading": "Halaman 22: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 9 dari 10 halaman \n \n \n- Melihat trending selama 4 bulan terakhir terlihat tidak ada kenaikan magnitude \nQM dan NQN dari sisi machine (generator), dengan status tertinggi di \nNEGLIGIBLE (NORMAL berdasarkan IRMC 2016 PD Database). \n \nAnalisa : \n- Pemantauan dari bulan Agustus 2016 sampai dengan bulan Januari 2024 \ndengan menggunakan analizer PD monitoring online Bustrac II tidak terjadi \nkenaikan nilai QM+ dan QM- dan pergeseran pola discharge. \n \nPenunjukan polarity predominant dari nilai PD mengindikasikan tempat terjadinya \ndischarge : \n+PD > -PD mengindikasikan terjadi discharge permukaan isolasi \n+PD < -PD mengindikasikan terjadi discharge permukaan isolasi \n+PD ~ -PD mengindikasikan terjadi discharge antara isolasi dengan core"
+    },
+    {
+      "id": "page-23",
+      "heading": "Halaman 23: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 10 dari 10 halaman \n \n \n \nKesimpulan : \n- Dari hasil pengukuran PD pada bulan November, maka kemungkinan terjadinya \nfailure mechanisme diatas pada PLTU Jeranjang Unit 3 bisa terjadi. \nPhasa Keterangan \nR \na. Tidak ada indikasi aktivitas PD \npada fasa R dan 225⁰ \nS \na. Tidak ada indikasi aktivitas PD \npada fasa S dan 225⁰ \n \nT a. Tidak ada indikasi aktivitas PD \npada fasa T dan 225⁰"
+    },
+    {
+      "id": "page-24",
+      "heading": "Halaman 24: PT. INDONESIA POWER No. Dokumen FORM.JRG.F.05.005",
+      "content": "PLTU JERANJANG OMU Tanggal 21 Desember 2016 \nBIDANG ENJINERING Revisi 00 \nLAPORAN PDM TEKNOLOGI PARTIAL DISCHARGE Halaman 11 dari 10 halaman \n \n \nRekomendasi : \n1. Monitoring Partial discharge dan parameter operasi secara konsisten. \n2. Menjaga pola pembebanan generator, meminimalisir naik turun beban yang dapat \nmengakibatkan kenaikan PD. \n3. Melakukan rekap/trend data PD, apabila terjadi kenaikan yang signifikan segera \nlaporkan dan tindaklanjuti. \n \nSumber literatur : \n1. Manual book Iris “BusTrac II” \n2. Interpretation of PD Result V4 \n3. IRMC 2016 PD Database"
+    }
+  ]
+}

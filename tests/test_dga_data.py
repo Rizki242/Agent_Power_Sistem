@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -21,6 +22,11 @@ class DGAOverrideTests(unittest.TestCase):
     def setUp(self):
         self._tmpdir = tempfile.TemporaryDirectory()
         self._store_path = os.path.join(self._tmpdir.name, "dga_overrides.json")
+        self._missing_history_path = os.path.join(self._tmpdir.name, "missing_dga_history.csv")
+        self._history_patcher = patch.object(
+            dga_data, "_dga_history_path", return_value=Path(self._missing_history_path)
+        )
+        self._history_patcher.start()
         self._patcher = patch.object(
             dga_data, "_override_store", return_value=DomainOverrideStore(self._store_path)
         )
@@ -28,6 +34,7 @@ class DGAOverrideTests(unittest.TestCase):
 
     def tearDown(self):
         self._patcher.stop()
+        self._history_patcher.stop()
         self._tmpdir.cleanup()
 
     def test_no_overrides_returns_default_transformers_unchanged(self):

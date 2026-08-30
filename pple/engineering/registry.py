@@ -6,6 +6,8 @@ and pple.engineering.loader.load_modules_from_manifests() each do this
 independently, since none of them need to share state with each other).
 """
 
+from __future__ import annotations
+
 from pple.core.exceptions import ModuleNotRegisteredError
 from pple.engineering.base import EngineeringModule
 

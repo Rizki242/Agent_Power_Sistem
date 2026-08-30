@@ -11,9 +11,9 @@ from src.agents.fusion_engine import (
 )
 from src.agents.safety_guard import SafetyGuardrailAgent
 from src.agents.asset_graph import AssetKnowledgeGraph
+from src.agents.fusion_inputs import extract_mcsa_fusion_inputs
 from api_server import (
     app,
-    _extract_mcsa_fusion_inputs,
     _get_work_orders_store_path,
     _load_work_orders,
     _save_work_orders,
@@ -128,7 +128,7 @@ class TestReliabilityFusionSystem(unittest.TestCase):
             {"Equipment": "CWP 1A", "Parameter": "Dev Current", "Raw_Value": "6.1", "Value": 6.1},
         ])
 
-        inputs = _extract_mcsa_fusion_inputs(eq_data)
+        inputs = extract_mcsa_fusion_inputs(eq_data)
 
         self.assertEqual(
             set(inputs.keys()),

@@ -108,6 +108,19 @@ def render_dga_page(st) -> None:
         cols[0].metric("Diagnosis Duval Triangle 1", diag["duval_diagnosis"])
         cols[1].metric("Diagnosis Rogers Ratio", diag["rogers_diagnosis"])
         st.caption(f"Status kertas isolasi: {diag['paper_status']}")
+        history = detail.get("history") or []
+        if history:
+            st.markdown("**Trend Historis DGA**")
+            hist_fig = px.line(
+                history,
+                x="date",
+                y=["tdcg", "H2", "C2H4", "CO"],
+                markers=True,
+                title="Trend TDCG dan Gas Kunci",
+            )
+            hist_fig.update_layout(height=360, margin=dict(l=10, r=10, t=45, b=10), legend_title_text="Parameter")
+            st.plotly_chart(hist_fig, width="stretch")
+            st.dataframe(history, hide_index=True, width="stretch")
 
     elif detail_view == "Rekomendasi":
         result = DGAAgent().evaluate(detail["name"], detail["gases"])

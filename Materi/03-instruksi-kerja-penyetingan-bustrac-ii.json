@@ -1,0 +1,114 @@
+{
+  "id": "03-instruksi-kerja-penyetingan-bustrac-ii",
+  "title": "03. Instruksi Kerja Penyetingan Bustrac Ii",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n1\n \n \n \n \n \nINSTRUKSI KERJ\nA \nBUSTRAC II\n \n-\n \nPARTIAL DISCHARGE MONITORING\n \n \n \n1. Tampilan IAM Software pada waktu pertama kali dibuka adalah seperti gambar dibawah ini\n \n \n \n2. Klik \"New Database\" untuk membuat database baru dan \nisi nama database yang diinginkan"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n2\n \n \n \n \n3. \nKlik kanan pada database yang telah dibuat dan pilih \"Add Organization\"\n \n \n4.\n \nIsi nama organisasi seperti dibawah ini"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n3\n \n \n \n \n5.\n \nKlik kanan pada organisasi (PLTU) untuk \"Add Plant\".\n \n \n6. Isi nama plant seperti gambar dibawah\n \nkemudian klik \"OK\"."
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n4\n \n \n \n \n7.Klik k\nanan pada plant nam\ne \"Unit 3 Generator\" dan pilih add machine\n \n \n \n7.\n \nIsi nama asset seperti gambar dibawah ini dan klik \"next\" setelah selesai"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n5\n \n \n \n \n8. Isi data \"winding properties\" seperti gambar dibawah ini dan klik\n \n\"next\" setelah selesai\n \n \n \n \n9.\n \nPilih Satuan (unit) dari\n \nname plate rating generator yang akan diinput dan klik next untuk berikutnya"
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n6\n \n \n \n \n10.\n \nIsi Electrical rating sesuai dengan nameplate rating generator\n \ndan klik next setelah diisi dengan \nlengkap\n \n \n11.\nIsi nameplate mechanical rating"
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n7\n \n \n \n \n12. Kemudian isi \"Pha\nse naming schema\"\n \ndan klik \"finish\" \nsetelah selesai diisi.\n \n \n13.\n \nKlik \"Add PD sensors\" seperti gambar dibawah ini"
+    },
+    {
+      "id": "page-8",
+      "heading": "Halaman 8: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n8\n \n \n \n \n14. Pilih \nBusTracII kemudian klik \"Next\".\n \n \n15. Pilih\n \n\"6 connectors (3 S\nensor\n \nPairs)\"\n \npada Coupler Termination Box"
+    },
+    {
+      "id": "page-9",
+      "heading": "Halaman 9: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n9\n \n \n \n \n16.\n \nPilih \"Phase Naming Schema\" dan sensor type.\n \n \n17.\n \nIsi delay time dengan menggunakan data yang te\nlah diukur pada saat pemasang\nan, \nklik \"Fi\nnish\" \nsetelah \ndelay time disetting\n."
+    },
+    {
+      "id": "page-10",
+      "heading": "Halaman 10: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n10\n \n \n \n \n \n18\n.\nKlik \" Add New Device\" \n \nuntuk koneksi ke BusTrac II\n \n \n19. Pilih type\n \nkomunikasi yang dipergunakan antara USB ato TCP/IP"
+    },
+    {
+      "id": "page-11",
+      "heading": "Halaman 11: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n11\n \n \n \n \n20. Drag and drop machine\n \nke channel Partial discharge dan klik \"OK\"\n \n \n21.\n \nKlik kan\nan pada \"BusTrac II\"\n \ndan pilih \"configure\""
+    },
+    {
+      "id": "page-12",
+      "heading": "Halaman 12: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n12\n \n \n \n \n22. Akan muncul Initial\n \nsetting\n \nseperti gambar dibawah, kemudian klik \"OK\"\n \n \n \n \n23. Pada general setting isi setting yang sesuai, Pilih \nFrequency 50 Hz"
+    },
+    {
+      "id": "page-13",
+      "heading": "Halaman 13: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n13\n \n \n \n \n24. Klik Tab Partial Discharge\n \n \n25.\n \nPilih/Isi parameter yang sesuai pada Input phase\n \nmasing\n-\nmasing phase A, B dan C.\n \nPada setting ini\n \nhal yang perlu diperhatikan sebagai berikut:\n \n-\n \nDelay time harus diisi sesuai nilai delay time yang didapat dari pengukuran delay time waktu instalasi\n \n-\n \nPemilihan Sensitivity dapat dil\nakukan dengan memanfaatkan fitur \"detect \nsensitivity\" yang secara \notomatis memilih range sensitifitas pengukuran."
+    },
+    {
+      "id": "page-14",
+      "heading": "Halaman 14: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n14\n \n \n \n \n-\n \nSync Source adalah Coupler\n \n-\n \nQM threshold dapat diisi dengan memperhatikan nilai rata\n-\nrata pengukuran yang ada.\n \n \n26. Ketika fitur detect sensitivity diaktifkan, akan muncul display d\nan hasil seperti gambar dibawah ini\n \n \n27. Apabila fitur \"Run Measurement\" diaktifkan, akan muncul tampilan seperti dibawah ini"
+    },
+    {
+      "id": "page-15",
+      "heading": "Halaman 15: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n15\n \n \n \n \n28.\n \nSetelah \"Run Measurement\" dijalankan, kemudian \"View Measurement\" akan menampilkan \nhasil \npengukuran \nseperti dibawah ini\n:\n \n \n29. Setelah semua selesai disetting, setting harus diupload ke BusTracII"
+    },
+    {
+      "id": "page-16",
+      "heading": "Halaman 16: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n16\n \n \n \n \n30.\n \nUpload yang berhasil adalah seperti gambar dibawah ini\n \n \n31. Untuk Dowload data hasil pengukuran, Klik kanan pada \"BusTrac II\" seperti gambar dibawah ini"
+    },
+    {
+      "id": "page-17",
+      "heading": "Halaman 17: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n17\n \n \n \n \n32. Pilih \ntype\n \nkomunikasi yang tersedia\n \n \n33. Ada beberapa pilihan cara mendownload data seperti tertampil dibawah ini\n; Apabila dipilih \"Since \nlast download\" maka data yang didownload adalah terbaru dihitung dari download terakhir \nyang \ndilakukan."
+    },
+    {
+      "id": "page-18",
+      "heading": "Halaman 18: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n18\n \n \n \n \n34.\n \nApabila dipilih \"All measurements\" maka yang didownload adalah semua hasil pengukuran yang ada \ndi BusTrac II.\n \n \n35.\nApabila dipilih \n\"\nLast Month\n\"\n, maka \ndata yang \nakan d\nidownload adala\nh data pengu\nkuran bulan \nsebelumnya\n."
+    },
+    {
+      "id": "page-19",
+      "heading": "Halaman 19: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n19\n \n \n \n \n36. Apabil\na dipiliha \"Last Week\" maka data yang aka\nn didownload adalah data minggu sebelumnya.\n \n \n37.\n \nApabila dipilih \" Custom\" maka dapat kita pilih tanggal pengukuran yang datanya akan didownload."
+    },
+    {
+      "id": "page-20",
+      "heading": "Halaman 20: PT DIELEKTRIKA PERSADA TEKNIK",
+      "content": "V\ne\nrsion 1.0\n \nPage \n20\n \n \n \n \n38.\n \nSetelah data\n \nselesai didownload,\n \nKlik \"Save to Database\" untuk menyimpan data pengukuran ke \ndatabase di komputer.\n \n \n39.\n \nUntuk penyimpanan data yang berhasil akan muncul seperti gambar dibawah ini.\n \n \n40. Untuk keperluan analisa, data yang didownload dapat \ndibuka dengan software IRIS PDVi\new."
+    }
+  ]
+}
