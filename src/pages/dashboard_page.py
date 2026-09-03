@@ -40,7 +40,7 @@ def render_dashboard_page(
     master_norm_to_volt: dict,
     materi_page=None,
 ):
-    render_page_header(st, "Command Center", "Overview kondisi equipment MCSA.")
+    render_page_header(st, "MCSA", "Overview kondisi equipment MCSA.")
 
     st.caption(f"Periode: {date_start} s/d {date_end}")
 

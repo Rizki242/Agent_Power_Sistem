@@ -75,7 +75,7 @@ def _basic_file_answer(filename: str, file_context: str) -> str:
 
 
 def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFrame):
-    render_page_header(st, "AI Agent", "MCSA Virtual Assistant.")
+    render_page_header(st, "Chatbot", "MCSA Virtual Assistant.")
 
     if "messages" not in st.session_state:
         st.session_state["messages"] = []

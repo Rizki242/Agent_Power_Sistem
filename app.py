@@ -327,18 +327,20 @@ PAGES["help"] = st.Page(_help_entry, title="Help & Support", icon=":material/hel
 
 active_page = st.navigation(
     {
-        "Command Center": [PAGES["agent_dashboard"]],
+        # Single-page groups from docs/desain.png's target IA (AI Agent,
+        # Knowledge, Settings, Help & Support) are folded into their nearest
+        # neighbor here purely to cut sidebar line count - the underlying
+        # pages/routing are unchanged, so this is reversible if any of them
+        # grows enough pages to earn its own section back.
+        "Command Center": [PAGES["agent_dashboard"], PAGES["chatbot"], PAGES["materi"]],
         "Asset Management": [PAGES["asset_registry"], PAGES["asset_reports"], PAGES["data_management"], PAGES["sync_word"], PAGES["quality"]],
         "Engineering": [PAGES["mcsa"], PAGES["vibrasi"], PAGES["dga"], PAGES["tribology"], PAGES["thermal"], PAGES["partial_discharge"], PAGES["condition_control"]],
         "Reliability": [PAGES["reliability"]],
-        "AI Agent": [PAGES["chatbot"]],
-        "Knowledge": [PAGES["materi"]],
         "Reports": [PAGES["ppt"], PAGES["word"]],
         "Work Orders": [PAGES["work_orders"]],
-        "Settings": [PAGES["settings"]],
-        "Help & Support": [PAGES["help"]],
+        "Utilitas": [PAGES["settings"], PAGES["help"]],
     },
-    expanded=True,
+    expanded=False,
 )
 
 MCSA_FILTER_PAGES = (PAGES["mcsa"], PAGES["ppt"], PAGES["word"])

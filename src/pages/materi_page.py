@@ -66,7 +66,7 @@ def _load_json_data(file_path: str, mtime_key: Optional[float]):
 
 
 def render_materi_page(st):
-    render_page_header(st, "Knowledge", "Knowledge base & materi training.")
+    render_page_header(st, "Materi Training", "Knowledge base & materi training.")
 
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     materi_dir = os.path.join(base_dir, "Materi")
