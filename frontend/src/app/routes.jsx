@@ -13,12 +13,14 @@ import VibWorkspace from '../modules/vibration/VibWorkspace';
 import DGAWorkspace from '../modules/dga/DGAWorkspace';
 import TribologyWorkspace from '../modules/tribology/TribologyWorkspace';
 import ThermalWorkspace from '../modules/thermal/ThermalWorkspace';
+import PDWorkspace from '../modules/partial_discharge/PDWorkspace';
 
 // One entry per engineering module id from /api/v2/modules. Each workspace
 // reads the selected equipment from its own :equipmentId route param
 // (docs/final.md Phase 25 / desaindakhir.md redesign) - this route table is
-// the only place that needs a new line for a future module (e.g.
-// partial_discharge) getting its own workspace page.
+// the only place that needs a new line for a future module getting its own
+// workspace page (plus a DOMAIN_EQUIPMENT_SOURCES entry in
+// services/assetTree.js so its equipment appears under the sidebar tree).
 //
 // Legacy top-level paths (/mcsa, /vibration, ...) redirect into
 // /workspace/<module> so existing bookmarks/links keep working.
@@ -39,12 +41,14 @@ export const routes = [
       { path: 'workspace/dga/:equipmentId?', element: <DGAWorkspace /> },
       { path: 'workspace/tribology/:equipmentId?', element: <TribologyWorkspace /> },
       { path: 'workspace/thermal/:equipmentId?', element: <ThermalWorkspace /> },
+      { path: 'workspace/partial_discharge/:equipmentId?', element: <PDWorkspace /> },
 
       { path: 'mcsa', element: <Navigate to="/workspace/mcsa" replace /> },
       { path: 'vibration', element: <Navigate to="/workspace/vibration" replace /> },
       { path: 'dga', element: <Navigate to="/workspace/dga" replace /> },
       { path: 'tribology', element: <Navigate to="/workspace/tribology" replace /> },
       { path: 'thermal', element: <Navigate to="/workspace/thermal" replace /> },
+      { path: 'pd', element: <Navigate to="/workspace/partial_discharge" replace /> },
 
       { path: '*', element: <Navigate to="/" replace /> },
     ],

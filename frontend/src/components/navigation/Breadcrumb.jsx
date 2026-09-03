@@ -31,7 +31,11 @@ export default function Breadcrumb() {
   const segments = [{ label: 'PLTU Jeranjang', to: '/' }];
 
   if (location.pathname.startsWith('/workspace/')) {
-    const { moduleId, equipmentId } = params;
+    // Each workspace route spells its module out literally
+    // (workspace/mcsa/:equipmentId?), so there is no :moduleId param to read -
+    // it has to come from the path itself.
+    const moduleId = location.pathname.split('/').filter(Boolean)[1];
+    const { equipmentId } = params;
     const resolved = findEquipmentName(tree, moduleId, equipmentId);
     segments.push({ label: 'Engineering' });
     segments.push({ label: resolved?.unitName || '...' });

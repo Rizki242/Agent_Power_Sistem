@@ -162,6 +162,80 @@ class TestV2EquipmentModules(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
 
 
+class TestPartialDischargeEndpoints(unittest.TestCase):
+    """PD was the only domain with no HTTP surface at all (docs/final.md's
+    'Migrate PD' step), so these cover the whole route family."""
+
+    def setUp(self):
+        self.client = TestClient(app)
+
+    def test_summary_shape(self):
+        res = self.client.get("/api/pd/summary")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("total_samples", data)
+        self.assertIn("by_unit", data)
+        self.assertIn("by_status", data)
+
+    def test_samples_list(self):
+        res = self.client.get("/api/pd/samples")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["count"], len(data["samples"]))
+        self.assertGreater(data["count"], 0)
+        # every row must carry the fields the sidebar tree reads
+        for sample in data["samples"]:
+            self.assertIn("sample_id", sample)
+            self.assertIn("equipment", sample)
+            self.assertIn("unit", sample)
+            self.assertIn("status", sample)
+
+    def test_samples_filters(self):
+        unit_res = self.client.get("/api/pd/samples", params={"unit": "UNIT 1"})
+        self.assertEqual(unit_res.status_code, 200)
+        self.assertTrue(all(s["unit"] == "UNIT 1" for s in unit_res.json()["samples"]))
+
+        status_res = self.client.get("/api/pd/samples", params={"status": "HIGH"})
+        self.assertEqual(status_res.status_code, 200)
+        self.assertTrue(all(s["status"] == "HIGH" for s in status_res.json()["samples"]))
+
+        search_res = self.client.get("/api/pd/samples", params={"search": "switchgear"})
+        self.assertEqual(search_res.status_code, 200)
+        self.assertTrue(
+            all("switchgear" in s["equipment"].lower() for s in search_res.json()["samples"])
+        )
+
+    def test_sample_detail_and_404(self):
+        res = self.client.get("/api/pd/samples/PD-001")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["sample_id"], "PD-001")
+        self.assertIn("pulse_magnitude_pc", data)
+        self.assertIn("status", data)
+
+        missing = self.client.get("/api/pd/samples/NOT-A-SAMPLE")
+        self.assertEqual(missing.status_code, 404)
+
+    def test_assessment_runs_agent_and_agrees_with_status(self):
+        res = self.client.get("/api/pd/samples/PD-005/assessment")
+        self.assertEqual(res.status_code, 200)
+        result = res.json()
+        self.assertEqual(result["domain"], "Partial Discharge")
+        self.assertIn("recommendation", result)
+        self.assertIn("evidence", result)
+
+        # PD-005 is the HIGH sample; pd_data._pd_status and PDAgent share
+        # thresholds, so the badge must not contradict the agent's verdict.
+        detail = self.client.get("/api/pd/samples/PD-005").json()
+        self.assertEqual(detail["status"], "HIGH")
+        self.assertEqual(result["condition"], "CRITICAL")
+        self.assertEqual(result["severity"], 4)
+
+    def test_assessment_404_for_unknown_sample(self):
+        res = self.client.get("/api/pd/samples/NOT-A-SAMPLE/assessment")
+        self.assertEqual(res.status_code, 404)
+
+
 if __name__ == "__main__":
     unittest.main()
 

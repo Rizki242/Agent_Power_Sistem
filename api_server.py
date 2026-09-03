@@ -66,6 +66,11 @@ from src.thermal_data import (
     load_thermal_irt_tests,
     get_thermal_summary,
 )
+from src.pd_data import (
+    get_pd_summary,
+    search_pd_samples,
+    get_pd_sample_detail,
+)
 from src.chatbot import MCSAChatbot
 from src.rotorbar import evaluate_rotorbar
 from src.docx_parser import parse_docx_report
@@ -1228,6 +1233,64 @@ def get_thermal_inspections_list(
             st = search.lower().strip()
             records = [r for r in records if st in r["equipment"].lower() or st in r["kks"].lower()]
         return {"inspections": records, "count": len(records)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Partial Discharge (PRPD / Pulse Magnitude) Endpoints
+# ---------------------------------------------------------------------------
+# PD has no source data file of any kind (see src.pd_data's module docstring),
+# so every response here is built on DEFAULT_PD_SAMPLES + recorded overrides.
+# Clients MUST surface that the data is illustrative, the same way the
+# Streamlit page calls render_data_disclaimer_banner.
+
+@app.get("/api/pd/summary")
+def get_pd_summary_endpoint():
+    """Returns summary counts for partial discharge samples."""
+    try:
+        return get_pd_summary()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/pd/samples")
+def get_pd_samples_list(
+    unit: Optional[str] = None,
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+):
+    """Returns list of PD samples with evaluated status attached."""
+    try:
+        samples = search_pd_samples(unit=unit, status=status, search=search)
+        return {"samples": samples, "count": len(samples)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/pd/samples/{sample_id}")
+def get_pd_sample_detail_endpoint(sample_id: str):
+    """Returns one PD sample's PRPD parameters plus its status."""
+    target = get_pd_sample_detail(sample_id)
+    if not target:
+        raise HTTPException(status_code=404, detail=f"Sample {sample_id} not found")
+    return target
+
+
+@app.get("/api/pd/samples/{sample_id}/assessment")
+def get_pd_sample_assessment(sample_id: str):
+    """
+    Runs PDAgent against one sample - the HTTP equivalent of the Streamlit
+    page's "Rekomendasi" view. pd_data's schema was designed to feed
+    PDAgent.evaluate() directly, so this passes the record through unchanged
+    rather than re-deriving anything here.
+    """
+    target = get_pd_sample_detail(sample_id)
+    if not target:
+        raise HTTPException(status_code=404, detail=f"Sample {sample_id} not found")
+    try:
+        from src.agents.specialist_agents import PDAgent
+        return PDAgent().evaluate(target["equipment"], target)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

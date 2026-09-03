@@ -6,3 +6,4 @@ export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as EmptyState } from './EmptyState';
 export { default as HowItWorksModal } from './HowItWorksModal';
 export { default as AlarmAnnunciator } from './AlarmAnnunciator';
+export { default as DataDisclaimerBanner } from './DataDisclaimerBanner';

@@ -68,6 +68,14 @@ const DOMAIN_EQUIPMENT_SOURCES = {
     unit: (row) => row.unit,
     status: (row) => row.status,
   },
+  partial_discharge: {
+    url: '/api/pd/samples',
+    listKey: 'samples',
+    id: (row) => row.sample_id,
+    name: (row) => row.equipment,
+    unit: (row) => row.unit,
+    status: (row) => row.status,
+  },
 };
 
 const UNIT_ORDER = ['UNIT 1', 'UNIT 2', 'UNIT 3', 'UNIT COMMON'];
