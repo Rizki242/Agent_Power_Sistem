@@ -44,7 +44,7 @@ def _render_sync_flow(st):
 
 
 def render_sync_word_page(st, df, edit_mode, get_data_path, get_folder_metadata, parse_all_reports_with_report, save_mcsa_data, load_mcsa_data, dashboard_page=None):
-    render_page_header(st, "Asset Management", "Sinkronisasi laporan Word.")
+    render_page_header(st, "Sync Laporan Word", "Sinkronisasi laporan Word.")
     st.caption("Unggah, periksa, lalu konfirmasi laporan sebelum data masuk ke dashboard.")
     _render_sync_flow(st)
     if not edit_mode:

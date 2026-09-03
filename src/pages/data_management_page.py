@@ -14,7 +14,7 @@ from src.utils import safe_float
 
 
 def render_data_management_page(st, df, df_latest_all, edit_mode):
-    render_page_header(st, "Asset Management", "Manajemen data MCSA.")
+    render_page_header(st, "Manajemen Data", "Manajemen data MCSA.")
     st.info("Update nilai parameter, info Unit, atau hapus data equipment.")
 
     if not edit_mode:

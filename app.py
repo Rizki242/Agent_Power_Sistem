@@ -75,6 +75,8 @@ try:
     from src.standby import compute_standby
     from src.components.sidebar import render_sidebar, render_sidebar_brand
     from src.pages.agent_dashboard_page import render_agent_dashboard_page
+    from src.pages.asset_registry_page import render_asset_registry_page
+    from src.pages.asset_reports_page import render_asset_reports_page
     from src.pages.chatbot_page import render_chatbot_page
     from src.pages.condition_control_page import render_condition_control_page
     from src.pages.dashboard_page import render_dashboard_page
@@ -233,6 +235,17 @@ def _quality_entry():
     )
 
 
+def _asset_registry_entry():
+    render_asset_registry_page(
+        st,
+        edit_mode=bool(st.session_state.get('edit_mode', False)),
+    )
+
+
+def _asset_reports_entry():
+    render_asset_reports_page(st)
+
+
 def _materi_entry():
     render_materi_page(st)
 
@@ -295,6 +308,8 @@ PAGES["mcsa"] = st.Page(_dashboard_entry, title="MCSA", icon=":material/electric
 PAGES["data_management"] = st.Page(_data_management_entry, title="Manajemen Data", icon=":material/database:")
 PAGES["sync_word"] = st.Page(_sync_word_entry, title="Sync Laporan Word", icon=":material/upload_file:")
 PAGES["quality"] = st.Page(_quality_entry, title="Quality Check Laporan", icon=":material/fact_check:")
+PAGES["asset_registry"] = st.Page(_asset_registry_entry, title="Register Aset", icon=":material/inventory_2:")
+PAGES["asset_reports"] = st.Page(_asset_reports_entry, title="Laporan Kondisi", icon=":material/summarize:")
 PAGES["vibrasi"] = st.Page(_vibration_entry, title="Vibrasi", icon=":material/vibration:")
 PAGES["dga"] = st.Page(_dga_entry, title="DGA", icon=":material/science:")
 PAGES["tribology"] = st.Page(_tribology_entry, title="Tribology", icon=":material/oil_barrel:")
@@ -313,7 +328,7 @@ PAGES["help"] = st.Page(_help_entry, title="Help & Support", icon=":material/hel
 active_page = st.navigation(
     {
         "Command Center": [PAGES["agent_dashboard"]],
-        "Asset Management": [PAGES["data_management"], PAGES["sync_word"], PAGES["quality"]],
+        "Asset Management": [PAGES["asset_registry"], PAGES["asset_reports"], PAGES["data_management"], PAGES["sync_word"], PAGES["quality"]],
         "Engineering": [PAGES["mcsa"], PAGES["vibrasi"], PAGES["dga"], PAGES["tribology"], PAGES["thermal"], PAGES["partial_discharge"], PAGES["condition_control"]],
         "Reliability": [PAGES["reliability"]],
         "AI Agent": [PAGES["chatbot"]],

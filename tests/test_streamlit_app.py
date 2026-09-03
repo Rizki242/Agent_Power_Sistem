@@ -284,5 +284,116 @@ class TestDomainDashboards(unittest.TestCase):
         self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
 
 
+class TestAssetRegistryPage(unittest.TestCase):
+    """Cross-domain asset register (src/asset_registry.py) + its two pages -
+    Register Aset (write side) and Laporan Kondisi (read side)."""
+
+    def _isolated_registry(self):
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+
+        import src.asset_registry as asset_registry
+
+        temp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(temp_dir.cleanup)
+        root = Path(temp_dir.name)
+        patcher = patch.object(asset_registry, "get_data_path", side_effect=lambda *p: str(root.joinpath(*p)))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        return asset_registry
+
+    def test_registry_page_renders_empty(self):
+        def _script():
+            import streamlit as st
+
+            from src.pages.asset_registry_page import render_asset_registry_page
+
+            render_asset_registry_page(st, edit_mode=True)
+
+        self._isolated_registry()
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+    def test_registry_page_warns_when_edit_mode_off(self):
+        def _script():
+            import streamlit as st
+
+            from src.pages.asset_registry_page import render_asset_registry_page
+
+            render_asset_registry_page(st, edit_mode=False)
+
+        self._isolated_registry()
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertTrue(list(at.warning), "expected the edit-mode-off warning to render")
+
+    def test_new_asset_form_persists_to_registry(self):
+        registry = self._isolated_registry()
+
+        def _script():
+            import streamlit as st
+
+            from src.pages.asset_registry_page import render_asset_registry_page
+
+            render_asset_registry_page(st, edit_mode=True)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        for widget in at.text_input:
+            if widget.label == "Nama Aset":
+                widget.set_value("Boiler Feed Pump Test")
+        for widget in at.multiselect:
+            if widget.label == "Modul Monitoring yang Berlaku":
+                widget.set_value(["MCSA", "VIBRASI"])
+        for button in at.button:
+            if button.label == "Simpan Aset":
+                button.click()
+        at.run(timeout=30)
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+        assets = registry.list_assets()
+        self.assertEqual(len(assets), 1)
+        self.assertEqual(assets[0]["name"], "Boiler Feed Pump Test")
+        self.assertEqual(assets[0]["monitoring_modules"], ["MCSA", "VIBRASI"])
+
+    def test_condition_form_only_offers_assets_own_modules(self):
+        registry = self._isolated_registry()
+        registry.upsert_asset({"name": "Boiler Feed Pump A", "unit": "UNIT 1", "monitoring_modules": ["VIBRASI"]})
+
+        def _script():
+            import streamlit as st
+
+            from src.pages.asset_registry_page import render_asset_registry_page
+
+            render_asset_registry_page(st, edit_mode=True)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        module_select = next(w for w in at.selectbox if w.label == "Modul Pengujian")
+        self.assertEqual(list(module_select.options), ["VIBRASI"])
+
+    def test_reports_page_shows_empty_state_then_recorded_history(self):
+        registry = self._isolated_registry()
+
+        def _script():
+            import streamlit as st
+
+            from src.pages.asset_reports_page import render_asset_reports_page
+
+            render_asset_reports_page(st)
+
+        at_empty = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at_empty.exception), msg=[str(e) for e in at_empty.exception])
+        self.assertTrue(list(at_empty.info), "expected the no-history-yet message")
+
+        asset = registry.upsert_asset({"name": "Boiler Feed Pump A", "unit": "UNIT 1", "monitoring_modules": ["VIBRASI"]})
+        registry.add_condition_record({
+            "asset_id": asset["asset_id"], "module": "VIBRASI", "condition": "Alarm", "summary": "test",
+        })
+
+        at_filled = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at_filled.exception), msg=[str(e) for e in at_filled.exception])
+
+
 if __name__ == "__main__":
     unittest.main()
