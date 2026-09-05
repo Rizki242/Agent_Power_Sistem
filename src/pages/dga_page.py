@@ -9,7 +9,11 @@ from src.components.status_colors import (
     canon_condition_status,
     render_status_badge,
 )
-from src.components.theme import render_data_disclaimer_banner, render_page_header
+from src.components.theme import (
+    render_data_disclaimer_banner,
+    render_detail_view_toggle,
+    render_page_header,
+)
 from src.dga_data import get_dga_transformer_detail, search_dga_transformers
 
 _DGA_METRIC_LABELS = {
@@ -90,7 +94,7 @@ def render_dga_page(st) -> None:
     render_status_badge(st, detail["name"], status)
     st.caption(f"**ID:** {selected_id} | **Unit:** {detail.get('unit', '-')} | **Rasio Tegangan:** {detail.get('voltage_ratio', '-')}")
 
-    detail_view = st.radio("Tampilan Detail", ["Ringkasan", "Rekomendasi"], horizontal=True, key="dga_detail_view")
+    detail_view = render_detail_view_toggle(st, key="dga_detail_view")
 
     if detail_view == "Ringkasan":
         st.markdown("**Konsentrasi Gas Terlarut (ppm)**")

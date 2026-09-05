@@ -82,7 +82,7 @@ def render_sidebar(st, min_date, max_date, show_filters=True):
     else:
         date_start, date_end = current
 
-    if st.sidebar.button("Reset filter", icon=":material/restart_alt:", use_container_width=True):
+    if st.sidebar.button("Reset filter", icon=":material/restart_alt:", width="stretch"):
         for key in ["filter_year", "filter_month", "filter_date_range_widget", "filter_unit", "filter_volt", "filter_equipment"]:
             st.session_state.pop(key, None)
         st.rerun()

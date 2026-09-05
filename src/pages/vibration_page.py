@@ -7,7 +7,7 @@ from src.components.status_colors import (
     canon_condition_status,
     render_status_badge,
 )
-from src.components.theme import render_page_header
+from src.components.theme import render_detail_view_toggle, render_page_header
 from src.vibration_data import (
     build_vibration_agent_input,
     get_bearing_info,
@@ -78,7 +78,7 @@ def render_vibration_page(st) -> None:
     render_status_badge(st, selected_equipment, status)
     st.caption(f"**Asset ID:** {asset_row.get('asset_id', '-')} | **Unit:** {asset_row.get('unit_group', '-')}")
 
-    detail_view = st.radio("Tampilan Detail", ["Ringkasan", "Rekomendasi"], horizontal=True, key="vibration_detail_view")
+    detail_view = render_detail_view_toggle(st, key="vibration_detail_view")
 
     matched_record = match_monthly_test_by_equipment(selected_equipment, monthly_tests)
 

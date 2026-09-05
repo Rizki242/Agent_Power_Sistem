@@ -15,7 +15,7 @@ from src.components.status_colors import (
     canon_condition_status,
     render_status_badge,
 )
-from src.components.theme import render_page_header
+from src.components.theme import render_detail_view_toggle, render_page_header
 from src.thermal_data import get_thermal_record_detail, search_thermal_records
 
 
@@ -102,7 +102,7 @@ def render_thermal_page(st) -> None:
     render_status_badge(st, detail["equipment"], status)
     st.caption(f"**ID:** {selected_id} | **Unit:** {detail.get('unit', '-')} | **KKS:** {detail.get('kks', '-')}")
 
-    detail_view = st.radio("Tampilan Detail", ["Ringkasan", "Rekomendasi"], horizontal=True, key="thermal_detail_view")
+    detail_view = render_detail_view_toggle(st, key="thermal_detail_view")
 
     if detail_view == "Ringkasan":
         st.markdown("**Hasil Inspeksi**")

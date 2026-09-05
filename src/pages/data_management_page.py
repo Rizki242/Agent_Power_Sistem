@@ -197,7 +197,7 @@ def render_data_management_page(st, df, df_latest_all, edit_mode):
 
     elif action == "Reload dari Excel (Reset)":
         st.warning(
-            "⚠️ **PERINGATAN**: Tindakan ini akan membaca ulang file Excel (`Report MCSA.xls`) "
+            "**PERINGATAN**: Tindakan ini akan membaca ulang file Excel (`Report MCSA.xls`) "
             "dan Laporan Word, lalu menimpa database CSV saat ini. Semua perubahan manual yang "
             "Anda lakukan di aplikasi akan hilang jika belum disimpan ke file sumber."
         )

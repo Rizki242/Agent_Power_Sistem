@@ -72,7 +72,11 @@ def render_materi_page(st):
     materi_dir = os.path.join(base_dir, "Materi")
     os.makedirs(materi_dir, exist_ok=True)
 
-    tab_read, tab_upload, tab_rag = st.tabs(["📖 Baca & Cari Materi", "📤 Upload & Kelola Knowledge Base", "🧠 RAG / Vector Search"])
+    tab_read, tab_upload, tab_rag = st.tabs([
+        ":material/menu_book: Baca & Cari Materi",
+        ":material/upload_file: Upload & Kelola Knowledge Base",
+        ":material/hub: RAG / Vector Search",
+    ])
 
     with tab_read:
         materi_files = [f for f in os.listdir(materi_dir) if f.lower().endswith(".json")]
@@ -96,7 +100,9 @@ def render_materi_page(st):
                 )
                 query = st.text_input("Cari (kata kunci)", value=st.session_state.get("materi_query", ""), key="_materi_q_input")
                 st.session_state["materi_query"] = query
-                show_mode = st.radio("Tampilan", ["Per Bagian", "Hasil Pencarian"], horizontal=True, key="_materi_view_mode")
+                show_mode = st.segmented_control(
+                    "Tampilan", ["Per Bagian", "Hasil Pencarian"], default="Per Bagian", key="_materi_view_mode"
+                )
 
             path = os.path.join(materi_dir, selected_file)
             mtime = None
@@ -199,17 +205,17 @@ def render_materi_page(st):
                                     st.text(s.get("content", ""))
 
     with tab_upload:
-        st.subheader("📤 Upload Dokumen ke Knowledge Base (Memori AI)")
+        st.subheader(":material/upload_file: Upload Dokumen ke Knowledge Base (Memori AI)")
         st.info(
             "Unggah dokumen SOP, manual alat ukur, standar vibrasi/MCSA, atau panduan teknis. "
             "Aplikasi akan mengekstrak isi dokumen menjadi unit memori dan indeks pencarian "
             "yang langsung dapat diakses oleh **Chatbot** dan **Analisis AI**.",
-            icon="💡",
+            icon=":material/lightbulb:",
         )
 
         edit_mode = bool(st.session_state.get("edit_mode", False))
         if not edit_mode:
-            st.warning("⚠️ **Mode Edit Nonaktif**: Aktifkan toggle 'Mode Edit' di sidebar untuk mengunggah atau mengelola dokumen.")
+            st.warning("**Mode Edit Nonaktif**: Aktifkan toggle 'Mode Edit' di sidebar untuk mengunggah atau mengelola dokumen.")
 
         c_up1, c_up2 = st.columns([3, 2])
         with c_up1:
@@ -226,7 +232,7 @@ def render_materi_page(st):
             custom_source = st.text_input("Sumber / Referensi (Opsional)", placeholder="misal: Tim Predictive Maintenance", disabled=not edit_mode)
 
         if uploaded_file is not None and edit_mode:
-            if st.button("🚀 Proses & Simpan ke Memori AI", type="primary", width="stretch"):
+            if st.button("Proses & Simpan ke Memori AI", icon=":material/rocket_launch:", type="primary", width="stretch"):
                 with st.spinner(f"Memproses dan mengekstrak '{uploaded_file.name}'..."):
                     tags_list = [t.strip() for t in custom_tags_str.split(",") if t.strip()] if custom_tags_str else None
                     success, msg, doc_data = process_and_save_knowledge_file(
@@ -245,7 +251,7 @@ def render_materi_page(st):
 
         # List existing knowledge files
         st.divider()
-        st.subheader("📑 Daftar Dokumen Knowledge Base Tersedia")
+        st.subheader(":material/folder: Daftar Dokumen Knowledge Base Tersedia")
 
         all_json_files = [f for f in os.listdir(materi_dir) if f.lower().endswith(".json")]
         if all_json_files:
@@ -263,7 +269,7 @@ def render_materi_page(st):
             st.dataframe(pd.DataFrame(file_records), width="stretch", hide_index=True)
 
             # Option to delete custom file
-            with st.expander("🗑️ Hapus Dokumen Knowledge Base", expanded=False):
+            with st.expander(":material/delete: Hapus Dokumen Knowledge Base", expanded=False):
                 del_file = st.selectbox("Pilih file yang ingin dihapus:", all_json_files, key="del_kb_file")
                 if st.button(f"Hapus '{del_file}'", disabled=not edit_mode, type="secondary"):
                     ok, dmsg = delete_knowledge_file(del_file)
@@ -276,12 +282,12 @@ def render_materi_page(st):
             st.info("Belum ada dokumen knowledge base yang terdaftar.")
 
     with tab_rag:
-        st.subheader("🧠 RAG / Vector Search (LangChain + FAISS)")
+        st.subheader(":material/hub: RAG / Vector Search (LangChain + FAISS)")
         st.info(
             "RAG (Retrieval Augmented Generation) menggunakan embeddings dan vector search untuk "
             "pencarian semantik yang lebih akurat dari materi VIBRASI dan TRIBOLOGY. "
             "Sistem akan mencari dokumen berdasarkan makna, bukan hanya kata kunci.",
-            icon="💡",
+            icon=":material/lightbulb:",
         )
 
         rag_available = False
@@ -293,7 +299,7 @@ def render_materi_page(st):
 
         if not rag_available:
             st.warning(
-                "⚠️ **Package RAG belum terinstall.**\n\n"
+                "**Package RAG belum terinstall.**\n\n"
                 "Jalankan perintah berikut untuk menginstall:\n"
                 "```\n"
                 "pip install langchain langchain-community faiss-cpu sentence-transformers\n"
@@ -308,17 +314,17 @@ def render_materi_page(st):
             with col1:
                 st.markdown("### Status Index")
                 if index_exists:
-                    st.success("✅ Index RAG sudah tersedia.")
+                    st.success("Index RAG sudah tersedia.")
                     try:
                         index_size = os.path.getsize(os.path.join(engine.index_dir, "index.faiss"))
                         st.caption(f"Ukuran index: {index_size / 1024:.1f} KB")
                     except Exception:
                         pass
                 else:
-                    st.warning("⚠️ Index RAG belum dibuat.")
+                    st.warning("Index RAG belum dibuat.")
 
             with col2:
-                if st.button("🔄 Build / Rebuild Index", type="primary", width="stretch"):
+                if st.button("Build / Rebuild Index", icon=":material/refresh:", type="primary", width="stretch"):
                     with st.spinner("Membuat index RAG dari dokumen VIBRASI & TRIBOLOGY..."):
                         success, message = engine.build_index(force=True)
                         if success:
@@ -329,7 +335,7 @@ def render_materi_page(st):
 
             st.divider()
 
-            st.markdown("### 🔍 Test Pencarian Semantik")
+            st.markdown("### :material/search: Test Pencarian Semantik")
             test_query = st.text_input(
                 "Masukkan pertanyaan atau kata kunci:",
                 placeholder="misal: bagaimana cara analisis vibrasi bearing?",

@@ -9,7 +9,11 @@ from src.components.status_colors import (
     canon_condition_status,
     render_status_badge,
 )
-from src.components.theme import render_data_disclaimer_banner, render_page_header
+from src.components.theme import (
+    render_data_disclaimer_banner,
+    render_detail_view_toggle,
+    render_page_header,
+)
 from src.tribology_data import (
     build_tribology_agent_input,
     get_tribology_sample_detail,
@@ -92,7 +96,7 @@ def render_tribology_page(st) -> None:
     render_status_badge(st, detail["equipment"], status)
     st.caption(f"**Sample ID:** {selected_id} | **Unit:** {detail.get('unit', '-')} | **Oli:** {detail.get('oil_brand', '-')} ({detail.get('oil_type', '-')})")
 
-    detail_view = st.radio("Tampilan Detail", ["Ringkasan", "Rekomendasi"], horizontal=True, key="tribology_detail_view")
+    detail_view = render_detail_view_toggle(st, key="tribology_detail_view")
 
     if detail_view == "Ringkasan":
         st.markdown("**Parameter Fisikokimia**")

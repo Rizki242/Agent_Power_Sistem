@@ -551,9 +551,12 @@ def render_dashboard_page(
                 provider_label = f"Gemini ({active_model})"
                 is_ready = bool(ai_key)
 
-            with st.expander(f"✨ Analisis Model LLM Lanjutan ({provider_label})", expanded=ai_enabled and is_ready):
+            with st.expander(f":material/auto_awesome: Analisis Model LLM Lanjutan ({provider_label})", expanded=ai_enabled and is_ready):
                 if not is_ready and ai_provider in {"gemini", "groq"}:
-                    st.info(f"💡 Anda dapat memasukkan API Key {ai_provider.upper()} melalui menu **🤖 Pengaturan Model LLM** di sidebar sebelah kiri atau file `.env`.")
+                    st.info(
+                        f"Anda dapat memasukkan API Key {ai_provider.upper()} melalui menu **🤖 Pengaturan Model LLM** di sidebar sebelah kiri atau file `.env`.",
+                        icon=":material/lightbulb:",
+                    )
                 else:
                     col_ai1, col_ai2 = st.columns([3, 1])
                     with col_ai1:
@@ -576,7 +579,7 @@ def render_dashboard_page(
 
                     saved_ai = st.session_state.get(f"_ai_analysis_{selected_eq}")
                     if saved_ai:
-                        st.markdown(f"### 📋 Executive Summary & Root Cause Analysis ({provider_label})")
+                        st.markdown(f"### :material/description: Executive Summary & Root Cause Analysis ({provider_label})")
                         st.markdown(saved_ai)
 
 
@@ -792,8 +795,12 @@ def render_dashboard_page(
                 key="trend_param",
             )
 
-            trend_range = st.radio("Rentang Waktu", ["3 Bulan", "6 Bulan", "12 Bulan", "Semua"], horizontal=True, key="trend_range")
-            agg_choice = st.radio("Agregasi", ["Harian", "Bulanan", "Tahunan"], horizontal=True, key="trend_agg")
+            trend_range = st.segmented_control(
+                "Rentang Waktu", ["3 Bulan", "6 Bulan", "12 Bulan", "Semua"], default="3 Bulan", key="trend_range"
+            )
+            agg_choice = st.segmented_control(
+                "Agregasi", ["Harian", "Bulanan", "Tahunan"], default="Harian", key="trend_agg"
+            )
 
             base_all = df[(df["Equipment"] == selected_eq) & (df["Parameter"] == param_trend)].copy()
             base_all["Date"] = pd.to_datetime(base_all.get("Date", pd.NaT), errors="coerce")

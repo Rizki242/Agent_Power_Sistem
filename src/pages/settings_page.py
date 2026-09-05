@@ -131,9 +131,9 @@ def _render_ai_llm(st):
             st.session_state.gemini_model = selected_model_choice
 
         if resolved:
-            st.caption(f"🔑 Key Terdeteksi ({resolved[:6]}...{resolved[-4:]})")
+            st.caption(f":material/key: Key Terdeteksi ({resolved[:6]}...{resolved[-4:]})")
         else:
-            st.caption("⚪ Belum ada API Key (menggunakan Rule-Based)")
+            st.caption(":material/radio_button_unchecked: Belum ada API Key (menggunakan Rule-Based)")
 
         if st.button("Tes Koneksi Gemini", icon=":material/wifi_tethering:"):
             with st.spinner("Menguji koneksi ke Gemini..."):
@@ -171,9 +171,9 @@ def _render_ai_llm(st):
             st.session_state.groq_model = selected_model_choice
 
         if resolved:
-            st.caption(f"🔑 Key Terdeteksi ({resolved[:6]}...{resolved[-4:]})")
+            st.caption(f":material/key: Key Terdeteksi ({resolved[:6]}...{resolved[-4:]})")
         else:
-            st.caption("⚪ Belum ada Groq API Key")
+            st.caption(":material/radio_button_unchecked: Belum ada Groq API Key")
 
         if st.button("Tes Koneksi Groq", icon=":material/speed:"):
             with st.spinner("Menguji koneksi ke Groq..."):

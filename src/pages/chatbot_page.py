@@ -126,11 +126,11 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
 
     with col_status:
         if ai_active and is_ready:
-            st.info(f"🟢 **Model LLM Aktif**: {provider_name} (`{active_model}`)", icon="✨")
+            st.info(f"**Model LLM Aktif**: {provider_name} (`{active_model}`)", icon=":material/smart_toy:")
         elif ai_active and not is_ready:
-            st.warning(f"⚠️ **Model LLM ({provider_name})**: API Key belum diisi. Lengkapi di sidebar.", icon="🔑")
+            st.warning(f"**Model LLM ({provider_name})**: API Key belum diisi. Lengkapi di sidebar.", icon=":material/key:")
         else:
-            st.caption("ℹ️ *Mode Rule-Based (Lokal Offline). Aktifkan Model LLM melalui sidebar.*")
+            st.caption(":material/info: *Mode Rule-Based (Lokal Offline). Aktifkan Model LLM melalui sidebar.*")
 
     with col_btn_save:
         messages = st.session_state.get("messages", [])
@@ -147,15 +147,16 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
                     chat_md += "\n"
 
             st.download_button(
-                "💾 Simpan Chat (.md)",
+                "Simpan Chat (.md)",
                 data=chat_md.encode("utf-8"),
                 file_name=f"mcsa_chat_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
                 mime="text/markdown",
+                icon=":material/download:",
                 width="stretch",
             )
 
     with col_btn_clear:
-        if st.button("🗑️ Hapus Chat", width="stretch"):
+        if st.button("Hapus Chat", icon=":material/delete:", width="stretch"):
             st.session_state["messages"] = []
             st.session_state["_chat_file_context"] = ""
             st.session_state["_chat_attached_filename"] = ""
@@ -168,9 +169,9 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
     if attached_fn:
         c_info, c_save, c_clear = st.columns([5, 2, 1])
         with c_info:
-            st.caption(f"📎 *File aktif dalam percakapan: **{attached_fn}*** (konteks otomatis disertakan dalam jawaban)")
+            st.caption(f":material/attach_file: *File aktif dalam percakapan: **{attached_fn}*** (konteks otomatis disertakan dalam jawaban)")
         with c_save:
-            if st.button("💾 Simpan ke Knowledge Base", key="_save_chat_file_to_kb", width="stretch"):
+            if st.button("Simpan ke Knowledge Base", key="_save_chat_file_to_kb", icon=":material/save:", width="stretch"):
                 for fname, fbytes in st.session_state.get("_chat_attached_files_raw", []):
                     ok, msg, _ = process_and_save_knowledge_file(file_name=fname, file_bytes=fbytes)
                     if ok:
@@ -178,7 +179,7 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
                     else:
                         st.error(msg)
         with c_clear:
-            if st.button("🗑️", key="_detach_chat_file", help="Lepas file dari sesi chat", width="stretch"):
+            if st.button("", key="_detach_chat_file", icon=":material/close:", help="Lepas file dari sesi chat", width="stretch"):
                 st.session_state["_chat_file_context"] = ""
                 st.session_state["_chat_attached_filename"] = ""
                 st.session_state["_chat_attached_files_raw"] = []
@@ -189,7 +190,7 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
             if message.get("citations"):
-                with st.expander("📚 Referensi Knowledge Base Terkait", expanded=False):
+                with st.expander(":material/menu_book: Referensi Knowledge Base Terkait", expanded=False):
                     for cit in message["citations"]:
                         st.markdown(f"**{cit['title']} — {cit['heading']}** ({cit['source']})")
                         st.caption(cit.get("preview", ""))
@@ -219,7 +220,7 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
         with st.chat_message("user"):
             st.markdown(prompt)
             for uf in uploaded_files:
-                st.caption(f"📎 {uf.name}")
+                st.caption(f":material/attach_file: {uf.name}")
         st.session_state["messages"].append({"role": "user", "content": prompt})
 
         # 1. Rule-based analysis & intent processing
@@ -263,7 +264,7 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
             st.markdown(response)
 
             if llm.last_citations:
-                with st.expander("📚 Referensi Knowledge Base Terkait", expanded=False):
+                with st.expander(":material/menu_book: Referensi Knowledge Base Terkait", expanded=False):
                     for cit in llm.last_citations:
                         st.markdown(f"**{cit['title']} — {cit['heading']}** ({cit['source']})")
                         st.caption(cit.get("preview", ""))

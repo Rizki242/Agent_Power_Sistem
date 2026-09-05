@@ -17,7 +17,11 @@ from src.components.status_colors import (
     canon_condition_status,
     render_status_badge,
 )
-from src.components.theme import render_data_disclaimer_banner, render_page_header
+from src.components.theme import (
+    render_data_disclaimer_banner,
+    render_detail_view_toggle,
+    render_page_header,
+)
 from src.pd_data import get_pd_sample_detail, search_pd_samples
 
 _PD_METRIC_LABELS = {
@@ -93,7 +97,7 @@ def render_pd_page(st) -> None:
     render_status_badge(st, detail["equipment"], status)
     st.caption(f"**Sample ID:** {selected_id} | **Unit:** {detail.get('unit', '-')} | **Metode:** {detail.get('method', '-')}")
 
-    detail_view = st.radio("Tampilan Detail", ["Ringkasan", "Rekomendasi"], horizontal=True, key="pd_detail_view")
+    detail_view = render_detail_view_toggle(st, key="pd_detail_view")
 
     if detail_view == "Ringkasan":
         st.markdown("**Parameter PRPD**")

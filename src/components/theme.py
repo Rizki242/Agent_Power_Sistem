@@ -2,23 +2,21 @@
 
 Provides modern CSS variables, typography, sleek card elevations,
 status pills, and UI micro-interactions for Streamlit.
+
+Base colors (background/text/primary/border) and fonts come from
+``.streamlit/config.toml`` ([theme.light] / [theme.dark]), which is what
+lets users toggle dark mode from the app menu. This module layers on top
+of that with the custom cards, tabs, buttons, and sidebar chrome that
+config.toml alone cannot express, and mirrors the active mode by reading
+``st.context.theme.type``.
 """
 
-
-def get_modern_theme_css() -> str:
-    return """
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
-      :root {
-        --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        --font-mono: 'JetBrains Mono', monospace;
-
+_LIGHT_ROOT_VARS = """
         --mcsa-bg: #f8fafc;
         --mcsa-card: #ffffff;
         --mcsa-border: #e2e8f0;
         --mcsa-border-focus: #94a3b8;
-        
+
         --mcsa-slate-900: #0f172a;
         --mcsa-slate-800: #1e293b;
         --mcsa-slate-700: #334155;
@@ -57,7 +55,57 @@ def get_modern_theme_css() -> str:
         --radius-sm: 6px;
         --radius-md: 10px;
         --radius-lg: 14px;
-      }
+"""
+
+_DARK_ROOT_VARS = """
+        --mcsa-bg: #0f172a;
+        --mcsa-card: #1e293b;
+        --mcsa-border: #334155;
+        --mcsa-border-focus: #64748b;
+
+        --mcsa-slate-900: #f8fafc;
+        --mcsa-slate-800: #e2e8f0;
+        --mcsa-slate-700: #cbd5e1;
+        --mcsa-slate-600: #94a3b8;
+        --mcsa-slate-500: #94a3b8;
+        --mcsa-slate-400: #64748b;
+        --mcsa-slate-200: #334155;
+        --mcsa-slate-100: #334155;
+        --mcsa-slate-50:  #334155;
+
+        /* Primary Accent (Cobalt & Cyan Teal), brightened for dark backgrounds */
+        --mcsa-primary: #38bdf8;
+        --mcsa-primary-hover: #0ea5e9;
+        --mcsa-primary-light: #0c4a6e;
+        --mcsa-primary-text: #7dd3fc;
+
+        /* Status Colors */
+        --mcsa-ok-bg: #052e2b;
+        --mcsa-ok-border: #065f46;
+        --mcsa-ok-text: #6ee7b7;
+        --mcsa-ok-dot: #10b981;
+
+        --mcsa-warn-bg: #451a03;
+        --mcsa-warn-border: #92400e;
+        --mcsa-warn-text: #fcd34d;
+        --mcsa-warn-dot: #f59e0b;
+
+        --mcsa-err-bg: #450a0a;
+        --mcsa-err-border: #991b1b;
+        --mcsa-err-text: #fca5a5;
+        --mcsa-err-dot: #ef4444;
+
+        --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.24);
+        --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.32), 0 1px 2px -1px rgba(0, 0, 0, 0.32);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.36), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 14px;
+"""
+
+_STATIC_CSS = """
+    <style>
+      :root {%(root_vars)s      }
 
       /* Global App Reset & Typography */
       html, body, [class*="css"] {
@@ -79,7 +127,7 @@ def get_modern_theme_css() -> str:
 
       /* Sidebar Refinement */
       [data-testid="stSidebar"] {
-        background-color: #ffffff !important;
+        background-color: var(--mcsa-card) !important;
         border-right: 1px solid var(--mcsa-border) !important;
         box-shadow: var(--shadow-xs);
       }
@@ -121,7 +169,7 @@ def get_modern_theme_css() -> str:
       [data-testid="stMetric"]:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-md) !important;
-        border-color: #cbd5e1 !important;
+        border-color: var(--mcsa-border-focus) !important;
       }
       [data-testid="stMetricLabel"] p {
         font-size: 0.8rem !important;
@@ -164,14 +212,14 @@ def get_modern_theme_css() -> str:
         transition: all 0.15s ease-in-out !important;
       }
       .stTabs [aria-selected="true"] {
-        background-color: #ffffff !important;
+        background-color: var(--mcsa-card) !important;
         color: var(--mcsa-primary) !important;
         box-shadow: var(--shadow-xs) !important;
       }
 
       /* Expanders */
       [data-testid="stExpander"] {
-        background-color: #ffffff !important;
+        background-color: var(--mcsa-card) !important;
         border: 1px solid var(--mcsa-border) !important;
         border-radius: var(--radius-md) !important;
         box-shadow: var(--shadow-xs) !important;
@@ -201,7 +249,7 @@ def get_modern_theme_css() -> str:
       }
       .stButton button[kind="secondary"] {
         border: 1px solid var(--mcsa-border) !important;
-        background-color: #ffffff !important;
+        background-color: var(--mcsa-card) !important;
         color: var(--mcsa-slate-700) !important;
       }
       .stButton button[kind="secondary"]:hover {
@@ -212,7 +260,7 @@ def get_modern_theme_css() -> str:
 
       /* Brand Header & Navigation Pills in Sidebar */
       .mcsa-header-card {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        background: linear-gradient(135deg, #0f172a 0%%, #1e293b 100%%);
         color: #ffffff;
         padding: 16px 18px;
         border-radius: var(--radius-md);
@@ -235,16 +283,16 @@ def get_modern_theme_css() -> str:
       .mcsa-pulse-dot {
         width: 8px;
         height: 8px;
-        border-radius: 50%;
+        border-radius: 50%%;
         background-color: #10b981;
         display: inline-block;
         box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
         animation: mcsaPulse 2s infinite;
       }
       @keyframes mcsaPulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        0%% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70%% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        100%% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
       }
 
       /* Sidebar filter section (below native st.navigation nav) */
@@ -275,14 +323,46 @@ def get_modern_theme_css() -> str:
         background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
+        background: var(--mcsa-border-focus);
         border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        background: var(--mcsa-slate-400);
       }
     </style>
     """
+
+
+def get_modern_theme_css(dark: bool = False) -> str:
+    root_vars = _DARK_ROOT_VARS if dark else _LIGHT_ROOT_VARS
+    return _STATIC_CSS % {"root_vars": root_vars}
+
+
+def _inject_styles(st):
+    dark = False
+    try:
+        dark = st.context.theme.type == "dark"
+    except Exception:
+        pass
+    st.markdown(get_modern_theme_css(dark=dark), unsafe_allow_html=True)
+
+
+def render_sidebar_brand(st):
+    """Modern brand card with live status indicator. Injects the shared theme CSS
+    as a side effect, so this must run before any other themed sidebar content."""
+    _inject_styles(st)
+    st.sidebar.markdown(
+        """
+        <div class="mcsa-header-card">
+            <div class="mcsa-header-title">
+                <span class="mcsa-pulse-dot"></span>
+                <span>MCSA Control</span>
+            </div>
+            <div class="mcsa-header-sub">PLTU Predictive Maintenance Suite</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_page_header(st, title: str, subtitle: str = "", badge: str = ""):
@@ -309,3 +389,15 @@ def render_page_header(st, title: str, subtitle: str = "", badge: str = ""):
 def render_data_disclaimer_banner(st, message: str = "Data Contoh - Belum Terverifikasi dari Sumber Asli") -> None:
     """Persistent warning banner for pages whose underlying data is not yet sourced from real measurements."""
     st.warning(message, icon=":material/report:")
+
+
+def render_detail_view_toggle(st, key: str) -> str:
+    """Shared "Ringkasan / Rekomendasi" detail-view switch used by the specialist
+    agent pages (DGA, PD, Thermal, Tribology, Vibrasi). Centralized so all five
+    stay in sync instead of re-declaring the same widget with st.radio."""
+    return st.segmented_control(
+        "Tampilan Detail",
+        ["Ringkasan", "Rekomendasi"],
+        default="Ringkasan",
+        key=key,
+    )
