@@ -15,6 +15,7 @@ reflects real manifest validation/load status.
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from pple.assets.registry import AssetRegistry
 from pple.core.exceptions import ModuleNotRegisteredError
 from pple.engineering.base import EngineeringModule
 from pple.engineering.equipment_modules import EquipmentModuleStore
@@ -22,6 +23,7 @@ from pple.engineering.loader import load_modules_from_manifests
 
 _registry, _load_results = load_modules_from_manifests()
 _equipment_module_store = EquipmentModuleStore()
+_asset_registry = AssetRegistry()
 
 router = APIRouter(prefix="/api/v2", tags=["engineering-modules-v2"])
 
@@ -90,3 +92,25 @@ def set_equipment_module(equipment_id: str, module_id: str, body: SetEquipmentMo
         raise HTTPException(status_code=404, detail=f"Engineering module '{module_id}' not found")
     _equipment_module_store.set_enabled(equipment_id, module_id, body.enabled)
     return {"equipment_id": equipment_id, "module_id": module_id, "enabled": body.enabled}
+
+
+@router.get("/assets/tree")
+def assets_tree(domain: str = None):
+    """Full Plant -> Unit -> Equipment hierarchy (docs/final.md Phase 3),
+    read-through from src.dga_data / src.vibration_data - see
+    pple.assets.registry for why this isn't a separate persisted store."""
+    return _asset_registry.plant(domain=domain).to_dict()
+
+
+@router.get("/assets")
+def assets_list(unit: str = None, domain: str = None):
+    """Flat equipment list, optionally filtered by unit and/or domain."""
+    return {"equipment": [e.to_dict() for e in _asset_registry.list_equipment(unit=unit, domain=domain)]}
+
+
+@router.get("/assets/{equipment_id}")
+def assets_get(equipment_id: str, domain: str = None):
+    eq = _asset_registry.get_equipment(equipment_id, domain=domain)
+    if eq is None:
+        raise HTTPException(status_code=404, detail=f"Equipment '{equipment_id}' not found")
+    return eq.to_dict()

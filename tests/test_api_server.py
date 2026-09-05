@@ -114,6 +114,38 @@ class TestAPIServer(unittest.TestCase):
         self.assertEqual(len(results), 6)
         self.assertTrue(all(r["status"] == "ACTIVE" for r in results))
 
+    def test_v2_assets_tree_endpoint(self):
+        res = self.client.get("/api/v2/assets/tree")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        unit_names = {u["name"] for u in data["units"]}
+        self.assertEqual(unit_names, {"UNIT 1", "UNIT 2", "UNIT 3", "COMMON"})
+
+    def test_v2_assets_tree_domain_filter(self):
+        res = self.client.get("/api/v2/assets/tree", params={"domain": "vibration"})
+        self.assertEqual(res.status_code, 200)
+        domains = {e["domain"] for u in res.json()["units"] for e in u["equipment"]}
+        self.assertEqual(domains, {"vibration"})
+
+    def test_v2_assets_list_endpoint(self):
+        res = self.client.get("/api/v2/assets", params={"unit": "UNIT 1"})
+        self.assertEqual(res.status_code, 200)
+        equipment = res.json()["equipment"]
+        self.assertGreater(len(equipment), 0)
+        self.assertTrue(all(e["unit"] == "UNIT 1" for e in equipment))
+
+    def test_v2_assets_get_endpoint(self):
+        listed = self.client.get("/api/v2/assets", params={"domain": "dga"}).json()["equipment"]
+        sample_id = listed[0]["id"]
+
+        res = self.client.get(f"/api/v2/assets/{sample_id}")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()["id"], sample_id)
+
+    def test_v2_assets_get_unknown_returns_404(self):
+        res = self.client.get("/api/v2/assets/DOES-NOT-EXIST")
+        self.assertEqual(res.status_code, 404)
+
     def test_assessment_report_endpoint(self):
         res = self.client.get("/api/reports/assessment/BFP%201A")
         self.assertEqual(res.status_code, 200)

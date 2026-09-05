@@ -81,5 +81,38 @@ class CLIAnalyzeCommandTests(unittest.TestCase):
         self.assertIn("NORMAL", result.stdout)
 
 
+class CLIAssetsCommandTests(unittest.TestCase):
+    def test_assets_tree_shows_units_and_equipment(self):
+        result = runner.invoke(app, ["assets", "tree"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("PLTU Jeranjang", result.stdout)
+        self.assertIn("UNIT 1", result.stdout)
+
+    def test_assets_tree_domain_filter(self):
+        result = runner.invoke(app, ["assets", "tree", "--domain", "dga"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("(dga)", result.stdout)
+        self.assertNotIn("(vibration)", result.stdout)
+
+    def test_assets_list_unit_filter(self):
+        result = runner.invoke(app, ["assets", "list", "--unit", "UNIT 1"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("UNIT 1", result.stdout)
+        self.assertNotIn("UNIT 2", result.stdout)
+
+    def test_assets_show_known_equipment(self):
+        from pple.assets import AssetRegistry
+
+        sample = AssetRegistry().list_equipment(domain="dga")[0]
+        result = runner.invoke(app, ["assets", "show", sample.id])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn(sample.name, result.stdout)
+        self.assertIn("dga", result.stdout)
+
+    def test_assets_show_unknown_equipment_exits_nonzero(self):
+        result = runner.invoke(app, ["assets", "show", "DOES-NOT-EXIST"])
+        self.assertEqual(result.exit_code, 1)
+
+
 if __name__ == "__main__":
     unittest.main()

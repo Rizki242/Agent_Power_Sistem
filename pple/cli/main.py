@@ -10,9 +10,11 @@ registers this as the `pple` console script for `pip install -e .`.
 
 Scope of this slice: status, doctor, module list/show, analyze, equipment
 modules/module-add/module-remove (Phase 8 - per-equipment module overrides,
-file-backed, see pple.engineering.equipment_modules). Full asset/plant/unit
-CRUD commands are still out of scope until the database layer (final.md
-Phase 2-4) exists - there is nowhere durable to write them to yet.
+file-backed, see pple.engineering.equipment_modules), and assets tree/list/show
+(Phase 3 - read-only Plant/Unit/Equipment view, see pple.assets.registry).
+Asset/plant/unit CRUD (creating or editing equipment through the CLI, not
+just viewing it) is still out of scope until the database layer (final.md
+Phase 2-4) exists - there is nowhere durable to write new records to yet.
 """
 
 import json
@@ -31,6 +33,8 @@ module_app = typer.Typer(help="Inspect engineering modules loaded from manifests
 app.add_typer(module_app, name="module")
 equipment_app = typer.Typer(help="Manage per-equipment engineering module overrides (Phase 8).")
 app.add_typer(equipment_app, name="equipment")
+assets_app = typer.Typer(help="Browse the Plant/Unit/Equipment hierarchy (Phase 3).")
+app.add_typer(assets_app, name="assets")
 
 console = Console()
 
@@ -190,6 +194,63 @@ def equipment_module_remove(
     m = _get_active_module(registry, module_id)
     EquipmentModuleStore().remove_module(equipment, module_id)
     console.print(f"[yellow]Disabled[/yellow] {m.name} for {equipment}")
+
+
+@assets_app.command("tree")
+def assets_tree(domain: str = typer.Option(None, "--domain", help="Restrict to one domain, e.g. dga, vibration")):
+    """Show the full Plant -> Unit -> Equipment hierarchy."""
+    from pple.assets import AssetRegistry
+
+    plant = AssetRegistry().plant(domain=domain)
+    console.print(f"[bold]{plant.name}[/bold] ({plant.id})")
+    for unit in plant.units:
+        console.print(f"\n[bold cyan]{unit.name}[/bold cyan] ({len(unit.equipment)} equipment)")
+        for eq in unit.equipment:
+            # Square brackets are Rich markup, not literal text - use parens for the
+            # domain tag so e.g. "vibration" doesn't get silently swallowed as a style tag.
+            console.print(f"  ({eq.domain}) {eq.id}  {eq.name}  ({eq.equipment_class or '-'})  status={eq.status or '-'}")
+
+
+@assets_app.command("list")
+def assets_list(
+    unit: str = typer.Option(None, "--unit", help="Filter by unit, e.g. 'UNIT 1'"),
+    domain: str = typer.Option(None, "--domain", help="Filter by domain, e.g. dga, vibration"),
+):
+    """List equipment, optionally filtered by unit and/or domain."""
+    from pple.assets import AssetRegistry
+
+    equipment = AssetRegistry().list_equipment(unit=unit, domain=domain)
+    table = Table()
+    table.add_column("ID")
+    table.add_column("Name")
+    table.add_column("Unit")
+    table.add_column("Domain")
+    table.add_column("Class")
+    table.add_column("Status")
+    for eq in equipment:
+        table.add_row(eq.id, eq.name, eq.unit, eq.domain, eq.equipment_class or "-", eq.status or "-")
+    console.print(table)
+
+
+@assets_app.command("show")
+def assets_show(equipment_id: str = typer.Argument(..., help="Equipment id, e.g. a DGA transformer id or vibration asset_id")):
+    """Show detail for one piece of equipment."""
+    from pple.assets import AssetRegistry
+
+    eq = AssetRegistry().get_equipment(equipment_id)
+    if eq is None:
+        console.print(f"[red]Equipment '{equipment_id}' not found.[/red]")
+        raise typer.Exit(code=1)
+
+    console.print(f"\n[bold]{eq.name}[/bold] ({eq.id})")
+    console.print(f"Unit          {eq.unit}")
+    console.print(f"Domain        {eq.domain}")
+    console.print(f"Class         {eq.equipment_class or '-'}")
+    console.print(f"Status        {eq.status or '-'}")
+    if eq.metadata:
+        console.print("Metadata:")
+        for k, v in eq.metadata.items():
+            console.print(f"  {k}: {v}")
 
 
 @app.command()
