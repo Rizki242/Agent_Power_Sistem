@@ -77,6 +77,37 @@ def get_asset(asset_id: str) -> dict[str, Any] | None:
     return _read_registry().get(str(asset_id))
 
 
+def count_condition_records(asset_id: str) -> int:
+    """How many condition-history rows reference this asset (shown to the
+    user before they confirm deletion, since delete_asset() cascades)."""
+    history = load_condition_history()
+    if history.empty:
+        return 0
+    return int((history["asset_id"] == str(asset_id)).sum())
+
+
+def delete_asset(asset_id: str) -> bool:
+    """Remove an asset from the central register. Cascades to its condition
+    history rows so no orphaned records point at a nonexistent asset_id;
+    evidence files already written to disk are left in place (only the
+    pointer rows are removed) since they may still matter as an audit trail."""
+    asset_id = str(asset_id)
+    with _LOCK:
+        records = _read_registry()
+        if asset_id not in records:
+            return False
+        del records[asset_id]
+        _write_registry(records)
+
+        history = load_condition_history()
+        if not history.empty and (history["asset_id"] == asset_id).any():
+            history = history[history["asset_id"] != asset_id]
+            path = _condition_path()
+            path.parent.mkdir(parents=True, exist_ok=True)
+            history.to_csv(path, index=False)
+    return True
+
+
 def upsert_asset(asset: dict[str, Any]) -> dict[str, Any]:
     """Create or update a centrally managed asset record."""
     name = str(asset.get("name", "")).strip()
@@ -153,6 +184,57 @@ def add_condition_record(record: dict[str, Any]) -> dict[str, Any]:
         path.parent.mkdir(parents=True, exist_ok=True)
         history.to_csv(path, index=False)
     return row
+
+
+def get_condition_record(record_id: str) -> dict[str, Any] | None:
+    history = load_condition_history()
+    if history.empty:
+        return None
+    match = history[history["record_id"] == str(record_id)]
+    if match.empty:
+        return None
+    row = match.iloc[0].to_dict()
+    if pd.notna(row.get("test_date")):
+        row["test_date"] = pd.Timestamp(row["test_date"]).strftime("%Y-%m-%d")
+    return row
+
+
+def update_condition_record(record_id: str, fields: dict[str, Any]) -> dict[str, Any]:
+    """Edit an existing condition-history row in place (module/test_date/
+    condition/summary). asset_id and record_id are immutable - re-record a
+    new entry instead of reassigning a record to a different asset."""
+    module = str(fields.get("module") or "").upper().strip()
+    if module not in MONITORING_MODULES:
+        raise ValueError("Modul monitoring tidak valid.")
+    test_date = pd.to_datetime(fields.get("test_date") or date.today(), errors="coerce")
+    if pd.isna(test_date):
+        raise ValueError("Tanggal pengujian tidak valid.")
+
+    with _LOCK:
+        history = load_condition_history()
+        if history.empty or record_id not in set(history["record_id"]):
+            raise ValueError("Record riwayat kondisi tidak ditemukan.")
+        idx = history.index[history["record_id"] == record_id][0]
+        history.loc[idx, "module"] = module
+        history.loc[idx, "test_date"] = test_date.strftime("%Y-%m-%d")
+        history.loc[idx, "condition"] = str(fields.get("condition") or "Unknown").strip()
+        history.loc[idx, "summary"] = str(fields.get("summary") or "").strip()
+        path = _condition_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        history.to_csv(path, index=False)
+        return history.loc[idx].to_dict()
+
+
+def delete_condition_record(record_id: str) -> bool:
+    with _LOCK:
+        history = load_condition_history()
+        if history.empty or record_id not in set(history["record_id"]):
+            return False
+        history = history[history["record_id"] != record_id]
+        path = _condition_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        history.to_csv(path, index=False)
+    return True
 
 
 def save_evidence(asset_id: str, module: str, filename: str, content: bytes, test_date: date) -> str:
