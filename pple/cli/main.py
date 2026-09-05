@@ -37,6 +37,8 @@ assets_app = typer.Typer(help="Browse the Plant/Unit/Equipment hierarchy (Phase 
 app.add_typer(assets_app, name="assets")
 reliability_app = typer.Typer(help="Reliability Fusion V2 - health/risk/RUL across engineering modules (Phase 11).")
 app.add_typer(reliability_app, name="reliability")
+agents_app = typer.Typer(help="The specialist/fusion/safety agent roster and its live status (Phase 18).")
+app.add_typer(agents_app, name="agents")
 
 console = Console()
 
@@ -287,6 +289,23 @@ def reliability_health(
         console.print("\nCatatan:")
         for note in result.notes:
             console.print(f"  - {note}")
+
+
+@agents_app.command("list")
+def agents_list():
+    """List the specialist/fusion/safety agent roster and each one's live status."""
+    from pple.agents import AgentRegistry
+
+    status_color = {"ACTIVE": "green", "ONLINE": "green", "DISABLED": "yellow", "ERROR": "red"}
+    table = Table()
+    table.add_column("Agent")
+    table.add_column("Domain")
+    table.add_column("Role")
+    table.add_column("Status")
+    for a in AgentRegistry().list_agents():
+        color = status_color.get(a["status"], "white")
+        table.add_row(a["name"], a["domain"], a["role"], f"[{color}]{a['status']}[/{color}]")
+    console.print(table)
 
 
 @app.command()

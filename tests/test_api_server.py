@@ -162,6 +162,18 @@ class TestAPIServer(unittest.TestCase):
         res = self.client.get("/api/v2/reliability/DOES-NOT-EXIST")
         self.assertEqual(res.status_code, 404)
 
+    def test_v2_agents_list_endpoint(self):
+        res = self.client.get("/api/v2/agents")
+        self.assertEqual(res.status_code, 200)
+        agents = res.json()["agents"]
+        self.assertEqual(len(agents), 8)
+        vibration = next(a for a in agents if a["agent_id"] == "subagent-vib-01")
+        self.assertEqual(vibration["status"], "ACTIVE")
+
+    def test_v2_agents_get_unknown_returns_404(self):
+        res = self.client.get("/api/v2/agents/does-not-exist")
+        self.assertEqual(res.status_code, 404)
+
     def test_assessment_report_endpoint(self):
         res = self.client.get("/api/reports/assessment/BFP%201A")
         self.assertEqual(res.status_code, 200)

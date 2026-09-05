@@ -130,5 +130,17 @@ class CLIReliabilityCommandTests(unittest.TestCase):
         self.assertEqual(result.exit_code, 1)
 
 
+class CLIAgentsCommandTests(unittest.TestCase):
+    def test_agents_list_shows_all_eight_with_status(self):
+        result = runner.invoke(app, ["agents", "list"])
+        self.assertEqual(result.exit_code, 0)
+        # Rich wraps long cell text across lines at this table's default
+        # width, so assert on short column values rather than full agent names.
+        for domain in ("Vibration", "MCSA", "DGA", "Tribology", "Thermal", "Safety Guardrail"):
+            self.assertIn(domain, result.stdout)
+        self.assertIn("ACTIVE", result.stdout)
+        self.assertIn("ONLINE", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

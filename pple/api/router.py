@@ -15,6 +15,7 @@ reflects real manifest validation/load status.
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from pple.agents import AgentRegistry
 from pple.assets.registry import AssetRegistry
 from pple.core.exceptions import ModuleNotRegisteredError
 from pple.engineering.base import EngineeringModule
@@ -26,6 +27,7 @@ _registry, _load_results = load_modules_from_manifests()
 _equipment_module_store = EquipmentModuleStore()
 _asset_registry = AssetRegistry()
 _reliability_engine = ReliabilityFusionEngine()
+_agent_registry = AgentRegistry()
 
 router = APIRouter(prefix="/api/v2", tags=["engineering-modules-v2"])
 
@@ -129,3 +131,19 @@ def reliability_health(equipment_id: str, criticality: str = "B"):
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     return result.model_dump(mode="json")
+
+
+@router.get("/agents")
+def agents_list():
+    """The specialist/fusion/safety agent roster (docs/final.md Phase 18),
+    with each specialist's status reflecting its real manifest load result
+    instead of a hardcoded "ONLINE" - see pple.agents.registry."""
+    return {"agents": _agent_registry.list_agents()}
+
+
+@router.get("/agents/{agent_id}")
+def agents_get(agent_id: str):
+    agent = _agent_registry.get_agent(agent_id)
+    if agent is None:
+        raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found")
+    return agent
