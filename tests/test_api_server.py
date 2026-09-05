@@ -1,17 +1,42 @@
 import os
+import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
+import api_server
 import pple.api.router as pple_api_router
 from api_server import app
 from pple.engineering.equipment_modules import EquipmentModuleStore
+from src.agents.continuous_learning import PowerPlantSkillLearner
+from src.agents.env_harness import EnvRigger
 
 class TestAPIServer(unittest.TestCase):
+    """Patches the module-level plant_skill_learner/env_rigger singletons so
+    the /api/learning/* tests never write to the real data/learning/ tree
+    (see api_server.py's plant_skill_learner = PowerPlantSkillLearner() and
+    env_rigger = EnvRigger(), both instantiated with the real default paths)."""
+
     def setUp(self):
         self.client = TestClient(app)
+        self._tmpdir = tempfile.mkdtemp()
+        self._learner_patcher = patch.object(
+            api_server,
+            "plant_skill_learner",
+            PowerPlantSkillLearner(storage_path=os.path.join(self._tmpdir, "learned_skills.json")),
+        )
+        self._rigger_patcher = patch.object(
+            api_server,
+            "env_rigger",
+            EnvRigger(storage_dir=os.path.join(self._tmpdir, "env_harness")),
+        )
+        self._learner_patcher.start()
+        self._rigger_patcher.start()
+        self.addCleanup(self._learner_patcher.stop)
+        self.addCleanup(self._rigger_patcher.stop)
+        self.addCleanup(shutil.rmtree, self._tmpdir, True)
 
     def test_health(self):
         res = self.client.get("/api/health")
