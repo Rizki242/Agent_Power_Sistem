@@ -56,6 +56,25 @@ class TestPowerPlantSkillLearner(unittest.TestCase):
         self.assertEqual(bm["rating"], "GRADE A - EXPERT SYSTEM")
         self.assertEqual(len(bm["benchmark_results"]), 5)
 
+    def test_env_harness_calls_do_not_touch_real_data_dir(self):
+        """evaluate_env_harness()/run_env_rigger_learning() must colocate
+        EnvRigger's history file next to self.storage_path, not the real
+        project data/learning/env_harness/ tree, so running this test (or any
+        other caller with a custom storage_path) never dirties tracked data."""
+        from src.agents.env_harness import DEFAULT_HARNESS_DIR
+
+        real_history = os.path.join(DEFAULT_HARNESS_DIR, "rigger_history.json")
+        before_mtime = os.path.getmtime(real_history) if os.path.exists(real_history) else None
+
+        self.learner.evaluate_env_harness()
+        self.learner.run_env_rigger_learning(equipment="BFP 1A")
+
+        expected_dir = os.path.join(os.path.dirname(self.temp_file.name), "env_harness")
+        self.assertTrue(os.path.exists(os.path.join(expected_dir, "rigger_history.json")))
+
+        after_mtime = os.path.getmtime(real_history) if os.path.exists(real_history) else None
+        self.assertEqual(before_mtime, after_mtime)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -163,6 +163,13 @@ class PowerPlantSkillLearner:
         self.storage_path = storage_path or DEFAULT_LEARNED_SKILLS_PATH
         self._ensure_storage()
 
+    def _env_harness_dir(self) -> str:
+        """Directory for EnvRigger's own history file, colocated with
+        self.storage_path so a caller that overrides storage_path (e.g. tests
+        passing a tempfile) doesn't leak writes into the real data/learning/
+        tree."""
+        return os.path.join(os.path.dirname(self.storage_path), "env_harness")
+
     def _ensure_storage(self):
         os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
         if not os.path.exists(self.storage_path):
@@ -339,7 +346,7 @@ class PowerPlantSkillLearner:
         """
         from src.agents.env_harness import EnvRigger, DiagnosticEnvironment
 
-        rigger = EnvRigger()
+        rigger = EnvRigger(storage_dir=self._env_harness_dir())
         harness = rigger.active_harness
 
         benchmark_evals = []
@@ -385,7 +392,7 @@ class PowerPlantSkillLearner:
         """
         from src.agents.env_harness import EnvRigger
 
-        rigger = EnvRigger()
+        rigger = EnvRigger(storage_dir=self._env_harness_dir())
         # Choose a relevant benchmark or telemetry
         selected_bm = PLANT_BENCHMARKS[0]
         for bm in PLANT_BENCHMARKS:
