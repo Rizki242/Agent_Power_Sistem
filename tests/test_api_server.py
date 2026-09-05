@@ -146,6 +146,22 @@ class TestAPIServer(unittest.TestCase):
         res = self.client.get("/api/v2/assets/DOES-NOT-EXIST")
         self.assertEqual(res.status_code, 404)
 
+    def test_v2_reliability_health_known_equipment(self):
+        listed = self.client.get("/api/v2/assets", params={"domain": "dga"}).json()["equipment"]
+        sample_id = listed[0]["id"]
+
+        res = self.client.get(f"/api/v2/reliability/{sample_id}")
+
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["equipment_id"], sample_id)
+        self.assertTrue(any(c["module_id"] == "dga" for c in data["domain_contributions"]))
+        self.assertIn(data["health_index_type"], {"calculated"})
+
+    def test_v2_reliability_health_unknown_equipment_returns_404(self):
+        res = self.client.get("/api/v2/reliability/DOES-NOT-EXIST")
+        self.assertEqual(res.status_code, 404)
+
     def test_assessment_report_endpoint(self):
         res = self.client.get("/api/reports/assessment/BFP%201A")
         self.assertEqual(res.status_code, 200)

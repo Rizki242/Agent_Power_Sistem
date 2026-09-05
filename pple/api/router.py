@@ -20,10 +20,12 @@ from pple.core.exceptions import ModuleNotRegisteredError
 from pple.engineering.base import EngineeringModule
 from pple.engineering.equipment_modules import EquipmentModuleStore
 from pple.engineering.loader import load_modules_from_manifests
+from pple.reliability import ReliabilityFusionEngine
 
 _registry, _load_results = load_modules_from_manifests()
 _equipment_module_store = EquipmentModuleStore()
 _asset_registry = AssetRegistry()
+_reliability_engine = ReliabilityFusionEngine()
 
 router = APIRouter(prefix="/api/v2", tags=["engineering-modules-v2"])
 
@@ -114,3 +116,16 @@ def assets_get(equipment_id: str, domain: str = None):
     if eq is None:
         raise HTTPException(status_code=404, detail=f"Equipment '{equipment_id}' not found")
     return eq.to_dict()
+
+
+@router.get("/reliability/{equipment_id}")
+def reliability_health(equipment_id: str, criticality: str = "B"):
+    """Fuse every domain's latest real measurement for this equipment into
+    one health/risk/RUL picture (docs/final.md Phase 11) - the read-through
+    pple.assets registry plus pple.engineering's module registry, never a
+    fabricated score for a domain with no data (see FusionResult.notes)."""
+    try:
+        result = _reliability_engine.fuse_equipment(equipment_id, criticality=criticality)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return result.model_dump(mode="json")

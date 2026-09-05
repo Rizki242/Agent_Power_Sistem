@@ -114,5 +114,21 @@ class CLIAssetsCommandTests(unittest.TestCase):
         self.assertEqual(result.exit_code, 1)
 
 
+class CLIReliabilityCommandTests(unittest.TestCase):
+    def test_reliability_health_known_dga_equipment(self):
+        from pple.assets import AssetRegistry
+
+        sample = AssetRegistry().list_equipment(domain="dga")[0]
+        result = runner.invoke(app, ["reliability", "health", sample.id])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("RELIABILITY FUSION", result.stdout)
+        self.assertIn("Health Index", result.stdout)
+        self.assertIn("(dga)", result.stdout)
+
+    def test_reliability_health_unknown_equipment_exits_nonzero(self):
+        result = runner.invoke(app, ["reliability", "health", "DOES-NOT-EXIST"])
+        self.assertEqual(result.exit_code, 1)
+
+
 if __name__ == "__main__":
     unittest.main()

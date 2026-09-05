@@ -35,6 +35,8 @@ equipment_app = typer.Typer(help="Manage per-equipment engineering module overri
 app.add_typer(equipment_app, name="equipment")
 assets_app = typer.Typer(help="Browse the Plant/Unit/Equipment hierarchy (Phase 3).")
 app.add_typer(assets_app, name="assets")
+reliability_app = typer.Typer(help="Reliability Fusion V2 - health/risk/RUL across engineering modules (Phase 11).")
+app.add_typer(reliability_app, name="reliability")
 
 console = Console()
 
@@ -251,6 +253,40 @@ def assets_show(equipment_id: str = typer.Argument(..., help="Equipment id, e.g.
         console.print("Metadata:")
         for k, v in eq.metadata.items():
             console.print(f"  {k}: {v}")
+
+
+@reliability_app.command("health")
+def reliability_health(
+    equipment_id: str = typer.Argument(..., help="Equipment id, e.g. a DGA transformer id or vibration asset_id"),
+    criticality: str = typer.Option("B", "--criticality", help="Asset criticality for the risk calculation: A/B/C"),
+):
+    """Fuse every domain's latest real measurement for this equipment into
+    one health/risk/RUL picture (docs/final.md Phase 11)."""
+    from pple.reliability import ReliabilityFusionEngine
+
+    try:
+        result = ReliabilityFusionEngine().fuse_equipment(equipment_id, criticality=criticality)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=1)
+
+    severity_color = {"NORMAL": "green", "WATCH": "yellow", "ALARM": "yellow", "CRITICAL": "red"}.get(result.severity.value, "white")
+    console.print(f"\n[bold]RELIABILITY FUSION[/bold] - {equipment_id}\n")
+    console.print(f"Health Index   {result.health_index} ({result.health_index_type.value})")
+    console.print(f"Severity       [{severity_color}]{result.severity.value}[/{severity_color}]")
+    console.print(f"Risk           {result.risk_level} (index {result.risk_index}, {result.risk_type.value})")
+    console.print(f"Failure 30d    {result.failure_probability_30d}% ({result.failure_probability_type.value})")
+    console.print(f"Est. RUL       {result.estimated_rul_days} ({result.rul_type.value})")
+    console.print(f"Next window    {result.recommended_window}")
+
+    console.print("\nDomain contributions:")
+    for c in result.domain_contributions:
+        console.print(f"  ({c.module_id}) health={c.health_score} severity={c.severity.value} confidence={c.confidence}")
+
+    if result.notes:
+        console.print("\nCatatan:")
+        for note in result.notes:
+            console.print(f"  - {note}")
 
 
 @app.command()
