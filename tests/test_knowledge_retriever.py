@@ -36,6 +36,16 @@ class KnowledgeRetrieverTests(unittest.TestCase):
             self.assertIn("source", citations[0])
             self.assertIn("title", citations[0])
 
+    def test_config_guidance_and_thresholds_indexed_via_mcsa_fallback(self):
+        """Real config lives under data/MCSA/config/, not data/config/ (which
+        doesn't exist); load_knowledge_base() must fall back there instead of
+        silently indexing nothing. Regression guard for the bug fixed in
+        commit f9ce79b."""
+        docs = load_knowledge_base(force_reload=True)
+        sources = {d["source"] for d in docs}
+        self.assertIn("ESA/MCSA International Guidance", sources)
+        self.assertIn("Thresholds Standard MCSA", sources)
+
 
 if __name__ == "__main__":
     unittest.main()

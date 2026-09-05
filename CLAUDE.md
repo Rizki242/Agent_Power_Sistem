@@ -51,7 +51,7 @@ An incremental migration toward a dynamic, plugin-based module architecture is u
 - `src/knowledge_processor.py` converts uploads (PDF/MD/DOCX/JSON/TXT) into v2 JSON. After writing/deleting knowledge files you must call `load_knowledge_base(force_reload=True)` — the index is a cached module global.
 - `src/knowledge_retriever.py` provides keyword search (always available, no extra deps). `src/rag_engine.py` adds optional LangChain + FAISS semantic search over `Materi/VIBRASI/` and `Materi/TRIBOLOGY/`; it needs optional packages (`langchain`, `langchain-community`, `faiss-cpu`, `sentence-transformers`) and every call path must fall back to keyword search when they are missing.
 - For very large Materi files, search happens within the selected file only, to keep it fast; prefer splitting large files by topic.
-- Gotcha: `knowledge_retriever.py` indexes guidance/thresholds from `data/config/`, but the real config lives in `data/MCSA/config/` — that indexing is currently a silent no-op.
+- `knowledge_retriever.py` indexes guidance/thresholds from `data/config/`, falling back to `data/MCSA/config/` (where the real files actually live) when the former doesn't exist — fixed in commit `f9ce79b`.
 
 ## Data & Environment
 
