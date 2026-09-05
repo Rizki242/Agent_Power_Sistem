@@ -61,14 +61,30 @@ def _render_ai_llm(st):
         test_opencode_connection,
     )
 
+    from src import ai_settings
+
     st.subheader("Pengaturan Model LLM")
     st.caption("Mengatur provider AI yang dipakai oleh Chatbot dan Analisis Mendalam di Dashboard.")
 
-    # Auto-activate if any key is found in environment or secrets
+    # Seed session_state from disk on first load of this session, so the
+    # provider/model choice survives a fresh browser session instead of
+    # always resetting to "gemini" / the hardcoded defaults. Never seeds an
+    # API key - those never get written to this file (see src/ai_settings.py).
+    persisted = ai_settings.load()
     if "ai_enabled" not in st.session_state:
-        st.session_state.ai_enabled = is_any_ai_configured(st)
+        st.session_state.ai_enabled = persisted.get("ai_enabled", is_any_ai_configured(st))
     if "ai_provider" not in st.session_state:
-        st.session_state.ai_provider = "gemini"
+        st.session_state.ai_provider = persisted.get("ai_provider", "gemini")
+    for field, default in {
+        "gemini_model": DEFAULT_GEMINI_MODEL,
+        "groq_model": DEFAULT_GROQ_MODEL,
+        "opencode_model": DEFAULT_OPENCODE_MODEL,
+        "opencode_base_url": DEFAULT_OPENCODE_BASE_URL,
+        "ollama_model": DEFAULT_OLLAMA_MODEL,
+        "ollama_host": DEFAULT_OLLAMA_HOST,
+    }.items():
+        if field not in st.session_state:
+            st.session_state[field] = persisted.get(field, default)
 
     st.checkbox(
         "Aktifkan Model LLM",
@@ -257,6 +273,17 @@ def _render_ai_llm(st):
                     st.success(msg)
                 else:
                     st.error(msg)
+
+    # Persist the preference fields (never API keys - ai_settings.save() only
+    # accepts its own allowlist, see src/ai_settings.py) so this survives past
+    # the current browser session.
+    _persisted_fields = (
+        "ai_enabled", "ai_provider",
+        "gemini_model", "groq_model",
+        "opencode_model", "opencode_base_url",
+        "ollama_model", "ollama_host",
+    )
+    ai_settings.save({field: st.session_state[field] for field in _persisted_fields if field in st.session_state})
 
 
 def _render_engineering_modules(st):

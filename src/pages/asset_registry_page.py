@@ -8,13 +8,20 @@ src.pages.asset_reports_page's "Laporan kondisi" view reads back from.
 
 from datetime import date
 
+import pandas as pd
+
 from src.asset_registry import (
     LIFECYCLE_STATUSES,
     MONITORING_MODULES,
     add_condition_record,
+    count_condition_records,
+    delete_asset,
+    delete_condition_record,
+    get_condition_record,
     list_assets,
     load_condition_history,
     save_evidence,
+    update_condition_record,
     upsert_asset,
 )
 from src.components.theme import render_page_header
@@ -103,6 +110,23 @@ def render_asset_registry_page(st, edit_mode: bool) -> None:
                     st.success(f"Aset '{saved['name']}' ({saved['asset_id']}) tersimpan.")
                     st.rerun()
 
+        if selected != "(Aset Baru)":
+            with st.expander(":material/delete_forever: Hapus Aset Ini", expanded=False):
+                related = count_condition_records(selected)
+                if related:
+                    st.warning(
+                        f"Aset ini punya {related} catatan riwayat kondisi. Menghapus aset akan "
+                        f"ikut menghapus semua catatan tersebut secara permanen."
+                    )
+                else:
+                    st.info("Aset ini belum punya catatan riwayat kondisi.")
+                confirm = st.checkbox(f"Saya yakin ingin menghapus '{prior.get('name', selected)}' ({selected})", key="_confirm_delete_asset")
+                if st.button("Hapus Permanen", type="secondary", disabled=not edit_mode or not confirm, key="_delete_asset_btn"):
+                    delete_asset(selected)
+                    st.success(f"Aset {selected} dan riwayat kondisinya telah dihapus.")
+                    st.session_state.pop("_confirm_delete_asset", None)
+                    st.rerun()
+
     with tab_condition:
         if not assets:
             st.info("Daftarkan aset terlebih dahulu di tab 'Tambah / Ubah Aset'.")
@@ -115,30 +139,73 @@ def render_asset_registry_page(st, edit_mode: bool) -> None:
             asset = next(a for a in assets if a["asset_id"] == asset_id)
             module_options = asset.get("monitoring_modules") or list(MONITORING_MODULES)
 
+            asset_history = load_condition_history()
+            asset_records = (
+                asset_history[asset_history["asset_id"] == asset_id].to_dict("records")
+                if not asset_history.empty else []
+            )
+            record_options = ["(Catatan Baru)"] + [r["record_id"] for r in asset_records]
+            record_labels = {
+                r["record_id"]: f"{r['test_date'].strftime('%Y-%m-%d') if pd.notna(r['test_date']) else '-'} - {r['module']} - {r['condition']}"
+                for r in asset_records
+            }
+            selected_record_id = st.selectbox(
+                "Catatan yang diedit",
+                record_options,
+                format_func=lambda rid: rid if rid == "(Catatan Baru)" else record_labels.get(rid, rid),
+                key="asset_condition_record_select",
+            )
+            editing = selected_record_id != "(Catatan Baru)"
+            prior_record = get_condition_record(selected_record_id) if editing else {}
+
             with st.form("asset_condition_form"):
-                module = st.selectbox("Modul Pengujian", module_options)
+                module_default = prior_record.get("module") if editing and prior_record.get("module") in module_options else (module_options[0] if module_options else MONITORING_MODULES[0])
+                module = st.selectbox("Modul Pengujian", module_options, index=module_options.index(module_default) if module_default in module_options else 0)
                 c1, c2 = st.columns(2)
                 with c1:
-                    test_date = st.date_input("Tanggal Pengujian", value=date.today())
+                    date_default = date.today()
+                    if editing and prior_record.get("test_date"):
+                        try:
+                            date_default = date.fromisoformat(str(prior_record["test_date"]))
+                        except ValueError:
+                            pass
+                    test_date = st.date_input("Tanggal Pengujian", value=date_default)
                 with c2:
-                    condition = st.selectbox("Kondisi", _CONDITION_OPTIONS)
-                summary = st.text_area("Ringkasan Temuan")
-                evidence_file = st.file_uploader("Bukti Pengujian (opsional)", type=["pdf", "png", "jpg", "jpeg", "docx", "xlsx", "csv"])
-                submitted = st.form_submit_button("Catat Kondisi", disabled=not edit_mode)
+                    condition_default = prior_record.get("condition") if editing and prior_record.get("condition") in _CONDITION_OPTIONS else _CONDITION_OPTIONS[0]
+                    condition = st.selectbox("Kondisi", _CONDITION_OPTIONS, index=_CONDITION_OPTIONS.index(condition_default))
+                summary = st.text_area("Ringkasan Temuan", value=prior_record.get("summary", "") if editing else "")
+                evidence_file = None
+                if not editing:
+                    evidence_file = st.file_uploader("Bukti Pengujian (opsional)", type=["pdf", "png", "jpg", "jpeg", "docx", "xlsx", "csv"])
+                submitted = st.form_submit_button("Simpan Perubahan" if editing else "Catat Kondisi", disabled=not edit_mode)
 
                 if submitted:
-                    source_file = ""
-                    if evidence_file is not None:
-                        source_file = save_evidence(asset_id, module, evidence_file.name, evidence_file.getvalue(), test_date)
-                    row = add_condition_record({
-                        "asset_id": asset_id,
-                        "module": module,
-                        "test_date": test_date,
-                        "condition": condition,
-                        "summary": summary,
-                        "source_file": source_file,
-                    })
-                    st.success(f"Riwayat kondisi tercatat untuk {row['asset_name']} ({row['module']}, {row['test_date']}).")
+                    if editing:
+                        updated = update_condition_record(selected_record_id, {
+                            "module": module, "test_date": test_date,
+                            "condition": condition, "summary": summary,
+                        })
+                        st.success(f"Riwayat kondisi {updated['asset_name']} ({updated['module']}, {updated['test_date']}) diperbarui.")
+                    else:
+                        source_file = ""
+                        if evidence_file is not None:
+                            source_file = save_evidence(asset_id, module, evidence_file.name, evidence_file.getvalue(), test_date)
+                        row = add_condition_record({
+                            "asset_id": asset_id,
+                            "module": module,
+                            "test_date": test_date,
+                            "condition": condition,
+                            "summary": summary,
+                            "source_file": source_file,
+                        })
+                        st.success(f"Riwayat kondisi tercatat untuk {row['asset_name']} ({row['module']}, {row['test_date']}).")
+                    st.rerun()
+
+            if editing:
+                if st.button("Hapus Catatan Ini", type="secondary", disabled=not edit_mode, key="_delete_condition_btn"):
+                    delete_condition_record(selected_record_id)
+                    st.success("Catatan riwayat kondisi telah dihapus.")
+                    st.session_state.pop("asset_condition_record_select", None)
                     st.rerun()
 
         st.markdown("### Riwayat Kondisi Terbaru")
@@ -150,3 +217,4 @@ def render_asset_registry_page(st, edit_mode: bool) -> None:
                 history.head(20).drop(columns=["record_id", "created_at"]),
                 hide_index=True, width="stretch",
             )
+            st.caption("Untuk mengubah atau menghapus satu catatan, pilih aset dan catatannya di form di atas.")

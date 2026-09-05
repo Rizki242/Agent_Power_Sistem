@@ -76,6 +76,102 @@ class TestSettingsPage(unittest.TestCase):
         at = AppTest.from_function(_script, default_timeout=30).run()
         self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
 
+    def test_ai_llm_category_renders(self):
+        import tempfile
+        from unittest.mock import patch
+
+        from src import ai_settings
+
+        def _script():
+            import streamlit as st
+
+            from src.pages.settings_page import render_settings_page
+
+            st.session_state["_settings_category_quick"] = "AI & LLM"
+            render_settings_page(st)
+
+        # _render_ai_llm() persists the provider/model choice on every render
+        # (src/ai_settings.py) - isolate it from the real
+        # data/MCSA/config/ai_settings.json, same as TestAISettingsPersistence.
+        fd, path = tempfile.mkstemp(suffix=".json")
+        os.close(fd)
+        os.remove(path)
+        self.addCleanup(lambda: os.path.exists(path) and os.remove(path))
+        patcher = patch.object(ai_settings, "_default_path", return_value=path)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+
+class TestAISettingsPersistence(unittest.TestCase):
+    """Settings > AI & LLM used to keep the provider/model choice only in
+    st.session_state, resetting on every fresh session - src/ai_settings.py
+    now persists it to disk (API keys excluded)."""
+
+    def _isolated_path(self):
+        import tempfile
+        from unittest.mock import patch
+
+        from src import ai_settings
+
+        fd, path = tempfile.mkstemp(suffix=".json")
+        os.close(fd)
+        os.remove(path)
+        self.addCleanup(lambda: os.path.exists(path) and os.remove(path))
+        patcher = patch.object(ai_settings, "_default_path", return_value=path)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        return path
+
+    @staticmethod
+    def _script():
+        import streamlit as st
+
+        from src.pages.settings_page import render_settings_page
+
+        st.session_state["_settings_category_quick"] = "AI & LLM"
+        render_settings_page(st)
+
+    def test_provider_choice_persists_across_sessions(self):
+        from src import ai_settings
+
+        self._isolated_path()
+
+        at = AppTest.from_function(self._script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        provider_select = next(w for w in at.selectbox if w.key == "_llm_provider_sel")
+        provider_select.set_value("Groq (Ultra-Fast Cloud)")
+        at.run(timeout=30)
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+        self.assertEqual(ai_settings.load().get("ai_provider"), "groq")
+
+        # A brand-new AppTest run simulates a fresh browser session with an
+        # empty st.session_state - the persisted choice should seed it.
+        at_fresh = AppTest.from_function(self._script, default_timeout=30).run()
+        self.assertFalse(list(at_fresh.exception), msg=[str(e) for e in at_fresh.exception])
+        fresh_provider_select = next(w for w in at_fresh.selectbox if w.key == "_llm_provider_sel")
+        self.assertEqual(fresh_provider_select.value, "Groq (Ultra-Fast Cloud)")
+
+    def test_persisted_file_never_contains_api_keys(self):
+        import json
+
+        path = self._isolated_path()
+
+        at = AppTest.from_function(self._script, default_timeout=30).run()
+        key_widget = next(w for w in at.text_input if w.label == "Gemini API Key")
+        key_widget.set_value("AIzaSuperSecretTestKeyDoNotPersist")
+        at.run(timeout=30)
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+        with open(path, "r", encoding="utf-8") as f:
+            raw = f.read()
+        self.assertNotIn("AIzaSuperSecretTestKeyDoNotPersist", raw)
+        saved = json.loads(raw)
+        self.assertNotIn("gemini_api_key", saved)
+
 
 class TestPlaceholderPage(unittest.TestCase):
     def test_placeholder_page_renders(self):
@@ -371,6 +467,102 @@ class TestAssetRegistryPage(unittest.TestCase):
         self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
         module_select = next(w for w in at.selectbox if w.label == "Modul Pengujian")
         self.assertEqual(list(module_select.options), ["VIBRASI"])
+
+    def test_delete_asset_requires_confirmation_checkbox(self):
+        registry = self._isolated_registry()
+        asset = registry.upsert_asset({"asset_id": "AST-DEL-UI", "name": "Delete UI Pump", "unit": "UNIT 1"})
+
+        def _script():
+            import streamlit as st
+
+            from src.pages.asset_registry_page import render_asset_registry_page
+
+            render_asset_registry_page(st, edit_mode=True)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        next(w for w in at.selectbox if w.key == "asset_registry_select").set_value(asset["asset_id"])
+        at.run(timeout=30)
+
+        delete_button = next(b for b in at.button if b.label == "Hapus Permanen")
+        self.assertTrue(delete_button.disabled, "delete button must stay disabled until the confirmation checkbox is checked")
+
+    def test_delete_asset_removes_it_and_cascades_history(self):
+        registry = self._isolated_registry()
+        asset = registry.upsert_asset({"asset_id": "AST-DEL-UI2", "name": "Delete UI Pump 2", "unit": "UNIT 1", "monitoring_modules": ["VIBRASI"]})
+        registry.add_condition_record({"asset_id": asset["asset_id"], "module": "VIBRASI", "condition": "Alarm"})
+
+        def _script():
+            import streamlit as st
+
+            from src.pages.asset_registry_page import render_asset_registry_page
+
+            render_asset_registry_page(st, edit_mode=True)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        next(w for w in at.selectbox if w.key == "asset_registry_select").set_value(asset["asset_id"])
+        at.run(timeout=30)
+        next(c for c in at.checkbox if c.key == "_confirm_delete_asset").set_value(True)
+        at.run(timeout=30)
+        next(b for b in at.button if b.label == "Hapus Permanen").click()
+        at.run(timeout=30)
+
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertIsNone(registry.get_asset(asset["asset_id"]))
+        self.assertTrue(registry.load_condition_history().empty)
+
+    def test_edit_condition_record_prefills_and_updates(self):
+        registry = self._isolated_registry()
+        asset = registry.upsert_asset({"asset_id": "AST-EDIT-UI", "name": "Edit UI Pump", "unit": "UNIT 1", "monitoring_modules": ["VIBRASI", "MCSA"]})
+        record = registry.add_condition_record({
+            "asset_id": asset["asset_id"], "module": "VIBRASI", "condition": "Alarm", "summary": "Awal",
+        })
+
+        def _script():
+            import streamlit as st
+
+            from src.pages.asset_registry_page import render_asset_registry_page
+
+            render_asset_registry_page(st, edit_mode=True)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        next(w for w in at.selectbox if w.key == "asset_condition_select").set_value(asset["asset_id"])
+        at.run(timeout=30)
+        next(w for w in at.selectbox if w.key == "asset_condition_record_select").set_value(record["record_id"])
+        at.run(timeout=30)
+
+        summary_widget = next(w for w in at.text_area if w.label == "Ringkasan Temuan")
+        self.assertEqual(summary_widget.value, "Awal")
+
+        summary_widget.set_value("Direvisi lewat UI")
+        next(b for b in at.button if b.label == "Simpan Perubahan").click()
+        at.run(timeout=30)
+
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        updated = registry.get_condition_record(record["record_id"])
+        self.assertEqual(updated["summary"], "Direvisi lewat UI")
+
+    def test_delete_condition_record_removes_it(self):
+        registry = self._isolated_registry()
+        asset = registry.upsert_asset({"asset_id": "AST-DELREC-UI", "name": "Del Record UI Pump", "unit": "UNIT 1", "monitoring_modules": ["VIBRASI"]})
+        record = registry.add_condition_record({"asset_id": asset["asset_id"], "module": "VIBRASI", "condition": "Alarm"})
+
+        def _script():
+            import streamlit as st
+
+            from src.pages.asset_registry_page import render_asset_registry_page
+
+            render_asset_registry_page(st, edit_mode=True)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        next(w for w in at.selectbox if w.key == "asset_condition_select").set_value(asset["asset_id"])
+        at.run(timeout=30)
+        next(w for w in at.selectbox if w.key == "asset_condition_record_select").set_value(record["record_id"])
+        at.run(timeout=30)
+        next(b for b in at.button if b.label == "Hapus Catatan Ini").click()
+        at.run(timeout=30)
+
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertTrue(registry.load_condition_history().empty)
 
     def test_reports_page_shows_empty_state_then_recorded_history(self):
         registry = self._isolated_registry()
