@@ -1,0 +1,118 @@
+<svg viewBox="0 0 1200 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Alur diagnosis multi-agent PPLE Agent">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --ink: #0f172a;
+      --sub: #475569;
+      --muted: #94a3b8;
+      --primary: #0284c7;
+      --primary-bg: #e0f2fe;
+      --ok-bg: #ecfdf5; --ok-text: #065f46; --ok-dot: #10b981;
+      --warn-bg: #fffbeb; --warn-text: #92400e; --warn-dot: #f59e0b;
+      --err-bg: #fef2f2; --err-text: #991b1b; --err-dot: #ef4444;
+      --arrow: #64748b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a; --card: #1e293b; --border: #334155; --ink: #f1f5f9; --sub: #cbd5e1; --muted: #94a3b8;
+        --primary-bg: #0c4a6e;
+        --ok-bg: #052e21; --ok-text: #6ee7b7;
+        --warn-bg: #451a03; --warn-text: #fcd34d;
+        --err-bg: #450a0a; --err-text: #fca5a5;
+        --arrow: #94a3b8;
+      }
+    }
+    text { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .h1 { fill: var(--ink); font-size: 22px; font-weight: 800; }
+    .sub0 { fill: var(--sub); font-size: 13px; }
+    .label { fill: var(--ink); font-size: 13px; font-weight: 700; }
+    .sub { fill: var(--sub); font-size: 11px; }
+    .box { fill: var(--card); stroke: var(--border); stroke-width: 1.5; }
+    .arrow { stroke: var(--arrow); stroke-width: 2; fill: none; marker-end: url(#ah); }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--arrow)"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="420" fill="var(--bg)"/>
+  <text class="h1" x="40" y="42">Alur diagnosis multi-agent &#8594; keputusan yang bisa ditinjau engineer</text>
+  <text class="sub0" x="40" y="64">Setiap tahap rule-based; LLM (opsional) hanya memperkaya narasi, tidak pernah mengganti angka/threshold.</text>
+
+  <!-- 6 specialist agents column -->
+  <g>
+    <rect class="box" x="40" y="96" width="190" height="260" rx="12"/>
+    <text class="label" x="58" y="122">6 Specialist Agents</text>
+    <g class="sub">
+      <text x="58" y="150">&#9679; Vibration &#8212; ISO 10816-3</text>
+      <text x="58" y="172">&#9679; MCSA &#8212; sideband dB</text>
+      <text x="58" y="194">&#9679; DGA &#8212; TDCG / Duval</text>
+      <text x="58" y="216">&#9679; Partial Discharge &#8212; PRPD</text>
+      <text x="58" y="238">&#9679; Tribology &#8212; ASTM D445/D6304</text>
+      <text x="58" y="260">&#9679; Thermal &#8212; IR + RTD &#916;T</text>
+    </g>
+    <text class="sub" x="58" y="292" fill="var(--muted)">Setiap agent hanya menilai</text>
+    <text class="sub" x="58" y="306" fill="var(--muted)">domainnya sendiri, evidence</text>
+    <text class="sub" x="58" y="320" fill="var(--muted)">disertai confidence.</text>
+  </g>
+
+  <path class="arrow" d="M230,226 L280,226"/>
+
+  <!-- Fusion -->
+  <rect class="box" x="290" y="130" width="220" height="130" rx="12" fill="var(--primary-bg)"/>
+  <text class="label" x="308" y="158">Reliability Fusion Engine</text>
+  <text class="sub" x="308" y="182">Korelasi lintas domain</text>
+  <text class="sub" x="308" y="200">(mis. BPFO + Sideband + Fe + &#916;T</text>
+  <text class="sub" x="308" y="216">&#8594; indikasi bearing defect)</text>
+  <text class="sub" x="308" y="238">Confidence-weighted health index</text>
+
+  <path class="arrow" d="M510,195 L560,195"/>
+
+  <!-- Outputs -->
+  <rect class="box" x="570" y="96" width="230" height="80" rx="12"/>
+  <text class="label" x="588" y="122">Health Index 0&#8211;100</text>
+  <text class="sub" x="588" y="142">Severity: Normal/Watch/Alarm/Critical</text>
+  <text class="sub" x="588" y="160">ISO 13374 / MIMOSA capping</text>
+
+  <rect class="box" x="570" y="188" width="230" height="80" rx="12"/>
+  <text class="label" x="588" y="214">RUL &amp; Risk</text>
+  <text class="sub" x="588" y="234">Estimasi Remaining Useful Life</text>
+  <text class="sub" x="588" y="252">Failure probability 30 hari</text>
+
+  <rect class="box" x="570" y="280" width="230" height="76" rx="12"/>
+  <text class="label" x="588" y="306">Failure Mode + Evidence</text>
+  <text class="sub" x="588" y="326">Bukti lintas domain, bukan tebakan</text>
+  <text class="sub" x="588" y="344">Traceable ke measurement asli</text>
+
+  <path class="arrow" d="M800,136 L840,220"/>
+  <path class="arrow" d="M800,228 L840,228"/>
+  <path class="arrow" d="M800,318 L840,236"/>
+
+  <!-- Safety Guardrail gate -->
+  <rect class="box" x="850" y="150" width="150" height="150" rx="12" stroke="var(--err-dot)" fill="var(--err-bg)"/>
+  <text class="label" x="868" y="180" fill="var(--err-text)">Safety</text>
+  <text class="label" x="868" y="198" fill="var(--err-text)">Guardrail</text>
+  <text class="sub" x="868" y="222" fill="var(--err-text)">Blokir Trip/</text>
+  <text class="sub" x="868" y="236" fill="var(--err-text)">Shutdown/</text>
+  <text class="sub" x="868" y="250" fill="var(--err-text)">Breaker</text>
+  <text class="sub" x="868" y="272" fill="var(--err-text)">Wajib Human-</text>
+  <text class="sub" x="868" y="286" fill="var(--err-text)">in-the-Loop</text>
+
+  <path class="arrow" d="M1000,225 L1040,225"/>
+
+  <!-- Final outputs -->
+  <rect class="box" x="1050" y="120" width="120" height="70" rx="12" fill="var(--ok-bg)"/>
+  <text class="label" x="1064" y="148" fill="var(--ok-text)">Dashboard</text>
+  <text class="sub" x="1064" y="166" fill="var(--ok-text)">+ Chatbot</text>
+
+  <rect class="box" x="1050" y="200" width="120" height="70" rx="12" fill="var(--warn-bg)"/>
+  <text class="label" x="1064" y="228" fill="var(--warn-text)">Laporan</text>
+  <text class="sub" x="1064" y="246" fill="var(--warn-text)">PPT / Word</text>
+
+  <rect class="box" x="1050" y="280" width="120" height="70" rx="12" fill="var(--primary-bg)"/>
+  <text class="label" x="1064" y="308">Work Order</text>
+  <text class="sub" x="1064" y="326">Draft P1&#8211;P4</text>
+</svg>

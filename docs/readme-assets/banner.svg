@@ -1,0 +1,95 @@
+<svg viewBox="0 0 1200 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AGENT LEARNING POWER - Platform CBM/PdM untuk PLTU Jeranjang">
+  <style>
+    :root {
+      --bg-top: #0f172a;
+      --bg-bottom: #1e293b;
+      --grid: #ffffff;
+      --title: #f8fafc;
+      --tagline: #cbd5e1;
+      --primary: #38bdf8;
+      --chip-bg: #1e293b;
+      --chip-border: #334155;
+      --chip-text: #e2e8f0;
+      --ok: #10b981;
+      --warn: #f59e0b;
+      --err: #ef4444;
+    }
+    text { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .title { fill: var(--title); font-size: 44px; font-weight: 800; letter-spacing: 0.5px; }
+    .subtitle { fill: var(--primary); font-size: 19px; font-weight: 600; }
+    .tagline { fill: var(--tagline); font-size: 15px; }
+    .chip-text { fill: var(--chip-text); font-size: 13px; font-weight: 600; }
+    .chip { fill: var(--chip-bg); stroke: var(--chip-border); stroke-width: 1; }
+    .dot-ok { fill: var(--ok); }
+  </style>
+
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="var(--bg-top)"/>
+      <stop offset="100%" stop-color="var(--bg-bottom)"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="280" rx="18" fill="url(#bgGrad)"/>
+
+  <!-- faint grid dots -->
+  <g opacity="0.08">
+    <path d="M0 40 H1200 M0 80 H1200 M0 120 H1200 M0 160 H1200 M0 200 H1200 M0 240 H1200" stroke="var(--grid)" stroke-width="1"/>
+  </g>
+
+  <g transform="translate(48,58)">
+    <text class="title" y="0">AGENT LEARNING POWER</text>
+    <text class="subtitle" y="34">PPLE Agent &#8212; Predictive &amp; Condition-Based Maintenance Platform</text>
+    <text class="tagline" y="62">Rule-based multi-agent reliability engineering untuk PLTU Jeranjang (3 &#215; 25 MW) &#8212; LLM sebagai lapisan opsional, bukan sumber keputusan.</text>
+  </g>
+
+  <!-- domain chips -->
+  <g transform="translate(48,148)" class="chip-text">
+    <g>
+      <rect class="chip" x="0" y="0" width="118" height="34" rx="17"/>
+      <circle class="dot-ok" cx="18" cy="17" r="4"/>
+      <text x="30" y="22">Vibration</text>
+    </g>
+    <g transform="translate(128,0)">
+      <rect class="chip" x="0" y="0" width="96" height="34" rx="17"/>
+      <circle class="dot-ok" cx="18" cy="17" r="4"/>
+      <text x="30" y="22">MCSA</text>
+    </g>
+    <g transform="translate(234,0)">
+      <rect class="chip" x="0" y="0" width="88" height="34" rx="17"/>
+      <circle class="dot-ok" cx="18" cy="17" r="4"/>
+      <text x="30" y="22">DGA</text>
+    </g>
+    <g transform="translate(332,0)">
+      <rect class="chip" x="0" y="0" width="168" height="34" rx="17"/>
+      <circle class="dot-ok" cx="18" cy="17" r="4"/>
+      <text x="30" y="22">Partial Discharge</text>
+    </g>
+    <g transform="translate(510,0)">
+      <rect class="chip" x="0" y="0" width="118" height="34" rx="17"/>
+      <circle class="dot-ok" cx="18" cy="17" r="4"/>
+      <text x="30" y="22">Tribology</text>
+    </g>
+    <g transform="translate(638,0)">
+      <rect class="chip" x="0" y="0" width="104" height="34" rx="17"/>
+      <circle class="dot-ok" cx="18" cy="17" r="4"/>
+      <text x="30" y="22">Thermal</text>
+    </g>
+    <g transform="translate(752,0)">
+      <rect class="chip" x="0" y="0" width="196" height="34" rx="17"/>
+      <circle class="dot-ok" cx="18" cy="17" r="4"/>
+      <text x="30" y="22">Reliability Fusion</text>
+    </g>
+  </g>
+
+  <g transform="translate(48,206)" class="chip-text">
+    <rect class="chip" x="0" y="0" width="230" height="34" rx="17" stroke="var(--err)"/>
+    <circle cx="18" cy="17" r="4" fill="var(--err)"/>
+    <text x="30" y="22">Safety Guardrail &#8226; HITL</text>
+  </g>
+  <g transform="translate(292,206)" class="chip-text">
+    <rect class="chip" x="0" y="0" width="230" height="34" rx="17"/>
+    <circle cx="18" cy="17" r="4" fill="var(--primary)"/>
+    <text x="30" y="22">Streamlit &#8226; FastAPI &#8226; React</text>
+  </g>
+</svg>

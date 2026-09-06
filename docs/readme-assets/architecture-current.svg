@@ -1,0 +1,135 @@
+<svg viewBox="0 0 1200 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram arsitektur PPLE Agent saat ini">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --ink: #0f172a;
+      --sub: #475569;
+      --muted: #94a3b8;
+      --primary: #0284c7;
+      --primary-bg: #e0f2fe;
+      --purple: #7c3aed;
+      --purple-bg: #ede9fe;
+      --amber: #d97706;
+      --amber-bg: #fef3c7;
+      --green: #059669;
+      --green-bg: #d1fae5;
+      --arrow: #64748b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --border: #334155;
+        --ink: #f1f5f9;
+        --sub: #cbd5e1;
+        --muted: #94a3b8;
+        --primary-bg: #0c4a6e;
+        --purple-bg: #4c1d95;
+        --amber-bg: #78350f;
+        --green-bg: #064e3b;
+        --arrow: #94a3b8;
+      }
+    }
+    text { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .h1 { fill: var(--ink); font-size: 22px; font-weight: 800; }
+    .h2 { fill: var(--sub); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
+    .label { fill: var(--ink); font-size: 15px; font-weight: 700; }
+    .sub { fill: var(--sub); font-size: 12px; }
+    .muted { fill: var(--muted); font-size: 11px; }
+    .box { fill: var(--card); stroke: var(--border); stroke-width: 1.5; rx: 12; }
+    .arrow { stroke: var(--arrow); stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    .arrow-dashed { stroke: var(--arrow); stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; marker-end: url(#arrowhead); }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--arrow)"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="620" fill="var(--bg)"/>
+  <text class="h1" x="40" y="42">Arsitektur PPLE Agent &#8212; kondisi implementasi saat ini</text>
+  <text class="sub" x="40" y="64">Dua UI berbagi satu core Python; logika rule-based di src/ adalah sumber kebenaran, LLM opsional dan selalu fallback ke jawaban lokal.</text>
+
+  <!-- UI Layer -->
+  <text class="h2" x="40" y="100">Antarmuka</text>
+  <rect class="box" x="40" y="110" width="230" height="80" rx="12"/>
+  <text class="label" x="60" y="140">Streamlit UI</text>
+  <text class="sub" x="60" y="160">app.py + src/pages/</text>
+  <text class="muted" x="60" y="178">Halaman utama, Mode Edit</text>
+
+  <rect class="box" x="290" y="110" width="230" height="80" rx="12"/>
+  <text class="label" x="310" y="140">React / Vite</text>
+  <text class="sub" x="310" y="160">frontend/</text>
+  <text class="muted" x="310" y="178">Integrasi modern, konsumsi API</text>
+
+  <rect class="box" x="540" y="110" width="230" height="80" rx="12" stroke="var(--primary)"/>
+  <text class="label" x="560" y="140">pple CLI</text>
+  <text class="sub" x="560" y="160">Typer + Rich, pple/cli/</text>
+  <text class="muted" x="560" y="178">status, ask, shell, analyze</text>
+
+  <!-- API layer -->
+  <text class="h2" x="40" y="230">Lapisan API</text>
+  <rect class="box" x="40" y="240" width="480" height="70" rx="12"/>
+  <text class="label" x="60" y="266">FastAPI &#8212; api_server.py</text>
+  <text class="sub" x="60" y="286">Thin HTTP layer + /api/v2/* (pple.api.router) &#8212; tidak duplikasi business logic</text>
+
+  <!-- Core -->
+  <text class="h2" x="40" y="350">Core Python (satu sumber kebenaran)</text>
+  <rect class="box" x="40" y="360" width="1120" height="150" rx="14"/>
+
+  <rect x="64" y="384" width="230" height="102" rx="10" fill="var(--primary-bg)" stroke="var(--border)"/>
+  <text class="label" x="80" y="408" style="font-size:13px">6 Specialist Agents</text>
+  <text class="sub" x="80" y="426" style="font-size:11px">src/agents/specialist_agents.py</text>
+  <text class="muted" x="80" y="442">Vibration &#183; MCSA &#183; DGA</text>
+  <text class="muted" x="80" y="456">PD &#183; Tribology &#183; Thermal</text>
+  <text class="muted" x="80" y="472">rule-based, sumber kebenaran</text>
+
+  <rect x="316" y="384" width="230" height="102" rx="10" fill="var(--purple-bg)" stroke="var(--border)"/>
+  <text class="label" x="332" y="408" style="font-size:13px">Fusion &amp; Safety</text>
+  <text class="sub" x="332" y="426" style="font-size:11px">fusion_engine.py &#183; safety_guard.py</text>
+  <text class="muted" x="332" y="442">Health Index &#183; RUL &#183; Risk</text>
+  <text class="muted" x="332" y="456">HIGH-RISK blocked &#8594; HITL</text>
+  <text class="muted" x="332" y="472">subagent_coordinator.py</text>
+
+  <rect x="568" y="384" width="230" height="102" rx="10" fill="var(--amber-bg)" stroke="var(--border)"/>
+  <text class="label" x="584" y="408" style="font-size:13px">Domain Modules</text>
+  <text class="sub" x="584" y="426" style="font-size:11px">data_loader, knowledge_*, rag_engine</text>
+  <text class="muted" x="584" y="442">docx/ppt generator</text>
+  <text class="muted" x="584" y="456">chatbot &#183; analytics</text>
+  <text class="muted" x="584" y="472">standards.py (threshold)</text>
+
+  <rect x="820" y="384" width="316" height="102" rx="10" fill="var(--green-bg)" stroke="var(--border)"/>
+  <text class="label" x="836" y="408" style="font-size:13px">pple/ (V2 migration, additif)</text>
+  <text class="sub" x="836" y="426" style="font-size:11px">engineering &#183; assets &#183; reliability &#183; agents</text>
+  <text class="muted" x="836" y="442">Manifest-driven module registry</text>
+  <text class="muted" x="836" y="456">LegacyAgentAdapter &#8594; agent di atas</text>
+  <text class="muted" x="836" y="472">tidak duplikasi, tidak menggantikan src/</text>
+
+  <!-- Data layer -->
+  <text class="h2" x="40" y="548">Data</text>
+  <rect class="box" x="40" y="558" width="270" height="48" rx="10"/>
+  <text class="sub" x="58" y="586">data/MCSA/ &#8212; CSV/XLS aktif + config</text>
+
+  <rect class="box" x="330" y="558" width="270" height="48" rx="10"/>
+  <text class="sub" x="348" y="586">Materi/ &#8212; Knowledge base JSON</text>
+
+  <rect class="box" x="620" y="558" width="270" height="48" rx="10"/>
+  <text class="sub" x="638" y="586">data/Laporan/ &#8212; arsip &amp; audit batch</text>
+
+  <rect class="box" x="910" y="558" width="250" height="48" rx="10"/>
+  <text class="sub" x="928" y="586">data/agent_memory.db (SQLite)</text>
+
+  <!-- arrows -->
+  <path class="arrow" d="M155,190 L155,240"/>
+  <path class="arrow" d="M405,190 L280,240"/>
+  <path class="arrow" d="M655,190 L500,245"/>
+  <path class="arrow" d="M280,310 L280,360"/>
+  <path class="arrow" d="M600,506 L280,558"/>
+  <path class="arrow" d="M600,506 L465,558"/>
+  <path class="arrow" d="M600,506 L755,558"/>
+  <path class="arrow" d="M978,486 L978,558"/>
+  <path class="arrow-dashed" d="M655,190 L963,384"/>
+</svg>
