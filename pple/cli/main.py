@@ -1,4 +1,4 @@
-"""PPLE CLI (docs/final.md Phase 12-20) - MVP slice.
+"""PPLE CLI (docs/final.md Phase 12-21) - MVP slice.
 
 First-class commands that reuse the exact same pple.engineering module
 layer api_server.py already routes through (docs/pple_v2_baseline.md's
@@ -15,7 +15,10 @@ file-backed, see pple.engineering.equipment_modules), assets tree/list/show
 and ask/shell (Phase 19-20 - rule-based natural-language command parsing,
 see pple.cli.nl, gated by the READ/WRITE/HIGH-RISK classification in
 pple.cli.safety which always defers to the existing, mandatory Safety
-Guardrail for plant-actuation phrasing).
+Guardrail for plant-actuation phrasing), and config llm/set/test (Phase 21 -
+view/persist which LLM provider+model the assistant layer uses, see
+src.ai_settings/src.llm_assistant - the same code the Streamlit Settings
+page already uses, not a separate LLMProvider hierarchy).
 Asset/plant/unit CRUD (creating or editing equipment through the CLI, not
 just viewing it) is still out of scope until the database layer (final.md
 Phase 2-4) exists - there is nowhere durable to write new records to yet.
@@ -55,6 +58,20 @@ reliability_app = typer.Typer(help="Reliability Fusion V2 - health/risk/RUL acro
 app.add_typer(reliability_app, name="reliability")
 agents_app = typer.Typer(help="The specialist/fusion/safety agent roster and its live status (Phase 18).")
 app.add_typer(agents_app, name="agents")
+config_app = typer.Typer(help="View/persist which LLM provider+model the assistant layer uses (Phase 21).")
+app.add_typer(config_app, name="config")
+
+# provider name -> ai_settings.json field holding that provider's model choice.
+# Mirrors the exact set of providers src/pages/settings_page.py exposes -
+# gemini_enterprise/vertex_ai exist in src/llm_assistant.py but are not wired
+# to any UI, so they are deliberately left out here too.
+_LLM_MODEL_FIELD = {
+    "gemini": "gemini_model",
+    "groq": "groq_model",
+    "opencode": "opencode_model",
+    "ollama": "ollama_model",
+}
+_LLM_PROVIDERS = tuple(_LLM_MODEL_FIELD)
 
 console = Console()
 
@@ -367,6 +384,126 @@ def analyze(
         console.print("\nRecommendations:")
         for r in result.recommendations:
             console.print(f"  - {r.text}")
+
+
+@config_app.command("llm")
+def config_llm():
+    """Show the persisted LLM provider/model and whether a key resolves for it.
+
+    Reads the same data/MCSA/config/ai_settings.json the Streamlit Settings
+    page writes (src/ai_settings.py) - CLI and UI share one preference store.
+    Never prints the API key itself, only whether one resolved.
+    """
+    from src import ai_settings
+    from src.llm_assistant import (
+        DEFAULT_GEMINI_MODEL, DEFAULT_GROQ_MODEL, DEFAULT_OLLAMA_HOST, DEFAULT_OLLAMA_MODEL,
+        DEFAULT_OPENCODE_MODEL, resolve_provider_key,
+    )
+
+    default_model_by_provider = {
+        "gemini": DEFAULT_GEMINI_MODEL,
+        "groq": DEFAULT_GROQ_MODEL,
+        "opencode": DEFAULT_OPENCODE_MODEL,
+        "ollama": DEFAULT_OLLAMA_MODEL,
+    }
+
+    prefs = ai_settings.load()
+    provider = prefs.get("ai_provider", "gemini")
+    model_field = _LLM_MODEL_FIELD.get(provider, "gemini_model")
+    model = prefs.get(model_field) or default_model_by_provider.get(provider, "(default)")
+
+    table = Table(show_header=False, box=None, padding=(0, 2))
+    table.add_row("Provider", provider)
+    table.add_row("Model", str(model))
+    table.add_row("Enabled", str(prefs.get("ai_enabled", True)))
+    if provider == "ollama":
+        table.add_row("Host", prefs.get("ollama_host") or DEFAULT_OLLAMA_HOST)
+        table.add_row("API Key", "n/a (server lokal)")
+    else:
+        has_key = bool(resolve_provider_key(provider))
+        table.add_row("API Key", "[green]resolved[/green]" if has_key else "[yellow]belum diset[/yellow] (env/.env/secrets.toml)")
+    console.print(table)
+    console.print(
+        "\n[dim]LLM adalah lapisan opsional - jika gagal atau tidak dikonfigurasi, "
+        "aplikasi tetap memakai jawaban rule-based lokal (src/ tetap sumber kebenaran).[/dim]"
+    )
+
+
+@config_app.command("set")
+def config_set(
+    key: str = typer.Argument(..., help="llm.provider | llm.model | llm.host | llm.enabled"),
+    value: str = typer.Argument(...),
+):
+    """Persist one LLM preference. Never accepts/stores an API key - those
+    stay in environment variables / .env / secrets.toml (CLAUDE.md rule)."""
+    from src import ai_settings
+
+    if key == "llm.provider":
+        if value not in _LLM_PROVIDERS:
+            console.print(f"[red]Provider tidak dikenal: '{value}'. Pilihan: {', '.join(_LLM_PROVIDERS)}[/red]")
+            raise typer.Exit(code=1)
+        ai_settings.save({"ai_provider": value})
+        console.print(f"[green]Provider LLM diset ke '{value}'.[/green]")
+    elif key == "llm.model":
+        provider = ai_settings.load().get("ai_provider", "gemini")
+        field = _LLM_MODEL_FIELD.get(provider, "gemini_model")
+        ai_settings.save({field: value})
+        console.print(f"[green]Model {provider} diset ke '{value}'.[/green]")
+    elif key == "llm.host":
+        ai_settings.save({"ollama_host": value})
+        console.print(f"[green]Ollama host diset ke '{value}'.[/green]")
+    elif key == "llm.enabled":
+        parsed = value.strip().lower() in {"1", "true", "yes", "on", "ya"}
+        ai_settings.save({"ai_enabled": parsed})
+        console.print(f"[green]LLM enabled diset ke {parsed}.[/green]")
+    else:
+        console.print(f"[red]Key tidak dikenal: '{key}'. Pilihan: llm.provider, llm.model, llm.host, llm.enabled[/red]")
+        raise typer.Exit(code=1)
+
+
+@config_app.command("test")
+def config_test():
+    """Test connectivity to the currently configured LLM provider, using the
+    exact same test_*_connection helpers the Settings page's "Tes Koneksi"
+    buttons call - no separate implementation to drift out of sync."""
+    from src import ai_settings
+    from src.llm_assistant import (
+        DEFAULT_GEMINI_MODEL, DEFAULT_GROQ_MODEL, DEFAULT_OLLAMA_HOST, DEFAULT_OLLAMA_MODEL,
+        DEFAULT_OPENCODE_BASE_URL, DEFAULT_OPENCODE_MODEL, resolve_provider_key,
+        test_gemini_connection, test_groq_connection, test_ollama_connection, test_opencode_connection,
+    )
+
+    prefs = ai_settings.load()
+    provider = prefs.get("ai_provider", "gemini")
+
+    if provider == "gemini":
+        key = resolve_provider_key("gemini")
+        if not key:
+            console.print("[yellow]Gemini API key belum diset (env GEMINI_API_KEY / .env / secrets.toml).[/yellow]")
+            raise typer.Exit(code=1)
+        ok, msg = test_gemini_connection(key, prefs.get("gemini_model", DEFAULT_GEMINI_MODEL))
+    elif provider == "groq":
+        key = resolve_provider_key("groq")
+        if not key:
+            console.print("[yellow]Groq API key belum diset (env GROQ_API_KEY / .env / secrets.toml).[/yellow]")
+            raise typer.Exit(code=1)
+        ok, msg = test_groq_connection(key, prefs.get("groq_model", DEFAULT_GROQ_MODEL))
+    elif provider == "opencode":
+        key = resolve_provider_key("opencode")
+        ok, msg = test_opencode_connection(
+            prefs.get("opencode_base_url", DEFAULT_OPENCODE_BASE_URL), key, prefs.get("opencode_model", DEFAULT_OPENCODE_MODEL)
+        )
+    elif provider == "ollama":
+        ok, msg, _models = test_ollama_connection(
+            prefs.get("ollama_host", DEFAULT_OLLAMA_HOST), prefs.get("ollama_model", DEFAULT_OLLAMA_MODEL)
+        )
+    else:
+        console.print(f"[red]Provider tidak dikenal: '{provider}'[/red]")
+        raise typer.Exit(code=1)
+
+    console.print(f"[green]{msg}[/green]" if ok else f"[red]{msg}[/red]")
+    if not ok:
+        raise typer.Exit(code=1)
 
 
 def _dispatch_intent(intent) -> None:

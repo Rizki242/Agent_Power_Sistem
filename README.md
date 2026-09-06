@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000" alt="React 19">
   <img src="https://img.shields.io/badge/decision%20core-rule--based-0284c7" alt="Rule-based decision core">
-  <img src="https://img.shields.io/badge/tests-338%20passing-10b981" alt="338 unit tests passing">
+  <img src="https://img.shields.io/badge/tests-347%20passing-10b981" alt="347 unit tests passing">
   <img src="https://img.shields.io/badge/platform-Windows--first-64748b" alt="Windows-first">
 </p>
 
@@ -66,7 +66,7 @@ Diagram rancangan target (visi jangka panjang, termasuk database dan admin confi
 - **Knowledge base**: pencarian kata kunci selalu tersedia; pencarian semantik FAISS bersifat opsional dan memiliki fallback.
 - **Laporan**: generator PowerPoint dan Word dari data/filter aktif.
 - **API FastAPI**: akses data aset, ringkasan domain, diagnostik fusion, chatbot, knowledge base, laporan, dan work order — plus `/api/v2/*` (modules, assets, reliability, agents) dari migrasi `pple`.
-- **CLI `pple`**: status/doctor sistem, jalankan analisis satu modul, telusuri hierarki aset, cek reliability fusion, dan perintah bahasa natural (`pple ask "cek CWP-1A"`) dengan klasifikasi risiko READ/WRITE/HIGH-RISK.
+- **CLI `pple`**: status/doctor sistem, jalankan analisis satu modul, telusuri hierarki aset, cek reliability fusion, perintah bahasa natural (`pple ask "cek CWP-1A"`) dengan klasifikasi risiko READ/WRITE/HIGH-RISK, dan `pple config llm` untuk melihat/mengganti provider-model LLM dari terminal.
 
 ## Alur diagnosis multi-agent
 
@@ -109,9 +109,14 @@ pple ask "cek CWP-1A"                    # bahasa natural -> READ, langsung jala
 pple ask "aktifkan modul vibration untuk CWP-1A"   # WRITE -> minta konfirmasi y/N
 pple ask "trip generator sekarang"       # HIGH-RISK -> diblokir Safety Guardrail, tidak pernah dieksekusi
 pple shell                               # REPL interaktif untuk perintah di atas
+
+pple config llm                          # provider/model LLM aktif saat ini + status API key
+pple config set llm.provider groq        # gemini | groq | opencode | ollama
+pple config set llm.model qwen/3.6-27b   # model untuk provider yang sedang aktif
+pple config test                         # tes koneksi ke provider aktif (helper yang sama dengan tombol "Tes Koneksi" di Settings)
 ```
 
-Klasifikasi risiko (`pple/cli/safety.py`) memisahkan command menjadi **READ** (selalu boleh), **WRITE** (minta konfirmasi eksplisit), dan **HIGH-RISK** (diblokir total oleh `SafetyGuardrailAgent` yang sama dengan yang dipakai UI — tidak ada jalur pintas). Lihat `docs/final.md` untuk roadmap migrasi `pple` V2 selengkapnya.
+Klasifikasi risiko (`pple/cli/safety.py`) memisahkan command menjadi **READ** (selalu boleh), **WRITE** (minta konfirmasi eksplisit), dan **HIGH-RISK** (diblokir total oleh `SafetyGuardrailAgent` yang sama dengan yang dipakai UI — tidak ada jalur pintas). `pple config` membaca/menulis `data/MCSA/config/ai_settings.json` yang sama dengan halaman Settings Streamlit — CLI dan UI berbagi satu preferensi, dan API key tidak pernah ikut tersimpan di file itu. Lihat `docs/final.md` untuk roadmap migrasi `pple` V2 selengkapnya.
 
 ## Prasyarat
 
