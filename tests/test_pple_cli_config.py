@@ -25,7 +25,13 @@ class ConfigLlmShowTests(unittest.TestCase):
             result = runner.invoke(app, ["config", "llm"])
         self.assertEqual(result.exit_code, 0)
         self.assertIn("gemini", result.stdout)
-        self.assertIn("gemini-2.5-flash", result.stdout)
+        # Assert against the constant, not a hardcoded model name: the default
+        # model is a product decision that changes (it has already changed
+        # once), and this test is about "the default is shown", not about
+        # which model happens to be the default today.
+        from src.llm_assistant import DEFAULT_GEMINI_MODEL
+
+        self.assertIn(DEFAULT_GEMINI_MODEL, result.stdout)
         self.assertIn("lapisan opsional", result.stdout)
 
     def test_ollama_shows_host_and_no_api_key_requirement(self):
