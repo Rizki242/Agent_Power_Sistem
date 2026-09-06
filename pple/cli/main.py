@@ -1,4 +1,4 @@
-"""PPLE CLI (docs/final.md Phase 12-21) - MVP slice.
+"""PPLE CLI (docs/final.md Phase 12-22) - MVP slice.
 
 First-class commands that reuse the exact same pple.engineering module
 layer api_server.py already routes through (docs/pple_v2_baseline.md's
@@ -18,7 +18,10 @@ pple.cli.safety which always defers to the existing, mandatory Safety
 Guardrail for plant-actuation phrasing), and config llm/set/test (Phase 21 -
 view/persist which LLM provider+model the assistant layer uses, see
 src.ai_settings/src.llm_assistant - the same code the Streamlit Settings
-page already uses, not a separate LLMProvider hierarchy).
+page already uses, not a separate LLMProvider hierarchy), chat (Phase 22 -
+rule-based src.chatbot.MCSAChatbot, optionally enriched by the configured
+LLM, controlled by the root --offline flag which blocks any cloud provider
+call and falls back to a pure rule-based answer).
 Asset/plant/unit CRUD (creating or editing equipment through the CLI, not
 just viewing it) is still out of scope until the database layer (final.md
 Phase 2-4) exists - there is nowhere durable to write new records to yet.
@@ -72,8 +75,33 @@ _LLM_MODEL_FIELD = {
     "ollama": "ollama_model",
 }
 _LLM_PROVIDERS = tuple(_LLM_MODEL_FIELD)
+_CLOUD_LLM_PROVIDERS = {"gemini", "groq", "opencode"}  # need internet; ollama is local-only
 
 console = Console()
+
+# Set by the --offline root option (Phase 22). Module-level rather than a
+# Typer context object because every command already reaches its own
+# collaborators via plain module-level imports, not a shared context.
+_OFFLINE = False
+
+
+@app.callback()
+def _root(
+    offline: bool = typer.Option(
+        False, "--offline",
+        help="Larang command apa pun memanggil provider LLM cloud (gemini/groq/opencode). "
+             "Ollama (server lokal) dan seluruh logika rule-based tetap jalan seperti biasa.",
+    ),
+):
+    """PPLE Reliability Engineering Agent CLI.
+
+    Rule-based di src/ adalah sumber kebenaran untuk threshold dan status -
+    LLM (bila dikonfigurasi) hanya memperkaya narasi jawaban `pple chat`,
+    tidak pernah menggantikan angka/threshold engineering (docs/final.md
+    Phase 22).
+    """
+    global _OFFLINE
+    _OFFLINE = offline
 
 
 def _equipment_count() -> str:
@@ -476,6 +504,13 @@ def config_test():
     prefs = ai_settings.load()
     provider = prefs.get("ai_provider", "gemini")
 
+    if _OFFLINE and provider in _CLOUD_LLM_PROVIDERS:
+        console.print(
+            f"[yellow]Mode --offline aktif: provider '{provider}' butuh internet, tes koneksi dilewati. "
+            "Gunakan 'pple config set llm.provider ollama' untuk provider lokal.[/yellow]"
+        )
+        raise typer.Exit(code=1)
+
     if provider == "gemini":
         key = resolve_provider_key("gemini")
         if not key:
@@ -504,6 +539,62 @@ def config_test():
     console.print(f"[green]{msg}[/green]" if ok else f"[red]{msg}[/red]")
     if not ok:
         raise typer.Exit(code=1)
+
+
+@app.command()
+def chat(question: str = typer.Argument(..., help="Pertanyaan bebas, mis. 'status CWP 1A' atau 'list alarm'")):
+    """Chatbot MCSA rule-based (docs/final.md Phase 22 - tetap jalan tanpa internet).
+
+    Jawaban dasar SELALU berasal dari src.chatbot.MCSAChatbot (rule-based,
+    identik dengan halaman Chatbot Streamlit) dan tidak pernah kosong. Bila
+    --offline tidak dipakai, provider LLM cloud terkonfigurasi, dan API
+    key-nya resolve, jawaban itu boleh diperkaya lewat MCSALLMAssistant -
+    tapi kalau langkah itu gagal atau dilewati (offline, tidak
+    dikonfigurasi, tanpa key), jawaban rule-based apa adanya yang tampil.
+    """
+    from src import ai_settings
+    from src.chatbot import MCSAChatbot
+    from src.data_loader import get_data_path, get_latest_data, load_mcsa_data
+
+    data_file = get_data_path("mcsa_updated.csv")
+    if not os.path.exists(data_file):
+        data_file = get_data_path("Report MCSA.xls")
+
+    df_all = None
+    if os.path.exists(data_file):
+        try:
+            df_all = load_mcsa_data(data_file)
+        except Exception:
+            df_all = None
+    df_latest = get_latest_data(df_all) if df_all is not None else None
+
+    bot = MCSAChatbot(df_latest, df_all=df_all)
+    rule_answer = bot.process_query(question)
+
+    prefs = ai_settings.load()
+    provider = prefs.get("ai_provider", "gemini")
+
+    if not prefs.get("ai_enabled", True) or (_OFFLINE and provider in _CLOUD_LLM_PROVIDERS):
+        console.print(rule_answer)
+        return
+
+    from src.llm_assistant import MCSALLMAssistant, resolve_provider_key
+
+    api_key = None if provider == "ollama" else resolve_provider_key(provider)
+    if provider != "ollama" and not api_key:
+        console.print(rule_answer)
+        return
+
+    llm = MCSALLMAssistant(
+        enabled=True,
+        provider=provider,
+        api_key=api_key,
+        model=prefs.get(_LLM_MODEL_FIELD.get(provider, "gemini_model")),
+        base_url=prefs.get("opencode_base_url") if provider == "opencode" else None,
+        ollama_host=prefs.get("ollama_host"),
+    )
+    response = llm.enhance_answer(question=question, rule_answer=rule_answer, df_context=df_latest, df_history=None)
+    console.print(response)
 
 
 def _dispatch_intent(intent) -> None:

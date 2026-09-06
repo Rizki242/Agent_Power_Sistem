@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000" alt="React 19">
   <img src="https://img.shields.io/badge/decision%20core-rule--based-0284c7" alt="Rule-based decision core">
-  <img src="https://img.shields.io/badge/tests-347%20passing-10b981" alt="347 unit tests passing">
+  <img src="https://img.shields.io/badge/tests-354%20passing-10b981" alt="354 unit tests passing">
   <img src="https://img.shields.io/badge/platform-Windows--first-64748b" alt="Windows-first">
 </p>
 
@@ -66,7 +66,7 @@ Diagram rancangan target (visi jangka panjang, termasuk database dan admin confi
 - **Knowledge base**: pencarian kata kunci selalu tersedia; pencarian semantik FAISS bersifat opsional dan memiliki fallback.
 - **Laporan**: generator PowerPoint dan Word dari data/filter aktif.
 - **API FastAPI**: akses data aset, ringkasan domain, diagnostik fusion, chatbot, knowledge base, laporan, dan work order — plus `/api/v2/*` (modules, assets, reliability, agents) dari migrasi `pple`.
-- **CLI `pple`**: status/doctor sistem, jalankan analisis satu modul, telusuri hierarki aset, cek reliability fusion, perintah bahasa natural (`pple ask "cek CWP-1A"`) dengan klasifikasi risiko READ/WRITE/HIGH-RISK, dan `pple config llm` untuk melihat/mengganti provider-model LLM dari terminal.
+- **CLI `pple`**: status/doctor sistem, jalankan analisis satu modul, telusuri hierarki aset, cek reliability fusion, perintah bahasa natural (`pple ask "cek CWP-1A"`) dengan klasifikasi risiko READ/WRITE/HIGH-RISK, `pple config llm` untuk melihat/mengganti provider-model LLM dari terminal, `pple chat` (chatbot rule-based, opsional diperkaya LLM), dan flag `--offline` yang memblokir semua provider cloud.
 
 ## Alur diagnosis multi-agent
 
@@ -114,9 +114,15 @@ pple config llm                          # provider/model LLM aktif saat ini + s
 pple config set llm.provider groq        # gemini | groq | opencode | ollama
 pple config set llm.model qwen/3.6-27b   # model untuk provider yang sedang aktif
 pple config test                         # tes koneksi ke provider aktif (helper yang sama dengan tombol "Tes Koneksi" di Settings)
+
+pple chat "status CWP 1A"                # chatbot rule-based (src.chatbot), boleh diperkaya LLM bila dikonfigurasi
+pple --offline chat "status CWP 1A"      # sama persis, tapi provider cloud (gemini/groq/opencode) dipastikan tidak dipanggil
+pple --offline config test               # ditolak untuk provider cloud; provider ollama (lokal) tetap boleh
 ```
 
-Klasifikasi risiko (`pple/cli/safety.py`) memisahkan command menjadi **READ** (selalu boleh), **WRITE** (minta konfirmasi eksplisit), dan **HIGH-RISK** (diblokir total oleh `SafetyGuardrailAgent` yang sama dengan yang dipakai UI — tidak ada jalur pintas). `pple config` membaca/menulis `data/MCSA/config/ai_settings.json` yang sama dengan halaman Settings Streamlit — CLI dan UI berbagi satu preferensi, dan API key tidak pernah ikut tersimpan di file itu. Lihat `docs/final.md` untuk roadmap migrasi `pple` V2 selengkapnya.
+Klasifikasi risiko (`pple/cli/safety.py`) memisahkan command menjadi **READ** (selalu boleh), **WRITE** (minta konfirmasi eksplisit), dan **HIGH-RISK** (diblokir total oleh `SafetyGuardrailAgent` yang sama dengan yang dipakai UI — tidak ada jalur pintas). `pple config` membaca/menulis `data/MCSA/config/ai_settings.json` yang sama dengan halaman Settings Streamlit — CLI dan UI berbagi satu preferensi, dan API key tidak pernah ikut tersimpan di file itu.
+
+Flag global `--offline` (docs/final.md Phase 22) memastikan PPLE tetap bisa dipakai tanpa internet: jawaban `pple chat` selalu dari `src.chatbot.MCSAChatbot` (rule-based) lebih dulu, LLM (cloud maupun Ollama lokal) hanya memperkaya narasinya dan tidak pernah menjadi sumber kebenaran untuk threshold/status engineering. Lihat `docs/final.md` untuk roadmap migrasi `pple` V2 selengkapnya.
 
 ## Prasyarat
 
