@@ -1,4 +1,4 @@
-"""PPLE CLI (docs/final.md Phase 12-19) - MVP slice.
+"""PPLE CLI (docs/final.md Phase 12-20) - MVP slice.
 
 First-class commands that reuse the exact same pple.engineering module
 layer api_server.py already routes through (docs/pple_v2_baseline.md's
@@ -10,8 +10,12 @@ registers this as the `pple` console script for `pip install -e .`.
 
 Scope of this slice: status, doctor, module list/show, analyze, equipment
 modules/module-add/module-remove (Phase 8 - per-equipment module overrides,
-file-backed, see pple.engineering.equipment_modules), and assets tree/list/show
-(Phase 3 - read-only Plant/Unit/Equipment view, see pple.assets.registry).
+file-backed, see pple.engineering.equipment_modules), assets tree/list/show
+(Phase 3 - read-only Plant/Unit/Equipment view, see pple.assets.registry),
+and ask/shell (Phase 19-20 - rule-based natural-language command parsing,
+see pple.cli.nl, gated by the READ/WRITE/HIGH-RISK classification in
+pple.cli.safety which always defers to the existing, mandatory Safety
+Guardrail for plant-actuation phrasing).
 Asset/plant/unit CRUD (creating or editing equipment through the CLI, not
 just viewing it) is still out of scope until the database layer (final.md
 Phase 2-4) exists - there is nowhere durable to write new records to yet.
@@ -27,6 +31,18 @@ from rich.table import Table
 
 from pple.engineering.equipment_modules import EquipmentModuleStore
 from pple.engineering.loader import ModuleStatus, load_modules_from_manifests
+
+# This CLI prints Unicode symbols (checkmarks, the Safety Guardrail's warning
+# emoji, box-drawing table borders) that don't exist in Windows' legacy
+# console codepage (cp1252/cp437) - reconfigure stdout/stderr to UTF-8 so
+# `pple <command>` doesn't crash with UnicodeEncodeError in a plain Windows
+# terminal. Guarded because reconfigure() isn't available on every stream
+# (e.g. when stdout is already replaced/captured by a test runner).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 app = typer.Typer(name="pple", help="PPLE Reliability Engineering Agent CLI", no_args_is_help=True)
 module_app = typer.Typer(help="Inspect engineering modules loaded from manifests.")
@@ -351,6 +367,82 @@ def analyze(
         console.print("\nRecommendations:")
         for r in result.recommendations:
             console.print(f"  - {r.text}")
+
+
+def _dispatch_intent(intent) -> None:
+    """Run one parsed Intent by calling the exact same function its formal
+    `pple <command>` subcommand calls - no separate execution path."""
+    params = intent.params
+    if intent.command == "equipment module-add":
+        equipment_module_add(params["equipment"], params["module_id"])
+    elif intent.command == "equipment module-remove":
+        equipment_module_remove(params["equipment"], params["module_id"])
+    elif intent.command == "reliability health":
+        reliability_health(params["equipment"])
+    elif intent.command == "assets list":
+        assets_list(unit=params.get("unit") or None, domain=None)
+    elif intent.command == "status":
+        status()
+    else:
+        console.print(f"[red]Intent '{intent.name}' dikenali tapi belum ada handler.[/red]")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def ask(
+    text: str = typer.Argument(..., help="Perintah bahasa natural, mis. 'cek CWP-1A' atau 'aktifkan modul vibration untuk CWP-1A'"),
+    yes: bool = typer.Option(False, "--yes", "-y", help="Lewati konfirmasi y/N untuk operasi WRITE (untuk scripting)."),
+):
+    """Parse satu perintah bahasa natural lalu jalankan (docs/final.md Phase 19-20).
+
+    Urutan wajib: (1) teks mentah selalu dicek dulu ke Safety Guardrail -
+    frasa HIGH-RISK (trip/shutdown/buka-tutup breaker/dst.) langsung
+    diblokir sebelum sempat di-parse jadi intent apapun; (2) baru teks
+    di-parse jadi intent; (3) intent bertipe WRITE minta konfirmasi y/N
+    kecuali --yes; (4) intent yang tidak dikenali TIDAK pernah dieksekusi
+    menebak-nebak - selalu ditolak dengan pesan yang jelas.
+    """
+    from pple.cli.nl import parse_intent
+    from pple.cli.safety import RiskTier, check_high_risk
+
+    guard = check_high_risk(text)
+    if guard["violation_detected"]:
+        console.print(f"[bold red][SAFETY GUARDRAIL BLOCKED][/bold red] {guard['message']}")
+        raise typer.Exit(code=1)
+
+    intent = parse_intent(text)
+    if intent is None:
+        console.print(
+            "[yellow]Perintah tidak dikenali. Coba: 'cek <equipment>', "
+            "'aktifkan modul <id> untuk <equipment>', 'daftar aset', 'status'.[/yellow]"
+        )
+        raise typer.Exit(code=1)
+
+    if intent.risk == RiskTier.WRITE and not yes:
+        confirmed = typer.confirm(f"PPLE: jalankan '{intent.name}' {intent.params}?")
+        if not confirmed:
+            console.print("[yellow]Dibatalkan.[/yellow]")
+            raise typer.Exit(code=0)
+
+    _dispatch_intent(intent)
+
+
+@app.command()
+def shell():
+    """Shell interaktif bahasa natural (docs/final.md Phase 19). Ketik 'exit' untuk keluar."""
+    console.print("[bold]PPLE interactive shell[/bold] - ketik perintah dalam bahasa natural, atau 'exit' untuk keluar.\n")
+    while True:
+        try:
+            text = typer.prompt("pple >")
+        except (EOFError, KeyboardInterrupt):
+            break
+        if text.strip().lower() in {"exit", "quit"}:
+            break
+        try:
+            ask(text, yes=False)
+        except typer.Exit:
+            pass
+        console.print()
 
 
 if __name__ == "__main__":
