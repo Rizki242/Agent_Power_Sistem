@@ -105,6 +105,21 @@ PROFILES: dict[str, dict[str, Any]] = {
                 for point in range(1, 7)
                 for axis, axis_label in (("V", "Vertikal"), ("H", "Horizontal"), ("A", "Axial"))
             ],
+            # SPM shock pulse per bearing (1-2 motor, 3-4 driven machine), as
+            # printed on page 2 of the plant's DETAIL REPORT VIBRASI form.
+            # Only Max and Carpet are recorded; delta is always derived
+            # (max - carpet) by src.vibration_standards rather than stored,
+            # so a stored delta can never disagree with its own inputs.
+            *[
+                ParameterSpec(
+                    f"sp_{kind}_{bearing}",
+                    f"Shock Pulse {label} - Bearing {bearing}",
+                    "dB",
+                    (f"sp {kind} {bearing}", f"{label} {bearing}", f"{label}{bearing}"),
+                )
+                for bearing in range(1, 5)
+                for kind, label in (("max", "Max"), ("carpet", "Carpet"))
+            ],
         ],
     },
     "DGA": {

@@ -63,6 +63,10 @@ class DomainWorkspaceConfig:
     metric_labels: dict[str, str] = field(default_factory=dict)
     summary_renderer: Optional[Callable[[Any], None]] = None
     disclaimer: str = ""
+    # Optional per-domain section appended to the Laporan tab, for a
+    # domain that has a report form of its own beyond the generic
+    # Word/PPT/CSV export (Vibrasi's DETAIL REPORT VIBRASI, for one).
+    report_renderer: Optional[Callable[[Any], None]] = None
 
 
 def render_domain_workspace(st, config: DomainWorkspaceConfig) -> None:
@@ -464,3 +468,7 @@ def render_report_tab(st, config: DomainWorkspaceConfig) -> None:
         "Unduh CSV", data=bundle["csv"], file_name=f"{stem}.csv",
         mime="text/csv", icon=":material/table:", key=f"{config.domain}_rep_csv",
     )
+
+    if config.report_renderer is not None:
+        st.divider()
+        config.report_renderer(st)

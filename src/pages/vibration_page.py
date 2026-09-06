@@ -47,6 +47,7 @@ def render_vibration_page(st) -> None:
         agent_factory=VibrationAgent,
         metric_labels=_VIBRATION_METRIC_LABELS,
         summary_renderer=_render_vibration_summary,
+        report_renderer=_render_detail_report_section,
     ))
 
 
@@ -210,3 +211,86 @@ def _render_vibration_summary(st) -> None:
                     "bpfi_amp": "BPFI amplitude",
                 })
                 st.caption(f"Sumber: Dataset vibrasi CBMAI, record terakhir {latest.get('timestamp', '-')}, kondisi label awal {latest.get('condition', '-')}/{latest.get('overall_severity', '-')}")
+
+
+def _render_detail_report_section(st) -> None:
+    """DETAIL REPORT VIBRASI - the plant's own per-equipment report form.
+
+    Sits alongside the workspace's generic period export because it answers a
+    different question: that one summarises a period across the fleet, this
+    one reproduces FORM.JRG.F.05.001 for a single machine, with its
+    specification block, monthly 1V-6A table, shock pulse, and the
+    engineer's narrative.
+    """
+    from src import domain_measurements as dm
+    from src import vibration_report_notes as notes_store
+    from src.vibration_report import build_docx, build_report_context
+
+    st.markdown("#### DETAIL REPORT VIBRASI (form FORM.JRG.F.05.001)")
+
+    stored = dm.load_measurements("VIBRASI")
+    if stored.empty:
+        st.info("Belum ada pengukuran tersimpan - laporan detail memerlukan data terukur.")
+        return
+
+    equipment_options = sorted(stored["equipment"].dropna().unique().tolist())
+    equipment = st.selectbox("Equipment", equipment_options, key="vibration_report_equipment")
+
+    context = build_report_context(equipment)
+    asset = context["asset"]
+    if not asset:
+        st.warning(
+            f"'{equipment}' tidak ditemukan di register aset vibrasi, sehingga blok spesifikasi "
+            "(KKS, tipe, bearing) akan kosong pada laporan.",
+            icon=":material/warning:",
+        )
+
+    cols = st.columns(4)
+    cols[0].metric("KKS", str(asset.get("kks", "-")))
+    cols[1].metric("PM Week", str(asset.get("pm_week", "-")))
+    measurement_date = context["measurement_date"]
+    cols[2].metric("Tgl Pengukuran", "-" if measurement_date is None else f"{measurement_date:%d-%b-%y}")
+    cols[3].metric("Status", (context["verdict"] or {}).get("status", "-"))
+    st.caption(f"Kelas: {context['equipment_class'] or '-'}")
+
+    if not context["monthly"].empty:
+        st.markdown("**Data vibrasi overall per bulan (mm/s)**")
+        st.dataframe(context["monthly"], hide_index=True, width="stretch")
+
+    shock_pulse = [entry for entry in context["shock_pulse"] if entry.get("delta") is not None]
+    if shock_pulse:
+        st.markdown("**Data shock pulse**")
+        st.dataframe(
+            [{
+                "Bearing": entry["bearing"],
+                "Max (dB)": entry["max_db"],
+                "Carpet (dB)": entry["carpet_db"],
+                "Delta": entry["delta"],
+                "Status": entry["status"],
+                "Pelumasan": entry["lubrication"],
+            } for entry in shock_pulse],
+            hide_index=True, width="stretch",
+        )
+
+    st.markdown("**Narasi laporan**")
+    st.caption("Draft dibuat otomatis dari pengukuran; silakan sunting sebelum laporan dicetak.")
+    with st.form("vibration_report_notes_form", border=True):
+        keterangan = st.text_area("KETERANGAN", value=context["notes"].get("keterangan", ""), key="vibration_note_keterangan")
+        analisa = st.text_area("ANALISA", value=context["notes"].get("analisa", ""), height=120, key="vibration_note_analisa")
+        rekomendasi = st.text_area("REKOMENDASI", value=context["notes"].get("rekomendasi", ""), height=120, key="vibration_note_rekomendasi")
+        saved = st.form_submit_button("Simpan narasi", type="primary", icon=":material/save:")
+
+    if saved:
+        notes_store.save_notes(equipment, measurement_date, {
+            "keterangan": keterangan, "analisa": analisa, "rekomendasi": rekomendasi,
+        })
+        st.success("Narasi tersimpan dan akan dipakai pada laporan.")
+
+    st.download_button(
+        "Unduh DETAIL REPORT VIBRASI (Word)",
+        data=build_docx(equipment),
+        file_name=f"DETAIL_REPORT_VIBRASI_{equipment.replace(' ', '_')}.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        icon=":material/description:",
+        key="vibration_detail_report_docx",
+    )
