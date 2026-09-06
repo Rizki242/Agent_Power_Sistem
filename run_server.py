@@ -33,9 +33,14 @@ def kill_process_on_port(port: int):
             pass
 
 
-def main():
-    port = int(os.getenv("PORT", "8000"))
-    host = os.getenv("HOST", "0.0.0.0")
+def main(host: str = None, port: int = None):
+    """Start the FastAPI server. `host`/`port` default to the HOST/PORT env
+    vars (0.0.0.0/8000) when not passed - this keeps `python run_server.py`
+    and run_api.bat working unchanged while letting `pple serve api`
+    (pple/cli/main.py, docs/final.md Phase 23) pass --host/--port through
+    to the exact same launcher instead of reimplementing it."""
+    port = port if port is not None else int(os.getenv("PORT", "8000"))
+    host = host or os.getenv("HOST", "0.0.0.0")
 
     print(f"============================================================")
     print(f"🚀 Memulai Power Plant O&M Reliability API Server...")

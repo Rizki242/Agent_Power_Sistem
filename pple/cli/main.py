@@ -1,4 +1,4 @@
-"""PPLE CLI (docs/final.md Phase 12-22) - MVP slice.
+"""PPLE CLI (docs/final.md Phase 12-23) - MVP slice.
 
 First-class commands that reuse the exact same pple.engineering module
 layer api_server.py already routes through (docs/pple_v2_baseline.md's
@@ -21,7 +21,10 @@ src.ai_settings/src.llm_assistant - the same code the Streamlit Settings
 page already uses, not a separate LLMProvider hierarchy), chat (Phase 22 -
 rule-based src.chatbot.MCSAChatbot, optionally enriched by the configured
 LLM, controlled by the root --offline flag which blocks any cloud provider
-call and falls back to a pure rule-based answer).
+call and falls back to a pure rule-based answer), and serve api/frontend/all
+(Phase 23 - a pple-native alternative to run_api.bat/run_frontend.bat/
+run_all.bat; those .bat scripts are untouched and keep working - serve api
+literally calls run_server.main()).
 Asset/plant/unit CRUD (creating or editing equipment through the CLI, not
 just viewing it) is still out of scope until the database layer (final.md
 Phase 2-4) exists - there is nowhere durable to write new records to yet.
@@ -29,6 +32,7 @@ Phase 2-4) exists - there is nowhere durable to write new records to yet.
 
 import json
 import os
+import subprocess
 import sys
 
 import typer
@@ -63,6 +67,8 @@ agents_app = typer.Typer(help="The specialist/fusion/safety agent roster and its
 app.add_typer(agents_app, name="agents")
 config_app = typer.Typer(help="View/persist which LLM provider+model the assistant layer uses (Phase 21).")
 app.add_typer(config_app, name="config")
+serve_app = typer.Typer(help="Start the API/frontend dev servers (Phase 23) - a pple-native alternative to the .bat scripts, which keep working unchanged.")
+app.add_typer(serve_app, name="serve")
 
 # provider name -> ai_settings.json field holding that provider's model choice.
 # Mirrors the exact set of providers src/pages/settings_page.py exposes -
@@ -671,6 +677,76 @@ def shell():
         except typer.Exit:
             pass
         console.print()
+
+
+def _print_serve_banner(*, api: bool, frontend: bool, host: str = "0.0.0.0", port: int = 8000) -> None:
+    _, results = load_modules_from_manifests()
+    active_count = sum(1 for r in results if r.status == ModuleStatus.ACTIVE)
+
+    display_host = "localhost" if host in {"0.0.0.0", "127.0.0.1"} else host
+    console.print("[bold]Starting PPLE...[/bold]\n")
+    if api:
+        console.print(f"API          http://{display_host}:{port}")
+        console.print(f"Swagger      http://{display_host}:{port}/docs")
+    if frontend:
+        console.print("Frontend     http://localhost:5173")
+    console.print(f"\nEngineering modules : {active_count}")
+    console.print("Safety Guardrail     : ON")
+    console.print("\n[bold green]PPLE READY[/bold green]\n")
+
+
+@serve_app.command("api")
+def serve_api(
+    host: str = typer.Option(None, "--host", help="Default: env HOST or 0.0.0.0"),
+    port: int = typer.Option(None, "--port", help="Default: env PORT or 8000"),
+):
+    """Start the FastAPI server - calls the exact same run_server.main()
+    run_api.bat already uses (port-in-use cleanup, 0.0.0.0->127.0.0.1
+    fallback), just reachable as `pple serve api` too. Blocks until Ctrl+C."""
+    resolved_port = port if port is not None else int(os.environ.get("PORT", "8000"))
+    resolved_host = host or os.environ.get("HOST", "0.0.0.0")
+    _print_serve_banner(api=True, frontend=False, host=resolved_host, port=resolved_port)
+
+    import run_server
+
+    run_server.main(host=resolved_host, port=resolved_port)
+
+
+@serve_app.command("frontend")
+def serve_frontend():
+    """Start the Vite/React dev server - same command run_frontend.bat
+    runs (`npm --prefix frontend run dev`). Blocks until Ctrl+C."""
+    _print_serve_banner(api=False, frontend=True)
+    subprocess.run(["npm", "--prefix", "frontend", "run", "dev"])
+
+
+@serve_app.command("all")
+def serve_all(
+    host: str = typer.Option(None, "--host", help="Default: env HOST or 0.0.0.0"),
+    port: int = typer.Option(None, "--port", help="Default: env PORT or 8000"),
+):
+    """Start API and frontend together - same pair run_all.bat launches,
+    as two separate OS processes (not two threads: uvicorn's --reload
+    supervisor installs signal handlers that only work in a process's main
+    thread, so the API runs as its own subprocess here exactly like the
+    .bat's `start` does, just without opening a second console window).
+    Ctrl+C (or closing the frontend dev server) stops both."""
+    resolved_port = port if port is not None else int(os.environ.get("PORT", "8000"))
+    resolved_host = host or os.environ.get("HOST", "0.0.0.0")
+    _print_serve_banner(api=True, frontend=True, host=resolved_host, port=resolved_port)
+
+    api_proc = subprocess.Popen([
+        sys.executable, "-m", "uvicorn", "api_server:app",
+        "--host", resolved_host, "--port", str(resolved_port), "--reload",
+    ])
+    try:
+        subprocess.run(["npm", "--prefix", "frontend", "run", "dev"])
+    finally:
+        api_proc.terminate()
+        try:
+            api_proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            api_proc.kill()
 
 
 if __name__ == "__main__":

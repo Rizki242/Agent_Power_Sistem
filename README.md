@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000" alt="React 19">
   <img src="https://img.shields.io/badge/decision%20core-rule--based-0284c7" alt="Rule-based decision core">
-  <img src="https://img.shields.io/badge/tests-354%20passing-10b981" alt="354 unit tests passing">
+  <img src="https://img.shields.io/badge/tests-360%20passing-10b981" alt="360 unit tests passing">
   <img src="https://img.shields.io/badge/platform-Windows--first-64748b" alt="Windows-first">
 </p>
 
@@ -66,7 +66,7 @@ Diagram rancangan target (visi jangka panjang, termasuk database dan admin confi
 - **Knowledge base**: pencarian kata kunci selalu tersedia; pencarian semantik FAISS bersifat opsional dan memiliki fallback.
 - **Laporan**: generator PowerPoint dan Word dari data/filter aktif.
 - **API FastAPI**: akses data aset, ringkasan domain, diagnostik fusion, chatbot, knowledge base, laporan, dan work order — plus `/api/v2/*` (modules, assets, reliability, agents) dari migrasi `pple`.
-- **CLI `pple`**: status/doctor sistem, jalankan analisis satu modul, telusuri hierarki aset, cek reliability fusion, perintah bahasa natural (`pple ask "cek CWP-1A"`) dengan klasifikasi risiko READ/WRITE/HIGH-RISK, `pple config llm` untuk melihat/mengganti provider-model LLM dari terminal, `pple chat` (chatbot rule-based, opsional diperkaya LLM), dan flag `--offline` yang memblokir semua provider cloud.
+- **CLI `pple`**: status/doctor sistem, jalankan analisis satu modul, telusuri hierarki aset, cek reliability fusion, perintah bahasa natural (`pple ask "cek CWP-1A"`) dengan klasifikasi risiko READ/WRITE/HIGH-RISK, `pple config llm` untuk melihat/mengganti provider-model LLM dari terminal, `pple chat` (chatbot rule-based, opsional diperkaya LLM), flag `--offline` yang memblokir semua provider cloud, dan `pple serve api/frontend/all` sebagai alternatif native untuk skrip `.bat`.
 
 ## Alur diagnosis multi-agent
 
@@ -118,11 +118,17 @@ pple config test                         # tes koneksi ke provider aktif (helper
 pple chat "status CWP 1A"                # chatbot rule-based (src.chatbot), boleh diperkaya LLM bila dikonfigurasi
 pple --offline chat "status CWP 1A"      # sama persis, tapi provider cloud (gemini/groq/opencode) dipastikan tidak dipanggil
 pple --offline config test               # ditolak untuk provider cloud; provider ollama (lokal) tetap boleh
+
+pple serve api                           # setara run_api.bat, plus --host/--port kustom
+pple serve frontend                      # setara run_frontend.bat
+pple serve all                           # setara run_all.bat (API sebagai subprocess + frontend di depan)
 ```
 
 Klasifikasi risiko (`pple/cli/safety.py`) memisahkan command menjadi **READ** (selalu boleh), **WRITE** (minta konfirmasi eksplisit), dan **HIGH-RISK** (diblokir total oleh `SafetyGuardrailAgent` yang sama dengan yang dipakai UI — tidak ada jalur pintas). `pple config` membaca/menulis `data/MCSA/config/ai_settings.json` yang sama dengan halaman Settings Streamlit — CLI dan UI berbagi satu preferensi, dan API key tidak pernah ikut tersimpan di file itu.
 
-Flag global `--offline` (docs/final.md Phase 22) memastikan PPLE tetap bisa dipakai tanpa internet: jawaban `pple chat` selalu dari `src.chatbot.MCSAChatbot` (rule-based) lebih dulu, LLM (cloud maupun Ollama lokal) hanya memperkaya narasinya dan tidak pernah menjadi sumber kebenaran untuk threshold/status engineering. Lihat `docs/final.md` untuk roadmap migrasi `pple` V2 selengkapnya.
+Flag global `--offline` (docs/final.md Phase 22) memastikan PPLE tetap bisa dipakai tanpa internet: jawaban `pple chat` selalu dari `src.chatbot.MCSAChatbot` (rule-based) lebih dulu, LLM (cloud maupun Ollama lokal) hanya memperkaya narasinya dan tidak pernah menjadi sumber kebenaran untuk threshold/status engineering.
+
+`pple serve` (docs/final.md Phase 23) tidak menggantikan `run_api.bat`/`run_frontend.bat`/`run_all.bat` — ketiganya tetap berfungsi seperti biasa — hanya menyediakan jalur yang sama lewat CLI, memanggil launcher Python yang sama persis (`run_server.py`). Lihat `docs/final.md` untuk roadmap migrasi `pple` V2 selengkapnya.
 
 ## Prasyarat
 
