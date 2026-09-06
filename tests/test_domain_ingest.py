@@ -79,6 +79,44 @@ class ColumnMappingTests(IngestTestCase):
         mapping = ingest.map_columns("VIBRASI", frame)
         self.assertNotIn("kolom_asing", mapping)
 
+    def test_maps_the_real_field_sheet_point_columns(self):
+        # equipment/asset_id/unit_name/test_date/1V.../6A/kondisi/note - a
+        # real inspection sheet template, not a synthetic example.
+        columns = ["equipment", "asset_id", "unit_name", "test_date",
+                   "1V", "1H", "1A", "6V", "6H", "6A", "kondisi ", "note"]
+        mapping = ingest.map_columns("VIBRASI", pd.DataFrame(columns=columns))
+        self.assertEqual(mapping["1V"], "pt1_v")
+        self.assertEqual(mapping["1H"], "pt1_h")
+        self.assertEqual(mapping["1A"], "pt1_a")
+        self.assertEqual(mapping["6A"], "pt6_a")
+        self.assertEqual(mapping["kondisi "], "condition")
+        self.assertEqual(mapping["note"], "notes")
+        self.assertEqual(mapping["asset_id"], "asset_id")
+
+
+class DelimiterDetectionTests(IngestTestCase):
+    def test_tab_separated_csv_is_read_correctly(self):
+        # Confirmed real-world case: a .csv exported from Excel that is
+        # actually tab-separated. Reading it as comma-separated would parse
+        # the entire header into a single unsplit column instead of raising,
+        # which is worse than an error - nothing looks obviously wrong until
+        # every column comes back unmapped.
+        content = "equipment\ttest_date\t1V\tkondisi \tnote\nCWP 1A\t2026-05-01\t2.1\tNormal\tok\n".encode()
+        preview = ingest.preview_upload("VIBRASI", "sheet.csv", content)
+        self.assertEqual(preview["source_rows"], 1)
+        self.assertEqual(len(preview["valid"]), 1)
+        self.assertEqual(preview["valid"][0]["parameter"], "pt1_v")
+
+    def test_semicolon_separated_csv_is_read_correctly(self):
+        content = "equipment;test_date;overall_rms\nCWP 1A;2026-05-01;3.2\n".encode()
+        preview = ingest.preview_upload("VIBRASI", "sheet.csv", content)
+        self.assertEqual(len(preview["valid"]), 1)
+
+    def test_comma_separated_csv_still_works(self):
+        content = "equipment,test_date,overall_rms\nCWP 1A,2026-05-01,3.2\n".encode()
+        preview = ingest.preview_upload("VIBRASI", "sheet.csv", content)
+        self.assertEqual(len(preview["valid"]), 1)
+
 
 class WideToLongTests(IngestTestCase):
     def test_one_wide_row_becomes_one_row_per_parameter(self):
@@ -243,6 +281,38 @@ class AgentInputTests(IngestTestCase):
         frame = dm.filter_measurements("TRIBOLOGY", equipment="PMP-1")
         payload = ingest.agent_input_from_measurements("TRIBOLOGY", frame)
         self.assertEqual(payload["iso_cleanliness"], "18/16/11")
+
+    def test_point_based_sheet_derives_overall_rms_as_the_worst_point(self):
+        # Regression: a real field sheet (equipment/asset_id/unit_name/
+        # test_date/1V.../6A/kondisi/note) has no "overall" column at all -
+        # without a derived overall_rms, VibrationAgent would silently fall
+        # back to its 2.2 mm/s example default and report Normal regardless
+        # of what was actually measured.
+        dm.append_measurements("VIBRASI", [
+            {"equipment": "CWP 1A", "test_date": "2026-05-01", "parameter": "pt1_v", "value": 2.1},
+            {"equipment": "CWP 1A", "test_date": "2026-05-01", "parameter": "pt3_v", "value": 7.9},
+            {"equipment": "CWP 1A", "test_date": "2026-05-01", "parameter": "pt4_a", "value": 0.8},
+        ])
+        frame = dm.filter_measurements("VIBRASI", equipment="CWP 1A")
+        payload = ingest.agent_input_from_measurements("VIBRASI", frame)
+        self.assertEqual(payload["overall_rms"], 7.9)
+
+    def test_explicit_overall_rms_column_is_never_overridden_by_points(self):
+        dm.append_measurements("VIBRASI", [
+            {"equipment": "CWP 1A", "test_date": "2026-05-01", "parameter": "overall_rms", "value": 3.0},
+            {"equipment": "CWP 1A", "test_date": "2026-05-01", "parameter": "pt3_v", "value": 9.9},
+        ])
+        frame = dm.filter_measurements("VIBRASI", equipment="CWP 1A")
+        payload = ingest.agent_input_from_measurements("VIBRASI", frame)
+        self.assertEqual(payload["overall_rms"], 3.0)
+
+    def test_no_points_and_no_overall_leaves_overall_rms_unset(self):
+        dm.append_measurements("VIBRASI", [
+            {"equipment": "CWP 1A", "test_date": "2026-05-01", "parameter": "temperature", "value": 55.0},
+        ])
+        frame = dm.filter_measurements("VIBRASI", equipment="CWP 1A")
+        payload = ingest.agent_input_from_measurements("VIBRASI", frame)
+        self.assertNotIn("overall_rms", payload)
 
     def test_empty_frame_yields_empty_payload(self):
         self.assertEqual(ingest.agent_input_from_measurements("PD", pd.DataFrame()), {})

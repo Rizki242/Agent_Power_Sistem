@@ -403,6 +403,14 @@ def render_diagnosis_tab(st, config: DomainWorkspaceConfig) -> None:
         st.info("Tidak ada parameter terukur untuk equipment ini.")
         return
 
+    if config.domain == "VIBRASI" and "overall_rms" not in {
+        str(row).strip() for row in scoped["parameter"].dropna().unique().tolist()
+    }:
+        st.caption(
+            f":material/info: Overall RMS ({payload.get('overall_rms', '-')} mm/s) dihitung otomatis "
+            "sebagai nilai maksimum dari titik pengukuran (1V-6A) - tidak ada kolom overall pada data sumber."
+        )
+
     latest_date = scoped["test_date"].max()
     if pd.notna(latest_date):
         st.caption(f"Sumber: {len(payload)} parameter terukur, pengujian terakhir {latest_date:%d %b %Y}.")

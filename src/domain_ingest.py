@@ -29,6 +29,7 @@ Batch layout (mirrors data/Laporan/uploads/ for MCSA Word batches):
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import uuid
@@ -74,7 +75,7 @@ IDENTITY_ALIASES = {
     "unit_name": ("unit_name", "unit", "unit group", "unit_group"),
     "test_date": ("test_date", "tanggal", "tanggal uji", "date", "timestamp", "tgl"),
     "condition": ("condition", "kondisi", "status"),
-    "notes": ("notes", "catatan", "keterangan", "remark"),
+    "notes": ("notes", "note", "catatan", "keterangan", "remark"),
 }
 
 
@@ -90,6 +91,20 @@ PROFILES: dict[str, dict[str, Any]] = {
             ParameterSpec("bpfi_amp", "BPFI", "g", ("bpfi_amp_g", "bpfi")),
             ParameterSpec("acceleration_rms", "Akselerasi RMS", "g", ("acceleration_rms_g",)),
             ParameterSpec("temperature", "Suhu", "degC", ("temperature_c", "suhu")),
+            # Per-point readings from a real field inspection sheet: 6
+            # measurement points (e.g. motor/pump DE-NDE), each read in
+            # Vertical/Horizontal/Axial direction - "1V".."6A". This is a
+            # different (and common) shape from the single-overall-value
+            # columns above: a raw multi-point sheet rather than a
+            # pre-computed 1X/2X/BPFO summary. Both are kept so either kind
+            # of export maps correctly; see agent_input_from_measurements()
+            # for how a missing overall_rms is derived from these when only
+            # the point-based columns are present.
+            *[
+                ParameterSpec(f"pt{point}_{axis.lower()}", f"Titik {point} - {axis_label}", "mm/s", (f"{point}{axis}",))
+                for point in range(1, 7)
+                for axis, axis_label in (("V", "Vertikal"), ("H", "Horizontal"), ("A", "Axial"))
+            ],
         ],
     },
     "DGA": {
@@ -173,6 +188,20 @@ def template_csv(domain: str) -> bytes:
     return frame.to_csv(index=False).encode("utf-8-sig")
 
 
+def _read_csv_any_delimiter(buffer) -> pd.DataFrame:
+    """Read a CSV whose delimiter is comma, tab, or semicolon.
+
+    Real exports from Excel are routinely tab- or semicolon-separated while
+    still carrying a .csv extension (confirmed: a real field template shared
+    for this feature was tab-separated) - pandas' comma default would parse
+    the whole file as one unsplit column instead of raising, which is worse
+    than an error because nothing looks obviously wrong until every column
+    turns out unmapped. `sep=None` with the python engine runs csv.Sniffer
+    to detect the real delimiter.
+    """
+    return pd.read_csv(buffer, sep=None, engine="python")
+
+
 def read_upload(file_name: str, content: bytes) -> pd.DataFrame:
     """Parse an uploaded CSV/XLSX into a DataFrame, raising ValueError with a
     readable message rather than a library traceback."""
@@ -185,10 +214,10 @@ def read_upload(file_name: str, content: bytes) -> pd.DataFrame:
             return pd.read_excel(buffer)
         if suffix == ".csv":
             try:
-                return pd.read_csv(buffer)
+                return _read_csv_any_delimiter(buffer)
             except UnicodeDecodeError:
                 buffer.seek(0)
-                return pd.read_csv(buffer, encoding="latin-1")
+                return _read_csv_any_delimiter(io.TextIOWrapper(buffer, encoding="latin-1"))
     except Exception as exc:
         raise ValueError(f"Gagal membaca '{file_name}': {exc}") from exc
     raise ValueError(f"Format '{suffix or file_name}' tidak didukung. Gunakan CSV atau XLSX.")
@@ -402,6 +431,11 @@ def manual_entry_rows(domain: str, identity: dict[str, Any], values: dict[str, A
     return rows
 
 
+_VIBRATION_POINT_KEYS = tuple(
+    f"pt{point}_{axis}" for point in range(1, 7) for axis in ("v", "h", "a")
+)
+
+
 def agent_input_from_measurements(domain: str, frame: pd.DataFrame) -> dict[str, Any]:
     """Collapse a per-equipment measurement slice into a specialist agent's
     input dict, using the newest reading of each parameter.
@@ -410,7 +444,7 @@ def agent_input_from_measurements(domain: str, frame: pd.DataFrame) -> dict[str,
     input keys: ingested data feeds the real agent instead of leaving it on
     its built-in example values.
     """
-    canon_domain(domain)
+    domain = canon_domain(domain)
     if frame is None or frame.empty:
         return {}
     ordered = frame.sort_values("test_date", ascending=True, na_position="first")
@@ -423,4 +457,19 @@ def agent_input_from_measurements(domain: str, frame: pd.DataFrame) -> dict[str,
             continue
         value = row.get("value")
         payload[key] = str(row.get("raw_value") or "") if pd.isna(value) else float(value)
+
+    if domain == "VIBRASI" and "overall_rms" not in payload:
+        # A per-point field sheet (1V/1H/1A.."6V"/"6H"/"6A") has no single
+        # "overall" column at all - VibrationAgent requires overall_rms, and
+        # silently leaving it unset would make it fall back to its built-in
+        # 2.2 mm/s example value, i.e. a real upload producing a fabricated
+        # diagnosis. ISO 10816-3 evaluates plant condition on the worst
+        # reading across all measured points, so the maximum of the point
+        # values that are actually present is a real, standard-consistent
+        # measurement to derive from - not an invented one - as long as at
+        # least one point was actually read.
+        point_values = [payload[key] for key in _VIBRATION_POINT_KEYS if isinstance(payload.get(key), float)]
+        if point_values:
+            payload["overall_rms"] = max(point_values)
+
     return payload
