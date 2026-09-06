@@ -2,7 +2,10 @@ from calendar import monthrange
 from datetime import date
 
 
-QUICK_PRESETS = ["Semua", "Bulan Ini", "Bulan Terakhir", "3 Bulan", "6 Bulan", "12 Bulan"]
+# Must stay in sync with the branches in preset_period(): a name listed
+# here that preset_period does not handle silently falls through to the
+# full data range, which looks like a working filter that does nothing.
+QUICK_PRESETS = ["Semua", "Kondisi saat Ini", "Pengujian Terakhir", "3 Bulan", "6 Bulan", "12 Bulan"]
 
 
 def _as_date(value):
@@ -54,9 +57,9 @@ def preset_period(preset: str, min_date: date, max_date: date) -> tuple[date, da
 
     if preset == "Semua":
         start, end = min_date, max_date
-    elif preset == "Bulan Ini":
+    elif preset == "Kondisi saat Ini":
         start, end = month_start(today), today
-    elif preset == "Bulan Terakhir":
+    elif preset == "Pengujian Terakhir":
         previous_month = _add_months(month_start(today), -1)
         start, end = month_start(previous_month), month_end(previous_month)
     else:

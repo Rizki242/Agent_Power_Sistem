@@ -1,13 +1,22 @@
-"""Vibration dashboard - asset register + periodic overall-velocity readings."""
+"""Vibration dashboard - asset register + periodic overall-velocity readings.
+
+Rendered inside the shared five-tab workspace (src.components.domain_workspace)
+so this domain gets upload, period filtering, and reports without a bespoke
+implementation. The legacy read-only view built from the SQLite asset
+register, the monthly Excel export, and the CBMAI CSV is preserved verbatim
+as this workspace's "Ringkasan" tab - those sources stay the seed of record
+until their data is ingested into the canonical store.
+"""
 
 from src.agents.specialist_agents import VibrationAgent
 from src.components.agent_result import render_agent_result
+from src.components.domain_workspace import DomainWorkspaceConfig, render_domain_workspace
 from src.components.status_colors import (
     STATUS_PIE_COLORS,
     canon_condition_status,
     render_status_badge,
 )
-from src.components.theme import render_detail_view_toggle, render_page_header
+from src.components.theme import render_detail_view_toggle
 from src.vibration_data import (
     build_vibration_agent_input,
     get_bearing_info,
@@ -19,9 +28,30 @@ from src.vibration_data import (
 )
 
 
-def render_vibration_page(st) -> None:
-    render_page_header(st, "Vibrasi", "Monitoring kondisi vibrasi aset berputar - ISO 10816-3", badge="")
+_VIBRATION_METRIC_LABELS = {
+    "overall_rms": "Overall RMS (mm/s)",
+    "amp_1x": "1X amplitude (mm/s)",
+    "amp_2x": "2X amplitude (mm/s)",
+    "axial_1x": "Aksial 1X (mm/s)",
+    "bpfo_amp": "BPFO amplitude",
+    "bpfi_amp": "BPFI amplitude",
+    "temperature": "Suhu (degC)",
+}
 
+
+def render_vibration_page(st) -> None:
+    render_domain_workspace(st, DomainWorkspaceConfig(
+        domain="VIBRASI",
+        title="Vibrasi",
+        subtitle="Monitoring kondisi vibrasi aset berputar - ISO 10816-3",
+        agent_factory=VibrationAgent,
+        metric_labels=_VIBRATION_METRIC_LABELS,
+        summary_renderer=_render_vibration_summary,
+    ))
+
+
+def _render_vibration_summary(st) -> None:
+    """The pre-existing read-only vibration view, unchanged in behavior."""
     assets_df = load_vibration_assets()
     monthly_tests = load_vibration_monthly_tests()
 

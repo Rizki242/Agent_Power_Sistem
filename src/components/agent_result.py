@@ -41,6 +41,15 @@ def render_agent_result(st, result: Dict[str, Any], metric_labels: Dict[str, str
             for item in recommendations:
                 st.write(f"- {item}")
         with st.expander("Parameter yang dianalisis", expanded=False):
-            rows = [{"Parameter": metric_labels.get(key, key), "Nilai": value} for key, value in (result.get("metrics") or {}).items()]
+            # "Nilai" mixes numbers with qualitative readings ("Normal
+            # In-Service", an ISO 4406 code, ...). Left as-is, Arrow fails to
+            # infer a column type and Streamlit falls back with a noisy
+            # traceback in the logs, so render every value as text - the same
+            # .astype(str) treatment src/pages/dashboard_page.py already
+            # applies to its own mixed "Nilai" column.
+            rows = [
+                {"Parameter": metric_labels.get(key, key), "Nilai": "" if value is None else str(value)}
+                for key, value in (result.get("metrics") or {}).items()
+            ]
             st.dataframe(rows, hide_index=True, width="stretch")
     st.caption("Hasil adalah screening rule-based. Keputusan operasi, trip, shutdown, atau perubahan proteksi wajib melalui SOP dan otorisasi engineer.")

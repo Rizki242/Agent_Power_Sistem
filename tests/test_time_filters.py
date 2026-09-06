@@ -11,14 +11,14 @@ class TimeFilterTests(unittest.TestCase):
         self.assertEqual(start, date(2024, 1, 10))
         self.assertEqual(end, date(2026, 5, 25))
 
-    def test_preset_bulan_ini_uses_latest_data_month(self):
-        start, end = preset_period("Bulan Ini", date(2024, 1, 10), date(2026, 5, 25))
+    def test_preset_kondisi_saat_ini_uses_latest_data_month(self):
+        start, end = preset_period("Kondisi saat Ini", date(2024, 1, 10), date(2026, 5, 25))
 
         self.assertEqual(start, date(2026, 5, 1))
         self.assertEqual(end, date(2026, 5, 25))
 
-    def test_preset_bulan_terakhir_returns_previous_calendar_month(self):
-        start, end = preset_period("Bulan Terakhir", date(2024, 1, 10), date(2026, 5, 25))
+    def test_preset_pengujian_terakhir_returns_previous_calendar_month(self):
+        start, end = preset_period("Pengujian Terakhir", date(2024, 1, 10), date(2026, 5, 25))
 
         self.assertEqual(start, date(2026, 4, 1))
         self.assertEqual(end, date(2026, 4, 30))
