@@ -114,5 +114,77 @@ class WorkspaceConfigTests(WorkspaceTestCase):
         self.assertEqual(config.disclaimer, "")
 
 
+class AllDomainPagesUseTheWorkspaceTests(WorkspaceTestCase):
+    """Every domain page must route through the shared workspace, otherwise
+    that domain silently loses upload / period filter / reports again."""
+
+    PAGES = {
+        "VIBRASI": ("src.pages.vibration_page", "render_vibration_page"),
+        "DGA": ("src.pages.dga_page", "render_dga_page"),
+        "TRIBOLOGY": ("src.pages.tribology_page", "render_tribology_page"),
+        "THERMAL": ("src.pages.thermal_page", "render_thermal_page"),
+        "PD": ("src.pages.pd_page", "render_pd_page"),
+    }
+
+    def _captured_config(self, module_name, function_name):
+        import importlib
+
+        module = importlib.import_module(module_name)
+        captured = {}
+
+        def fake_render(st, config):
+            captured["config"] = config
+
+        original = module.render_domain_workspace
+        module.render_domain_workspace = fake_render
+        try:
+            getattr(module, function_name)(object())
+        finally:
+            module.render_domain_workspace = original
+        return captured["config"]
+
+    def test_every_domain_page_renders_the_workspace(self):
+        for domain, (module_name, function_name) in self.PAGES.items():
+            config = self._captured_config(module_name, function_name)
+            self.assertEqual(config.domain, domain, module_name)
+            self.assertTrue(config.title, module_name)
+
+    def test_every_domain_page_supplies_an_agent_and_labels(self):
+        for domain, (module_name, function_name) in self.PAGES.items():
+            config = self._captured_config(module_name, function_name)
+            self.assertIsNotNone(config.agent_factory, f"{domain} tanpa agent")
+            self.assertTrue(config.metric_labels, f"{domain} tanpa metric_labels")
+
+    def test_metric_labels_match_what_the_agent_actually_returns(self):
+        # render_agent_result maps result["metrics"] keys through these
+        # labels; a mismatch shows raw keys to the engineer instead of a
+        # readable parameter name.
+        probes = {
+            "VIBRASI": {"overall_rms": 3.0},
+            "DGA": {"h2": 40, "ch4": 30, "c2h2": 2, "c2h4": 20, "c2h6": 15, "co": 300, "co2": 2500},
+            "TRIBOLOGY": {"viscosity_40c": 44, "tan": 0.3, "water_ppm": 120, "fe_ppm": 30, "cu_ppm": 8},
+            "THERMAL": {"bearing_temp": 78, "winding_temp": 95, "ambient_temp": 33, "delta_t_phase": 12},
+            "PD": {"pulse_magnitude_pc": 800, "nqn": 40, "pd_type": "Internal Void", "phase_clustering_deg": 45},
+        }
+        for domain, (module_name, function_name) in self.PAGES.items():
+            config = self._captured_config(module_name, function_name)
+            result = config.agent_factory().evaluate("X", probes[domain])
+            unlabelled = set(result["metrics"]) - set(config.metric_labels)
+            self.assertEqual(unlabelled, set(), f"{domain}: metrik tanpa label {unlabelled}")
+
+    def test_every_domain_page_preserves_its_legacy_summary_view(self):
+        for domain, (module_name, function_name) in self.PAGES.items():
+            config = self._captured_config(module_name, function_name)
+            self.assertIsNotNone(config.summary_renderer, f"{domain} kehilangan tampilan lama")
+
+    def test_synthetic_data_domains_keep_their_disclaimer(self):
+        # DGA/Tribology/PD run on example data; that warning must not be lost
+        # in the move to the shared shell.
+        for domain in ("DGA", "TRIBOLOGY", "PD"):
+            module_name, function_name = self.PAGES[domain]
+            config = self._captured_config(module_name, function_name)
+            self.assertIn("Data Contoh", config.disclaimer, domain)
+
+
 if __name__ == "__main__":
     unittest.main()

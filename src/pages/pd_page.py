@@ -12,16 +12,13 @@ import plotly.express as px
 
 from src.agents.specialist_agents import PDAgent
 from src.components.agent_result import render_agent_result
+from src.components.domain_workspace import DomainWorkspaceConfig, render_domain_workspace
 from src.components.status_colors import (
     STATUS_PIE_COLORS,
     canon_condition_status,
     render_status_badge,
 )
-from src.components.theme import (
-    render_data_disclaimer_banner,
-    render_detail_view_toggle,
-    render_page_header,
-)
+from src.components.theme import render_detail_view_toggle
 from src.pd_data import get_pd_sample_detail, search_pd_samples
 
 _PD_METRIC_LABELS = {
@@ -33,8 +30,19 @@ _PD_METRIC_LABELS = {
 
 
 def render_pd_page(st) -> None:
-    render_data_disclaimer_banner(st)
-    render_page_header(st, "Partial Discharge", "PRPD Pattern & Pulse Magnitude Monitoring")
+    render_domain_workspace(st, DomainWorkspaceConfig(
+        domain="PD",
+        title="Partial Discharge",
+        subtitle="PRPD Pattern & Pulse Magnitude Monitoring",
+        agent_factory=PDAgent,
+        metric_labels=_PD_METRIC_LABELS,
+        summary_renderer=_render_pd_summary,
+        disclaimer="Data Contoh - Belum Terverifikasi dari Sumber Asli",
+    ))
+
+
+def _render_pd_summary(st) -> None:
+    """The pre-existing read-only view, unchanged in behavior."""
 
     samples = search_pd_samples()
     if not samples:

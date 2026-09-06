@@ -10,13 +10,26 @@ src.thermal_data.get_thermal_record_detail's docstring for why.
 
 import plotly.express as px
 
+from src.agents.specialist_agents import ThermalAgent
+from src.components.domain_workspace import DomainWorkspaceConfig, render_domain_workspace
 from src.components.status_colors import (
     STATUS_PIE_COLORS,
     canon_condition_status,
     render_status_badge,
 )
-from src.components.theme import render_detail_view_toggle, render_page_header
+from src.components.theme import render_detail_view_toggle
 from src.thermal_data import get_thermal_record_detail, search_thermal_records
+
+
+# Keys are ThermalAgent.evaluate()'s own metrics keys, not the IRT export's
+# fields - the Diagnosa tab runs the agent on ingested measurements only.
+_THERMAL_METRIC_LABELS = {
+    "bearing_temp_c": "Suhu bearing (degC)",
+    "winding_temp_c": "Suhu winding (degC)",
+    "delta_t_ambient_c": "Delta-T ambient (K)",
+    "delta_t_phase_c": "Delta-T antar fasa (K)",
+    "hotspot_temp_c": "Suhu hotspot (degC)",
+}
 
 
 def _render_recommendation(st, detail) -> None:
@@ -39,7 +52,18 @@ def _render_recommendation(st, detail) -> None:
 
 
 def render_thermal_page(st) -> None:
-    render_page_header(st, "Thermal", "Monitoring Thermography (IRT) & RTD - Delta-T Matrix")
+    render_domain_workspace(st, DomainWorkspaceConfig(
+        domain="THERMAL",
+        title="Thermal",
+        subtitle="Monitoring Thermography (IRT) & RTD - Delta-T Matrix",
+        agent_factory=ThermalAgent,
+        metric_labels=_THERMAL_METRIC_LABELS,
+        summary_renderer=_render_thermal_summary,
+    ))
+
+
+def _render_thermal_summary(st) -> None:
+    """The pre-existing read-only view, unchanged in behavior."""
 
     records = search_thermal_records()
     if not records:

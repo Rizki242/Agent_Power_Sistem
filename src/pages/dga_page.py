@@ -4,16 +4,13 @@ import plotly.express as px
 
 from src.agents.specialist_agents import DGAAgent
 from src.components.agent_result import render_agent_result
+from src.components.domain_workspace import DomainWorkspaceConfig, render_domain_workspace
 from src.components.status_colors import (
     STATUS_PIE_COLORS,
     canon_condition_status,
     render_status_badge,
 )
-from src.components.theme import (
-    render_data_disclaimer_banner,
-    render_detail_view_toggle,
-    render_page_header,
-)
+from src.components.theme import render_detail_view_toggle
 from src.dga_data import get_dga_transformer_detail, search_dga_transformers
 
 _DGA_METRIC_LABELS = {
@@ -30,8 +27,19 @@ _DGA_METRIC_LABELS = {
 
 
 def render_dga_page(st) -> None:
-    render_data_disclaimer_banner(st)
-    render_page_header(st, "DGA", "Dissolved Gas Analysis - Transformer", badge="")
+    render_domain_workspace(st, DomainWorkspaceConfig(
+        domain="DGA",
+        title="DGA",
+        subtitle="Dissolved Gas Analysis - Transformer",
+        agent_factory=DGAAgent,
+        metric_labels=_DGA_METRIC_LABELS,
+        summary_renderer=_render_dga_summary,
+        disclaimer="Data Contoh - Belum Terverifikasi dari Sumber Asli",
+    ))
+
+
+def _render_dga_summary(st) -> None:
+    """The pre-existing read-only view, unchanged in behavior."""
 
     transformers = search_dga_transformers()
     if not transformers:

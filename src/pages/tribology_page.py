@@ -4,16 +4,13 @@ import plotly.express as px
 
 from src.agents.specialist_agents import TribologyAgent
 from src.components.agent_result import render_agent_result
+from src.components.domain_workspace import DomainWorkspaceConfig, render_domain_workspace
 from src.components.status_colors import (
     STATUS_PIE_COLORS,
     canon_condition_status,
     render_status_badge,
 )
-from src.components.theme import (
-    render_data_disclaimer_banner,
-    render_detail_view_toggle,
-    render_page_header,
-)
+from src.components.theme import render_detail_view_toggle
 from src.tribology_data import (
     build_tribology_agent_input,
     get_tribology_sample_detail,
@@ -32,8 +29,19 @@ _TRIBOLOGY_METRIC_LABELS = {
 
 
 def render_tribology_page(st) -> None:
-    render_data_disclaimer_banner(st)
-    render_page_header(st, "Tribology", "Analisa Oli Pelumas & Wear Debris", badge="")
+    render_domain_workspace(st, DomainWorkspaceConfig(
+        domain="TRIBOLOGY",
+        title="Tribology",
+        subtitle="Analisa Oli Pelumas & Wear Debris",
+        agent_factory=TribologyAgent,
+        metric_labels=_TRIBOLOGY_METRIC_LABELS,
+        summary_renderer=_render_tribology_summary,
+        disclaimer="Data Contoh - Belum Terverifikasi dari Sumber Asli",
+    ))
+
+
+def _render_tribology_summary(st) -> None:
+    """The pre-existing read-only view, unchanged in behavior."""
 
     samples = search_tribology_samples()
     if not samples:
