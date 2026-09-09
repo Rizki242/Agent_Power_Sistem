@@ -10,7 +10,7 @@ import os
 import re
 from typing import Optional
 
-from src.knowledge_retriever import load_knowledge_base
+from src.knowledge_retriever import load_knowledge_base, materi_dir
 
 
 def _slugify(text: str) -> str:
@@ -309,12 +309,11 @@ def process_and_save_knowledge_file(
             doc_data["source"] = source
 
         # Ensure directory exists
-        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        materi_dir = os.path.join(root_dir, "Materi")
-        os.makedirs(materi_dir, exist_ok=True)
+        materi_path = materi_dir()
+        os.makedirs(materi_path, exist_ok=True)
 
         target_fn = f"{_slugify(doc_data['title'])}.json"
-        target_path = os.path.join(materi_dir, target_fn)
+        target_path = os.path.join(materi_path, target_fn)
 
         with open(target_path, "w", encoding="utf-8") as f:
             json.dump(doc_data, f, ensure_ascii=False, indent=2)
@@ -335,9 +334,7 @@ def process_and_save_knowledge_file(
 
 def delete_knowledge_file(file_name: str) -> tuple[bool, str]:
     """Delete a knowledge base JSON file from Materi folder and refresh index."""
-    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    materi_dir = os.path.join(root_dir, "Materi")
-    target_path = os.path.join(materi_dir, file_name)
+    target_path = os.path.join(materi_dir(), file_name)
 
     if not os.path.exists(target_path):
         return False, f"File '{file_name}' tidak ditemukan di folder Materi."

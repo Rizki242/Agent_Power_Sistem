@@ -13,6 +13,21 @@ from typing import Optional
 _KNOWLEDGE_CACHE = None
 
 
+def materi_dir() -> str:
+    """Root folder for knowledge-base JSON documents.
+
+    Resolved per call (like src.domain_measurements resolves MCSA_DATA_DIR)
+    so MATERI_DIR can redirect it at runtime - tests need this to avoid
+    writing/deleting real files under the repo's own Materi/ folder, the
+    same reasoning MCSA_DATA_DIR already gives the MCSA data path.
+    """
+    override = os.environ.get("MATERI_DIR")
+    if override:
+        return override
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(root_dir, "Materi")
+
+
 def _clean_text(text: Optional[str]) -> str:
     if not text:
         return ""
@@ -32,7 +47,7 @@ def load_knowledge_base(force_reload: bool = False) -> list[dict]:
         return _KNOWLEDGE_CACHE
 
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    materi_dir = os.path.join(root_dir, "Materi")
+    materi_path = materi_dir()
     data_root = os.environ.get("MCSA_DATA_DIR") or os.path.join(root_dir, "data")
     config_dir = os.path.join(data_root, "config")
     if not os.path.exists(config_dir):
@@ -42,11 +57,11 @@ def load_knowledge_base(force_reload: bool = False) -> list[dict]:
     documents = []
 
     # 1. Index Materi folder (.json files)
-    if os.path.exists(materi_dir):
-        for fn in sorted(os.listdir(materi_dir)):
+    if os.path.exists(materi_path):
+        for fn in sorted(os.listdir(materi_path)):
             if not fn.lower().endswith(".json"):
                 continue
-            path = os.path.join(materi_dir, fn)
+            path = os.path.join(materi_path, fn)
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     data = json.load(f)

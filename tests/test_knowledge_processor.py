@@ -1,16 +1,38 @@
 import json
 import os
+import shutil
+import tempfile
 import unittest
+from unittest import mock
 
 from src.knowledge_processor import (
     delete_knowledge_file,
     parse_markdown_file,
     process_and_save_knowledge_file,
 )
-from src.knowledge_retriever import search_knowledge_base
+from src.knowledge_retriever import load_knowledge_base, search_knowledge_base
 
 
 class KnowledgeProcessorTests(unittest.TestCase):
+    def setUp(self):
+        # process_and_save_knowledge_file/delete_knowledge_file write into
+        # whatever materi_dir() resolves to - without this, the round-trip
+        # test below would create and delete a file in the repo's real
+        # Materi/ folder and rebuild the real knowledge-base cache on top
+        # of it, exactly the live-data mutation this isolation is meant to
+        # rule out.
+        self.materi_root = tempfile.mkdtemp(prefix="pple_materi_")
+        self._env = mock.patch.dict(os.environ, {"MATERI_DIR": self.materi_root})
+        self._env.start()
+        load_knowledge_base(force_reload=True)
+
+    def tearDown(self):
+        self._env.stop()
+        shutil.rmtree(self.materi_root, ignore_errors=True)
+        # Restore the cache to the real Materi/ content for every test that
+        # runs after this one (e.g. tests/test_knowledge_retriever.py).
+        load_knowledge_base(force_reload=True)
+
     def test_parse_markdown_with_frontmatter(self):
         md_text = """---
 title: "SOP Pengujian Isolasi Motor"
