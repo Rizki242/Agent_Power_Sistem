@@ -269,6 +269,26 @@ def map_columns(domain: str, frame: pd.DataFrame) -> dict[str, str]:
     return mapping
 
 
+def _duplicate_columns(domain: str, frame: pd.DataFrame, mapping: dict[str, str]) -> list[str]:
+    """Columns that matched a known field/parameter but were excluded from
+    `mapping` because another column already claimed that canonical key -
+    distinct from a column matching nothing at all, so preview_upload can
+    tell the user the real reason instead of calling it unrecognized."""
+    specs = parameter_specs(domain)
+    duplicates: list[str] = []
+    for column in frame.columns:
+        col = str(column)
+        if col in mapping:
+            continue
+        normalised = _norm_column(column)
+        matched = any(
+            normalised in {_norm_column(alias) for alias in aliases} for aliases in IDENTITY_ALIASES.values()
+        ) or any(spec.matches(column) for spec in specs)
+        if matched:
+            duplicates.append(col)
+    return duplicates
+
+
 def wide_to_long(domain: str, frame: pd.DataFrame, source_file: str = "") -> list[dict[str, Any]]:
     """Explode a wide test-per-row frame into canonical long rows."""
     domain = canon_domain(domain)
@@ -308,7 +328,8 @@ def preview_upload(domain: str, file_name: str, content: bytes) -> dict[str, Any
     domain = canon_domain(domain)
     frame = read_upload(file_name, content)
     mapping = map_columns(domain, frame)
-    unmapped = [str(column) for column in frame.columns if str(column) not in mapping]
+    duplicate = _duplicate_columns(domain, frame, mapping)
+    unmapped = [str(column) for column in frame.columns if str(column) not in mapping and str(column) not in duplicate]
 
     long_rows = wide_to_long(domain, frame, source_file=file_name)
     valid, rejected = normalise_rows(domain, long_rows)
@@ -319,6 +340,7 @@ def preview_upload(domain: str, file_name: str, content: bytes) -> dict[str, Any
         "source_rows": int(len(frame)),
         "mapping": mapping,
         "unmapped_columns": unmapped,
+        "duplicate_columns": duplicate,
         "valid": valid,
         "rejected": rejected,
         "parameters_found": sorted({row["parameter"] for row in valid}),
@@ -356,6 +378,7 @@ def create_batch(domain: str, file_name: str, content: bytes, preview: dict[str,
         "rejected_rows": len(preview.get("rejected", [])),
         "mapping": preview.get("mapping", {}),
         "unmapped_columns": preview.get("unmapped_columns", []),
+        "duplicate_columns": preview.get("duplicate_columns", []),
         "rejected": preview.get("rejected", [])[:200],
         "audit_events": [{"action": "preview", "at": now.isoformat(timespec="seconds")}],
     }
@@ -471,7 +494,20 @@ def agent_input_from_measurements(domain: str, frame: pd.DataFrame) -> dict[str,
         if not key:
             continue
         value = row.get("value")
-        payload[key] = str(row.get("raw_value") or "") if pd.isna(value) else float(value)
+        if pd.isna(value):
+            # Qualitative reading (numeric=False parameter): use raw_value's
+            # text as-is. NaN is truthy in Python, so a plain `raw_value or
+            # ""` would let a missing raw_value (itself NaN, e.g. after a
+            # CSV round-trip through an empty cell) through as the literal
+            # string "nan" instead of being recognized as missing - omit the
+            # key entirely instead, the same way wide_to_long() already
+            # skips a missing value rather than storing a placeholder.
+            raw_value = row.get("raw_value")
+            if raw_value is None or (isinstance(raw_value, float) and pd.isna(raw_value)) or str(raw_value).strip() == "":
+                continue
+            payload[key] = str(raw_value)
+        else:
+            payload[key] = float(value)
 
     if domain == "VIBRASI" and "overall_rms" not in payload:
         # A per-point field sheet (1V/1H/1A.."6V"/"6H"/"6A") has no single

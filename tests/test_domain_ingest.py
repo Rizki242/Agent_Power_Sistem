@@ -167,6 +167,15 @@ class PreviewTests(IngestTestCase):
             ingest.preview_upload("VIBRASI", "laporan.docx", b"x")
         self.assertIn("tidak didukung", str(ctx.exception))
 
+    def test_a_duplicate_aliased_column_is_reported_as_duplicate_not_unmapped(self):
+        # Two columns both alias overall_rms (e.g. a copy-pasted template) -
+        # the second is dropped, but the reason shown to the user must say
+        # so, not claim the column was unrecognized.
+        frame = pd.DataFrame([{"equipment": "CWP 1A", "test_date": "2026-05-01", "overall_rms": 3.2, "velocity_rms_mm_s": 3.5}])
+        preview = ingest.preview_upload("VIBRASI", "uji.csv", self._csv(frame))
+        self.assertIn("velocity_rms_mm_s", preview["duplicate_columns"])
+        self.assertNotIn("velocity_rms_mm_s", preview["unmapped_columns"])
+
     def test_xlsx_upload_is_supported(self):
         frame = pd.DataFrame([{"equipment": "TRF-1", "test_date": "2026-05-01", "h2": 20}])
         buffer = io.BytesIO()
@@ -273,6 +282,27 @@ class AgentInputTests(IngestTestCase):
         # instead of the agent's built-in 2.2 mm/s example default.
         self.assertEqual(result["metrics"]["overall_rms"], 7.8)
         self.assertNotEqual(result["condition"], "Normal")
+
+    def test_a_missing_qualitative_reading_is_omitted_not_the_string_nan(self):
+        # A qualitative parameter (numeric=False) with no raw text recorded
+        # stores an empty raw_value, which comes back as float('nan') after
+        # a CSV round-trip (pd.read_csv treats an empty cell as NaN). NaN is
+        # truthy in Python, so a naive `raw_value or ""` would let it through
+        # as the literal string "nan" instead of treating it as missing.
+        dm.append_measurements("TRIBOLOGY", [
+            {"equipment": "TRF-1", "test_date": "2026-05-01", "parameter": "iso_cleanliness", "value": float("nan"), "raw_value": ""},
+        ])
+        frame = dm.filter_measurements("TRIBOLOGY", equipment="TRF-1")
+        payload = ingest.agent_input_from_measurements("TRIBOLOGY", frame)
+        self.assertNotIn("iso_cleanliness", payload)
+
+    def test_a_present_qualitative_reading_still_comes_through_as_text(self):
+        dm.append_measurements("TRIBOLOGY", [
+            {"equipment": "TRF-1", "test_date": "2026-05-01", "parameter": "iso_cleanliness", "value": float("nan"), "raw_value": "18/16/13"},
+        ])
+        frame = dm.filter_measurements("TRIBOLOGY", equipment="TRF-1")
+        payload = ingest.agent_input_from_measurements("TRIBOLOGY", frame)
+        self.assertEqual(payload["iso_cleanliness"], "18/16/13")
 
     def test_qualitative_reading_passes_through_as_text(self):
         dm.append_measurements("TRIBOLOGY", [

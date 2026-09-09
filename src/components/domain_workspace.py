@@ -175,6 +175,12 @@ def render_data_tab(st, config: DomainWorkspaceConfig) -> None:
                 "Kolom tidak dikenali dan akan diabaikan: " + ", ".join(preview["unmapped_columns"]),
                 icon=":material/warning:",
             )
+        if preview.get("duplicate_columns"):
+            st.warning(
+                "Kolom ini dikenali tapi diabaikan karena parameter yang sama sudah "
+                "diambil dari kolom lain: " + ", ".join(preview["duplicate_columns"]),
+                icon=":material/warning:",
+            )
         if preview["rejected"]:
             with st.expander(f"Lihat {len(preview['rejected'])} baris yang ditolak", expanded=False):
                 st.dataframe(pd.DataFrame(preview["rejected"]), hide_index=True, width="stretch")
@@ -407,11 +413,18 @@ def render_diagnosis_tab(st, config: DomainWorkspaceConfig) -> None:
         st.info("Tidak ada parameter terukur untuk equipment ini.")
         return
 
-    if config.domain == "VIBRASI" and "overall_rms" not in {
-        str(row).strip() for row in scoped["parameter"].dropna().unique().tolist()
-    }:
+    if (
+        config.domain == "VIBRASI"
+        and "overall_rms" in payload
+        and "overall_rms" not in {str(row).strip() for row in scoped["parameter"].dropna().unique().tolist()}
+    ):
+        # Only claim an automatic calculation happened when
+        # agent_input_from_measurements actually derived one (i.e. it found
+        # point readings to take the max of) - otherwise this would tell
+        # the engineer a number was computed while showing "-", when the
+        # agent is really falling back to its hardcoded example value.
         st.caption(
-            f":material/info: Overall RMS ({payload.get('overall_rms', '-')} mm/s) dihitung otomatis "
+            f":material/info: Overall RMS ({payload['overall_rms']} mm/s) dihitung otomatis "
             "sebagai nilai maksimum dari titik pengukuran (1V-6A) - tidak ada kolom overall pada data sumber."
         )
 

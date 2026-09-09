@@ -9,6 +9,8 @@ third/fourth time. Behavior is unchanged from the original.
 
 from typing import Any, Dict
 
+import pandas as pd
+
 
 def render_agent_result(st, result: Dict[str, Any], metric_labels: Dict[str, str]) -> None:
     """Render a standard specialist-agent result without unsafe actuation."""
@@ -48,7 +50,13 @@ def render_agent_result(st, result: Dict[str, Any], metric_labels: Dict[str, str
             # .astype(str) treatment src/pages/dashboard_page.py already
             # applies to its own mixed "Nilai" column.
             rows = [
-                {"Parameter": metric_labels.get(key, key), "Nilai": "" if value is None else str(value)}
+                {
+                    "Parameter": metric_labels.get(key, key),
+                    # pd.isna (not `value is None`) so a float NaN metric -
+                    # e.g. a ratio computed from a zero denominator - blanks
+                    # out too, instead of stringifying to the literal "nan".
+                    "Nilai": "" if isinstance(value, float) and pd.isna(value) else ("" if value is None else str(value)),
+                }
                 for key, value in (result.get("metrics") or {}).items()
             ]
             st.dataframe(rows, hide_index=True, width="stretch")

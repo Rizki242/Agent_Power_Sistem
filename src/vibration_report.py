@@ -37,6 +37,20 @@ POINT_KEYS = [f"pt{point}_{axis}" for point in range(1, 7) for axis in ("v", "h"
 POINT_HEADERS = [f"{point}{axis.upper()}" for point in range(1, 7) for axis in ("v", "h", "a")]
 SHOCK_PULSE_BEARINGS = (1, 2, 3, 4)
 
+# strftime("%B") depends on the OS/Python locale being set to id_ID, which
+# this app never does - it would silently print English month names
+# ("July") on an otherwise all-Indonesian plant form. A fixed lookup avoids
+# depending on locale being configured correctly wherever this runs.
+_BULAN_ID = {
+    1: "Januari", 2: "Februari", 3: "Maret", 4: "April", 5: "Mei", 6: "Juni",
+    7: "Juli", 8: "Agustus", 9: "September", 10: "Oktober", 11: "November", 12: "Desember",
+}
+
+
+def _format_bulan(period) -> str:
+    """'2024-07' Period -> 'Juli-24', independent of the runtime locale."""
+    return f"{_BULAN_ID[period.month]}-{period.year % 100:02d}"
+
 FORM_NUMBER = "FORM.JRG.F.05.001"
 FORM_ISSUED = "1 Sep 2016"
 FORM_REVISION = "00"
@@ -96,7 +110,7 @@ def monthly_overall_table(equipment: str, months: int = 3, end: Optional[date] =
         # Newest reading wins when a month holds more than one test.
         newest = scoped.sort_values("test_date").drop_duplicates(subset=["parameter"], keep="last")
         by_parameter = dict(zip(newest["parameter"], newest["value"]))
-        row = {"BULAN": period.strftime("%B-%y")}
+        row = {"BULAN": _format_bulan(period)}
         for key, header in zip(POINT_KEYS, POINT_HEADERS):
             value = by_parameter.get(key)
             row[header] = "" if value is None or pd.isna(value) else f"{float(value):.2f}".replace(".", ",")
@@ -224,7 +238,9 @@ def build_docx(equipment: str, end: Optional[date] = None) -> bytes:
     for label, value in identity:
         cells = table.add_row().cells
         cells[0].text = label
-        cells[1].text = str(value or "-")
+        # `value or "-"` would also collapse a genuine 0 (e.g. PM WEEK 0)
+        # to "-"; only treat None/empty-string as actually missing.
+        cells[1].text = "-" if value is None or value == "" else str(value)
 
     # --- machine specification (MOTOR | driven) --------------------------
     document.add_paragraph()

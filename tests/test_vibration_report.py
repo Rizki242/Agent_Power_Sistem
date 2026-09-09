@@ -114,7 +114,7 @@ class ReportTestCase(unittest.TestCase):
 class MonthlyTableTests(ReportTestCase):
     def test_one_row_per_month_newest_last(self):
         table = report.monthly_overall_table(self.EQUIPMENT)
-        self.assertEqual(list(table["BULAN"]), ["July-24", "August-24", "September-24"])
+        self.assertEqual(list(table["BULAN"]), ["Juli-24", "Agustus-24", "September-24"])
 
     def test_values_match_the_source_report_with_indonesian_decimals(self):
         table = report.monthly_overall_table(self.EQUIPMENT)
@@ -236,6 +236,13 @@ class DocxTests(ReportTestCase):
         # Photos and spectrum plots have no data source yet; the report must
         # say so rather than leave a silent gap.
         self.assertIn("belum tersedia di sistem", self._text())
+
+    def test_identity_table_keeps_a_genuine_zero_instead_of_dashing_it_out(self):
+        # `value or "-"` would treat a real 0 (e.g. PM WEEK 0, an unscheduled
+        # asset) as falsy and print "-" - it must print "0" instead.
+        with mock.patch.object(report, "find_asset", return_value={"pm_week": 0, "kks": "LJ10H"}):
+            text = self._text()
+        self.assertIn("0", text.split("PM WEEK", 1)[1].split("\n")[1])
 
     def test_document_builds_for_equipment_missing_from_the_asset_register(self):
         dm.append_measurements("VIBRASI", [
