@@ -499,8 +499,12 @@ def render_dashboard_page(
             fg = STATUS_BADGE_FG.get(str(v), STATUS_BADGE_FG["Unknown"])
             return f"background-color: {bg}; color: {fg}; font-weight: 700;"
 
+        # pandas >= 2.1 memakai Styler.map, versi lama masih Styler.applymap.
+        styler = table_df.style
+        style_cells = getattr(styler, "map", None) or styler.applymap
+
         st.dataframe(
-            table_df.style.map(_style_status_cell, subset=["Status"]),
+            style_cells(_style_status_cell, subset=["Status"]),
             width="stretch",
             hide_index=True,
         )

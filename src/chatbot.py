@@ -12,6 +12,11 @@ def _norm_code(text: str) -> str:
     return re.sub(r"[^A-Za-z0-9]", "", str(text or "")).upper()
 
 
+def _is_missing_value(value) -> bool:
+    """True jika nilai kosong atau placeholder NaN/None hasil pembacaan CSV."""
+    return str(value).strip().lower() in ("", "nan", "none")
+
+
 class MCSAChatbot:
     def __init__(self, df_latest: pd.DataFrame, df_all: Optional[pd.DataFrame] = None):
         self.df_latest = df_latest if df_latest is not None else pd.DataFrame()
@@ -215,7 +220,7 @@ class MCSAChatbot:
             param = row["Parameter"]
             val = str(row["Raw_Value"]).strip()
             unit = row["Unit"] if pd.notna(row.get("Unit")) else ""
-            if param != "Kondisi" and val and val != "nan":
+            if param != "Kondisi" and not _is_missing_value(val):
                 response += f"- {param}: **{val}** {unit}\n"
 
         # Historical trend comparison
@@ -228,7 +233,7 @@ class MCSAChatbot:
                     tp_rows = eq_hist[eq_hist["Parameter"] == tp]
                     if not tp_rows.empty:
                         tail_rows = tp_rows.sort_values("Date").tail(3)
-                        pts = [f"{pd.to_datetime(r['Date']).strftime('%b %y')}: {r['Raw_Value']}" for _, r in tail_rows.iterrows() if str(r.get("Raw_Value", "")).strip() != ""]
+                        pts = [f"{pd.to_datetime(r['Date']).strftime('%b %y')}: {r['Raw_Value']}" for _, r in tail_rows.iterrows() if not _is_missing_value(r.get("Raw_Value", ""))]
                         if pts:
                             response += f"- *{tp}*: " + " → ".join(pts) + "\n"
 

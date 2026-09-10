@@ -35,6 +35,29 @@ class ChatbotTests(unittest.TestCase):
         self.assertIn("NORMAL", response)
         self.assertIn("75", response)
 
+    def test_process_query_hides_nan_values(self):
+        df_latest = pd.DataFrame([
+            {"Equipment": "BC 20.1", "Parameter": "Kondisi", "Raw_Value": "Normal", "Date": "2026-05-01", "Unit_Name": "UNIT 1", "Voltage_Level": "380/400 V"},
+            {"Equipment": "BC 20.1", "Parameter": "Load", "Raw_Value": "nan", "Date": "2026-05-01", "Unit_Name": "UNIT 1", "Voltage_Level": "380/400 V"},
+            {"Equipment": "BC 20.1", "Parameter": "Bearing", "Raw_Value": "Normal", "Date": "2026-05-01", "Unit_Name": "UNIT 1", "Voltage_Level": "380/400 V"},
+        ])
+        df_all = pd.concat([
+            pd.DataFrame([
+                {"Equipment": "BC 20.1", "Parameter": "Load", "Raw_Value": "nan", "Date": "2026-03-01", "Unit_Name": "UNIT 1", "Voltage_Level": "380/400 V"},
+                {"Equipment": "BC 20.1", "Parameter": "Load", "Raw_Value": "None", "Date": "2026-04-01", "Unit_Name": "UNIT 1", "Voltage_Level": "380/400 V"},
+                {"Equipment": "BC 20.1", "Parameter": "Bearing", "Raw_Value": "nan", "Date": "2026-03-01", "Unit_Name": "UNIT 1", "Voltage_Level": "380/400 V"},
+                {"Equipment": "BC 20.1", "Parameter": "Bearing", "Raw_Value": "Normal", "Date": "2026-04-01", "Unit_Name": "UNIT 1", "Voltage_Level": "380/400 V"},
+            ]),
+            df_latest,
+        ], ignore_index=True)
+
+        response = MCSAChatbot(df_latest, df_all=df_all).process_query("Status BC 20.1")
+
+        self.assertNotIn("nan", response.lower())
+        self.assertNotIn("none", response.lower())
+        # Parameter yang benar-benar terukur tetap tampil.
+        self.assertIn("Bearing", response)
+
     def test_process_query_knowledge_sop(self):
         response = self.bot.process_query("bagaimana SOP pengukuran ATPOL?")
         self.assertIn("Referensi", response)
