@@ -136,11 +136,13 @@ from pple.api.specialist_router import router as specialist_router
 app.include_router(specialist_router)
 
 from pple.api.routers import (
+    agents_router,
     equipment_router,
     knowledge_router,
     vibration_router,
     work_orders_router,
 )
+app.include_router(agents_router)
 app.include_router(equipment_router)
 app.include_router(knowledge_router)
 app.include_router(vibration_router)
@@ -168,6 +170,15 @@ def refresh_data_cache():
 
 from pple.api.routers.equipment import set_data_frames_provider as set_equipment_data_frames_provider
 set_equipment_data_frames_provider(get_data_frames)
+
+from pple.api.routers.agents import (
+    set_data_frames_provider as set_agents_data_frames_provider,
+    plant_skill_learner,
+    env_rigger,
+    subagent_coordinator,
+    self_improver,
+)
+set_agents_data_frames_provider(get_data_frames)
 
 class ChatRequest(BaseModel):
     message: str
@@ -246,303 +257,6 @@ def calculate_rotorbar(req: RotorBarCalculateRequest):
         "assessment": res.get("Assessment", "Normal"),
         "max_sideband": res.get("Max Sideband"),
         "diagnostic_validity": res.get("Diagnostic Validity")
-    }
-
-from src.agents.subagent_coordinator import SubAgentCoordinator
-
-subagent_coordinator = SubAgentCoordinator()
-
-
-@app.get("/api/agents/specialists", response_model=SpecialistSubAgentsResponse)
-def get_specialist_subagents():
-    """List all registered specialist sub-agents with capability metadata and standards."""
-    return {
-        "specialists": subagent_coordinator.list_specialists(),
-        "total_count": len(subagent_coordinator.list_specialists()),
-        "status": "ALL_ONLINE"
-    }
-
-
-class MultiAgentCollaborateRequest(BaseModel):
-    equipment: str
-    query: Optional[str] = ""
-    custom_telemetry: Optional[Dict[str, Any]] = None
-
-
-@app.post("/api/agents/collaborate")
-def collaborate_subagents(req: MultiAgentCollaborateRequest):
-    """
-    Execute multi-agent collaborative diagnosis across specialist sub-agents
-    (Vibration, MCSA, DGA, PD, Tribology, Thermal, Fusion, Safety).
-    """
-    return subagent_coordinator.run_collaborative_diagnosis(
-        equipment=req.equipment,
-        query=req.query or f"Kolaborasi diagnosa kondisi {req.equipment}",
-        custom_telemetry=req.custom_telemetry
-    )
-
-
-from src.agents.continuous_learning import PowerPlantSkillLearner
-
-plant_skill_learner = PowerPlantSkillLearner()
-
-
-class TeachSkillRequest(BaseModel):
-    equipment: str
-    title: Optional[str] = ""
-    system: Optional[str] = ""
-    category: Optional[str] = "VIBRASI"
-    symptoms: List[str] = []
-    verified_root_cause: str
-    corrective_action_taken: str
-    lesson_learned: str
-    author: Optional[str] = "CBM Engineer PLTU Jeranjang"
-
-
-@app.get("/api/skills/learned-patterns")
-def get_learned_skill_patterns():
-    """Retrieve all dynamically learned technical disturbance patterns and lessons."""
-    skills = plant_skill_learner.load_learned_skills()
-    return {
-        "skills": skills,
-        "total_count": len(skills),
-        "status": "LEARNING_ACTIVE"
-    }
-
-
-@app.post("/api/skills/teach")
-def teach_agent_skill(req: TeachSkillRequest):
-    """Teach the agent a new verified failure signature, lesson learned, or disturbance finding."""
-    return plant_skill_learner.teach_agent(
-        equipment=req.equipment,
-        title=req.title,
-        system=req.system,
-        category=req.category,
-        symptoms=req.symptoms,
-        verified_root_cause=req.verified_root_cause,
-        corrective_action_taken=req.corrective_action_taken,
-        lesson_learned=req.lesson_learned,
-        author=req.author or "CBM Engineer PLTU Jeranjang"
-    )
-
-
-@app.get("/api/skills/benchmarks")
-def get_diagnostic_benchmarks():
-    """Run diagnostic benchmark suite across plant disturbance scenarios and compute accuracy score."""
-    return plant_skill_learner.run_benchmarks()
-
-
-from src.agents.self_improvement import RecursiveSelfImprover
-
-self_improver = RecursiveSelfImprover()
-
-
-class SelfImproveRequest(BaseModel):
-    max_iterations: Optional[int] = 6
-
-
-class RecordPredictionRequest(BaseModel):
-    equipment: str
-    predicted_mode: str
-    predicted_severity: int = 1
-    confidence: float = 0.8
-    actual_mode: Optional[str] = ""
-    actual_severity: Optional[int] = None
-
-
-@app.post("/api/agent/self-improve")
-def run_self_improvement_cycle(req: SelfImproveRequest):
-    """
-    Run one recursive self-improvement cycle:
-    measure accuracy -> propose weight tuning -> validate -> retain only if improved.
-    """
-    return self_improver.run_improvement_cycle(max_iterations=req.max_iterations)
-
-
-@app.get("/api/agent/improvement-status")
-def get_self_improvement_status():
-    """Report current generation, best score, weights, and prediction statistics of the learning engine."""
-    return self_improver.get_status()
-
-
-@app.post("/api/agent/predictions")
-def record_agent_prediction(req: RecordPredictionRequest):
-    """Record a diagnostic prediction (and optionally its verified outcome) for accuracy learning."""
-    entry = self_improver.record_prediction(
-        equipment=req.equipment,
-        predicted_mode=req.predicted_mode,
-        severity=req.predicted_severity,
-        confidence=req.confidence,
-    )
-    outcome = None
-    if req.actual_mode or req.actual_severity is not None:
-        outcome = self_improver.record_outcome(
-            prediction_id=entry["id"],
-            actual_mode=req.actual_mode or "",
-            actual_severity=req.actual_severity or 1,
-        )
-    return {"status": "success", "prediction": entry, "outcome": outcome}
-
-
-@app.post("/api/agent/learn-from-history")
-def learn_from_historical_data():
-    """Mine historical MCSA measurement data for degradation precursor patterns (data-driven lessons)."""
-    try:
-        df = load_mcsa_data(get_data_path("mcsa_updated.csv"))
-        if df is None or df.empty:
-            df = load_mcsa_data(get_data_path("Report MCSA.xls"))
-    except Exception as exc:
-        return {"status": "error", "message": f"Gagal memuat data historis: {exc}", "lessons_created": 0}
-    return self_improver.learn_from_history(df)
-
-
-from src.agents.env_harness import EnvRigger
-
-env_rigger = EnvRigger()
-
-
-class RiggerCycleRequest(BaseModel):
-    equipment: Optional[str] = "BFP 1A"
-
-
-@app.get("/api/learning/harness-status")
-def get_harness_status():
-    """Report active EnvHarness wrappers (Stage, Contract, Chain) and EnvRigger history."""
-    return env_rigger.get_status()
-
-
-@app.post("/api/learning/rigger-cycle")
-def execute_rigger_cycle(req: RiggerCycleRequest):
-    """
-    Run an automated EnvRigger Observe -> Diagnose -> Write -> Validate cycle,
-    customizing the environment to target agent weaknesses and recording new skills.
-    """
-    return plant_skill_learner.run_env_rigger_learning(equipment=req.equipment or "BFP 1A")
-
-
-@app.post("/api/learning/evaluate-harness")
-def evaluate_agent_on_harness():
-    """Evaluate diagnostic agent performance against wrapped composite EnvHarness environments."""
-    return plant_skill_learner.evaluate_env_harness()
-
-
-
-@app.post("/api/agent/chat")
-async def agent_chat(
-    request: Request,
-    message: Optional[str] = Form(None),
-    provider: Optional[str] = Form("gemini"),
-    model: Optional[str] = Form("gemini-2.5-flash"),
-    api_key: Optional[str] = Form(None),
-    file: Optional[UploadFile] = File(None)
-):
-    df_raw, df_latest = get_data_frames()
-    bot = MCSAChatbot(df_latest, df_all=df_raw)
-    
-    content_type = request.headers.get("content-type", "")
-    file_name = None
-    extra_file_context = ""
-    
-    if "application/json" in content_type:
-        body = await request.json()
-        msg_text = body.get("message", "")
-        prov = body.get("provider", "gemini")
-        mdl = body.get("model", "gemini-2.5-flash")
-        k = body.get("api_key")
-    else:
-        msg_text = message or ""
-        prov = provider or "gemini"
-        mdl = model or "gemini-2.5-flash"
-        k = api_key
-        if file and file.filename:
-            file_name = file.filename
-            file_bytes = await file.read()
-            extracted_text = extract_text_from_upload(file_bytes, file.filename)
-            extra_file_context = f"\n\n--- KONTEN DOKUMEN/FILE TERLAMPIR ({file.filename}) ---\n{extracted_text[:12000]}\n--- AKHIR DOKUMEN TERLAMPIR ---"
-
-    bot_reply = bot.process_query(msg_text) if msg_text else ""
-    if not bot_reply and file_name:
-        bot_reply = f"File `{file_name}` berhasil diterima. Silakan ajukan pertanyaan terkait dokumen ini."
-        
-    matched_eq = bot.last_matched_equipment
-
-    # Identify active specialist sub-agents
-    active_agent_keys = subagent_coordinator.identify_relevant_agents(msg_text, matched_eq)
-    all_specs = {s["domain"].lower(): s for s in subagent_coordinator.list_specialists()}
-    active_subagents = []
-    for k_agent in active_agent_keys:
-        for s_desc in subagent_coordinator.list_specialists():
-            if k_agent in s_desc["agent_id"] or k_agent == s_desc["domain"].lower():
-                active_subagents.append(s_desc)
-                break
-
-    # Safety Guardrail Check
-    safety_check = safety_guard.check_safety(msg_text)
-    if not safety_check["safe"]:
-        return {
-            "reply": safety_check["message"],
-            "matched_equipment": matched_eq,
-            "ai_enhanced": False,
-            "file_name": file_name,
-            "provider": prov,
-            "safety_blocked": True,
-            "active_subagents": active_subagents,
-            "subagent_traces": []
-        }
-
-    # Execute Multi-Agent Diagnostic Collaboration if equipment is recognized
-    subagent_traces = []
-    subagents_context = ""
-    if matched_eq:
-        try:
-            collab_result = subagent_coordinator.run_collaborative_diagnosis(matched_eq, msg_text)
-            subagent_traces = collab_result.get("subagent_traces", [])
-            subagents_context = (
-                f"Consolidated Health: {collab_result.get('consensus_health_index')}/100 ({collab_result.get('consensus_health_status')})\n"
-                f"Primary Failure Mode: {collab_result.get('consensus_failure_mode')} (Confidence: {collab_result.get('consensus_confidence', 0.9)*100:.0f}%)\n"
-                f"Estimated RUL: {collab_result.get('predictive_rul', {}).get('estimated_rul_days')} hari\n"
-            )
-            for t in subagent_traces:
-                subagents_context += f"• [{t['subagent']['name']}] ({t['status']}): {t['key_finding']}\n"
-        except Exception as e:
-            print(f"Sub-agent collaboration note: {e}")
-
-    resolved_key = resolve_provider_key(prov, k)
-    ai_enhanced = False
-    final_reply = bot_reply
-    
-    if resolved_key:
-        try:
-            assistant = MCSALLMAssistant(
-                enabled=True,
-                provider=prov or "gemini",
-                model=mdl or "gemini-2.5-flash",
-                api_key=resolved_key
-            )
-            if assistant.available:
-                ai_resp = assistant.enhance_answer(
-                    question=msg_text or f"Analisis isi dokumen {file_name}",
-                    rule_answer=bot_reply,
-                    df_context=df_latest,
-                    df_history=df_raw,
-                    include_knowledge=True,
-                    extra_file_context=extra_file_context,
-                    subagents_context=subagents_context
-                )
-                if ai_resp and len(ai_resp.strip()) > 10:
-                    final_reply = ai_resp
-                    ai_enhanced = True
-        except Exception as e:
-            print(f"LLM AI processing note: {e}")
-
-    return {
-        "reply": final_reply,
-        "matched_equipment": matched_eq,
-        "ai_enhanced": ai_enhanced,
-        "file_name": file_name,
-        "provider": prov,
-        "active_subagents": active_subagents,
-        "subagent_traces": subagent_traces
     }
 
 import tempfile

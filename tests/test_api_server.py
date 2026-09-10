@@ -90,6 +90,14 @@ class TestAPIServer(unittest.TestCase):
         self.assertIn("/api/equipment", routes)
         self.assertIn("/api/equipment/{equipment_name}", routes)
 
+    def test_agents_router_modular_ownership(self):
+        from pple.api.routers import agents_router
+        routes = [r.path for r in agents_router.routes]
+        self.assertIn("/api/agents/specialists", routes)
+        self.assertIn("/api/agents/collaborate", routes)
+        self.assertIn("/api/skills/learned-patterns", routes)
+        self.assertIn("/api/agent/chat", routes)
+
     def test_rotorbar_calculate(self):
         res = self.client.post("/api/rotorbar/calculate", json={"upper_sb": -40.0, "lower_sb": -42.0})
         self.assertEqual(res.status_code, 200)
