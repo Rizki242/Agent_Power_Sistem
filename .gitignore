@@ -60,3 +60,6 @@ debug_*.py
 # Preferensi LLM per-pengguna (provider/model pilihan, tanpa API key).
 # Ditulis ulang oleh halaman Settings, jadi bukan config bersama.
 data/MCSA/config/ai_settings.json
+
+# Scratch archives (mis. unduhan tooling) - jangan pernah masuk repo
+archive-*/
