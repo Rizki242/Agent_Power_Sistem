@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AIChatPanel from '../../components/AIChatPanel';
-import { StatusBadge, FilterBar, TabNavigation } from '../../components/common';
+import { StatusBadge, FilterBar, TabNavigation, ErrorState } from '../../components/common';
 import { DGASummaryCards, DGAGasTable, DuvalTriangleVisualizer, DGACalculator } from './components';
-import { apiFetch, apiUrl } from '../../api';
+import { apiFetch, apiUrl, parseApiError } from '../../api';
 
 // Selected transformer is driven by the route (/workspace/dga/:equipmentId),
 // same redesign as MCSAWorkspace (desaindakhir.md / docs/final.md Phase 25).
@@ -15,6 +15,7 @@ export default function DGAWorkspace() {
   // --- Transformers List State ---
   const [transformers, setTransformers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState(null);
   const [search, setSearch] = useState('');
   const [unitFilter, setUnitFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -23,6 +24,7 @@ export default function DGAWorkspace() {
   // --- Transformer Detail State ---
   const [trfDetail, setTrfDetail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [detailError, setDetailError] = useState(null);
   const [activeTab, setActiveTab] = useState('gases'); // 'gases' | 'duval' | 'history' | 'simulator'
 
   // --- Upload / Manual Simulator State ---
@@ -38,17 +40,26 @@ export default function DGAWorkspace() {
   useEffect(() => {
     if (!selectedId) {
       setTrfDetail(null);
+      setDetailError(null);
       return;
     }
     setLoadingDetail(true);
+    setDetailError(null);
     apiFetch(apiUrl(`/api/dga/transformers/${encodeURIComponent(selectedId)}`))
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          throw err;
+        }
+        return res.json();
+      })
       .then(data => {
         setTrfDetail(data);
         setLoadingDetail(false);
       })
       .catch(err => {
         console.error('Gagal memuat detail trafo:', err);
+        setDetailError(err);
         setLoadingDetail(false);
       });
   }, [selectedId]);
@@ -56,13 +67,20 @@ export default function DGAWorkspace() {
   // --- Fetch Transformers ---
   const fetchTransformers = useCallback(() => {
     setLoading(true);
+    setListError(null);
     let url = apiUrl('/api/dga/transformers?');
     if (unitFilter !== 'ALL') url += `unit=${encodeURIComponent(unitFilter)}&`;
     if (statusFilter !== 'ALL') url += `status=${encodeURIComponent(statusFilter)}&`;
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
     apiFetch(url)
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          throw err;
+        }
+        return res.json();
+      })
       .then(data => {
         setTransformers(data.transformers || []);
         setLoading(false);
@@ -72,6 +90,7 @@ export default function DGAWorkspace() {
       })
       .catch(err => {
         console.error('Gagal mengambil data trafo:', err);
+        setListError(err);
         setLoading(false);
       });
   }, [unitFilter, statusFilter, search, selectedId, goToTransformer]);
@@ -195,6 +214,17 @@ export default function DGAWorkspace() {
                   {loading ? (
                     <tr>
                       <td colSpan="6" className="py-8 text-center text-muted">Memuat data transformator...</td>
+                    </tr>
+                  ) : listError ? (
+                    <tr>
+                      <td colSpan="6" className="p-4">
+                        <ErrorState
+                          title="Gagal Mengambil Data Trafo"
+                          message={listError.message}
+                          correlationId={listError.correlationId}
+                          onRetry={fetchTransformers}
+                        />
+                      </td>
                     </tr>
                   ) : transformers.length === 0 ? (
                     <tr>

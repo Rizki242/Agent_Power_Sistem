@@ -23,15 +23,30 @@ function targetsApiBackend(target) {
  * VITE_API_KEY diisi. Menerima path ('/api/health') maupun URL penuh hasil
  * apiUrl(), supaya pemanggil lama cukup berganti nama fungsi.
  */
-export function apiFetch(target, options = {}) {
-  if (!API_KEY || !targetsApiBackend(target)) {
-    return fetch(target, options);
-  }
-
-  const headers = new Headers(options.headers || {});
-  if (!headers.has('X-API-Key')) {
+export async function apiFetch(target, options = {}) {
+  let headers = new Headers(options.headers || {});
+  if (API_KEY && targetsApiBackend(target) && !headers.has('X-API-Key')) {
     headers.set('X-API-Key', API_KEY);
   }
 
   return fetch(target, { ...options, headers });
+}
+
+/**
+ * Extracts normalized error message and correlation ID from backend response envelopes.
+ */
+export async function parseApiError(response) {
+  const correlationId = response.headers?.get('X-Correlation-ID') || response.headers?.get('X-Request-ID') || null;
+  let message = `Request gagal dengan status ${response.status}`;
+  try {
+    const data = await response.json();
+    if (data?.error?.message) {
+      message = data.error.message;
+    } else if (data?.detail) {
+      message = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+    }
+  } catch {
+    // Non-JSON response
+  }
+  return { message, correlationId, status: response.status };
 }
