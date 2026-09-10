@@ -26,6 +26,12 @@ from src.ppt_generator import create_ppt
 
 router = APIRouter(prefix="/api", tags=["reports", "reliability"])
 
+from pple.api.schemas.reliability import (
+    AssessmentReportResponse,
+    FleetReliabilityResponse,
+    FusionDiagnosisResponse,
+    UploadResponse,
+)
 from pple.application import (
     DiagnoseEquipmentUseCase,
     FleetReliabilityUseCase,
@@ -80,7 +86,7 @@ class DiagnoseSimRequest(BaseModel):
     thermal: Optional[Dict[str, Any]] = None
 
 
-@router.post("/upload/dga")
+@router.post("/upload/dga", response_model=UploadResponse)
 async def upload_dga(file: UploadFile = File(...)):
     try:
         # Simpan file Excel sementara
@@ -121,7 +127,7 @@ async def upload_dga(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/upload/vibration")
+@router.post("/upload/vibration", response_model=UploadResponse)
 async def upload_vibration(file: UploadFile = File(...)):
     return {
         "status": "success",
@@ -152,19 +158,19 @@ def generate_ppt_report(equipment_name: Optional[str] = None):
 # --- AI O&M RELIABILITY COMMAND CENTER ENDPOINTS ---
 
 
-@router.get("/reliability/fleet")
+@router.get("/reliability/fleet", response_model=FleetReliabilityResponse)
 def get_fleet_reliability_summary():
     _, df_latest = get_data_frames()
     return fleet_use_case.get_fleet_summary(df_latest)
 
 
-@router.get("/reliability/fusion/{equipment_name}")
+@router.get("/reliability/fusion/{equipment_name}", response_model=FusionDiagnosisResponse)
 def get_equipment_fusion_diagnosis(equipment_name: str):
     _, df_latest = get_data_frames()
     return diagnose_use_case.diagnose_from_mcsa_dataset(equipment_name, df_latest)
 
 
-@router.post("/reliability/diagnose")
+@router.post("/reliability/diagnose", response_model=FusionDiagnosisResponse)
 def simulate_multi_modal_diagnosis(req: DiagnoseSimRequest):
     return diagnose_use_case.diagnose_from_inputs(
         equipment=req.equipment,
@@ -179,10 +185,11 @@ def simulate_multi_modal_diagnosis(req: DiagnoseSimRequest):
     )
 
 
-@router.get("/reports/assessment/{equipment}")
+@router.get("/reports/assessment/{equipment}", response_model=AssessmentReportResponse)
 def get_equipment_assessment_report(equipment: str):
     try:
         return assessment_report_use_case.generate_report(equipment)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 

@@ -123,6 +123,9 @@ class TestAPIServer(unittest.TestCase):
         self.assertIn("health_summary", data)
         self.assertIn("fleet_health_average", data)
         self.assertIn("total_assets", data)
+        self.assertIsInstance(data["total_assets"], int)
+        self.assertIsInstance(data["fleet_health_average"], (int, float))
+        self.assertIsInstance(data["health_summary"], dict)
 
     def test_fusion_diagnosis_endpoint(self):
         res = self.client.get("/api/reliability/fusion/BFP%201A")
@@ -131,6 +134,8 @@ class TestAPIServer(unittest.TestCase):
         self.assertEqual(data.get("equipment"), "BFP 1A")
         self.assertIn("health_index", data)
         self.assertIn("health_status", data)
+        self.assertIsInstance(data["health_index"], (int, float))
+        self.assertIn(data["health_status"], {"HEALTHY", "WATCH", "WARNING", "ALERT", "CRITICAL"})
 
     def test_simulate_multi_modal_diagnosis_endpoint(self):
         res = self.client.post("/api/reliability/diagnose", json={
@@ -141,6 +146,9 @@ class TestAPIServer(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         data = res.json()
         self.assertEqual(data.get("equipment"), "BFP 1A")
+        self.assertIn("health_index", data)
+        self.assertIsInstance(data["health_index"], (int, float))
+
 
     def test_upload_vibration_placeholder_endpoint(self):
         res = self.client.post(
