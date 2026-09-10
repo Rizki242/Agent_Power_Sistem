@@ -137,6 +137,7 @@ app.include_router(specialist_router)
 
 from pple.api.routers import (
     agents_router,
+    core_router,
     equipment_router,
     knowledge_router,
     reports_router,
@@ -144,6 +145,7 @@ from pple.api.routers import (
     work_orders_router,
 )
 app.include_router(agents_router)
+app.include_router(core_router)
 app.include_router(equipment_router)
 app.include_router(knowledge_router)
 app.include_router(reports_router)
@@ -170,6 +172,9 @@ def refresh_data_cache():
     _cached_latest_df = None
     return get_data_frames()
 
+from pple.api.routers.core import set_data_frames_provider as set_core_data_frames_provider
+set_core_data_frames_provider(get_data_frames)
+
 from pple.api.routers.equipment import set_data_frames_provider as set_equipment_data_frames_provider
 set_equipment_data_frames_provider(get_data_frames)
 
@@ -185,84 +190,6 @@ from pple.api.routers.agents import (
 )
 set_agents_data_frames_provider(get_data_frames)
 
-class ChatRequest(BaseModel):
-    message: str
-    provider: Optional[str] = "gemini"
-    model: Optional[str] = "gemini-2.5-flash"
-    api_key: Optional[str] = None
-
-class RotorBarCalculateRequest(BaseModel):
-    upper_sb: float
-    lower_sb: float
-    health_index: Optional[float] = None
-    se_fund: Optional[float] = None
-    se_harm: Optional[float] = None
-
-
-class MateriSearchRequest(BaseModel):
-    query: str = Field(..., min_length=1)
-
-@app.get("/api/health", response_model=HealthResponse)
-def health_check():
-    return {"status": "ok", "app": "MCSA Assistant API v2.0"}
-
-@app.get("/api/summary", response_model=SummaryResponse)
-def get_summary():
-    _, df_latest = get_data_frames()
-    if df_latest.empty:
-        return {
-            "total_equipment": 0,
-            "counts": {"Normal": 0, "Alarm": 0, "High": 0, "Standby": 0},
-            "units": [],
-            "voltages": [],
-            "dates": []
-        }
-    
-    cond_rows = df_latest[df_latest["Parameter"] == "Kondisi"] if "Parameter" in df_latest.columns else pd.DataFrame()
-    counts = {"Normal": 0, "Alarm": 0, "High": 0, "Standby": 0}
-    if not cond_rows.empty:
-        v_counts = cond_rows["Raw_Value"].astype(str).str.strip().str.capitalize().value_counts().to_dict()
-        for k, v in v_counts.items():
-            if k in counts:
-                counts[k] = int(v)
-            else:
-                counts["Normal"] += int(v)
-    
-    units = sorted([str(u) for u in df_latest["Unit_Name"].dropna().unique() if str(u).strip()]) if "Unit_Name" in df_latest.columns else []
-    voltages = sorted([str(v) for v in df_latest["Voltage_Level"].dropna().unique() if str(v).strip()]) if "Voltage_Level" in df_latest.columns else []
-    
-    dates = []
-    if "Date" in df_latest.columns:
-        dates = sorted([str(d)[:10] for d in df_latest["Date"].dropna().unique() if str(d).strip()], reverse=True)
-
-    total_eq = len(df_latest["Equipment"].dropna().unique()) if "Equipment" in df_latest.columns else 0
-
-    return {
-        "total_equipment": total_eq,
-        "counts": counts,
-        "units": units,
-        "voltages": voltages,
-        "dates": dates
-    }
-
-@app.post("/api/rotorbar/calculate", response_model=RotorBarCalculationResponse)
-def calculate_rotorbar(req: RotorBarCalculateRequest):
-    res = evaluate_rotorbar({
-        "Upper Sideband": req.upper_sb,
-        "Lower Sideband": req.lower_sb,
-        "Rotorbar Health": req.health_index,
-        "Se Fund": req.se_fund,
-        "Se Harm": req.se_harm
-    })
-    return {
-        "upper_sb": req.upper_sb,
-        "lower_sb": req.lower_sb,
-        "severity_level": res.get("Level", 1),
-        "status": res.get("Status", "Normal"),
-        "assessment": res.get("Assessment", "Normal"),
-        "max_sideband": res.get("Max Sideband"),
-        "diagnostic_validity": res.get("Diagnostic Validity")
-    }
 
 if __name__ == "__main__":
     import uvicorn

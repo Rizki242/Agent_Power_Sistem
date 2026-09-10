@@ -98,6 +98,13 @@ class TestAPIServer(unittest.TestCase):
         self.assertIn("/api/skills/learned-patterns", routes)
         self.assertIn("/api/agent/chat", routes)
 
+    def test_core_router_modular_ownership(self):
+        from pple.api.routers import core_router
+        routes = [r.path for r in core_router.routes]
+        self.assertIn("/api/health", routes)
+        self.assertIn("/api/summary", routes)
+        self.assertIn("/api/rotorbar/calculate", routes)
+
     def test_reports_router_modular_ownership(self):
         from pple.api.routers import reports_router
         routes = [r.path for r in reports_router.routes]
