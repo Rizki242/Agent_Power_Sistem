@@ -13,7 +13,7 @@ import {
   PDParameterGrid,
   PDAssessmentPanel,
 } from './components';
-import { apiUrl } from '../../api';
+import { apiFetch, apiUrl } from '../../api';
 
 // Selected sample is driven by the route (/workspace/partial_discharge/:equipmentId),
 // same redesign as the other five workspaces (desaindakhir.md / docs/final.md
@@ -52,7 +52,7 @@ export default function PDWorkspace() {
       return;
     }
     setLoadingDetail(true);
-    fetch(apiUrl(`/api/pd/samples/${encodeURIComponent(selectedSampleId)}`))
+    apiFetch(apiUrl(`/api/pd/samples/${encodeURIComponent(selectedSampleId)}`))
       .then(res => res.json())
       .then(data => {
         setSampleDetail(data);
@@ -68,7 +68,7 @@ export default function PDWorkspace() {
   useEffect(() => {
     if (!selectedSampleId || activeTab !== 'assessment') return;
     setLoadingAssessment(true);
-    fetch(apiUrl(`/api/pd/samples/${encodeURIComponent(selectedSampleId)}/assessment`))
+    apiFetch(apiUrl(`/api/pd/samples/${encodeURIComponent(selectedSampleId)}/assessment`))
       .then(res => res.json())
       .then(data => {
         setAssessment(data);
@@ -88,7 +88,7 @@ export default function PDWorkspace() {
     if (statusFilter !== 'ALL') url += `status=${encodeURIComponent(statusFilter)}&`;
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
-    fetch(url)
+    apiFetch(url)
       .then(res => res.json())
       .then(data => {
         setSamples(data.samples || []);
@@ -105,7 +105,7 @@ export default function PDWorkspace() {
 
   // --- Fetch Summary ---
   useEffect(() => {
-    fetch(apiUrl('/api/pd/summary'))
+    apiFetch(apiUrl('/api/pd/summary'))
       .then(res => res.json())
       .then(data => setSummary(data))
       .catch(() => {});

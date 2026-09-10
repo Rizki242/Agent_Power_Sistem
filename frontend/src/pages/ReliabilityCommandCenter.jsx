@@ -6,7 +6,7 @@ import {
   SpecialistAgentStatus,
   AnomalyTimeline
 } from '../components/fusion';
-import { apiUrl } from '../api';
+import { apiFetch, apiUrl } from '../api';
 
 export default function ReliabilityCommandCenter() {
   const [fleetData, setFleetData] = useState(null);
@@ -27,7 +27,7 @@ export default function ReliabilityCommandCenter() {
     setSelectedEq(eqName);
     setLoadingDetail(true);
     setWoSuccessMsg('');
-    fetch(apiUrl(`/api/reliability/fusion/${encodeURIComponent(eqName)}`))
+    apiFetch(apiUrl(`/api/reliability/fusion/${encodeURIComponent(eqName)}`))
       .then(res => res.json())
       .then(data => {
         setFusionDetail(data);
@@ -42,7 +42,7 @@ export default function ReliabilityCommandCenter() {
   // Fetch fleet summary
   useEffect(() => {
     setLoadingFleet(true);
-    fetch(apiUrl('/api/reliability/fleet'))
+    apiFetch(apiUrl('/api/reliability/fleet'))
       .then(res => res.json())
       .then(data => {
         setFleetData(data);
@@ -62,7 +62,7 @@ export default function ReliabilityCommandCenter() {
     setCollabLoading(true);
     setCollabModalOpen(true);
     try {
-      const res = await fetch(apiUrl('/api/agents/collaborate'), {
+      const res = await apiFetch(apiUrl('/api/agents/collaborate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ equipment: target, query: `Diagnosa kolaboratif menyeluruh ${target}` })
@@ -79,7 +79,7 @@ export default function ReliabilityCommandCenter() {
 
   const handleCreateWorkOrder = async (eqName) => {
     try {
-      const res = await fetch(apiUrl('/api/workorders/generate'), {
+      const res = await apiFetch(apiUrl('/api/workorders/generate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ equipment: eqName })

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AIChatPanel from '../components/AIChatPanel';
 import { KPICard } from '../components/common';
 import { HealthDistributionGauge, AssetHealthMatrix } from '../components/health';
-import { apiUrl } from '../api';
+import { apiFetch, apiUrl } from '../api';
 
 export default function AssetHealth() {
   const [summary, setSummary] = useState(null);
@@ -11,9 +11,9 @@ export default function AssetHealth() {
 
   useEffect(() => {
     Promise.all([
-      fetch(apiUrl('/api/summary')).then(res => res.json()),
-      fetch(apiUrl('/api/equipment?status=Alarm')).then(res => res.json()),
-      fetch(apiUrl('/api/equipment?status=High')).then(res => res.json())
+      apiFetch(apiUrl('/api/summary')).then(res => res.json()),
+      apiFetch(apiUrl('/api/equipment?status=Alarm')).then(res => res.json()),
+      apiFetch(apiUrl('/api/equipment?status=High')).then(res => res.json())
     ])
       .then(([sumData, alarmData, highData]) => {
         setSummary(sumData);

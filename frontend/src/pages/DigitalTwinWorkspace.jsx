@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AIChatPanel from '../components/AIChatPanel';
-import { apiUrl } from '../api';
+import { apiFetch, apiUrl } from '../api';
 
 export default function DigitalTwinWorkspace() {
   const [selectedNode, setSelectedNode] = useState('BFP 1A');
@@ -40,7 +40,7 @@ export default function DigitalTwinWorkspace() {
   const loadNodeDetail = (nodeId) => {
     setSelectedNode(nodeId);
     setLoadingDetail(true);
-    fetch(apiUrl(`/api/reliability/fusion/${encodeURIComponent(nodeId)}`))
+    apiFetch(apiUrl(`/api/reliability/fusion/${encodeURIComponent(nodeId)}`))
       .then(res => res.json())
       .then(data => {
         setNodeDetail(data);

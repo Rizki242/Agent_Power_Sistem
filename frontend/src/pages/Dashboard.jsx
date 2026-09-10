@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import AIChatPanel from '../components/AIChatPanel';
-import { apiUrl } from '../api';
+import { apiFetch, apiUrl } from '../api';
 import { HowItWorksModal } from '../components/common';
 
 export default function Dashboard() {
@@ -14,7 +14,7 @@ export default function Dashboard() {
   const [guideOpen, setGuideOpen] = useState(false);
 
   useEffect(() => {
-    fetch(apiUrl('/api/summary'))
+    apiFetch(apiUrl('/api/summary'))
       .then(res => res.json())
       .then(data => {
         setSummary(data);

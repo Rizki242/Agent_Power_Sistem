@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { WorkOrderSummaryCards, WorkOrderTable, WorkOrderDetailCard } from '../components/workorder';
-import { apiUrl } from '../api';
+import { apiFetch, apiUrl } from '../api';
 
 export default function WorkOrderCenter() {
   const [workOrders, setWorkOrders] = useState([]);
@@ -10,7 +10,7 @@ export default function WorkOrderCenter() {
 
   const fetchWorkOrders = () => {
     setLoading(true);
-    fetch(apiUrl('/api/workorders'))
+    apiFetch(apiUrl('/api/workorders'))
       .then(res => res.json())
       .then(data => {
         setWorkOrders(data.work_orders || []);
@@ -32,7 +32,7 @@ export default function WorkOrderCenter() {
   const handleAction = async (action) => {
     if (!selectedWO) return;
     try {
-      const res = await fetch(apiUrl('/api/workorders/approve'), {
+      const res = await apiFetch(apiUrl('/api/workorders/approve'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

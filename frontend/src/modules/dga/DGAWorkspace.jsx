@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AIChatPanel from '../../components/AIChatPanel';
 import { StatusBadge, FilterBar, TabNavigation } from '../../components/common';
 import { DGASummaryCards, DGAGasTable, DuvalTriangleVisualizer, DGACalculator } from './components';
-import { apiUrl } from '../../api';
+import { apiFetch, apiUrl } from '../../api';
 
 // Selected transformer is driven by the route (/workspace/dga/:equipmentId),
 // same redesign as MCSAWorkspace (desaindakhir.md / docs/final.md Phase 25).
@@ -41,7 +41,7 @@ export default function DGAWorkspace() {
       return;
     }
     setLoadingDetail(true);
-    fetch(apiUrl(`/api/dga/transformers/${encodeURIComponent(selectedId)}`))
+    apiFetch(apiUrl(`/api/dga/transformers/${encodeURIComponent(selectedId)}`))
       .then(res => res.json())
       .then(data => {
         setTrfDetail(data);
@@ -61,7 +61,7 @@ export default function DGAWorkspace() {
     if (statusFilter !== 'ALL') url += `status=${encodeURIComponent(statusFilter)}&`;
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
-    fetch(url)
+    apiFetch(url)
       .then(res => res.json())
       .then(data => {
         setTransformers(data.transformers || []);
@@ -78,7 +78,7 @@ export default function DGAWorkspace() {
 
   // --- Fetch Summary ---
   useEffect(() => {
-    fetch(apiUrl('/api/dga/summary'))
+    apiFetch(apiUrl('/api/dga/summary'))
       .then(res => res.json())
       .then(data => setSummary(data))
       .catch(() => {});
@@ -99,7 +99,7 @@ export default function DGAWorkspace() {
     formData.append("file", file);
 
     try {
-      const res = await fetch(apiUrl('/api/upload/dga'), {
+      const res = await apiFetch(apiUrl('/api/upload/dga'), {
         method: 'POST',
         body: formData
       });

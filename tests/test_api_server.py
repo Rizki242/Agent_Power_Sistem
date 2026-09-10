@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 
 import api_server
 import pple.api.router as pple_api_router
+import pple.api.security as security
 from api_server import app
 from pple.engineering.equipment_modules import EquipmentModuleStore
 from src.agents.continuous_learning import PowerPlantSkillLearner
@@ -319,6 +320,87 @@ class TestPartialDischargeEndpoints(unittest.TestCase):
     def test_assessment_404_for_unknown_sample(self):
         res = self.client.get("/api/pd/samples/NOT-A-SAMPLE/assessment")
         self.assertEqual(res.status_code, 404)
+
+
+class TestAPISecurity(unittest.TestCase):
+    """CORS + API key opsional (pple/api/security.py).
+
+    Middleware membaca PPLE_API_KEY per-request, jadi app yang sama bisa
+    diuji dalam mode terbuka maupun terkunci tanpa membangun ulang app.
+    """
+
+    PROTECTED_PATH = "/api/summary"
+
+    def setUp(self):
+        self.client = TestClient(app)
+
+    def _with_key(self, key):
+        return patch.dict(os.environ, {security.API_KEY_ENV: key})
+
+    def test_auth_disabled_by_default_keeps_api_open(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop(security.API_KEY_ENV, None)
+            self.assertFalse(security.auth_enabled())
+            self.assertEqual(self.client.get(self.PROTECTED_PATH).status_code, 200)
+
+    def test_request_without_key_is_rejected_when_enabled(self):
+        with self._with_key("rahasia-123"):
+            res = self.client.get(self.PROTECTED_PATH)
+            self.assertEqual(res.status_code, 401)
+            self.assertIn("X-API-Key", res.json()["detail"])
+
+    def test_request_with_wrong_key_is_rejected(self):
+        with self._with_key("rahasia-123"):
+            res = self.client.get(self.PROTECTED_PATH, headers={"X-API-Key": "salah"})
+            self.assertEqual(res.status_code, 401)
+
+    def test_request_with_api_key_header_passes(self):
+        with self._with_key("rahasia-123"):
+            res = self.client.get(self.PROTECTED_PATH, headers={"X-API-Key": "rahasia-123"})
+            self.assertEqual(res.status_code, 200)
+
+    def test_request_with_bearer_token_passes(self):
+        with self._with_key("rahasia-123"):
+            res = self.client.get(
+                self.PROTECTED_PATH, headers={"Authorization": "Bearer rahasia-123"}
+            )
+            self.assertEqual(res.status_code, 200)
+
+    def test_health_stays_public_for_monitoring(self):
+        with self._with_key("rahasia-123"):
+            self.assertEqual(self.client.get("/api/health").status_code, 200)
+
+    def test_v2_routes_are_protected_too(self):
+        # Middleware, bukan Depends per-route: router v2 ikut terlindungi.
+        with self._with_key("rahasia-123"):
+            self.assertEqual(self.client.get("/api/v2/modules").status_code, 401)
+            res = self.client.get("/api/v2/modules", headers={"X-API-Key": "rahasia-123"})
+            self.assertEqual(res.status_code, 200)
+
+    def test_default_cors_origins_are_localhost_only(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop(security.CORS_ORIGINS_ENV, None)
+            origins = security.resolve_cors_origins()
+            self.assertNotIn("*", origins)
+            self.assertIn("http://localhost:5173", origins)
+            self.assertTrue(security.cors_allow_credentials(origins))
+
+    def test_cors_origins_read_from_env(self):
+        with patch.dict(
+            os.environ,
+            {security.CORS_ORIGINS_ENV: "https://pdm.pln.co.id/, https://ops.pln.co.id"},
+        ):
+            self.assertEqual(
+                security.resolve_cors_origins(),
+                ["https://pdm.pln.co.id", "https://ops.pln.co.id"],
+            )
+
+    def test_wildcard_origin_disables_credentials(self):
+        # allow_origins=["*"] + allow_credentials=True ditolak browser.
+        with patch.dict(os.environ, {security.CORS_ORIGINS_ENV: "*"}):
+            origins = security.resolve_cors_origins()
+            self.assertEqual(origins, ["*"])
+            self.assertFalse(security.cors_allow_credentials(origins))
 
 
 if __name__ == "__main__":

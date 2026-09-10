@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AIChatPanel from '../components/AIChatPanel';
 import { KnowledgeCardGrid, KnowledgeDocumentViewer } from '../components/knowledge';
-import { apiUrl } from '../api';
+import { apiFetch, apiUrl } from '../api';
 
 export default function KnowledgeWorkspace() {
   const [activeTab, setActiveTab] = useState('learning'); // 'learning' | 'standards'
@@ -43,7 +43,7 @@ export default function KnowledgeWorkspace() {
 
   const fetchArticles = () => {
     setLoading(true);
-    fetch(apiUrl('/api/materi'))
+    apiFetch(apiUrl('/api/materi'))
       .then(res => res.json())
       .then(data => {
         const materials = data.materi || data.materials || [];
@@ -61,7 +61,7 @@ export default function KnowledgeWorkspace() {
 
   const fetchLearnedSkills = () => {
     setLoadingSkills(true);
-    fetch(apiUrl('/api/skills/learned-patterns'))
+    apiFetch(apiUrl('/api/skills/learned-patterns'))
       .then(res => res.json())
       .then(data => {
         setLearnedSkills(data.skills || []);
@@ -77,7 +77,7 @@ export default function KnowledgeWorkspace() {
   };
 
   const fetchBenchmarks = () => {
-    fetch(apiUrl('/api/skills/benchmarks'))
+    apiFetch(apiUrl('/api/skills/benchmarks'))
       .then(res => res.json())
       .then(data => {
         setBenchmarks(data);
@@ -89,7 +89,7 @@ export default function KnowledgeWorkspace() {
 
   const fetchHarnessStatus = () => {
     setLoadingHarness(true);
-    fetch(apiUrl('/api/learning/harness-status'))
+    apiFetch(apiUrl('/api/learning/harness-status'))
       .then(res => res.json())
       .then(data => {
         setHarnessStatus(data);
@@ -112,7 +112,7 @@ export default function KnowledgeWorkspace() {
     setRunningRigger(true);
     setRiggerResult(null);
     try {
-      const res = await fetch(apiUrl('/api/learning/rigger-cycle'), {
+      const res = await apiFetch(apiUrl('/api/learning/rigger-cycle'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ equipment: riggerEq })
@@ -132,7 +132,7 @@ export default function KnowledgeWorkspace() {
   const handleEvaluateHarness = async () => {
     setEvaluatingHarness(true);
     try {
-      const res = await fetch(apiUrl('/api/learning/evaluate-harness'), {
+      const res = await apiFetch(apiUrl('/api/learning/evaluate-harness'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -156,7 +156,7 @@ export default function KnowledgeWorkspace() {
 
     setSearching(true);
     try {
-      const res = await fetch(apiUrl('/api/materi/search'), {
+      const res = await apiFetch(apiUrl('/api/materi/search'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: searchQuery })
@@ -180,7 +180,7 @@ export default function KnowledgeWorkspace() {
     setTeachSuccessMsg('');
 
     try {
-      const res = await fetch(apiUrl('/api/skills/teach'), {
+      const res = await apiFetch(apiUrl('/api/skills/teach'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

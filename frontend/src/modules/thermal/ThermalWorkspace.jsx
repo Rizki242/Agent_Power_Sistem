@@ -7,7 +7,7 @@ import {
   ThermalDetailCard,
   ThermalSeverityMatrix
 } from './components';
-import { apiUrl } from '../../api';
+import { apiFetch, apiUrl } from '../../api';
 
 // Selected inspection point is driven by the route
 // (/workspace/thermal/:equipmentId), same redesign as MCSAWorkspace
@@ -46,7 +46,7 @@ export default function ThermalWorkspace() {
     if (statusFilter !== 'ALL') url += `status=${encodeURIComponent(statusFilter)}&`;
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
-    fetch(url)
+    apiFetch(url)
       .then(res => res.json())
       .then(data => {
         setInspections(data.inspections || []);
@@ -62,7 +62,7 @@ export default function ThermalWorkspace() {
   }, [unitFilter, statusFilter, search, selectedId, goToPoint]);
 
   useEffect(() => {
-    fetch(apiUrl('/api/thermal/summary'))
+    apiFetch(apiUrl('/api/thermal/summary'))
       .then(res => res.json())
       .then(data => setSummary(data))
       .catch(() => {});

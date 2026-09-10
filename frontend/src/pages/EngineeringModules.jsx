@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBadge, LoadingSpinner, EmptyState } from '../components/common';
-import { apiUrl } from '../api';
+import { apiFetch, apiUrl } from '../api';
 
 const STATUS_DISPLAY = {
   ACTIVE: 'NORMAL',
@@ -17,8 +17,8 @@ export default function EngineeringModules() {
 
   useEffect(() => {
     Promise.all([
-      fetch(apiUrl('/api/v2/modules')).then(res => res.json()),
-      fetch(apiUrl('/api/v2/module-load-report')).then(res => res.json()),
+      apiFetch(apiUrl('/api/v2/modules')).then(res => res.json()),
+      apiFetch(apiUrl('/api/v2/module-load-report')).then(res => res.json()),
     ])
       .then(([modulesData, reportData]) => {
         setModules(modulesData.modules || []);

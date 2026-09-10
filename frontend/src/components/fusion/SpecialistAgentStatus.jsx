@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { apiUrl } from '../../api';
+import { apiFetch, apiUrl } from '../../api';
 
 export default function SpecialistAgentStatus({ onSelectAgent }) {
   const [specialists, setSpecialists] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(apiUrl('/api/agents/specialists'))
+    apiFetch(apiUrl('/api/agents/specialists'))
       .then(res => res.json())
       .then(data => {
         setSpecialists(data.specialists || []);

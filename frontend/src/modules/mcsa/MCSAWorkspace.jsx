@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AIChatPanel from '../../components/AIChatPanel';
-import { apiUrl } from '../../api';
+import { apiFetch, apiUrl } from '../../api';
 
 // Equipment selection is driven by the route (/workspace/mcsa/:equipmentId)
 // rather than internal state, so the sidebar tree and this page can never
@@ -35,7 +35,7 @@ export default function MCSAWorkspace() {
   const [summary, setSummary] = useState(null);
 
   useEffect(() => {
-    fetch(apiUrl('/api/summary'))
+    apiFetch(apiUrl('/api/summary'))
       .then(res => res.json())
       .then(data => setSummary(data))
       .catch(() => {});
@@ -53,7 +53,7 @@ export default function MCSAWorkspace() {
       return;
     }
     setLoadingDetail(true);
-    fetch(apiUrl(`/api/equipment/${encodeURIComponent(selectedEquipment)}`))
+    apiFetch(apiUrl(`/api/equipment/${encodeURIComponent(selectedEquipment)}`))
       .then(res => res.json())
       .then(data => {
         setEqDetail(data);
@@ -73,7 +73,7 @@ export default function MCSAWorkspace() {
     if (statusFilter !== 'ALL') url += `status=${encodeURIComponent(statusFilter)}&`;
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
-    fetch(url)
+    apiFetch(url)
       .then(res => res.json())
       .then(data => {
         setEquipmentList(data.equipment || []);
@@ -101,7 +101,7 @@ export default function MCSAWorkspace() {
     e.preventDefault();
     setCalcLoading(true);
     try {
-      const res = await fetch(apiUrl('/api/rotorbar/calculate'), {
+      const res = await apiFetch(apiUrl('/api/rotorbar/calculate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

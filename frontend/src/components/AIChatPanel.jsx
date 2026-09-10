@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { API_BASE_URL, apiUrl } from '../api';
+import { API_BASE_URL, apiFetch, apiUrl } from '../api';
 
 export default function AIChatPanel({ defaultCollapsed = false }) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
@@ -183,12 +183,12 @@ export default function AIChatPanel({ defaultCollapsed = false }) {
         formData.append("provider", provider);
         formData.append("model", model);
 
-        res = await fetch(apiUrl('/api/agent/chat'), {
+        res = await apiFetch(apiUrl('/api/agent/chat'), {
           method: 'POST',
           body: formData
         });
       } else {
-        res = await fetch(apiUrl('/api/agent/chat'), {
+        res = await apiFetch(apiUrl('/api/agent/chat'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 

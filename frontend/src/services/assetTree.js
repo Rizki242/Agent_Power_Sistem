@@ -20,7 +20,7 @@
 
 // api.js stays at src/api.js for now - existing pages import it from there
 // and moving it is a mechanical rename left for the full cutover, not this slice.
-import { apiUrl } from '../api';
+import { apiFetch, apiUrl } from '../api';
 
 // Which existing endpoint backs each engineering module's equipment list,
 // and how to read equipment id/name/unit/status out of its response shape.
@@ -86,7 +86,7 @@ function unitSortIndex(unitName) {
 }
 
 async function fetchModuleList() {
-  const res = await fetch(apiUrl('/api/v2/modules'));
+  const res = await apiFetch(apiUrl('/api/v2/modules'));
   if (!res.ok) throw new Error(`Gagal memuat daftar module (${res.status})`);
   const data = await res.json();
   return data.modules || [];
@@ -96,7 +96,7 @@ async function fetchModuleEquipment(moduleId) {
   const source = DOMAIN_EQUIPMENT_SOURCES[moduleId];
   if (!source) return [];
   try {
-    const res = await fetch(apiUrl(source.url));
+    const res = await apiFetch(apiUrl(source.url));
     if (!res.ok) return [];
     const data = await res.json();
     const rows = data[source.listKey] || [];

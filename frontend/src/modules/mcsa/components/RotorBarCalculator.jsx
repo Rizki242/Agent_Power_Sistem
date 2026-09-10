@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StatusBadge } from '../../../components/common';
-import { apiUrl } from '../../../api';
+import { apiFetch, apiUrl } from '../../../api';
 
 export default function RotorBarCalculator({ onClose }) {
   const [calcUpper, setCalcUpper] = useState(-52.0);
@@ -13,7 +13,7 @@ export default function RotorBarCalculator({ onClose }) {
     e.preventDefault();
     setCalcLoading(true);
     try {
-      const res = await fetch(apiUrl('/api/rotorbar/calculate'), {
+      const res = await apiFetch(apiUrl('/api/rotorbar/calculate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

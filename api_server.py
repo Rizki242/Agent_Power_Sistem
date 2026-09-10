@@ -157,19 +157,38 @@ def _save_work_orders(work_orders: List[Dict[str, Any]]) -> str:
     _work_orders_db = list(work_orders)
     return path
 
+from pple.api.security import (
+    api_key_middleware,
+    cors_allow_credentials,
+    resolve_cors_origins,
+    startup_warning,
+)
+
 app = FastAPI(
     title="MCSA Assistant API",
     description="REST API & AI Agent backend for Motor Current Signature Analysis",
     version="2.0.0"
 )
 
+# Keamanan HTTP (pple/api/security.py): origin CORS dari PPLE_CORS_ORIGINS
+# dengan default hanya localhost, plus API key opsional lewat PPLE_API_KEY.
+# Tanpa PPLE_API_KEY perilaku lama dipertahankan supaya pemakaian lokal
+# dan Streamlit tidak ikut berubah.
+_cors_origins = resolve_cors_origins()
+
+app.middleware("http")(api_key_middleware)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=cors_allow_credentials(_cors_origins),
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_startup_warning = startup_warning()
+if _startup_warning:
+    print(_startup_warning)
 
 # PPLE V2 (docs/final.md Phase 24): additive /api/v2/* routes exposing the
 # pple.engineering module registry. Does not affect any /api/* route above.

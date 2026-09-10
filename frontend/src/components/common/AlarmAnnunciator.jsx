@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiUrl } from '../../api';
+import { apiFetch, apiUrl } from '../../api';
 
 export default function AlarmAnnunciator() {
   const navigate = useNavigate();
@@ -11,8 +11,8 @@ export default function AlarmAnnunciator() {
 
   const fetchAlarms = () => {
     Promise.all([
-      fetch(apiUrl('/api/equipment?status=High')).then(r => r.json()),
-      fetch(apiUrl('/api/equipment?status=Alarm')).then(r => r.json())
+      apiFetch(apiUrl('/api/equipment?status=High')).then(r => r.json()),
+      apiFetch(apiUrl('/api/equipment?status=Alarm')).then(r => r.json())
     ])
       .then(([highData, alarmData]) => {
         const combined = [

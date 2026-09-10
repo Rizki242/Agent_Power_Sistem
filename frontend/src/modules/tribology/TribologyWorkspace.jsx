@@ -8,7 +8,7 @@ import {
   WearDebrisPanel,
   OilConditionCalculator
 } from './components';
-import { apiUrl } from '../../api';
+import { apiFetch, apiUrl } from '../../api';
 
 // Selected sample is driven by the route (/workspace/tribology/:equipmentId),
 // same redesign as MCSAWorkspace (desaindakhir.md / docs/final.md Phase 25).
@@ -43,7 +43,7 @@ export default function TribologyWorkspace() {
       return;
     }
     setLoadingDetail(true);
-    fetch(apiUrl(`/api/tribology/samples/${encodeURIComponent(selectedSampleId)}`))
+    apiFetch(apiUrl(`/api/tribology/samples/${encodeURIComponent(selectedSampleId)}`))
       .then(res => res.json())
       .then(data => {
         setSampleDetail(data);
@@ -64,7 +64,7 @@ export default function TribologyWorkspace() {
     if (oilTypeFilter !== 'ALL') url += `oil_type=${encodeURIComponent(oilTypeFilter)}&`;
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
-    fetch(url)
+    apiFetch(url)
       .then(res => res.json())
       .then(data => {
         setSamples(data.samples || []);
@@ -81,7 +81,7 @@ export default function TribologyWorkspace() {
 
   // --- Fetch Summary ---
   useEffect(() => {
-    fetch(apiUrl('/api/tribology/summary'))
+    apiFetch(apiUrl('/api/tribology/summary'))
       .then(res => res.json())
       .then(data => setSummary(data))
       .catch(() => {});

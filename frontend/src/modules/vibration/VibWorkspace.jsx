@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AIChatPanel from '../../components/AIChatPanel';
-import { apiUrl } from '../../api';
+import { apiFetch, apiUrl } from '../../api';
 
 // Selected asset is driven by the route (/workspace/vibration/:equipmentId),
 // same redesign as MCSAWorkspace (desaindakhir.md / docs/final.md Phase 25).
@@ -51,7 +51,7 @@ export default function VibWorkspace() {
     if (statusFilter !== 'ALL') url += `status=${encodeURIComponent(statusFilter)}&`;
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
-    fetch(url)
+    apiFetch(url)
       .then(res => res.json())
       .then(data => {
         setTestsList(data.tests || []);
@@ -78,7 +78,7 @@ export default function VibWorkspace() {
       return;
     }
     setLoadingDetail(true);
-    fetch(apiUrl(`/api/vibration/equipment/${encodeURIComponent(selectedAssetId)}`))
+    apiFetch(apiUrl(`/api/vibration/equipment/${encodeURIComponent(selectedAssetId)}`))
       .then(res => res.json())
       .then(data => {
         setEqDetail(data);
@@ -98,7 +98,7 @@ export default function VibWorkspace() {
     if (statusFilter !== 'ALL') url += `status=${encodeURIComponent(statusFilter)}&`;
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
-    fetch(url)
+    apiFetch(url)
       .then(res => res.json())
       .then(data => {
         setEquipmentList(data.equipment || []);
@@ -115,7 +115,7 @@ export default function VibWorkspace() {
 
   // --- Fetch summary ---
   useEffect(() => {
-    fetch(apiUrl('/api/vibration/summary'))
+    apiFetch(apiUrl('/api/vibration/summary'))
       .then(res => res.json())
       .then(data => setSummary(data))
       .catch(() => {});
