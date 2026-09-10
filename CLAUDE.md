@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Windows-first repo; `.bat` scripts create/use `.venv` with Python 3.11 (`py -3.11`, with fallbacks). A `.venv` mixed across Python versions (cp311 vs cp313) triggers the dependency-repair screen in `app.py` — recreate the venv if that appears.
 
 - Full build + test: `.\build.bat` (venv → pip install → frontend build → unit tests → `verify_app.py`)
+- CI: `.github/workflows/ci.yml` mirrors those steps on push/PR - unit tests + `verify_app.py` + `pple` smoke test on windows-latest (the required job), the same Python steps on ubuntu-latest as an advisory `continue-on-error` job to catch Linux/case-sensitivity issues before deployment, plus oxlint + Vite build for the frontend.
 - Unit tests (must run from repo root; tests import `from src...` and `from api_server import app`):
   `python -m unittest discover -s . -p "test_*.py"`
 - Single test: `python -m unittest tests.test_chatbot` or `python -m unittest tests.test_chatbot.ChatbotTests.test_fuzzy_match_equipment`

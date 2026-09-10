@@ -1,0 +1,99 @@
+name: CI
+
+# Menjalankan langkah yang sama dengan build.bat: unit test, verify_app.py,
+# lalu lint + build frontend. Dijalankan untuk setiap push dan pull request.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    # Windows-first, sama seperti build.bat dan cara repo ini dipakai
+    # sehari-hari, supaya hasil CI cocok dengan hasil di mesin developer.
+    name: Test (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Unit tests
+        # Harus dari root repo: test mengimpor `from src...` dan
+        # `from api_server import app`.
+        run: python -m unittest discover -s . -p "test_*.py"
+
+      - name: Functional verification
+        run: python verify_app.py
+
+      - name: pple CLI smoke test
+        # Bentuk `python -m` dipakai supaya tidak bergantung pada lokasi
+        # console script di PATH runner; `pip install -e .` di atas sudah
+        # memverifikasi pendaftaran entry point-nya.
+        run: |
+          python -m pple.cli.main status
+          python -m pple.cli.main module list
+          python -m pple.cli.main doctor
+
+  python-linux:
+    # Advisory: deployment berjalan di Linux (filesystem case-sensitive),
+    # sementara pengembangan di Windows. Job ini memunculkan masalah
+    # portabilitas lebih awal tanpa memblokir merge. Naikkan jadi wajib
+    # (hapus continue-on-error) begitu sudah hijau stabil.
+    name: Test (Linux, advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Unit tests
+        run: python -m unittest discover -s . -p "test_*.py"
+
+      - name: Functional verification
+        run: python verify_app.py
+
+  frontend:
+    name: Lint & build frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm --prefix frontend ci
+
+      - name: Lint (oxlint)
+        run: npm --prefix frontend run lint
+
+      - name: Build
+        run: npm --prefix frontend run build
