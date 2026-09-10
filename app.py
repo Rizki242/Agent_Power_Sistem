@@ -1,7 +1,9 @@
-import streamlit as st
+from importlib import import_module
 import os
 import sys
 import traceback
+
+import streamlit as st
 
 
 def _fatal_dependency_error(dep_name: str, exc: BaseException) -> "None":
@@ -51,290 +53,341 @@ except BaseException as exc:
     _fatal_dependency_error("plotly", exc)
 
 try:
-    from src.data_loader import (
-        audit_mcsa_dataframe,
-        fix_mcsa_dataframe,
-        get_data_path,
-        get_folder_metadata,
-        get_latest_data,
-        filter_mcsa_data,
-        load_mcsa_data,
-        load_nameplate_csv,
-        save_mcsa_data,
+    from src.components.mcsa_page_context import (
+        load_mcsa_base_context,
+        page_requires_mcsa_data,
+        page_uses_mcsa_filters,
+        prepare_mcsa_filtered_context,
+        render_non_filter_sidebar,
     )
-    from src.docx_parser import parse_all_reports_with_report
-    from src.ppt_generator import create_ppt
-    from src.docx_generator import create_docx
-    from src.equipment_canon import (
-        build_master_norm_maps,
-        canon_unit_name,
-        canon_voltage_level,
-        load_equipment_master,
-        norm_equipment,
-    )
-    from src.standby import compute_standby
-    from src.components.sidebar import render_sidebar, render_sidebar_brand
-    from src.pages.agent_dashboard_page import render_agent_dashboard_page
-    from src.pages.asset_registry_page import render_asset_registry_page
-    from src.pages.asset_reports_page import render_asset_reports_page
-    from src.pages.chatbot_page import render_chatbot_page
-    from src.pages.condition_control_page import render_condition_control_page
-    from src.pages.dashboard_page import render_dashboard_page
-    from src.pages.data_management_page import render_data_management_page
-    from src.pages.dga_page import render_dga_page
-    from src.pages.materi_page import render_materi_page
-    from src.pages.placeholder_page import render_placeholder_page
-    from src.pages.quality_page import render_quality_check_page
-    from src.pages.report_page import render_ppt_page, render_word_page
-    from src.pages.pd_page import render_pd_page
-    from src.pages.settings_page import render_settings_page
-    from src.pages.sync_word_page import render_sync_word_page
-    from src.pages.thermal_page import render_thermal_page
-    from src.pages.tribology_page import render_tribology_page
-    from src.pages.vibration_page import render_vibration_page
+    from src.components.sidebar import render_sidebar_brand
 except BaseException as exc:
     _fatal_dependency_error("modul internal (src/*)", exc)
-from typing import Optional
-from datetime import datetime
 
-# Page Config
+
 st.set_page_config(page_title="MCSA Dashboard & Chatbot", layout="wide")
-
-# Data Loading
-@st.cache_data(show_spinner=False)
-def _load_data_cached(excel_path: str, excel_mtime_key: Optional[float], csv_mtime_key: Optional[float]):
-    return load_mcsa_data(excel_path)
-
-def _get_data_key():
-    file_path = get_data_path('Report MCSA.xls')
-    csv_path = os.path.join(os.path.dirname(file_path), 'mcsa_updated.csv')
-    try:
-        excel_mtime = os.path.getmtime(file_path) if os.path.exists(file_path) else None
-    except Exception:
-        excel_mtime = None
-    try:
-        csv_mtime = os.path.getmtime(csv_path) if os.path.exists(csv_path) else None
-    except Exception:
-        csv_mtime = None
-    return file_path, excel_mtime, csv_mtime
-
-
-def load_data():
-    file_path, excel_mtime, csv_mtime = _get_data_key()
-    df_loaded = _load_data_cached(file_path, excel_mtime, csv_mtime)
-    return df_loaded.copy()
-
-if 'data_changed' not in st.session_state:
-    st.session_state.data_changed = False
-
-_file_path, _excel_mtime, _csv_mtime = _get_data_key()
-_data_key = (_file_path, _excel_mtime, _csv_mtime)
-
-if st.session_state.get('_mcsa_data_key') != _data_key:
-    df = load_data()
-    if df.empty:
-        st.error("Gagal memuat data atau file tidak ditemukan.")
-        st.stop()
-
-    df['Date'] = pd.to_datetime(df.get('Date', pd.NaT), errors='coerce')
-    _min_date = df['Date'].min()
-    _max_date = df['Date'].max()
-    if pd.isna(_min_date) or pd.isna(_max_date):
-        min_date = datetime.now().date()
-        max_date = datetime.now().date()
-    else:
-        min_date = _min_date.date()
-        max_date = _max_date.date()
-
-    df_latest_all = get_latest_data(df)
-    st.session_state['_mcsa_data_key'] = _data_key
-    st.session_state['_mcsa_df'] = df
-    st.session_state['_mcsa_df_latest_all'] = df_latest_all
-    st.session_state['_mcsa_min_date'] = min_date
-    st.session_state['_mcsa_max_date'] = max_date
-else:
-    df = st.session_state.get('_mcsa_df')
-    df_latest_all = st.session_state.get('_mcsa_df_latest_all')
-    min_date = st.session_state.get('_mcsa_min_date')
-    max_date = st.session_state.get('_mcsa_max_date')
-
-if df is None or df_latest_all is None or min_date is None or max_date is None:
-    st.error("Cache data tidak valid. Silakan refresh aplikasi.")
-    st.stop()
-
-st.session_state["_mcsa_available_dates"] = df["Date"].dropna().tolist()
 render_sidebar_brand(st)
 
-# Nav destinations, grouped to match docs/desain.png's target information
-# architecture. Each entry is a closure so it can be built now and reference
-# variables (df_latest_augmented, filtered_df, ...) that this script only
-# finishes computing further down - Python resolves those names at call time,
-# and .run() is only invoked at the very end of the script.
 PAGES = {}
+mcsa_base = None
+mcsa_filtered = None
+
+
+def _load_page_symbol(module_name: str, symbol_name: str):
+    """Import a page dependency only when its navigation entry is active."""
+    try:
+        module = import_module(module_name)
+        symbol = getattr(module, symbol_name)
+    except Exception as exc:
+        st.error("Halaman ini gagal dimuat. Halaman lain tetap dapat digunakan.")
+        st.caption(f"Modul: {module_name} · Komponen: {symbol_name}")
+        st.exception(exc)
+        st.stop()
+    return symbol
+
+
+def _require_base_context():
+    if mcsa_base is None:
+        raise RuntimeError("Halaman ini membutuhkan context data MCSA.")
+    return mcsa_base
+
+
+def _require_filtered_context():
+    if mcsa_filtered is None:
+        raise RuntimeError("Halaman ini membutuhkan filter data MCSA.")
+    return mcsa_filtered
 
 
 def _agent_dashboard_entry():
+    render_agent_dashboard_page = _load_page_symbol(
+        "src.pages.agent_dashboard_page", "render_agent_dashboard_page"
+    )
+    context = _require_base_context()
     render_agent_dashboard_page(
         st,
-        df_latest_all=df_latest_all,
+        df_latest_all=context.df_latest_all,
         mcsa_page=PAGES.get("mcsa"),
     )
 
 
 def _dashboard_entry():
+    render_dashboard_page = _load_page_symbol(
+        "src.pages.dashboard_page", "render_dashboard_page"
+    )
+    base = _require_base_context()
+    context = _require_filtered_context()
     render_dashboard_page(
         st,
-        df=df,
-        df_latest=df_latest,
-        df_latest_all=df_latest_all,
-        filtered_df=filtered_df,
-        df_month=df_month,
-        date_start=date_start,
-        date_end=date_end,
-        sel_unit=sel_unit,
-        sel_volt=sel_volt,
-        sel_equipment=sel_equipment,
-        standby_enabled=standby_enabled,
-        standby_report=standby_report,
-        eq_master_df=eq_master_df,
-        master_norm_to_unit=master_norm_to_unit,
-        master_norm_to_volt=master_norm_to_volt,
+        df=base.df,
+        df_latest=context.df_latest,
+        df_latest_all=base.df_latest_all,
+        filtered_df=context.filtered_df,
+        df_month=context.df_month,
+        date_start=context.date_start,
+        date_end=context.date_end,
+        sel_unit=context.sel_unit,
+        sel_volt=context.sel_volt,
+        sel_equipment=context.sel_equipment,
+        standby_enabled=context.standby_enabled,
+        standby_report=context.standby_report,
+        eq_master_df=context.eq_master_df,
+        master_norm_to_unit=context.master_norm_to_unit,
+        master_norm_to_volt=context.master_norm_to_volt,
         materi_page=PAGES.get("materi"),
     )
 
 
 def _data_management_entry():
+    render_data_management_page = _load_page_symbol(
+        "src.pages.data_management_page", "render_data_management_page"
+    )
+    context = _require_base_context()
     render_data_management_page(
         st,
-        df=df,
-        df_latest_all=df_latest_all,
-        edit_mode=bool(st.session_state.get('edit_mode', False)),
+        df=context.df,
+        df_latest_all=context.df_latest_all,
+        edit_mode=bool(st.session_state.get("edit_mode", False)),
     )
 
 
 def _sync_word_entry():
+    render_sync_word_page = _load_page_symbol(
+        "src.pages.sync_word_page", "render_sync_word_page"
+    )
+    data_loader = import_module("src.data_loader")
+    parse_all_reports_with_report = _load_page_symbol(
+        "src.docx_parser", "parse_all_reports_with_report"
+    )
+    context = _require_base_context()
     render_sync_word_page(
         st,
-        df=df,
-        edit_mode=bool(st.session_state.get('edit_mode', False)),
-        get_data_path=get_data_path,
-        get_folder_metadata=get_folder_metadata,
+        df=context.df,
+        edit_mode=bool(st.session_state.get("edit_mode", False)),
+        get_data_path=data_loader.get_data_path,
+        get_folder_metadata=data_loader.get_folder_metadata,
         parse_all_reports_with_report=parse_all_reports_with_report,
-        save_mcsa_data=save_mcsa_data,
-        load_mcsa_data=load_mcsa_data,
+        save_mcsa_data=data_loader.save_mcsa_data,
+        load_mcsa_data=data_loader.load_mcsa_data,
         dashboard_page=PAGES.get("mcsa"),
     )
 
 
 def _quality_entry():
+    render_quality_check_page = _load_page_symbol(
+        "src.pages.quality_page", "render_quality_check_page"
+    )
+    data_loader = import_module("src.data_loader")
+    parse_all_reports_with_report = _load_page_symbol(
+        "src.docx_parser", "parse_all_reports_with_report"
+    )
     render_quality_check_page(
         st,
-        get_data_path=get_data_path,
-        get_folder_metadata=get_folder_metadata,
+        get_data_path=data_loader.get_data_path,
+        get_folder_metadata=data_loader.get_folder_metadata,
         parse_all_reports_with_report=parse_all_reports_with_report,
     )
 
 
 def _asset_registry_entry():
+    render_asset_registry_page = _load_page_symbol(
+        "src.pages.asset_registry_page", "render_asset_registry_page"
+    )
     render_asset_registry_page(
         st,
-        edit_mode=bool(st.session_state.get('edit_mode', False)),
+        edit_mode=bool(st.session_state.get("edit_mode", False)),
     )
 
 
 def _asset_reports_entry():
+    render_asset_reports_page = _load_page_symbol(
+        "src.pages.asset_reports_page", "render_asset_reports_page"
+    )
     render_asset_reports_page(st)
 
 
-def _materi_entry():
-    render_materi_page(st)
-
-
-def _condition_control_entry():
-    render_condition_control_page(st)
-
-
 def _vibration_entry():
+    render_vibration_page = _load_page_symbol(
+        "src.pages.vibration_page", "render_vibration_page"
+    )
     render_vibration_page(st)
 
 
 def _dga_entry():
+    render_dga_page = _load_page_symbol("src.pages.dga_page", "render_dga_page")
     render_dga_page(st)
 
 
 def _tribology_entry():
+    render_tribology_page = _load_page_symbol(
+        "src.pages.tribology_page", "render_tribology_page"
+    )
     render_tribology_page(st)
 
 
 def _thermal_entry():
+    render_thermal_page = _load_page_symbol(
+        "src.pages.thermal_page", "render_thermal_page"
+    )
     render_thermal_page(st)
 
 
 def _pd_entry():
+    render_pd_page = _load_page_symbol("src.pages.pd_page", "render_pd_page")
     render_pd_page(st)
 
 
-def _chatbot_entry():
-    render_chatbot_page(st, df_latest_augmented=df_latest_augmented, df_all=df)
+def _condition_control_entry():
+    render_condition_control_page = _load_page_symbol(
+        "src.pages.condition_control_page", "render_condition_control_page"
+    )
+    render_condition_control_page(st)
 
 
-def _ppt_entry():
-    render_ppt_page(st, filtered_df, df_latest, sel_unit, sel_volt, date_start, date_end, create_ppt,
-                    history_df=df_period)
-
-
-def _word_entry():
-    render_word_page(st, filtered_df, df_latest, sel_unit, sel_volt, date_start, date_end, standby_report, create_docx)
+def _materi_entry():
+    render_materi_page = _load_page_symbol(
+        "src.pages.materi_page", "render_materi_page"
+    )
+    render_materi_page(st)
 
 
 def _settings_entry():
+    render_settings_page = _load_page_symbol(
+        "src.pages.settings_page", "render_settings_page"
+    )
     render_settings_page(st)
 
 
+def _chatbot_entry():
+    render_chatbot_page = _load_page_symbol(
+        "src.pages.chatbot_page", "render_chatbot_page"
+    )
+    context = _require_base_context()
+    render_chatbot_page(
+        st,
+        df_latest_augmented=context.df_latest_all,
+        df_all=context.df,
+    )
+
+
+def _ppt_entry():
+    render_ppt_page = _load_page_symbol("src.pages.report_page", "render_ppt_page")
+    create_ppt = _load_page_symbol("src.ppt_generator", "create_ppt")
+    context = _require_filtered_context()
+    render_ppt_page(
+        st,
+        context.filtered_df,
+        context.df_latest,
+        context.sel_unit,
+        context.sel_volt,
+        context.date_start,
+        context.date_end,
+        create_ppt,
+        history_df=context.df_period,
+    )
+
+
+def _word_entry():
+    render_word_page = _load_page_symbol("src.pages.report_page", "render_word_page")
+    create_docx = _load_page_symbol("src.docx_generator", "create_docx")
+    context = _require_filtered_context()
+    render_word_page(
+        st,
+        context.filtered_df,
+        context.df_latest,
+        context.sel_unit,
+        context.sel_volt,
+        context.date_start,
+        context.date_end,
+        context.standby_report,
+        create_docx,
+    )
+
+
 def _reliability_entry():
-    render_placeholder_page(st, "Reliability", "Fusion engine (health index, risk, RUL, work order) kini terintegrasi di halaman Agent Dashboard pada menu Command Center.")
+    render_placeholder_page = _load_page_symbol(
+        "src.pages.placeholder_page", "render_placeholder_page"
+    )
+    render_placeholder_page(
+        st,
+        "Reliability",
+        "Fusion engine (health index, risk, RUL, work order) kini terintegrasi "
+        "di halaman Agent Dashboard pada menu Command Center.",
+    )
 
 
 def _work_orders_entry():
-    render_placeholder_page(st, "Work Orders", "Integrasi Work Order / EAM belum tersedia di Streamlit UI.")
+    render_placeholder_page = _load_page_symbol(
+        "src.pages.placeholder_page", "render_placeholder_page"
+    )
+    render_placeholder_page(
+        st,
+        "Work Orders",
+        "Integrasi Work Order / EAM belum tersedia di Streamlit UI.",
+    )
 
 
 def _help_entry():
-    render_placeholder_page(st, "Help & Support", "Dokumentasi dan bantuan akan hadir di rilis mendatang.")
+    render_placeholder_page = _load_page_symbol(
+        "src.pages.placeholder_page", "render_placeholder_page"
+    )
+    render_placeholder_page(
+        st,
+        "Help & Support",
+        "Dokumentasi dan bantuan akan hadir di rilis mendatang.",
+    )
 
 
-PAGES["agent_dashboard"] = st.Page(_agent_dashboard_entry, title="Agent Dashboard", icon=":material/dashboard:", default=True)
-PAGES["mcsa"] = st.Page(_dashboard_entry, title="MCSA", icon=":material/electric_bolt:")
-PAGES["data_management"] = st.Page(_data_management_entry, title="Manajemen Data", icon=":material/database:")
-PAGES["sync_word"] = st.Page(_sync_word_entry, title="Sync Laporan Word", icon=":material/upload_file:")
-PAGES["quality"] = st.Page(_quality_entry, title="Quality Check Laporan", icon=":material/fact_check:")
-PAGES["asset_registry"] = st.Page(_asset_registry_entry, title="Register Aset", icon=":material/inventory_2:")
-PAGES["asset_reports"] = st.Page(_asset_reports_entry, title="Laporan Kondisi", icon=":material/summarize:")
-PAGES["vibrasi"] = st.Page(_vibration_entry, title="Vibrasi", icon=":material/vibration:")
-PAGES["dga"] = st.Page(_dga_entry, title="DGA", icon=":material/science:")
-PAGES["tribology"] = st.Page(_tribology_entry, title="Tribology", icon=":material/oil_barrel:")
-PAGES["thermal"] = st.Page(_thermal_entry, title="Thermal", icon=":material/thermostat:")
-PAGES["partial_discharge"] = st.Page(_pd_entry, title="Partial Discharge", icon=":material/bolt:")
-PAGES["condition_control"] = st.Page(_condition_control_entry, title="Control condition", icon=":material/tune:")
-PAGES["reliability"] = st.Page(_reliability_entry, title="Reliability", icon=":material/insights:")
-PAGES["chatbot"] = st.Page(_chatbot_entry, title="Chatbot", icon=":material/smart_toy:")
-PAGES["materi"] = st.Page(_materi_entry, title="Materi Training", icon=":material/menu_book:")
-PAGES["ppt"] = st.Page(_ppt_entry, title="Laporan PPT", icon=":material/slideshow:")
-PAGES["word"] = st.Page(_word_entry, title="Laporan Word", icon=":material/description:")
-PAGES["work_orders"] = st.Page(_work_orders_entry, title="Work Orders", icon=":material/assignment:")
-PAGES["settings"] = st.Page(_settings_entry, title="Settings", icon=":material/settings:")
-PAGES["help"] = st.Page(_help_entry, title="Help & Support", icon=":material/help:")
+PAGE_SPECS = {
+    "agent_dashboard": (_agent_dashboard_entry, "Agent Dashboard", ":material/dashboard:", True),
+    "mcsa": (_dashboard_entry, "MCSA", ":material/electric_bolt:", False),
+    "data_management": (_data_management_entry, "Manajemen Data", ":material/database:", False),
+    "sync_word": (_sync_word_entry, "Sync Laporan Word", ":material/upload_file:", False),
+    "quality": (_quality_entry, "Quality Check Laporan", ":material/fact_check:", False),
+    "asset_registry": (_asset_registry_entry, "Register Aset", ":material/inventory_2:", False),
+    "asset_reports": (_asset_reports_entry, "Laporan Kondisi", ":material/summarize:", False),
+    "vibrasi": (_vibration_entry, "Vibrasi", ":material/vibration:", False),
+    "dga": (_dga_entry, "DGA", ":material/science:", False),
+    "tribology": (_tribology_entry, "Tribology", ":material/oil_barrel:", False),
+    "thermal": (_thermal_entry, "Thermal", ":material/thermostat:", False),
+    "partial_discharge": (_pd_entry, "Partial Discharge", ":material/bolt:", False),
+    "condition_control": (_condition_control_entry, "Control condition", ":material/tune:", False),
+    "reliability": (_reliability_entry, "Reliability", ":material/insights:", False),
+    "chatbot": (_chatbot_entry, "Chatbot", ":material/smart_toy:", False),
+    "materi": (_materi_entry, "Materi Training", ":material/menu_book:", False),
+    "ppt": (_ppt_entry, "Laporan PPT", ":material/slideshow:", False),
+    "word": (_word_entry, "Laporan Word", ":material/description:", False),
+    "work_orders": (_work_orders_entry, "Work Orders", ":material/assignment:", False),
+    "settings": (_settings_entry, "Settings", ":material/settings:", False),
+    "help": (_help_entry, "Help & Support", ":material/help:", False),
+}
+
+for page_key, (entrypoint, title, icon, default) in PAGE_SPECS.items():
+    PAGES[page_key] = st.Page(
+        entrypoint,
+        title=title,
+        icon=icon,
+        default=default,
+    )
 
 active_page = st.navigation(
     {
-        # Single-page groups from docs/desain.png's target IA (AI Agent,
-        # Knowledge, Settings, Help & Support) are folded into their nearest
-        # neighbor here purely to cut sidebar line count - the underlying
-        # pages/routing are unchanged, so this is reversible if any of them
-        # grows enough pages to earn its own section back.
         "Command Center": [PAGES["agent_dashboard"], PAGES["chatbot"], PAGES["materi"]],
-        "Asset Management": [PAGES["asset_registry"], PAGES["asset_reports"], PAGES["data_management"], PAGES["sync_word"], PAGES["quality"]],
-        "Engineering": [PAGES["mcsa"], PAGES["vibrasi"], PAGES["dga"], PAGES["tribology"], PAGES["thermal"], PAGES["partial_discharge"], PAGES["condition_control"]],
+        "Asset Management": [
+            PAGES["asset_registry"],
+            PAGES["asset_reports"],
+            PAGES["data_management"],
+            PAGES["sync_word"],
+            PAGES["quality"],
+        ],
+        "Engineering": [
+            PAGES["mcsa"],
+            PAGES["vibrasi"],
+            PAGES["dga"],
+            PAGES["tribology"],
+            PAGES["thermal"],
+            PAGES["partial_discharge"],
+            PAGES["condition_control"],
+        ],
         "Reliability": [PAGES["reliability"]],
         "Reports": [PAGES["ppt"], PAGES["word"]],
         "Work Orders": [PAGES["work_orders"]],
@@ -343,180 +396,19 @@ active_page = st.navigation(
     expanded=False,
 )
 
-MCSA_FILTER_PAGES = (PAGES["mcsa"], PAGES["ppt"], PAGES["word"])
-show_data_filters = active_page in MCSA_FILTER_PAGES
-sidebar_state = render_sidebar(st, min_date, max_date, show_filters=show_data_filters)
-if show_data_filters:
-    date_start = sidebar_state["date_start"]
-    date_end = sidebar_state["date_end"]
-else:
-    date_start, date_end = min_date, max_date
+active_page_key = next(
+    page_key for page_key, page in PAGES.items() if active_page is page
+)
+if page_requires_mcsa_data(active_page_key):
+    mcsa_base = load_mcsa_base_context(st)
 
-period_key = (st.session_state.get('_mcsa_data_key'), date_start, date_end)
-df_period = st.session_state.get('_mcsa_df_period')
-df_latest = st.session_state.get('_mcsa_df_latest')
-if st.session_state.get('_mcsa_period_key') != period_key or df_period is None or df_latest is None:
-    df_period = filter_mcsa_data(df, date_start=date_start, date_end=date_end)
-    df_latest = get_latest_data(df_period)
-    st.session_state['_mcsa_period_key'] = period_key
-    st.session_state['_mcsa_df_period'] = df_period
-    st.session_state['_mcsa_df_latest'] = df_latest
-df_latest_for_filters = df_latest if not df_latest.empty else df_latest_all
-
-master_path = get_data_path('config', 'equipment_master.json')
-try:
-    master_mtime = os.path.getmtime(master_path) if os.path.exists(master_path) else None
-except Exception:
-    master_mtime = None
-master_key = (master_path, master_mtime)
-if st.session_state.get('_mcsa_master_key') != master_key:
-    eq_master_df = load_equipment_master(master_path)
-    st.session_state['_mcsa_master_key'] = master_key
-    st.session_state['_mcsa_master_df'] = eq_master_df
-else:
-    _cached_master_df = st.session_state.get('_mcsa_master_df')
-    eq_master_df = _cached_master_df if isinstance(_cached_master_df, pd.DataFrame) else pd.DataFrame()
-
-master_norm_to_unit = st.session_state.get('_mcsa_master_norm_to_unit') or {}
-master_norm_to_volt = st.session_state.get('_mcsa_master_norm_to_volt') or {}
-if not eq_master_df.empty and st.session_state.get('_mcsa_master_norm_to_key') != master_key:
-    master_norm_to_unit, master_norm_to_volt = build_master_norm_maps(eq_master_df)
-    st.session_state['_mcsa_master_norm_to_unit'] = master_norm_to_unit
-    st.session_state['_mcsa_master_norm_to_volt'] = master_norm_to_volt
-    st.session_state['_mcsa_master_norm_to_key'] = master_key
-
-if show_data_filters:
-    # Get unique values for filters
-    unit_choices = ['All', 'UNIT 1', 'UNIT 2', 'UNIT 3', 'UNIT COMMON', 'Unknown']
-    units_present = set(canon_unit_name(x) for x in df_latest_for_filters.get('Unit_Name', pd.Series(dtype=str)).unique())
-    if isinstance(eq_master_df, pd.DataFrame) and not eq_master_df.empty and 'Unit_Name' in eq_master_df.columns:
-        units_present = units_present.union(set(eq_master_df['Unit_Name'].astype(str).map(canon_unit_name).unique()))
-    all_units = [u for u in unit_choices if u == 'All' or u in units_present] + sorted([u for u in units_present if u not in set(unit_choices)])
-    if 'filter_unit' not in st.session_state:
-        st.session_state.filter_unit = 'All'
-    if st.session_state.filter_unit not in all_units:
-        st.session_state.filter_unit = 'All'
-    sel_unit = st.sidebar.selectbox("Unit", all_units, key="filter_unit")
-
-    volt_choices = ['All', '380/400 V', '6.3 KV', 'Unknown']
-    volts_present = set(canon_voltage_level(x) for x in df_latest_for_filters.get('Voltage_Level', pd.Series(dtype=str)).unique())
-    if isinstance(eq_master_df, pd.DataFrame) and not eq_master_df.empty and 'Voltage_Level' in eq_master_df.columns:
-        volts_present = volts_present.union(set(eq_master_df['Voltage_Level'].astype(str).map(canon_voltage_level).unique()))
-    all_volts = [v for v in volt_choices if v == 'All' or v in volts_present] + sorted([v for v in volts_present if v not in set(volt_choices)])
-    if 'filter_volt' not in st.session_state:
-        st.session_state.filter_volt = 'All'
-    if st.session_state.filter_volt not in all_volts:
-        st.session_state.filter_volt = 'All'
-    sel_volt = st.sidebar.selectbox("Voltage", all_volts, key="filter_volt")
-
-    # Equipment is a global, cascading filter after period, unit, and voltage.
-    equipment_filter_df = df_latest_for_filters.copy()
-    if sel_unit != 'All':
-        _eq_unit = equipment_filter_df.get('Unit_Name', pd.Series(dtype=str)).astype(str).map(canon_unit_name)
-        _eq_norm = equipment_filter_df.get('Equipment', pd.Series(dtype=str)).astype(str).map(norm_equipment)
-        equipment_filter_df = equipment_filter_df[_eq_norm.map(master_norm_to_unit).fillna(_eq_unit) == sel_unit]
-    if sel_volt != 'All':
-        _eq_volt = equipment_filter_df.get('Voltage_Level', pd.Series(dtype=str)).astype(str).map(canon_voltage_level)
-        _eq_norm = equipment_filter_df.get('Equipment', pd.Series(dtype=str)).astype(str).map(norm_equipment)
-        equipment_filter_df = equipment_filter_df[_eq_norm.map(master_norm_to_volt).fillna(_eq_volt) == sel_volt]
-    equipment_options = sorted(equipment_filter_df.get('Equipment', pd.Series(dtype=str)).dropna().astype(str).unique())
-    focus_equipment = st.session_state.pop('filter_focus_equipment', None)
-    if focus_equipment is not None:
-        st.session_state.filter_equipment = [eq for eq in focus_equipment if eq in equipment_options]
-    if 'filter_equipment' not in st.session_state:
-        st.session_state.filter_equipment = []
-    st.session_state.filter_equipment = [eq for eq in st.session_state.filter_equipment if eq in equipment_options]
-    sel_equipment = st.sidebar.multiselect(
-        "Equipment",
-        equipment_options,
-        key="filter_equipment",
-        placeholder="Semua equipment",
-        help="Kosong berarti semua equipment dalam Unit dan Voltage terpilih.",
+if page_uses_mcsa_filters(active_page_key):
+    mcsa_filtered = prepare_mcsa_filtered_context(
+        mcsa_base,
+        enable_standby=active_page_key in {"mcsa", "word"},
+        streamlit=st,
     )
 else:
-    sel_unit = 'All'
-    sel_volt = 'All'
-    sel_equipment = []
+    render_non_filter_sidebar(st, mcsa_base)
 
-standby_enabled = False
-standby_scope = None
-required_month_params = ['Kondisi']
-if active_page in (PAGES["mcsa"], PAGES["word"]):
-    standby_enabled = st.sidebar.checkbox('Standby otomatis jika tidak ada data bulan ini', value=True)
-    if standby_enabled:
-        standby_scope = st.sidebar.selectbox('Cakupan Standby', ['Per Unit (mengikuti filter Unit/Voltage)', 'Semua Unit (abaikan filter Unit)'])
-
-        update_param_candidates = ['Kondisi', 'Load', 'Dev Voltage', 'Dev Current', 'THD Voltage %', 'THD Current %', 'Rotorbar Health', 'Upper Sideband', 'Lower Sideband', 'Bearing']
-        present_params = set(df.get('Parameter', pd.Series(dtype=str)).astype(str).unique())
-        update_param_options = [p for p in update_param_candidates if p in present_params] + sorted([p for p in present_params if p not in set(update_param_candidates)])
-        _wajib_params = ['Dev Voltage', 'Dev Current', 'THD Voltage %', 'THD Current %', 'Upper Sideband', 'Lower Sideband', 'Load']
-        default_required = [p for p in _wajib_params if p in update_param_options]
-        if not default_required:
-            default_required = [p for p in ['Kondisi'] if p in update_param_options]
-        required_month_params = st.sidebar.multiselect('Parameter wajib update bulanan', update_param_options, default=default_required)
-        if not required_month_params:
-            required_month_params = ['Kondisi']
-
-df_latest_augmented = df_latest.copy()
-standby_report = None
-df_month = None
-meta_df = None
-if active_page in (PAGES["mcsa"], PAGES["word"]) and standby_enabled:
-    standby_key = (period_key, standby_scope, sel_unit, sel_volt, tuple(required_month_params))
-    cached_key = st.session_state.get('_mcsa_standby_key')
-    cached_aug = st.session_state.get('_mcsa_df_latest_augmented')
-    cached_report = st.session_state.get('_mcsa_standby_report')
-    cached_month = st.session_state.get('_mcsa_df_month')
-    cached_meta = st.session_state.get('_mcsa_meta_df')
-    if cached_key == standby_key and cached_aug is not None and cached_report is not None and cached_month is not None and cached_meta is not None:
-        df_latest_augmented = cached_aug
-        standby_report = cached_report
-        df_month = cached_month
-        meta_df = cached_meta
-    else:
-        df_latest_augmented, standby_report, df_month, meta_df = compute_standby(
-            df,
-            df_latest,
-            df_latest_all,
-            eq_master_df,
-            master_norm_to_unit,
-            master_norm_to_volt,
-            date_end,
-            standby_scope,
-            sel_unit,
-            sel_volt,
-            required_month_params,
-        )
-        st.session_state['_mcsa_standby_key'] = standby_key
-        st.session_state['_mcsa_standby_report'] = standby_report
-        st.session_state['_mcsa_df_latest_augmented'] = df_latest_augmented
-        st.session_state['_mcsa_df_month'] = df_month
-        st.session_state['_mcsa_meta_df'] = meta_df
-
-# Apply filters
-filtered_key_base = st.session_state.get('_mcsa_standby_key') if (active_page is PAGES["mcsa"] and standby_enabled) else period_key
-filtered_key = (filtered_key_base, sel_unit, sel_volt, tuple(sel_equipment))
-filtered_df = st.session_state.get('_mcsa_filtered_df')
-if st.session_state.get('_mcsa_filtered_key') != filtered_key or filtered_df is None:
-    filtered_df = df_latest_augmented.copy()
-    if sel_unit != 'All':
-        _unit_series = filtered_df.get('Unit_Name', pd.Series(dtype=str)).astype(str).map(canon_unit_name)
-        _norm_series = filtered_df.get('Equipment', pd.Series(dtype=str)).astype(str).map(norm_equipment)
-        _unit_series = _norm_series.map(master_norm_to_unit).fillna(_unit_series)
-        filtered_df = filtered_df[_unit_series == sel_unit]
-    if sel_volt != 'All':
-        _volt_series = filtered_df.get('Voltage_Level', pd.Series(dtype=str)).astype(str).map(canon_voltage_level)
-        _norm_series = filtered_df.get('Equipment', pd.Series(dtype=str)).astype(str).map(norm_equipment)
-        _volt_series = _norm_series.map(master_norm_to_volt).fillna(_volt_series)
-        filtered_df = filtered_df[_volt_series == sel_volt]
-    if sel_equipment:
-        filtered_df = filter_mcsa_data(filtered_df, equipment=sel_equipment)
-    st.session_state['_mcsa_filtered_key'] = filtered_key
-    st.session_state['_mcsa_filtered_df'] = filtered_df
-
-# Use filtered_df for Dashboard, but keep full df for management if needed (or filter there too)
-
-# All the nav entry closures defined above reference these variables by name,
-# so they only need to be correct now, at the point .run() actually calls them.
 active_page.run()
-

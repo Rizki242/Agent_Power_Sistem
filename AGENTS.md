@@ -48,6 +48,11 @@ Rule-based logic is the source of truth. The LLM (`src/llm_assistant.py`) is an 
 - Make small, targeted changes that fit the current codebase.
 - Prefer improving the existing rule-based logic over replacing it.
 
+## Engineering Governance
+- Follow `docs/coding-protocol.md` for dependency boundaries, coding rules, test gates, and definition of done.
+- Use `docs/architecture-evolution.md` as the target architecture and incremental refactor roadmap.
+- Treat the protocol as normative. If a change must violate it temporarily, document the reason, containment, and removal plan in the PR or an ADR.
+
 ## Before Making Changes
 - Read `README.md` and the relevant source files first.
 - Follow the local patterns already used in `app.py` and `src/`.

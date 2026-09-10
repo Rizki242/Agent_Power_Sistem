@@ -18,7 +18,7 @@
 
 **AGENT LEARNING POWER** (kode proyek: **PPLE Agent**) adalah platform Condition-Based Maintenance (CBM) dan Predictive Maintenance (PdM) untuk membantu tim operasi dan pemeliharaan membaca kondisi aset, menggabungkan bukti lintas domain, serta menyusun tindak lanjut yang dapat ditinjau engineer. Implementasi saat ini berfokus pada data PLTU Jeranjang (3 × 25 MW) dan menggunakan **logika rule-based sebagai sumber keputusan utama**; integrasi LLM hanya bersifat opsional dan selalu punya fallback lokal.
 
-Antarmuka utama menggunakan Streamlit dengan desain navigasi berbasis domain. React/Vite dan FastAPI tersedia sebagai antarmuka serta API pendamping untuk kebutuhan integrasi modern, dan CLI `pple` (Typer) menyediakan akses baris perintah — termasuk perintah bahasa natural — ke inti yang sama.
+Antarmuka utama menggunakan Streamlit dengan desain navigasi berbasis domain. Dataset, filter MCSA, dan renderer halaman dimuat secara lazy hanya saat dibutuhkan. React/Vite dan FastAPI tersedia sebagai antarmuka serta API pendamping untuk kebutuhan integrasi modern, dan CLI `pple` (Typer) menyediakan akses baris perintah — termasuk perintah bahasa natural — ke inti yang sama.
 
 > Hasil diagnosis adalah dukungan keputusan teknis, bukan instruksi operasi otomatis. Keputusan trip, shutdown, perubahan proteksi, atau pekerjaan lapangan tetap wajib mengikuti SOP dan otorisasi engineer.
 
@@ -37,6 +37,12 @@ Antarmuka utama menggunakan Streamlit dengan desain navigasi berbasis domain. Re
 - [Konfigurasi environment](#konfigurasi-environment)
 - [Struktur repository](#struktur-repository)
 - [Catatan operasional](#catatan-operasional)
+
+Dokumen pengembangan:
+
+- [Evolusi arsitektur](docs/architecture-evolution.md) - hasil audit, arsitektur target, dan roadmap refactor aman.
+- [Protokol coding](docs/coding-protocol.md) - dependency rules, standar UI/API/domain, quality gate, dan definition of done.
+- [Feature parity](docs/feature-parity.md) - ownership workflow antara Streamlit, React, FastAPI, dan CLI.
 
 ## Desain aplikasi saat ini
 

@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import unittest
+import importlib
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -44,6 +45,18 @@ class TestAPIServer(unittest.TestCase):
         res = self.client.get("/api/health")
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json().get("status"), "ok")
+        self.assertTrue(res.headers.get("X-Request-ID"))
+        self.assertTrue(res.headers.get("X-Correlation-ID"))
+
+    def test_error_envelope_and_correlation_id(self):
+        res = self.client.get("/api/equipment/NON-EXISTENT-EQUIPMENT-XYZ")
+        self.assertEqual(res.status_code, 404)
+        payload = res.json()
+        self.assertEqual(payload.get("detail"), "Equipment not found")
+        self.assertIn("error", payload)
+        self.assertEqual(payload["error"]["code"], 404)
+        self.assertEqual(payload["error"]["message"], "Equipment not found")
+        self.assertEqual(payload["error"]["correlation_id"], res.headers.get("X-Request-ID"))
 
     def test_summary(self):
         res = self.client.get("/api/summary")
@@ -400,6 +413,82 @@ class TestPartialDischargeEndpoints(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
 
 
+class TestSpecialistDomainRouterArchitecture(unittest.TestCase):
+    """Characterization boundary for the first api_server.py extraction.
+
+    The public paths remain legacy-compatible, while their ownership moves to
+    a dedicated router so new specialist endpoints do not grow api_server.py.
+    """
+
+    EXPECTED_PATHS = {
+        "/api/dga/summary",
+        "/api/dga/transformers",
+        "/api/dga/transformers/{transformer_id}",
+        "/api/tribology/summary",
+        "/api/tribology/samples",
+        "/api/tribology/samples/{sample_id}",
+        "/api/thermal/summary",
+        "/api/thermal/inspections",
+        "/api/pd/summary",
+        "/api/pd/samples",
+        "/api/pd/samples/{sample_id}",
+        "/api/pd/samples/{sample_id}/assessment",
+    }
+
+    def setUp(self):
+        self.client = TestClient(app)
+
+    def test_routes_are_owned_by_dedicated_router(self):
+        module = importlib.import_module("pple.api.specialist_router")
+        paths = {route.path for route in module.router.routes}
+        self.assertEqual(paths, self.EXPECTED_PATHS)
+
+    def test_list_envelopes_remain_compatible(self):
+        for path, collection_key in (
+            ("/api/dga/transformers", "transformers"),
+            ("/api/tribology/samples", "samples"),
+            ("/api/thermal/inspections", "inspections"),
+            ("/api/pd/samples", "samples"),
+        ):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                payload = response.json()
+                self.assertIn(collection_key, payload)
+                self.assertEqual(payload["count"], len(payload[collection_key]))
+
+    def test_routes_enforce_response_models(self):
+        module = importlib.import_module("pple.api.specialist_router")
+        for route in module.router.routes:
+            with self.subTest(path=route.path):
+                self.assertIsNotNone(
+                    getattr(route, "response_model", None),
+                    f"Route {route.path} must have a typed response_model",
+                )
+
+    def test_modular_routers_ownership(self):
+        wo_mod = importlib.import_module("pple.api.routers.work_orders")
+        wo_paths = {r.path for r in wo_mod.router.routes}
+        self.assertEqual(wo_paths, {"/api/workorders", "/api/workorders/approve"})
+
+        kn_mod = importlib.import_module("pple.api.routers.knowledge")
+        kn_paths = {r.path for r in kn_mod.router.routes}
+        self.assertEqual(kn_paths, {"/api/materi", "/api/materi/search"})
+
+        vib_mod = importlib.import_module("pple.api.routers.vibration")
+        vib_paths = {r.path for r in vib_mod.router.routes}
+        self.assertEqual(
+            vib_paths,
+            {
+                "/api/vibration/summary",
+                "/api/vibration/equipment",
+                "/api/vibration/equipment/{asset_id}",
+                "/api/vibration/classes",
+                "/api/vibration/tests",
+            },
+        )
+
+
 class TestAPISecurity(unittest.TestCase):
     """CORS + API key opsional (pple/api/security.py).
 
@@ -483,4 +572,3 @@ class TestAPISecurity(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

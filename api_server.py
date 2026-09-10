@@ -11,6 +11,14 @@ from pydantic import BaseModel, Field
 import pandas as pd
 import numpy as np
 
+from pple.api.schemas.core import (
+    EquipmentListResponse,
+    HealthResponse,
+    RotorBarCalculationResponse,
+    SpecialistSubAgentsResponse,
+    SummaryResponse,
+)
+
 def extract_text_from_upload(file_bytes: bytes, filename: str) -> str:
     ext = os.path.splitext(filename)[1].lower()
     try:
@@ -50,27 +58,6 @@ from src.vibration_data import (
     get_bearing_info,
     load_vibration_monthly_tests,
 )
-from src.dga_data import (
-    get_dga_summary,
-    search_dga_transformers,
-    get_dga_transformer_detail,
-    calculate_dga_diagnosis,
-)
-from src.tribology_data import (
-    get_tribology_summary,
-    search_tribology_samples,
-    get_tribology_sample_detail,
-    evaluate_tribology_sample,
-)
-from src.thermal_data import (
-    load_thermal_irt_tests,
-    get_thermal_summary,
-)
-from src.pd_data import (
-    get_pd_summary,
-    search_pd_samples,
-    get_pd_sample_detail,
-)
 from src.chatbot import MCSAChatbot
 from src.rotorbar import evaluate_rotorbar
 from src.docx_parser import parse_docx_report
@@ -89,73 +76,11 @@ fusion_agent = ReliabilityFusionAgent()
 safety_guard = SafetyGuardrailAgent()
 asset_graph = AssetKnowledgeGraph()
 
-# In-memory mirror for callers that inspect module state, backed by JSON storage.
-_work_orders_db = []
-
-
-def _seed_work_orders() -> List[Dict[str, Any]]:
-    return [
-        {
-            "wo_number": "WO-202608-0101",
-            "equipment": "BC 10.1",
-            "title": "Investigasi Bearing & Re-greasing DE/NDE",
-            "priority": "P2 - High",
-            "reason": "AI Multi-Modal Fusion: Indikasi keausan bearing & suhu naik",
-            "required_tools": ["Vibration Analyzer", "Thermal Camera", "Grease Gun"],
-            "required_parts": ["Grease Shell Gadus S2", "Bearing 6314 C3"],
-            "required_manpower": "2 Technicians",
-            "target_completion_date": "2026-08-30",
-            "status": "Draft - Awaiting Approval",
-        },
-        {
-            "wo_number": "WO-202608-0102",
-            "equipment": "BFP 1A",
-            "title": "Laser Alignment Verification & Soft Foot Check",
-            "priority": "P3 - Medium",
-            "reason": "AI Diagnostics: Modulasi spektrum 2X & getaran aksial",
-            "required_tools": ["Laser Alignment Kit", "Dial Indicator"],
-            "required_parts": ["Stainless Steel Shim Pack 0.05-1.0mm"],
-            "required_manpower": "1 Alignment Specialist + 1 Mechanic",
-            "target_completion_date": "2026-09-05",
-            "status": "Approved - Ready for Execution",
-        },
-    ]
-
-
-def _get_work_orders_store_path() -> str:
-    configured = os.environ.get("WORK_ORDERS_FILE")
-    if configured and configured.strip():
-        return os.path.abspath(configured.strip())
-    return get_data_path("runtime", "work_orders.json")
-
-
-def _load_work_orders() -> List[Dict[str, Any]]:
-    global _work_orders_db
-    path = _get_work_orders_store_path()
-    if os.path.exists(path):
-        try:
-            with open(path, "r", encoding="utf-8") as fp:
-                data = json.load(fp)
-            if isinstance(data, list):
-                _work_orders_db = data
-                return data
-        except Exception:
-            pass
-
-    _work_orders_db = _seed_work_orders()
-    return list(_work_orders_db)
-
-
-def _save_work_orders(work_orders: List[Dict[str, Any]]) -> str:
-    global _work_orders_db
-    path = _get_work_orders_store_path()
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp_path = path + ".tmp"
-    with open(tmp_path, "w", encoding="utf-8") as fp:
-        json.dump(work_orders, fp, ensure_ascii=False, indent=2)
-    os.replace(tmp_path, path)
-    _work_orders_db = list(work_orders)
-    return path
+from pple.api.routers.work_orders import (
+    _load_work_orders,
+    _save_work_orders,
+    _get_work_orders_store_path,
+)
 
 from pple.api.security import (
     api_key_middleware,
@@ -163,12 +88,15 @@ from pple.api.security import (
     resolve_cors_origins,
     startup_warning,
 )
+from pple.api.observability import setup_observability_and_errors
 
 app = FastAPI(
     title="MCSA Assistant API",
     description="REST API & AI Agent backend for Motor Current Signature Analysis",
     version="2.0.0"
 )
+
+setup_observability_and_errors(app)
 
 # Keamanan HTTP (pple/api/security.py): origin CORS dari PPLE_CORS_ORIGINS
 # dengan default hanya localhost, plus API key opsional lewat PPLE_API_KEY.
@@ -201,6 +129,20 @@ app.include_router(pple_api_v2_router)
 # the Streamlit workspace, now reachable from the React frontend/pple CLI too.
 from pple.api.domain_router import router as pple_api_v2_domain_router
 app.include_router(pple_api_v2_domain_router)
+
+# Legacy-compatible specialist endpoints are isolated from this composition
+# root so adding a domain no longer grows api_server.py.
+from pple.api.specialist_router import router as specialist_router
+app.include_router(specialist_router)
+
+from pple.api.routers import (
+    knowledge_router,
+    vibration_router,
+    work_orders_router,
+)
+app.include_router(knowledge_router)
+app.include_router(vibration_router)
+app.include_router(work_orders_router)
 
 # Global Data Cache
 _cached_raw_df: Optional[pd.DataFrame] = None
@@ -239,11 +181,11 @@ class RotorBarCalculateRequest(BaseModel):
 class MateriSearchRequest(BaseModel):
     query: str = Field(..., min_length=1)
 
-@app.get("/api/health")
+@app.get("/api/health", response_model=HealthResponse)
 def health_check():
     return {"status": "ok", "app": "MCSA Assistant API v2.0"}
 
-@app.get("/api/summary")
+@app.get("/api/summary", response_model=SummaryResponse)
 def get_summary():
     _, df_latest = get_data_frames()
     if df_latest.empty:
@@ -282,7 +224,7 @@ def get_summary():
         "dates": dates
     }
 
-@app.get("/api/equipment")
+@app.get("/api/equipment", response_model=EquipmentListResponse)
 def get_equipment_list(
     unit: Optional[str] = None,
     voltage: Optional[str] = None,
@@ -491,7 +433,7 @@ def get_equipment_detail(equipment_name: str):
         "analysis": analysis
     }
 
-@app.post("/api/rotorbar/calculate")
+@app.post("/api/rotorbar/calculate", response_model=RotorBarCalculationResponse)
 def calculate_rotorbar(req: RotorBarCalculateRequest):
     res = evaluate_rotorbar({
         "Upper Sideband": req.upper_sb,
@@ -515,7 +457,7 @@ from src.agents.subagent_coordinator import SubAgentCoordinator
 subagent_coordinator = SubAgentCoordinator()
 
 
-@app.get("/api/agents/specialists")
+@app.get("/api/agents/specialists", response_model=SpecialistSubAgentsResponse)
 def get_specialist_subagents():
     """List all registered specialist sub-agents with capability metadata and standards."""
     return {
@@ -848,37 +790,6 @@ async def upload_vibration(file: UploadFile = File(...)):
     # Placeholder: Nantinya ini akan memanggil vision AI (Gemini) atau parser Vibration
     return {"status": "success", "message": f"Gambar spektrum '{file.filename}' berhasil diunggah dan sedang diantrekan untuk analisis PPLE Agent."}
 
-@app.get("/api/materi")
-def get_materi_list():
-    base_dir = os.path.dirname(__file__)
-    materi_dir = os.path.join(base_dir, 'Materi')
-    files = []
-    if os.path.exists(materi_dir):
-        files = sorted([f for f in os.listdir(materi_dir) if f.lower().endswith('.json')])
-    materi = [
-        {
-            "id": os.path.splitext(f)[0],
-            "filename": f,
-            "title": os.path.splitext(f)[0].replace("-", " ").replace("_", " ").title(),
-            "level": "General",
-            "tags": [],
-        }
-        for f in files
-    ]
-    return {"materials": files, "materi": materi}
-
-@app.post("/api/materi/search")
-async def search_materi(
-    payload: Optional[MateriSearchRequest] = Body(None),
-    query: Optional[str] = Query(None, min_length=1),
-):
-    query_text = (payload.query if payload is not None else query) or ""
-    query_text = query_text.strip()
-    if not query_text:
-        raise HTTPException(status_code=422, detail="query is required")
-    results = search_knowledge_base(query_text, top_k=5)
-    return {"results": results, "query": query_text}
-
 @app.post("/api/reports/ppt")
 def generate_ppt_report(equipment_name: Optional[str] = None):
     df_raw, df_latest = get_data_frames()
@@ -951,376 +862,6 @@ def simulate_multi_modal_diagnosis(req: DiagnoseSimRequest):
     )
     return res
 
-@app.get("/api/workorders")
-def get_work_orders():
-    work_orders = _load_work_orders()
-    return {"work_orders": work_orders, "count": len(work_orders)}
-
-class ApproveWORequest(BaseModel):
-    wo_number: str
-    approved_by: str
-    action: Optional[str] = "Approve" # "Approve" | "Reject" | "Complete"
-
-@app.post("/api/workorders/approve")
-def approve_work_order(req: ApproveWORequest):
-    work_orders = _load_work_orders()
-    for wo in work_orders:
-        if wo["wo_number"] == req.wo_number:
-            if req.action == "Approve":
-                wo["status"] = f"Approved by {req.approved_by} - In Progress"
-            elif req.action == "Complete":
-                wo["status"] = f"Completed & Closed by {req.approved_by}"
-            elif req.action == "Reject":
-                wo["status"] = f"Rejected by {req.approved_by}"
-            _save_work_orders(work_orders)
-            return {"status": "success", "work_order": wo}
-            
-    raise HTTPException(status_code=404, detail="Work Order not found")
-
-# ---------------------------------------------------------------------------
-# Vibration Asset Endpoints
-# ---------------------------------------------------------------------------
-
-@app.get("/api/vibration/summary")
-def get_vib_summary():
-    """Quick counts by unit, status, and category."""
-    try:
-        return get_vibration_summary()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/vibration/equipment")
-def get_vib_equipment_list(
-    unit: Optional[str] = None,
-    status: Optional[str] = None,
-    category: Optional[str] = None,
-    search: Optional[str] = None,
-):
-    """List vibration assets with optional filters."""
-    kwargs = {}
-    if unit and unit.upper() != "ALL":
-        kwargs["unit_group"] = unit
-    if status and status.upper() != "ALL":
-        kwargs["status"] = status
-    if category and category.upper() != "ALL":
-        kwargs["equipment_class"] = category
-    if search and search.strip():
-        kwargs["keyword"] = search.strip()
-
-    assets = search_vibration_assets(**kwargs)
-
-    equipment = []
-    for a in assets:
-        equipment.append({
-            "asset_id": a.get("asset_id", ""),
-            "equipment": a.get("equipment", ""),
-            "kks": a.get("kks", ""),
-            "unit": a.get("unit_group", ""),
-            "category": a.get("asset_category_derived", ""),
-            "equipment_class": a.get("equipment_class_normalized", ""),
-            "status": a.get("status_vibrasi", "NORMAL"),
-            "pm_week": a.get("pm_week", ""),
-            "measurement_date": a.get("measurement_date", ""),
-            "component_1": a.get("component_1", ""),
-            "component_2": a.get("component_2", ""),
-            "c1_speed": a.get("c1_speed", ""),
-            "c1_power": a.get("c1_power", ""),
-            "c1_foundation": a.get("c1_foundation", ""),
-        })
-
-    return {"equipment": equipment, "count": len(equipment)}
-
-
-@app.get("/api/vibration/equipment/{asset_id}")
-def get_vib_equipment_detail(asset_id: str):
-    """Full detail for a single vibration asset."""
-    asset = get_vibration_asset(asset_id)
-    if not asset:
-        raise HTTPException(status_code=404, detail=f"Vibration asset {asset_id} not found")
-
-    bearing = get_bearing_info(asset_id) or {}
-
-    # Build structured specs for motor (component 1)
-    motor_specs = {}
-    for key, label in [
-        ("c1_type_mfg", "Type / Mfg"),
-        ("c1_speed", "Speed"),
-        ("c1_power", "Power"),
-        ("c1_bearing_type", "Bearing Type"),
-        ("c1_inboard_bearing", "Inboard Bearing"),
-        ("c1_outboard_bearing", "Outboard Bearing"),
-        ("c1_rotor_bar", "Rotor Bar"),
-        ("c1_foundation", "Foundation"),
-        ("c1_house_power", "House Power"),
-        ("c1_rated_speed", "Rated Speed"),
-        ("c1_rated_active_power", "Rated Active Power"),
-        ("c1_rated_stator_voltage", "Rated Stator Voltage"),
-        ("c1_rated_stator_current", "Rated Stator Current"),
-    ]:
-        val = asset.get(key)
-        if val is not None and str(val).strip() and str(val).strip() not in ("None", "nan", "-"):
-            motor_specs[label] = str(val)
-
-    # Build structured specs for driven equipment (component 2)
-    driven_specs = {}
-    for key, label in [
-        ("c2_type_mfg", "Type / Mfg"),
-        ("c2_manufacturer", "Manufacturer"),
-        ("c2_speed", "Speed"),
-        ("c2_power", "Power"),
-        ("c2_capacity", "Capacity"),
-        ("c2_pressure", "Pressure"),
-        ("c2_flow_rate", "Flow Rate"),
-        ("c2_bearing_type", "Bearing Type"),
-        ("c2_inboard_bearing", "Inboard Bearing"),
-        ("c2_onboard_bearing", "Outboard Bearing"),
-        ("c2_total_blade", "Total Blade"),
-        ("c2_stages", "Stages"),
-    ]:
-        val = asset.get(key)
-        if val is not None and str(val).strip() and str(val).strip() not in ("None", "nan", "-"):
-            driven_specs[label] = str(val)
-
-    # ISO evaluation recommendation based on status
-    status = str(asset.get("status_vibrasi", "NORMAL")).upper()
-    recommendation = "Kondisi getaran normal; lanjutkan monitoring berkala sesuai jadwal PM."
-    if status == "WARNING":
-        recommendation = "Getaran dalam zona waspada. Lakukan survei vibrasi terarah dan periksa alignment/pondasi dalam 1 minggu."
-    elif status == "ALARM":
-        recommendation = "Getaran melewati batas alarm. Periksa spektrum FFT untuk identifikasi sumber kerusakan, jadwalkan tindakan korektif."
-    elif status == "PREWARNING":
-        recommendation = "Tren vibrasi naik mendekati batas. Monitor lebih intensif dan periksa pelumasan bearing."
-
-    # Look up matching test points and velocity max
-    eq_name = str(asset.get("equipment", "")).strip()
-    test_points = {}
-    velocity_max = 0.0
-    test_date = asset.get("measurement_date", "")
-    try:
-        all_tests = load_vibration_monthly_tests()
-        for t in all_tests:
-            t_eq = str(t.get("equipment", "")).strip()
-            if t_eq.lower() in eq_name.lower() or eq_name.lower() in t_eq.lower():
-                test_points = t.get("points", {})
-                velocity_max = t.get("velocity_max", 0.0)
-                test_date = t.get("test_date", test_date)
-                break
-    except Exception:
-        pass
-
-    return {
-        "asset_id": asset.get("asset_id", ""),
-        "equipment": asset.get("equipment", ""),
-        "kks": asset.get("kks", ""),
-        "unit": asset.get("unit_group", ""),
-        "category": asset.get("asset_category_derived", ""),
-        "equipment_class": asset.get("equipment_class_normalized", ""),
-        "status": status,
-        "pm_week": asset.get("pm_week", ""),
-        "measurement_date": test_date or asset.get("measurement_date", ""),
-        "velocity_max": velocity_max,
-        "points": test_points,
-        "component_1": asset.get("component_1", ""),
-        "component_2": asset.get("component_2", ""),
-        "motor_specs": motor_specs,
-        "driven_specs": driven_specs,
-        "bearing": bearing,
-        "recommendation": recommendation,
-    }
-
-
-@app.get("/api/vibration/classes")
-def get_vib_classes():
-    """Distinct ISO equipment classes."""
-    return {"classes": get_equipment_class_list()}
-
-
-@app.get("/api/vibration/tests")
-def get_vib_monthly_tests(
-    unit: Optional[str] = None,
-    status: Optional[str] = None,
-    search: Optional[str] = None,
-):
-    """Returns monthly periodic vibration test records with individual measurement points (1V, 1H, 1A, etc.)."""
-    try:
-        tests = load_vibration_monthly_tests()
-        if unit and unit.upper() != "ALL":
-            tests = [t for t in tests if t["unit"].upper() == unit.upper()]
-        if status and status.upper() != "ALL":
-            tests = [t for t in tests if t["status"].upper() == status.upper()]
-        if search and search.strip():
-            st = search.lower().strip()
-            tests = [t for t in tests if st in t["equipment"].lower()]
-        return {"tests": tests, "count": len(tests)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# ---------------------------------------------------------------------------
-# DGA (Transformer Oil) Endpoints
-# ---------------------------------------------------------------------------
-
-@app.get("/api/dga/summary")
-def get_dga_summary_endpoint():
-    """Returns summary counts for transformers by status and unit."""
-    try:
-        return get_dga_summary()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/dga/transformers")
-def get_dga_transformers_list(
-    unit: Optional[str] = None,
-    status: Optional[str] = None,
-    search: Optional[str] = None,
-):
-    """Returns list of transformers with DGA analysis."""
-    try:
-        transformers = search_dga_transformers(unit=unit, status=status, search=search)
-        return {"transformers": transformers, "count": len(transformers)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/dga/transformers/{transformer_id}")
-def get_dga_transformer_detail_endpoint(transformer_id: str):
-    """Returns full DGA details and historical trends for a transformer."""
-    target = get_dga_transformer_detail(transformer_id)
-    if not target:
-        raise HTTPException(status_code=404, detail=f"Transformer {transformer_id} not found")
-    return target
-
-
-# ---------------------------------------------------------------------------
-# Tribology (Lubricant & Wear) Endpoints
-# ---------------------------------------------------------------------------
-
-@app.get("/api/tribology/summary")
-def get_tribology_summary_endpoint():
-    """Returns summary counts for lubrication samples."""
-    try:
-        return get_tribology_summary()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/tribology/samples")
-def get_tribology_samples_list(
-    unit: Optional[str] = None,
-    status: Optional[str] = None,
-    oil_type: Optional[str] = None,
-    search: Optional[str] = None,
-):
-    """Returns list of oil samples with evaluation."""
-    try:
-        samples = search_tribology_samples(unit=unit, status=status, oil_type=oil_type, search=search)
-        return {"samples": samples, "count": len(samples)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/tribology/samples/{sample_id}")
-def get_tribology_sample_detail_endpoint(sample_id: str):
-    """Returns detailed oil analysis and historical trend."""
-    target = get_tribology_sample_detail(sample_id)
-    if not target:
-        raise HTTPException(status_code=404, detail=f"Sample {sample_id} not found")
-    return target
-
-
-# ---------------------------------------------------------------------------
-# Thermal (Infrared Thermography / IRT) Endpoints
-# ---------------------------------------------------------------------------
-
-@app.get("/api/thermal/summary")
-def get_thermal_summary_endpoint():
-    """Returns summary counts for IRT inspections."""
-    try:
-        return get_thermal_summary()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/thermal/inspections")
-def get_thermal_inspections_list(
-    unit: Optional[str] = None,
-    status: Optional[str] = None,
-    search: Optional[str] = None,
-):
-    """Returns list of thermal IRT inspection points."""
-    try:
-        records = load_thermal_irt_tests()
-        if unit and unit.upper() != "ALL":
-            records = [r for r in records if r["unit"].upper() == unit.upper()]
-        if status and status.upper() != "ALL":
-            records = [r for r in records if r["status"].upper() == status.upper()]
-        if search and search.strip():
-            st = search.lower().strip()
-            records = [r for r in records if st in r["equipment"].lower() or st in r["kks"].lower()]
-        return {"inspections": records, "count": len(records)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ---------------------------------------------------------------------------
-# Partial Discharge (PRPD / Pulse Magnitude) Endpoints
-# ---------------------------------------------------------------------------
-# PD has no source data file of any kind (see src.pd_data's module docstring),
-# so every response here is built on DEFAULT_PD_SAMPLES + recorded overrides.
-# Clients MUST surface that the data is illustrative, the same way the
-# Streamlit page calls render_data_disclaimer_banner.
-
-@app.get("/api/pd/summary")
-def get_pd_summary_endpoint():
-    """Returns summary counts for partial discharge samples."""
-    try:
-        return get_pd_summary()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/pd/samples")
-def get_pd_samples_list(
-    unit: Optional[str] = None,
-    status: Optional[str] = None,
-    search: Optional[str] = None,
-):
-    """Returns list of PD samples with evaluated status attached."""
-    try:
-        samples = search_pd_samples(unit=unit, status=status, search=search)
-        return {"samples": samples, "count": len(samples)}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/pd/samples/{sample_id}")
-def get_pd_sample_detail_endpoint(sample_id: str):
-    """Returns one PD sample's PRPD parameters plus its status."""
-    target = get_pd_sample_detail(sample_id)
-    if not target:
-        raise HTTPException(status_code=404, detail=f"Sample {sample_id} not found")
-    return target
-
-
-@app.get("/api/pd/samples/{sample_id}/assessment")
-def get_pd_sample_assessment(sample_id: str):
-    """
-    Runs PDAgent against one sample - the HTTP equivalent of the Streamlit
-    page's "Rekomendasi" view. pd_data's schema was designed to feed
-    PDAgent.evaluate() directly, so this passes the record through unchanged
-    rather than re-deriving anything here.
-    """
-    target = get_pd_sample_detail(sample_id)
-    if not target:
-        raise HTTPException(status_code=404, detail=f"Sample {sample_id} not found")
-    try:
-        from src.agents.specialist_agents import PDAgent
-        return PDAgent().evaluate(target["equipment"], target)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @app.get("/api/reports/assessment/{equipment}")
 def get_equipment_assessment_report(equipment: str):
     """
@@ -1371,4 +912,3 @@ def get_equipment_assessment_report(equipment: str):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
-

@@ -6,6 +6,7 @@ layout, just that the entrypoint and the newly-added pages (settings,
 placeholder) execute without raising.
 """
 
+import ast
 import os
 import unittest
 
@@ -17,6 +18,96 @@ _APP_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 class TestAppEntrypoint(unittest.TestCase):
     def test_app_loads_default_page_without_exception(self):
         at = AppTest.from_file(_APP_PATH, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+    def test_app_does_not_import_page_modules_during_bootstrap(self):
+        with open(_APP_PATH, "r", encoding="utf-8") as handle:
+            tree = ast.parse(handle.read())
+
+        eager_page_imports = []
+        for node in tree.body:
+            if isinstance(node, ast.ImportFrom) and (node.module or "").startswith("src.pages"):
+                eager_page_imports.append(node.module)
+            elif isinstance(node, ast.Try):
+                for child in node.body:
+                    if isinstance(child, ast.ImportFrom) and (child.module or "").startswith("src.pages"):
+                        eager_page_imports.append(child.module)
+
+        self.assertEqual(
+            eager_page_imports,
+            [],
+            msg="page renderer imports must stay inside their active-page entrypoint",
+        )
+
+
+class TestAppDataLoadingPolicy(unittest.TestCase):
+    def test_only_mcsa_consumers_require_the_mcsa_dataset(self):
+        from src.components.mcsa_page_context import page_requires_mcsa_data
+
+        for page_key in (
+            "agent_dashboard",
+            "mcsa",
+            "data_management",
+            "sync_word",
+            "chatbot",
+            "ppt",
+            "word",
+        ):
+            with self.subTest(page_key=page_key):
+                self.assertTrue(page_requires_mcsa_data(page_key))
+
+        for page_key in (
+            "asset_registry",
+            "asset_reports",
+            "quality",
+            "materi",
+            "condition_control",
+            "vibrasi",
+            "dga",
+            "tribology",
+            "thermal",
+            "partial_discharge",
+            "reliability",
+            "work_orders",
+            "settings",
+            "help",
+        ):
+            with self.subTest(page_key=page_key):
+                self.assertFalse(page_requires_mcsa_data(page_key))
+
+    def test_only_mcsa_and_reports_render_global_data_filters(self):
+        from src.components.mcsa_page_context import page_uses_mcsa_filters
+
+        self.assertTrue(page_uses_mcsa_filters("mcsa"))
+        self.assertTrue(page_uses_mcsa_filters("ppt"))
+        self.assertTrue(page_uses_mcsa_filters("word"))
+        self.assertFalse(page_uses_mcsa_filters("agent_dashboard"))
+        self.assertFalse(page_uses_mcsa_filters("settings"))
+
+    def test_filtered_context_builds_for_mcsa_page(self):
+        def _script():
+            import streamlit as st
+
+            from src.components.mcsa_page_context import (
+                load_mcsa_base_context,
+                prepare_mcsa_filtered_context,
+            )
+
+            base = load_mcsa_base_context(st)
+            context = prepare_mcsa_filtered_context(
+                base,
+                enable_standby=False,
+                streamlit=st,
+            )
+            st.write(
+                {
+                    "rows": len(context.filtered_df),
+                    "start": context.date_start.isoformat(),
+                    "end": context.date_end.isoformat(),
+                }
+            )
+
+        at = AppTest.from_function(_script, default_timeout=60).run()
         self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
 
 
@@ -255,6 +346,204 @@ class TestMCSADashboardPage(unittest.TestCase):
 
         at = AppTest.from_function(_script, default_timeout=120).run()
         self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+    def test_condition_summary_section_preserves_status_metrics(self):
+        def _script():
+            import pandas as pd
+            import streamlit as st
+
+            from src.components.mcsa_dashboard_sections import render_condition_summary
+
+            latest = pd.DataFrame([
+                {"Equipment": "PUMP-A", "Parameter": "Kondisi", "Raw_Value": "Normal"},
+                {"Equipment": "PUMP-B", "Parameter": "Bearing", "Raw_Value": "Bad bearing"},
+            ])
+            render_condition_summary(
+                st,
+                filtered_df=latest,
+                unit_label="UNIT TEST",
+                standby_enabled=False,
+                standby_report=None,
+            )
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        metrics = {metric.label: metric.value for metric in at.metric}
+        self.assertEqual(metrics["Total Equipment"], "2")
+        self.assertEqual(metrics["Normal (Hijau)"], "1")
+        self.assertEqual(metrics["High (Merah)"], "1")
+
+    def test_sampling_compliance_section_renders_on_demand(self):
+        def _script():
+            import pandas as pd
+            import streamlit as st
+
+            from src.components.mcsa_dashboard_sections import render_sampling_compliance
+
+            report = {
+                "month_start": pd.Timestamp("2026-09-01"),
+                "required_params": ["Load"],
+                "eq_universe": ["PUMP-A", "PUMP-B"],
+                "eq_present": ["PUMP-A"],
+                "eq_missing": ["PUMP-B"],
+                "standby_reasons": {},
+            }
+            monthly = pd.DataFrame([
+                {
+                    "Equipment": "PUMP-A",
+                    "Parameter": "Load",
+                    "Value": 60.0,
+                    "Raw_Value": "60",
+                    "Date": pd.Timestamp("2026-09-01"),
+                }
+            ])
+            render_sampling_compliance(st, report, monthly)
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        next(widget for widget in at.checkbox if widget.label == "Sampling Compliance").set_value(True)
+        at.run(timeout=30)
+
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        metrics = {metric.label: metric.value for metric in at.metric}
+        self.assertEqual(metrics["Expected"], "2")
+        self.assertEqual(metrics["Updated"], "1")
+        self.assertEqual(metrics["Belum Update"], "1")
+        self.assertEqual(metrics["Compliance %"], "50.0")
+
+    def test_trend_presenter_renders_numeric_series(self):
+        def _script():
+            import pandas as pd
+            import streamlit as st
+
+            from src.components.mcsa_dashboard_trends import render_trend_view
+
+            history = pd.DataFrame([
+                {"Equipment": "PUMP-A", "Parameter": "Load", "Date": "2026-07-01", "Value": 40.0, "Raw_Value": "40"},
+                {"Equipment": "PUMP-A", "Parameter": "Load", "Date": "2026-08-01", "Value": 50.0, "Raw_Value": "50"},
+                {"Equipment": "PUMP-A", "Parameter": "Load", "Date": "2026-09-01", "Value": 60.0, "Raw_Value": "60"},
+            ])
+            render_trend_view(st, history, "PUMP-A")
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertTrue(list(at.get("plotly_chart")), "expected a numeric trend chart")
+        self.assertTrue(any(widget.key == "trend_param" for widget in at.selectbox))
+
+    def test_comparison_presenter_preserves_month_and_yoy_metrics(self):
+        def _script():
+            import pandas as pd
+            import streamlit as st
+
+            from src.components.mcsa_dashboard_trends import render_comparison_view
+
+            history = pd.DataFrame([
+                {"Equipment": "PUMP-A", "Parameter": "Load", "Date": "2025-09-01", "Value": 10.0, "Raw_Value": "10"},
+                {"Equipment": "PUMP-A", "Parameter": "Load", "Date": "2026-08-01", "Value": 20.0, "Raw_Value": "20"},
+                {"Equipment": "PUMP-A", "Parameter": "Load", "Date": "2026-09-01", "Value": 30.0, "Raw_Value": "30"},
+            ])
+            render_comparison_view(st, history, "PUMP-A")
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        metrics = {metric.label: metric.value for metric in at.metric}
+        self.assertEqual(metrics["Nilai 2026-09"], "30.0")
+        self.assertEqual(metrics["Nilai 2026-08"], "20.0")
+        self.assertEqual(metrics["Nilai 2025-09"], "10.0")
+
+    def test_recommendation_presenter_preserves_quick_metrics(self):
+        def _script():
+            import streamlit as st
+
+            from src.components.mcsa_dashboard_detail_views import render_recommendation_view
+
+            render_recommendation_view(
+                st,
+                {
+                    "overall": "Alarm",
+                    "values": {"Load %": 55.25},
+                    "statuses": {"Load Quality": "Valid", "Bearing": "Alarm"},
+                    "recommendations": ["Lakukan trending bearing."],
+                    "references": ["ISO 15243"],
+                },
+            )
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        metrics = {metric.label: metric.value for metric in at.metric}
+        self.assertEqual(metrics["Overall"], "Alarm")
+        self.assertEqual(metrics["Load %"], "55.25")
+        self.assertEqual(metrics["Load Quality"], "Valid")
+
+    def test_summary_presenter_preserves_performance_and_materi_actions(self):
+        def _script():
+            import pandas as pd
+            import streamlit as st
+
+            from src.components.mcsa_dashboard_detail_views import render_summary_view
+
+            equipment = pd.DataFrame([
+                {
+                    "Equipment": "PUMP-A",
+                    "Parameter": "Ringkasan Kinerja - Efisiensi",
+                    "Raw_Value": "Baik",
+                }
+            ])
+            render_summary_view(
+                st,
+                eq_data=equipment,
+                df_latest_all=equipment,
+                selected_equipment="PUMP-A",
+                esa_quick={"recommendations": ["Lanjutkan monitoring."]},
+                condition_class="normal",
+            )
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertTrue(any(button.label == "SOP Pengukuran" for button in at.button))
+        self.assertTrue(any(subheader.value == "Ringkasan Performance" for subheader in at.subheader))
+
+    def test_spectrum_presenter_handles_missing_images(self):
+        def _script():
+            import streamlit as st
+
+            from src.components.mcsa_dashboard_detail_views import render_spectrum_view
+
+            render_spectrum_view(st, "EQUIPMENT-WITHOUT-SPECTRUM")
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertTrue(any("Tidak ada gambar spektrum" in info.value for info in at.info))
+
+    def test_deep_analysis_presenter_preserves_rule_based_output(self):
+        def _script():
+            import pandas as pd
+            import streamlit as st
+
+            from src.components.mcsa_dashboard_detail_views import render_deep_analysis_view
+
+            history = pd.DataFrame([
+                {
+                    "Equipment": "PUMP-A",
+                    "Parameter": "Load",
+                    "Date": "2026-08-01",
+                    "Value": 50.0,
+                    "Raw_Value": "50",
+                },
+                {
+                    "Equipment": "PUMP-A",
+                    "Parameter": "Load",
+                    "Date": "2026-09-01",
+                    "Value": 60.0,
+                    "Raw_Value": "60",
+                },
+            ])
+            render_deep_analysis_view(st, history.tail(1), history, "PUMP-A")
+
+        at = AppTest.from_function(_script, default_timeout=30).run()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        headings = [subheader.value for subheader in at.subheader]
+        self.assertIn("Analisa & Rekomendasi Awal", headings)
+        self.assertIn("Indikator Utama", headings)
 
 
 class TestDomainDashboards(unittest.TestCase):
