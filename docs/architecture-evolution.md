@@ -240,6 +240,17 @@ Progress implementasi:
 - Arahkan API, CLI, dan Streamlit ke use case yang sama.
 - Pertahankan adapter legacy sampai characterization test membuktikan output setara.
 
+Progress implementasi:
+
+- modul `pple/application/` telah dibuat dengan use case terpadu:
+  - `DiagnoseEquipmentUseCase` (`pple/application/diagnostics.py`): orkestrasi multi-modal telemetry fusion dan ekstraksi parameter MCSA;
+  - `FleetReliabilityUseCase` (`pple/application/fleet.py`): agregasi kesehatan armada peralatan dan critical watchlist;
+  - `GenerateAssessmentReportUseCase` (`pple/application/assessment_reports.py`): orkestrasi multi-agent CBM condition assessment report;
+- endpoint FastAPI di `pple/api/routers/reports.py` (`/api/reliability/fleet`, `/api/reliability/fusion/{equipment}`, `/api/reliability/diagnose`, `/api/reports/assessment/{equipment}`) telah dimigrasikan untuk memanggil use cases tersebut;
+- CLI Typer di `pple/cli/main.py` diperluas dengan command `pple reliability fleet` dan `pple reliability report <equipment>` yang mengeksekusi use case yang sama persis (Single Source of Truth);
+- unit test komprehensif ditambahkan di `tests/test_application_use_cases.py` (4 tests lulus, total 574 tests di repo).
+
+
 ### Fase 4 - Performance dan observability
 
 - Profile React sebelum memoization.

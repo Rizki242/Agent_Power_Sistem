@@ -396,6 +396,72 @@ def reliability_health(
             console.print(f"  - {note}")
 
 
+@reliability_app.command("fleet")
+def reliability_fleet():
+    """Aggregate fleet-wide reliability status and critical watchlist."""
+    from pple.application import FleetReliabilityUseCase
+    from src.data_loader import get_data_path, get_latest_data, load_mcsa_data
+
+    data_file = get_data_path("mcsa_updated.csv")
+    if not os.path.exists(data_file):
+        data_file = get_data_path("Report MCSA.xls")
+    raw_df = load_mcsa_data(data_file)
+    latest_df = get_latest_data(raw_df)
+
+    res = FleetReliabilityUseCase().get_fleet_summary(latest_df)
+
+    console.print("\n[bold]FLEET RELIABILITY OVERVIEW[/bold]")
+    console.print(f"Total Assets        {res.get('total_assets', 0)}")
+    console.print(f"Fleet Health Avg    {res.get('fleet_health_average', 0.0)}")
+
+    summary = res.get("health_summary", {})
+    console.print(
+        f"Health Distribution HEALTHY={summary.get('HEALTHY', 0)} | "
+        f"WATCH={summary.get('WATCH', 0)} | "
+        f"WARNING={summary.get('WARNING', 0)} | "
+        f"ALERT={summary.get('ALERT', 0)} | "
+        f"CRITICAL={summary.get('CRITICAL', 0)}"
+    )
+
+    watchlist = res.get("critical_watchlist", [])
+    if watchlist:
+        console.print(f"\n[bold red]CRITICAL WATCHLIST ({len(watchlist)} assets)[/bold red]:")
+        w_table = Table()
+        w_table.add_column("Equipment")
+        w_table.add_column("Unit")
+        w_table.add_column("Health")
+        w_table.add_column("Status")
+        w_table.add_column("Failure Mode")
+        for item in watchlist[:10]:
+            w_table.add_row(
+                str(item.get("equipment", "")),
+                str(item.get("unit", "")),
+                str(item.get("health_index", "")),
+                str(item.get("health_status", "")),
+                str(item.get("primary_failure_mode", "")),
+            )
+        console.print(w_table)
+
+
+@reliability_app.command("report")
+def reliability_report(
+    equipment: str = typer.Argument(..., help="Equipment name, e.g. 'BFP 1A'"),
+):
+    """Generate multi-agent condition assessment report for an asset."""
+    from pple.application import GenerateAssessmentReportUseCase
+
+    report = GenerateAssessmentReportUseCase().generate_report(equipment)
+    summary = report.get("assessment_summary", {})
+
+    console.print(f"\n[bold]CBM CONDITION ASSESSMENT REPORT[/bold] - {report.get('report_id')}")
+    console.print(f"Equipment     {report.get('equipment')} ({report.get('unit')} - {report.get('system')})")
+    console.print(f"Health Index  {summary.get('health_index')} ({summary.get('health_status')})")
+    console.print(f"Failure Mode  {summary.get('primary_failure_mode')} (Confidence: {summary.get('confidence_percent')}%)")
+    console.print(f"Est. RUL      {summary.get('estimated_rul_days')} days | Risk: {summary.get('risk_level')}")
+    console.print(f"Safety Clear  {report.get('safety_clearance')}")
+
+
+
 @domain_app.command("list")
 def domain_list():
     """List the 5 shared domains and the parameters each one recognizes."""

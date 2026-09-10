@@ -1,4 +1,4 @@
-﻿"""Reports & Reliability API router."""
+"""Reports & Reliability API router."""
 
 from __future__ import annotations
 
@@ -26,10 +26,20 @@ from src.ppt_generator import create_ppt
 
 router = APIRouter(prefix="/api", tags=["reports", "reliability"])
 
-# Shared service instances
+from pple.application import (
+    DiagnoseEquipmentUseCase,
+    FleetReliabilityUseCase,
+    GenerateAssessmentReportUseCase,
+)
+
+# Shared service instances & use cases
 fusion_agent = ReliabilityFusionAgent()
 asset_graph = AssetKnowledgeGraph()
 subagent_coordinator = SubAgentCoordinator()
+
+diagnose_use_case = DiagnoseEquipmentUseCase(fusion_agent=fusion_agent, asset_graph=asset_graph)
+fleet_use_case = FleetReliabilityUseCase(fusion_agent=fusion_agent, asset_graph=asset_graph)
+assessment_report_use_case = GenerateAssessmentReportUseCase(coordinator=subagent_coordinator)
 
 # Module-level cached dataframes provider fallback
 _cached_raw_df: Optional[pd.DataFrame] = None
@@ -144,88 +154,35 @@ def generate_ppt_report(equipment_name: Optional[str] = None):
 
 @router.get("/reliability/fleet")
 def get_fleet_reliability_summary():
-    df_raw, df_latest = get_data_frames()
-    return build_fleet_reliability(df_latest, fusion_agent, asset_graph)
+    _, df_latest = get_data_frames()
+    return fleet_use_case.get_fleet_summary(df_latest)
 
 
 @router.get("/reliability/fusion/{equipment_name}")
 def get_equipment_fusion_diagnosis(equipment_name: str):
-    df_raw, df_latest = get_data_frames()
-    node = asset_graph.get_equipment_node(equipment_name)
-
-    eq_data = df_latest[df_latest["Equipment"].astype(str).str.upper() == equipment_name.upper()]
-
-    fusion_inputs = extract_mcsa_fusion_inputs(eq_data)
-
-    fusion_res = fusion_agent.run_full_fusion(
-        equipment=equipment_name,
-        asset_type=node.get("asset_type", "Electric Motor-Pump"),
-        criticality=node.get("criticality", "A"),
-        **fusion_inputs,
-    )
-
-    fusion_res["asset_node"] = node
-    fusion_res["data_sources"] = sorted(fusion_inputs.keys())
-    return fusion_res
+    _, df_latest = get_data_frames()
+    return diagnose_use_case.diagnose_from_mcsa_dataset(equipment_name, df_latest)
 
 
 @router.post("/reliability/diagnose")
 def simulate_multi_modal_diagnosis(req: DiagnoseSimRequest):
-    res = fusion_agent.run_full_fusion(
+    return diagnose_use_case.diagnose_from_inputs(
         equipment=req.equipment,
-        asset_type=req.asset_type or "Motor-Pump",
-        criticality=req.criticality or "A",
-        vibration_data=req.vibration,
-        mcsa_data=req.mcsa,
-        dga_data=req.dga,
-        pd_data=req.pd,
-        oil_data=req.tribology,
-        thermal_data=req.thermal,
+        asset_type=req.asset_type,
+        criticality=req.criticality,
+        vibration=req.vibration,
+        mcsa=req.mcsa,
+        dga=req.dga,
+        pd=req.pd,
+        tribology=req.tribology,
+        thermal=req.thermal,
     )
-    return res
 
 
 @router.get("/reports/assessment/{equipment}")
 def get_equipment_assessment_report(equipment: str):
-    """
-    Generate a comprehensive Multi-Modal CBM Condition Assessment Report
-    aggregating all 8 Specialist Sub-Agents, RUL, Risk Matrix, and Work Orders.
-    """
     try:
-        collab = subagent_coordinator.run_collaborative_diagnosis(
-            equipment=equipment,
-            query=f"Laporan komprehensif assessment kondisi {equipment}",
-        )
-
-        rpt_no = f"CBM-RPT-{datetime.now().strftime('%Y%m')}-{abs(hash(equipment)) % 10000:04d}"
-
-        return {
-            "report_id": rpt_no,
-            "equipment": equipment,
-            "plant": "PLTU Jeranjang (3 × 25 MW)",
-            "unit": collab.get("unit", "UNIT 1"),
-            "system": collab.get("system", "Turbine & Boiler Auxiliaries"),
-            "asset_type": collab.get("asset_type", "Medium Voltage Motor Drive"),
-            "criticality": collab.get("criticality", "B"),
-            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S WITA"),
-            "assessment_summary": {
-                "health_index": collab.get("consensus_health_index", 90.0),
-                "health_status": collab.get("consensus_health_status", "HEALTHY"),
-                "primary_failure_mode": collab.get("consensus_failure_mode", "Normal Operation"),
-                "confidence_percent": round(collab.get("consensus_confidence", 0.95) * 100, 1),
-                "estimated_rul_days": collab.get("predictive_rul", {}).get("estimated_rul_days", 90),
-                "risk_level": collab.get("risk_assessment", {}).get("risk_level", "Low Risk (Acceptable)"),
-                "fused_evidence": collab.get("fused_evidence", []),
-            },
-            "subagent_traces": collab.get("subagent_traces", []),
-            "work_order_action": collab.get("maintenance_decision", {}),
-            "safety_clearance": collab.get("safety_clearance", True),
-            "signoff": {
-                "prepared_by": "AI O&M Reliability Orchestrator (8 Sub-Agents)",
-                "verified_by": "Predictive Maintenance Engineer (CBM Specialist)",
-                "approved_by": "Chief Operation Engineer / Shift Supervisor CCR",
-                "approval_status": "Awaiting Field Verification",
-            },
-        }
+        return assessment_report_use_case.generate_report(equipment)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
