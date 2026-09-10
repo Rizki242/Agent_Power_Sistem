@@ -1,10 +1,14 @@
 import json
+import os
+import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from typer.testing import CliRunner
 
 from pple.cli.main import app
+from pple.core import audit
 
 runner = CliRunner()
 
@@ -26,6 +30,39 @@ class CLIStatusDoctorTests(unittest.TestCase):
         for module_id in ("vibration", "mcsa", "dga", "partial_discharge", "tribology", "thermal"):
             self.assertIn(module_id, result.stdout)
 
+
+class CLIAuditCommandTests(unittest.TestCase):
+    """`pple audit list` (Phase 29) membaca JSONL yang sama dengan API v2."""
+
+    def setUp(self):
+        self._tmpdir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self._tmpdir, True)
+        self.path = os.path.join(self._tmpdir, "audit.jsonl")
+        patcher = patch.object(audit, "default_log_path", lambda: self.path)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_empty_log_reports_clearly(self):
+        result = runner.invoke(app, ["audit", "list"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("Belum ada event audit", result.stdout)
+
+    def test_recorded_change_is_listed(self):
+        audit.record_change("CWP-1A", "module:dga", "enabled", "disabled",
+                            actor="Engineer", source=audit.SOURCE_CLI, path=self.path)
+        result = runner.invoke(app, ["audit", "list"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("CWP-1A", result.stdout)
+        self.assertIn("Engineer", result.stdout)
+        self.assertIn("CLI", result.stdout)
+
+    def test_entity_filter_excludes_others(self):
+        audit.record_change("CWP-1A", "module:dga", "enabled", "disabled", path=self.path)
+        audit.record_change("CWP-2B", "module:dga", "enabled", "disabled", path=self.path)
+        result = runner.invoke(app, ["audit", "list", "--entity", "CWP-2B"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("CWP-2B", result.stdout)
+        self.assertNotIn("CWP-1A", result.stdout)
 
 class CLIModuleCommandTests(unittest.TestCase):
     def test_module_list_shows_all_six(self):

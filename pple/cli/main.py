@@ -39,6 +39,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from pple.core import audit
 from pple.engineering.equipment_modules import EquipmentModuleStore
 from pple.engineering.loader import ModuleStatus, load_modules_from_manifests
 
@@ -71,6 +72,8 @@ serve_app = typer.Typer(help="Start the API/frontend dev servers (Phase 23) - a 
 app.add_typer(serve_app, name="serve")
 domain_app = typer.Typer(help="Upload/query/report over the 5 shared condition-monitoring domains (Vibrasi/DGA/Tribology/Thermal/PD) - the pple.api.domain_router/src.domain_ingest/src.domain_report layer the Streamlit workspace already uses.")
 app.add_typer(domain_app, name="domain")
+audit_app = typer.Typer(help="Read the configuration-change audit trail (Phase 29): WHO/WHAT/WHEN/OLD/NEW/SOURCE.")
+app.add_typer(audit_app, name="audit")
 
 # provider name -> ai_settings.json field holding that provider's model choice.
 # Mirrors the exact set of providers src/pages/settings_page.py exposes -
@@ -253,7 +256,7 @@ def equipment_module_add(
     """Enable an engineering module for this equipment (clears any prior disable)."""
     registry, _ = load_modules_from_manifests()
     m = _get_active_module(registry, module_id)
-    EquipmentModuleStore().add_module(equipment, module_id)
+    EquipmentModuleStore().add_module(equipment, module_id, source=audit.SOURCE_CLI)
     console.print(f"[green]Enabled[/green] {m.name} for {equipment}")
 
 
@@ -265,8 +268,41 @@ def equipment_module_remove(
     """Disable an engineering module for this equipment."""
     registry, _ = load_modules_from_manifests()
     m = _get_active_module(registry, module_id)
-    EquipmentModuleStore().remove_module(equipment, module_id)
+    EquipmentModuleStore().remove_module(equipment, module_id, source=audit.SOURCE_CLI)
     console.print(f"[yellow]Disabled[/yellow] {m.name} for {equipment}")
+
+
+@audit_app.command("list")
+def audit_list(
+    limit: int = typer.Option(20, "--limit", help="Jumlah event terbaru yang ditampilkan."),
+    entity: str = typer.Option(None, "--entity", help="Filter satu equipment, mis. CWP-1A."),
+    source: str = typer.Option(None, "--source", help="Filter asal perubahan: CLI, API, STREAMLIT."),
+):
+    """Tampilkan riwayat perubahan konfigurasi, terbaru lebih dulu."""
+    events = audit.read_events(limit=limit, entity=entity, source=source)
+    if not events:
+        console.print("[yellow]Belum ada event audit yang tercatat.[/yellow]")
+        return
+
+    table = Table(title=f"Audit Log ({len(events)} event terbaru)")
+    table.add_column("WHEN")
+    table.add_column("WHO")
+    table.add_column("ENTITY")
+    table.add_column("FIELD")
+    table.add_column("OLD")
+    table.add_column("NEW")
+    table.add_column("SOURCE")
+    for event in events:
+        table.add_row(
+            str(event.get("when", "")),
+            str(event.get("who", "")),
+            str(event.get("entity", "")),
+            str(event.get("field", "")),
+            str(event.get("old_value", "")),
+            str(event.get("new_value", "")),
+            str(event.get("source", "")),
+        )
+    console.print(table)
 
 
 @assets_app.command("tree")

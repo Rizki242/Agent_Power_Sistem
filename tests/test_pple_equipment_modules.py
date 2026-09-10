@@ -6,14 +6,32 @@ from unittest.mock import patch
 from typer.testing import CliRunner
 
 from pple.cli.main import app
+from pple.core import audit
 from pple.engineering.equipment_modules import EquipmentModuleStore
 from pple.engineering.loader import load_modules_from_manifests
 
 runner = CliRunner()
 
 
+def _isolate_audit_log(testcase):
+    """Arahkan audit log ke berkas sementara.
+
+    Mengubah override modul sekarang ikut menulis lewat pple/core/audit.py,
+    jadi tanpa ini test akan menumpuk event di data/MCSA/audit/ yang asli.
+    """
+    fd, path = tempfile.mkstemp(suffix=".jsonl")
+    os.close(fd)
+    os.remove(path)
+    patcher = patch.object(audit, "default_log_path", lambda: path)
+    patcher.start()
+    testcase.addCleanup(patcher.stop)
+    testcase.addCleanup(lambda: os.path.exists(path) and os.remove(path))
+    return path
+
+
 class EquipmentModuleStoreTests(unittest.TestCase):
     def setUp(self):
+        _isolate_audit_log(self)
         fd, self.path = tempfile.mkstemp(suffix=".json")
         os.close(fd)
         os.remove(self.path)  # store must tolerate a missing file
@@ -61,6 +79,7 @@ class EquipmentCLITests(unittest.TestCase):
     data/MCSA/config/pple_equipment_modules.json file."""
 
     def setUp(self):
+        _isolate_audit_log(self)
         fd, self.path = tempfile.mkstemp(suffix=".json")
         os.close(fd)
         os.remove(self.path)
@@ -119,6 +138,7 @@ class EquipmentModuleWiringTests(unittest.TestCase):
     patching the store's default path before constructing them is enough."""
 
     def setUp(self):
+        _isolate_audit_log(self)
         fd, self.path = tempfile.mkstemp(suffix=".json")
         os.close(fd)
         os.remove(self.path)

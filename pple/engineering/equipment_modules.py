@@ -25,6 +25,8 @@ import json
 import os
 from threading import Lock
 
+from pple.core import audit
+
 _LOCK = Lock()
 
 
@@ -74,10 +76,24 @@ class EquipmentModuleStore:
         overrides = self.overrides_for(equipment_id)
         return [(m.id, overrides.get(m.id, True)) for m in registry.list()]
 
-    def set_enabled(self, equipment_id: str, module_id: str, enabled: bool) -> None:
+    def set_enabled(
+        self,
+        equipment_id: str,
+        module_id: str,
+        enabled: bool,
+        actor: str = None,
+        source: str = None,
+    ) -> None:
+        """Enable/disable a module. Recorded in the audit log when it changes.
+
+        `actor`/`source` say who asked and from where (CLI/API/Streamlit); see
+        pple/core/audit.py. A no-op call is not audited - the trail should show
+        real changes, not every button press.
+        """
         with _LOCK:
             data = _load(self._path)
             equipment_overrides = data.setdefault(equipment_id, {})
+            was_enabled = equipment_overrides.get(module_id, True)
             if enabled:
                 # Enabled is the default - storing it explicitly would just be dead
                 # weight, so clearing a prior disable is enough to re-enable.
@@ -88,10 +104,20 @@ class EquipmentModuleStore:
                 equipment_overrides[module_id] = False
             _save(self._path, data)
 
-    def add_module(self, equipment_id: str, module_id: str) -> None:
-        """Enable `module_id` for `equipment_id` (clears any existing disable override)."""
-        self.set_enabled(equipment_id, module_id, True)
+        if bool(was_enabled) != bool(enabled):
+            audit.record_change(
+                entity=equipment_id,
+                field=f"module:{module_id}",
+                old_value="enabled" if was_enabled else "disabled",
+                new_value="enabled" if enabled else "disabled",
+                actor=actor,
+                source=source or audit.SOURCE_UNKNOWN,
+            )
 
-    def remove_module(self, equipment_id: str, module_id: str) -> None:
+    def add_module(self, equipment_id: str, module_id: str, actor: str = None, source: str = None) -> None:
+        """Enable `module_id` for `equipment_id` (clears any existing disable override)."""
+        self.set_enabled(equipment_id, module_id, True, actor=actor, source=source)
+
+    def remove_module(self, equipment_id: str, module_id: str, actor: str = None, source: str = None) -> None:
         """Disable `module_id` for `equipment_id`."""
-        self.set_enabled(equipment_id, module_id, False)
+        self.set_enabled(equipment_id, module_id, False, actor=actor, source=source)

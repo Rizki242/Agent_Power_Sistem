@@ -63,3 +63,8 @@ data/MCSA/config/ai_settings.json
 
 # Scratch archives (mis. unduhan tooling) - jangan pernah masuk repo
 archive-*/
+
+# Audit log runtime (data per-deployment, lihat pple/core/audit.py).
+# get_data_path() bisa menaruhnya di data/ atau data/MCSA/.
+data/**/audit/
+data/audit/

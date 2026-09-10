@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 import api_server
 import pple.api.router as pple_api_router
 import pple.api.security as security
+from pple.core import audit
 from api_server import app
 from pple.engineering.equipment_modules import EquipmentModuleStore
 from src.agents.continuous_learning import PowerPlantSkillLearner
@@ -221,6 +222,16 @@ class TestV2EquipmentModules(unittest.TestCase):
         self._patcher.start()
         self.addCleanup(self._patcher.stop)
 
+        # PUT ikut menulis audit log (Phase 29) - arahkan ke berkas sementara
+        # supaya data/MCSA/audit/ yang asli tidak ikut terisi oleh test.
+        self._audit_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self._audit_dir, True)
+        audit_patcher = patch.object(
+            audit, "default_log_path", lambda: os.path.join(self._audit_dir, "audit.jsonl")
+        )
+        audit_patcher.start()
+        self.addCleanup(audit_patcher.stop)
+
     def tearDown(self):
         if os.path.exists(self.path):
             os.remove(self.path)
@@ -247,6 +258,73 @@ class TestV2EquipmentModules(unittest.TestCase):
         res = self.client.put("/api/v2/equipment/CWP-1A/modules/does-not-exist", json={"enabled": False})
         self.assertEqual(res.status_code, 404)
 
+
+class TestV2Audit(unittest.TestCase):
+    """docs/final.md Phase 29 - /api/v2/audit plus the trail that PUT
+    /api/v2/equipment/{id}/modules/{module} leaves behind. Both the override
+    store and the audit log point at temp files, so no real config is touched."""
+
+    def setUp(self):
+        self.client = TestClient(app)
+        self._tmpdir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self._tmpdir, True)
+        self.audit_path = os.path.join(self._tmpdir, "audit.jsonl")
+
+        store_patcher = patch.object(
+            pple_api_router,
+            "_equipment_module_store",
+            EquipmentModuleStore(os.path.join(self._tmpdir, "overrides.json")),
+        )
+        store_patcher.start()
+        self.addCleanup(store_patcher.stop)
+
+        audit_patcher = patch.object(audit, "default_log_path", lambda: self.audit_path)
+        audit_patcher.start()
+        self.addCleanup(audit_patcher.stop)
+
+    def test_empty_audit_endpoint(self):
+        res = self.client.get("/api/v2/audit")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json(), {"count": 0, "events": []})
+
+    def test_disabling_a_module_is_audited_with_api_source(self):
+        put = self.client.put("/api/v2/equipment/CWP-1A/modules/dga", json={"enabled": False})
+        self.assertEqual(put.status_code, 200)
+
+        res = self.client.get("/api/v2/audit")
+        data = res.json()
+        self.assertEqual(data["count"], 1)
+        event = data["events"][0]
+        self.assertEqual(event["entity"], "CWP-1A")
+        self.assertEqual(event["field"], "module:dga")
+        self.assertEqual(event["old_value"], "enabled")
+        self.assertEqual(event["new_value"], "disabled")
+        self.assertEqual(event["source"], "API")
+        self.assertIn("CWP-1A", event["summary"])
+
+    def test_x_actor_header_names_the_person(self):
+        self.client.put(
+            "/api/v2/equipment/CWP-1A/modules/dga",
+            json={"enabled": False},
+            headers={"X-Actor": "Engineer Rizki"},
+        )
+        event = self.client.get("/api/v2/audit").json()["events"][0]
+        self.assertEqual(event["who"], "Engineer Rizki")
+
+    def test_audit_filters(self):
+        self.client.put("/api/v2/equipment/CWP-1A/modules/dga", json={"enabled": False})
+        self.client.put("/api/v2/equipment/CWP-2B/modules/dga", json={"enabled": False})
+
+        self.assertEqual(self.client.get("/api/v2/audit?entity=CWP-2B").json()["count"], 1)
+        self.assertEqual(self.client.get("/api/v2/audit?source=API").json()["count"], 2)
+        self.assertEqual(self.client.get("/api/v2/audit?limit=1").json()["count"], 1)
+
+    def test_failed_put_leaves_no_audit_trail(self):
+        res = self.client.put(
+            "/api/v2/equipment/CWP-1A/modules/does-not-exist", json={"enabled": False}
+        )
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(self.client.get("/api/v2/audit").json()["count"], 0)
 
 class TestPartialDischargeEndpoints(unittest.TestCase):
     """PD was the only domain with no HTTP surface at all (docs/final.md's

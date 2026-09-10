@@ -12,10 +12,11 @@ registering built-in modules directly, so /api/v2/module-load-report
 reflects real manifest validation/load status.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from pple.agents import AgentRegistry
+from pple.core import audit
 from pple.assets.registry import AssetRegistry
 from pple.core.exceptions import ModuleNotRegisteredError
 from pple.engineering.base import EngineeringModule
@@ -84,7 +85,12 @@ def list_equipment_modules(equipment_id: str):
 
 
 @router.put("/equipment/{equipment_id}/modules/{module_id}")
-def set_equipment_module(equipment_id: str, module_id: str, body: SetEquipmentModuleRequest):
+def set_equipment_module(
+    equipment_id: str,
+    module_id: str,
+    body: SetEquipmentModuleRequest,
+    request: Request = None,
+):
     """Enable/disable one engineering module for one equipment instance -
     same effect as `pple equipment module-add`/`module-remove`. Does not
     itself change any currently-running analysis; SubAgentCoordinator and
@@ -94,7 +100,12 @@ def set_equipment_module(equipment_id: str, module_id: str, body: SetEquipmentMo
         _registry.get(module_id)
     except ModuleNotRegisteredError:
         raise HTTPException(status_code=404, detail=f"Engineering module '{module_id}' not found")
-    _equipment_module_store.set_enabled(equipment_id, module_id, body.enabled)
+    # X-Actor hanya petunjuk siapa yang menekan tombol (belum ada login);
+    # tanpa header, audit.resolve_actor() jatuh ke PPLE_ACTOR/user OS.
+    actor = request.headers.get("X-Actor") if request is not None else None
+    _equipment_module_store.set_enabled(
+        equipment_id, module_id, body.enabled, actor=actor, source=audit.SOURCE_API
+    )
     return {"equipment_id": equipment_id, "module_id": module_id, "enabled": body.enabled}
 
 
@@ -147,3 +158,17 @@ def agents_get(agent_id: str):
     if agent is None:
         raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found")
     return agent
+
+
+@router.get("/audit")
+def audit_list(limit: int = 50, entity: str = None, source: str = None):
+    """Riwayat perubahan konfigurasi (docs/final.md Phase 29), terbaru dulu.
+
+    Sumber datanya berkas JSONL append-only di data/audit/ - lihat
+    pple/core/audit.py untuk alasan belum memakai database.
+    """
+    events = audit.read_events(limit=limit, entity=entity, source=source)
+    return {
+        "count": len(events),
+        "events": [dict(event, summary=audit.describe_event(event)) for event in events],
+    }

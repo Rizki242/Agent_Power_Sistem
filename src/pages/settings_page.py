@@ -332,7 +332,10 @@ def _render_engineering_modules(st):
             module = registry.get(module_id)
             new_enabled = st.checkbox(f"{module.name} ({module_id})", value=enabled, key=f"_settings_eq_mod_{equipment_id}_{module_id}")
             if new_enabled != enabled:
-                store.set_enabled(equipment_id, module_id, new_enabled)
+                from pple.core import audit
+                store.set_enabled(
+                    equipment_id, module_id, new_enabled, source=audit.SOURCE_STREAMLIT
+                )
                 st.rerun()
 
 
