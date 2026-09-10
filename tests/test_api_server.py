@@ -98,6 +98,51 @@ class TestAPIServer(unittest.TestCase):
         self.assertIn("/api/skills/learned-patterns", routes)
         self.assertIn("/api/agent/chat", routes)
 
+    def test_reports_router_modular_ownership(self):
+        from pple.api.routers import reports_router
+        routes = [r.path for r in reports_router.routes]
+        self.assertIn("/api/upload/dga", routes)
+        self.assertIn("/api/upload/vibration", routes)
+        self.assertIn("/api/reports/ppt", routes)
+        self.assertIn("/api/reliability/fleet", routes)
+        self.assertIn("/api/reliability/fusion/{equipment_name}", routes)
+        self.assertIn("/api/reliability/diagnose", routes)
+        self.assertIn("/api/reports/assessment/{equipment}", routes)
+
+    def test_fleet_reliability_endpoint(self):
+        res = self.client.get("/api/reliability/fleet")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("health_summary", data)
+        self.assertIn("fleet_health_average", data)
+        self.assertIn("total_assets", data)
+
+    def test_fusion_diagnosis_endpoint(self):
+        res = self.client.get("/api/reliability/fusion/BFP%201A")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data.get("equipment"), "BFP 1A")
+        self.assertIn("health_index", data)
+        self.assertIn("health_status", data)
+
+    def test_simulate_multi_modal_diagnosis_endpoint(self):
+        res = self.client.post("/api/reliability/diagnose", json={
+            "equipment": "BFP 1A",
+            "asset_type": "Motor-Pump",
+            "criticality": "A"
+        })
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data.get("equipment"), "BFP 1A")
+
+    def test_upload_vibration_placeholder_endpoint(self):
+        res = self.client.post(
+            "/api/upload/vibration",
+            files={"file": ("test.png", b"fake-bytes", "image/png")},
+        )
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json().get("status"), "success")
+
     def test_rotorbar_calculate(self):
         res = self.client.post("/api/rotorbar/calculate", json={"upper_sb": -40.0, "lower_sb": -42.0})
         self.assertEqual(res.status_code, 200)

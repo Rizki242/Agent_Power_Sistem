@@ -139,12 +139,14 @@ from pple.api.routers import (
     agents_router,
     equipment_router,
     knowledge_router,
+    reports_router,
     vibration_router,
     work_orders_router,
 )
 app.include_router(agents_router)
 app.include_router(equipment_router)
 app.include_router(knowledge_router)
+app.include_router(reports_router)
 app.include_router(vibration_router)
 app.include_router(work_orders_router)
 
@@ -170,6 +172,9 @@ def refresh_data_cache():
 
 from pple.api.routers.equipment import set_data_frames_provider as set_equipment_data_frames_provider
 set_equipment_data_frames_provider(get_data_frames)
+
+from pple.api.routers.reports import set_data_frames_provider as set_reports_data_frames_provider
+set_reports_data_frames_provider(get_data_frames)
 
 from pple.api.routers.agents import (
     set_data_frames_provider as set_agents_data_frames_provider,
@@ -259,166 +264,7 @@ def calculate_rotorbar(req: RotorBarCalculateRequest):
         "diagnostic_validity": res.get("Diagnostic Validity")
     }
 
-import tempfile
-import subprocess
-@app.post("/api/upload/dga")
-async def upload_dga(file: UploadFile = File(...)):
-    try:
-        # Simpan file Excel sementara
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
-            shutil.copyfileobj(file.file, tmp)
-            tmp_excel_path = tmp.name
-        
-        # Siapkan tempat untuk file JSON hasil output
-        tmp_json_path = tmp_excel_path + ".json"
-        
-        # Panggil CLI dga_analyzer.py
-        script_path = os.path.join(os.path.dirname(__file__), ".agents", "skills", "dga-excel-analyzer", "scripts", "dga_analyzer.py")
-        
-        result = subprocess.run(
-            ["python", script_path, "analyze-file", "--file", tmp_excel_path, "--output", tmp_json_path],
-            capture_output=True, text=True
-        )
-        
-        if result.returncode != 0:
-            raise HTTPException(status_code=500, detail=f"Error analyzing DGA: {result.stderr}")
-            
-        # Baca hasilnya
-        with open(tmp_json_path, "r") as f:
-            diagnosis_data = json.load(f)
-            
-        # Bersihkan file temporary
-        os.remove(tmp_excel_path)
-        os.remove(tmp_json_path)
-        
-        return {"status": "success", "data": diagnosis_data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/upload/vibration")
-async def upload_vibration(file: UploadFile = File(...)):
-    # Placeholder: Nantinya ini akan memanggil vision AI (Gemini) atau parser Vibration
-    return {"status": "success", "message": f"Gambar spektrum '{file.filename}' berhasil diunggah dan sedang diantrekan untuk analisis PPLE Agent."}
-
-@app.post("/api/reports/ppt")
-def generate_ppt_report(equipment_name: Optional[str] = None):
-    df_raw, df_latest = get_data_frames()
-    
-    df_target = df_latest
-    if equipment_name:
-        df_target = df_latest[df_latest["Equipment"].astype(str).str.upper() == equipment_name.upper()]
-        if df_target.empty:
-            raise HTTPException(status_code=404, detail=f"Equipment '{equipment_name}' not found")
-            
-    ppt_io = create_ppt(df_target)
-    filename = f"MCSA_Report_{equipment_name or 'All'}.pptx"
-    
-    return StreamingResponse(
-        io.BytesIO(ppt_io.getvalue()),
-        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
-    )
-
-# --- AI O&M RELIABILITY COMMAND CENTER ENDPOINTS ---
-
-@app.get("/api/reliability/fleet")
-def get_fleet_reliability_summary():
-    df_raw, df_latest = get_data_frames()
-    return build_fleet_reliability(df_latest, fusion_agent, asset_graph)
-
-@app.get("/api/reliability/fusion/{equipment_name}")
-def get_equipment_fusion_diagnosis(equipment_name: str):
-    df_raw, df_latest = get_data_frames()
-    node = asset_graph.get_equipment_node(equipment_name)
-    
-    eq_data = df_latest[df_latest["Equipment"].astype(str).str.upper() == equipment_name.upper()]
-
-    fusion_inputs = extract_mcsa_fusion_inputs(eq_data)
-
-    fusion_res = fusion_agent.run_full_fusion(
-        equipment=equipment_name,
-        asset_type=node.get("asset_type", "Electric Motor-Pump"),
-        criticality=node.get("criticality", "A"),
-        **fusion_inputs,
-    )
-
-    fusion_res["asset_node"] = node
-    fusion_res["data_sources"] = sorted(fusion_inputs.keys())
-    return fusion_res
-
-class DiagnoseSimRequest(BaseModel):
-    equipment: str
-    asset_type: Optional[str] = "Motor-Pump"
-    criticality: Optional[str] = "A"
-    vibration: Optional[Dict[str, Any]] = None
-    mcsa: Optional[Dict[str, Any]] = None
-    dga: Optional[Dict[str, Any]] = None
-    pd: Optional[Dict[str, Any]] = None
-    tribology: Optional[Dict[str, Any]] = None
-    thermal: Optional[Dict[str, Any]] = None
-
-@app.post("/api/reliability/diagnose")
-def simulate_multi_modal_diagnosis(req: DiagnoseSimRequest):
-    res = fusion_agent.run_full_fusion(
-        equipment=req.equipment,
-        asset_type=req.asset_type or "Motor-Pump",
-        criticality=req.criticality or "A",
-        vibration_data=req.vibration,
-        mcsa_data=req.mcsa,
-        dga_data=req.dga,
-        pd_data=req.pd,
-        oil_data=req.tribology,
-        thermal_data=req.thermal
-    )
-    return res
-
-@app.get("/api/reports/assessment/{equipment}")
-def get_equipment_assessment_report(equipment: str):
-    """
-    Generate a comprehensive Multi-Modal CBM Condition Assessment Report
-    aggregating all 8 Specialist Sub-Agents, RUL, Risk Matrix, and Work Orders.
-    """
-    try:
-        collab = subagent_coordinator.run_collaborative_diagnosis(
-            equipment=equipment,
-            query=f"Laporan komprehensif assessment kondisi {equipment}"
-        )
-        
-        from datetime import datetime
-        rpt_no = f"CBM-RPT-{datetime.now().strftime('%Y%m')}-{abs(hash(equipment)) % 10000:04d}"
-        
-        return {
-            "report_id": rpt_no,
-            "equipment": equipment,
-            "plant": "PLTU Jeranjang (3 × 25 MW)",
-            "unit": collab.get("unit", "UNIT 1"),
-            "system": collab.get("system", "Turbine & Boiler Auxiliaries"),
-            "asset_type": collab.get("asset_type", "Medium Voltage Motor Drive"),
-            "criticality": collab.get("criticality", "B"),
-            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S WITA"),
-            "assessment_summary": {
-                "health_index": collab.get("consensus_health_index", 90.0),
-                "health_status": collab.get("consensus_health_status", "HEALTHY"),
-                "primary_failure_mode": collab.get("consensus_failure_mode", "Normal Operation"),
-                "confidence_percent": round(collab.get("consensus_confidence", 0.95) * 100, 1),
-                "estimated_rul_days": collab.get("predictive_rul", {}).get("estimated_rul_days", 90),
-                "risk_level": collab.get("risk_assessment", {}).get("risk_level", "Low Risk (Acceptable)"),
-                "fused_evidence": collab.get("fused_evidence", [])
-            },
-            "subagent_traces": collab.get("subagent_traces", []),
-            "work_order_action": collab.get("maintenance_decision", {}),
-            "safety_clearance": collab.get("safety_clearance", True),
-            "signoff": {
-                "prepared_by": "AI O&M Reliability Orchestrator (8 Sub-Agents)",
-                "verified_by": "Predictive Maintenance Engineer (CBM Specialist)",
-                "approved_by": "Chief Operation Engineer / Shift Supervisor CCR",
-                "approval_status": "Awaiting Field Verification"
-            }
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)
+

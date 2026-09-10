@@ -214,6 +214,7 @@ Progress implementasi:
 - endpoint materi / knowledge base (`/api/materi`, `/api/materi/search`) dan work orders (`/api/workorders`, `/api/workorders/approve`) telah diekstrak ke modular router `pple/api/routers/knowledge.py` dan `pple/api/routers/work_orders.py` tanpa merubah URL publik.
 - endpoint equipment MCSA (`/api/equipment`, `/api/equipment/{equipment_name}`) telah diekstrak ke modular router `pple/api/routers/equipment.py` dengan data provider injection terstandar dan regression test ownership.
 - endpoint multi-agent collaboration, technical disturbance skills learning, self-improvement, EnvHarness, dan multi-turn AI chatbot (`/api/agents/*`, `/api/skills/*`, `/api/agent/*`, `/api/learning/*`) telah diekstrak ke modular router `pple/api/routers/agents.py`.
+- endpoint reports, uploads, fleet reliability, fusion diagnosis multi-modal, dan comprehensive assessment report (`/api/upload/dga`, `/api/upload/vibration`, `/api/reports/ppt`, `/api/reliability/fleet`, `/api/reliability/fusion/{equipment_name}`, `/api/reliability/diagnose`, `/api/reports/assessment/{equipment}`) telah diekstrak ke modular router `pple/api/routers/reports.py` dengan dependency injection data frames provider terstandar.
 
 ### Fase 2 - Contract dan design system (3-5 hari)
 
@@ -228,7 +229,7 @@ Progress implementasi:
 - schema Pydantic typed response models untuk endpoint core MCSA & agents (`/api/health`, `/api/summary`, `/api/equipment`, `/api/rotorbar/calculate`, `/api/agents/specialists`) telah dibuat di `pple/api/schemas/core.py` dan diterapkan pada `api_server.py`;
 - middleware correlation ID (`X-Request-ID`, `X-Correlation-ID`) dan standardized error envelope terstandar (`error`: {`code`, `message`, `correlation_id`}) diimplementasikan di `pple/api/observability.py` dan dipasang ke FastAPI app, tetap menjaga field `detail` agar kompatibel dengan legacy consumer;
 - helper `parseApiError` dan komponen `ErrorState` (dengan request correlation ID & retry button) diimplementasikan dan diintegrasikan ke seluruh workspace domain React (`DGAWorkspace`, `TribologyWorkspace`, `ThermalWorkspace`, `PDWorkspace`, `MCSAWorkspace`);
-- characterization & regression test ditambahkan di `tests/test_api_server.py` (`test_equipment_detail`, `test_equipment_router_modular_ownership`, `test_agents_router_modular_ownership`, `test_error_envelope_and_correlation_id`), dengan seluruh 56 tests lulus (OK) dan functional verification `verify_app.py` lulus 100%.
+- characterization & regression test ditambahkan di `tests/test_api_server.py` (`test_equipment_detail`, `test_equipment_router_modular_ownership`, `test_agents_router_modular_ownership`, `test_reports_router_modular_ownership`, `test_fleet_reliability_endpoint`, `test_fusion_diagnosis_endpoint`, `test_simulate_multi_modal_diagnosis_endpoint`, `test_upload_vibration_placeholder_endpoint`, `test_error_envelope_and_correlation_id`), dengan seluruh 61 tests lulus (OK), 567 full test suite lulus, dan functional verification `verify_app.py` lulus 100%.
 
 ### Fase 3 - Application use cases (bertahap per fitur)
 
