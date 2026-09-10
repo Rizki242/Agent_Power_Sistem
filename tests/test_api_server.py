@@ -72,6 +72,24 @@ class TestAPIServer(unittest.TestCase):
         self.assertIn("equipment", data)
         self.assertGreater(len(data["equipment"]), 0)
 
+    def test_equipment_detail(self):
+        list_res = self.client.get("/api/equipment")
+        self.assertEqual(list_res.status_code, 200)
+        eq_name = list_res.json()["equipment"][0]["equipment"]
+        res = self.client.get(f"/api/equipment/{eq_name}")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data.get("equipment"), eq_name)
+        self.assertIn("condition", data)
+        self.assertIn("parameters", data)
+        self.assertIn("telemetry_groups", data)
+
+    def test_equipment_router_modular_ownership(self):
+        from pple.api.routers import equipment_router
+        routes = [r.path for r in equipment_router.routes]
+        self.assertIn("/api/equipment", routes)
+        self.assertIn("/api/equipment/{equipment_name}", routes)
+
     def test_rotorbar_calculate(self):
         res = self.client.post("/api/rotorbar/calculate", json={"upper_sb": -40.0, "lower_sb": -42.0})
         self.assertEqual(res.status_code, 200)
