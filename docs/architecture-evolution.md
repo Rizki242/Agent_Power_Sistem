@@ -212,6 +212,7 @@ Progress implementasi:
 - view Ringkasan, Rekomendasi ESA/MCSA, Analisa Mendalam, dan Spektrum sudah dipindahkan ke `src/components/mcsa_dashboard_detail_views.py`; dashboard MCSA kini berperan sebagai orkestrator data dan pemilih presenter, sementara integrasi LLM tetap lazy dan opsional.
 - filter snapshot detail, fallback metadata master, pembentukan tabel parameter/THD, health score, dan deteksi anomali sudah dipindahkan ke view-model murni `src/components/mcsa_dashboard_view_model.py`; transformasi tersebut kini dapat diuji tanpa runtime Streamlit.
 - endpoint materi / knowledge base (`/api/materi`, `/api/materi/search`) dan work orders (`/api/workorders`, `/api/workorders/approve`) telah diekstrak ke modular router `pple/api/routers/knowledge.py` dan `pple/api/routers/work_orders.py` tanpa merubah URL publik.
+- endpoint equipment MCSA (`/api/equipment`, `/api/equipment/{equipment_name}`) telah diekstrak ke modular router `pple/api/routers/equipment.py` dengan data provider injection terstandar dan regression test ownership.
 
 ### Fase 2 - Contract dan design system (3-5 hari)
 
@@ -225,7 +226,8 @@ Progress implementasi:
 - schema Pydantic typed response models untuk 11 endpoint domain spesialis (DGA, Tribology, Thermal, PD) telah dibuat di `pple/api/schemas/specialist.py` dan diterapkan pada `pple/api/specialist_router.py` tanpa merusak kompatibilitas kontrak React;
 - schema Pydantic typed response models untuk endpoint core MCSA & agents (`/api/health`, `/api/summary`, `/api/equipment`, `/api/rotorbar/calculate`, `/api/agents/specialists`) telah dibuat di `pple/api/schemas/core.py` dan diterapkan pada `api_server.py`;
 - middleware correlation ID (`X-Request-ID`, `X-Correlation-ID`) dan standardized error envelope terstandar (`error`: {`code`, `message`, `correlation_id`}) diimplementasikan di `pple/api/observability.py` dan dipasang ke FastAPI app, tetap menjaga field `detail` agar kompatibel dengan legacy consumer;
-- characterization & regression test ditambahkan di `tests/test_api_server.py` (`test_routes_enforce_response_models`, `test_modular_routers_ownership`, `test_error_envelope_and_correlation_id`), dengan seluruh tests lulus (OK).
+- helper `parseApiError` dan komponen `ErrorState` (dengan request correlation ID & retry button) diimplementasikan dan diintegrasikan ke seluruh workspace domain React (`DGAWorkspace`, `TribologyWorkspace`, `ThermalWorkspace`, `PDWorkspace`, `MCSAWorkspace`);
+- characterization & regression test ditambahkan di `tests/test_api_server.py` (`test_equipment_detail`, `test_equipment_router_modular_ownership`, `test_error_envelope_and_correlation_id`), dengan seluruh 55 tests lulus (OK) dan functional verification `verify_app.py` lulus 100%.
 
 ### Fase 3 - Application use cases (bertahap per fitur)
 
