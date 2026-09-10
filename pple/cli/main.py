@@ -69,6 +69,8 @@ config_app = typer.Typer(help="View/persist which LLM provider+model the assista
 app.add_typer(config_app, name="config")
 serve_app = typer.Typer(help="Start the API/frontend dev servers (Phase 23) - a pple-native alternative to the .bat scripts, which keep working unchanged.")
 app.add_typer(serve_app, name="serve")
+domain_app = typer.Typer(help="Upload/query/report over the 5 shared condition-monitoring domains (Vibrasi/DGA/Tribology/Thermal/PD) - the pple.api.domain_router/src.domain_ingest/src.domain_report layer the Streamlit workspace already uses.")
+app.add_typer(domain_app, name="domain")
 
 # provider name -> ai_settings.json field holding that provider's model choice.
 # Mirrors the exact set of providers src/pages/settings_page.py exposes -
@@ -356,6 +358,163 @@ def reliability_health(
         console.print("\nCatatan:")
         for note in result.notes:
             console.print(f"  - {note}")
+
+
+@domain_app.command("list")
+def domain_list():
+    """List the 5 shared domains and the parameters each one recognizes."""
+    from src import domain_ingest as ingest
+    from src import domain_measurements as dm
+
+    for domain in dm.DOMAINS:
+        specs = ingest.parameter_specs(domain)
+        console.print(f"\n[bold]{ingest.profile(domain)['label']}[/bold] ({domain}) - {len(specs)} parameter")
+        console.print("  " + ", ".join(spec.key for spec in specs[:10]) + (" ..." if len(specs) > 10 else ""))
+
+
+@domain_app.command("measurements")
+def domain_measurements(
+    domain: str = typer.Argument(..., help="Domain id, e.g. VIBRASI/DGA/TRIBOLOGY/THERMAL/PD"),
+    equipment: str = typer.Option(None, "--equipment", help="Filter by equipment name"),
+    start: str = typer.Option(None, "--start", help="YYYY-MM-DD"),
+    end: str = typer.Option(None, "--end", help="YYYY-MM-DD"),
+    limit: int = typer.Option(50, "--limit"),
+):
+    """Show stored readings for one domain, same store src.domain_measurements backs."""
+    from datetime import datetime
+
+    from src import domain_measurements as dm
+
+    try:
+        domain = dm.canon_domain(domain)
+    except dm.UnknownDomainError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=1)
+
+    frame = dm.filter_measurements(
+        domain,
+        equipment=equipment,
+        date_start=datetime.strptime(start, "%Y-%m-%d").date() if start else None,
+        date_end=datetime.strptime(end, "%Y-%m-%d").date() if end else None,
+    )
+    frame = frame.sort_values("test_date", ascending=False).head(max(1, limit))
+
+    table = Table()
+    for col in ("test_date", "equipment", "parameter", "raw_value", "uom"):
+        table.add_column(col)
+    for _, row in frame.iterrows():
+        table.add_row(
+            "" if row["test_date"] != row["test_date"] else f"{row['test_date']:%Y-%m-%d}",
+            str(row["equipment"]), str(row["parameter"]), str(row["raw_value"]), str(row["uom"] or "-"),
+        )
+    console.print(table)
+    console.print(f"{len(frame)} baris ditampilkan.")
+
+
+@domain_app.command("upload")
+def domain_upload(
+    domain: str = typer.Argument(..., help="Domain id, e.g. VIBRASI/DGA/TRIBOLOGY/THERMAL/PD"),
+    file_path: str = typer.Argument(..., help="Path to a CSV/XLSX export"),
+    preview_only: bool = typer.Option(False, "--preview-only", help="Validate without writing anything."),
+):
+    """Ingest a CSV/XLSX export into the canonical store - the CLI equivalent
+    of the Streamlit workspace's upload tab, same src.domain_ingest pipeline."""
+    from src import domain_ingest as ingest
+    from src import domain_measurements as dm
+
+    try:
+        domain = dm.canon_domain(domain)
+    except dm.UnknownDomainError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=1)
+
+    if not os.path.exists(file_path):
+        console.print(f"[red]File '{file_path}' tidak ditemukan.[/red]")
+        raise typer.Exit(code=1)
+
+    with open(file_path, "rb") as f:
+        content = f.read()
+    file_name = os.path.basename(file_path)
+
+    try:
+        preview = ingest.preview_upload(domain, file_name, content)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=1)
+
+    console.print(f"Baris sumber: {preview['source_rows']}  |  Valid: {len(preview['valid'])}  |  Ditolak: {len(preview['rejected'])}")
+    if preview["unmapped_columns"]:
+        console.print(f"[yellow]Kolom tidak dikenali: {', '.join(preview['unmapped_columns'])}[/yellow]")
+    if preview["duplicate_columns"]:
+        console.print(f"[yellow]Kolom duplikat (diabaikan): {', '.join(preview['duplicate_columns'])}[/yellow]")
+
+    if preview_only:
+        console.print("[dim]--preview-only: tidak ada yang ditulis.[/dim]")
+        return
+
+    batch_path, _ = ingest.create_batch(domain, file_name, content, preview)
+    result = ingest.commit_batch(domain, batch_path, preview)
+    console.print(f"[bold green]Tersimpan {result['written']} pengukuran[/bold green] (batch {result['batch_id']})")
+
+
+@domain_app.command("report")
+def domain_report_cmd(
+    domain: str = typer.Argument(..., help="Domain id, e.g. VIBRASI/DGA/TRIBOLOGY/THERMAL/PD"),
+    out: str = typer.Argument(..., help="Output file path, e.g. laporan.docx"),
+    start: str = typer.Option(None, "--start", help="YYYY-MM-DD, defaults to the earliest stored reading"),
+    end: str = typer.Option(None, "--end", help="YYYY-MM-DD, defaults to today"),
+    fmt: str = typer.Option(None, "--format", help="csv/docx/pptx, inferred from `out`'s extension if omitted"),
+):
+    """Build a period report for one domain - same src.domain_report builders
+    the Streamlit workspace's Laporan tab downloads."""
+    from datetime import date, datetime
+
+    from src import domain_measurements as dm
+    from src import domain_report as report
+
+    try:
+        domain = dm.canon_domain(domain)
+    except dm.UnknownDomainError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=1)
+
+    fmt = (fmt or os.path.splitext(out)[1].lstrip(".") or "docx").lower()
+    if fmt not in ("csv", "docx", "pptx"):
+        console.print(f"[red]Format '{fmt}' tidak didukung. Gunakan csv/docx/pptx.[/red]")
+        raise typer.Exit(code=1)
+
+    frame = dm.load_measurements(domain)
+    start_date = (
+        datetime.strptime(start, "%Y-%m-%d").date() if start
+        else (frame["test_date"].min().date() if not frame.empty and frame["test_date"].notna().any() else date.today())
+    )
+    end_date = datetime.strptime(end, "%Y-%m-%d").date() if end else date.today()
+
+    bundle = report.build_report_bundle([domain], start_date, end_date, formats=[fmt])
+    with open(out, "wb") as f:
+        f.write(bundle[fmt])
+    console.print(f"[bold green]Laporan disimpan ke {out}[/bold green] (periode {start_date} - {end_date})")
+
+
+@domain_app.command("vibrasi-report")
+def domain_vibrasi_report(
+    equipment: str = typer.Argument(..., help="Nama equipment persis seperti di data Vibrasi"),
+    out: str = typer.Argument(..., help="Output .docx path"),
+):
+    """DETAIL REPORT VIBRASI (FORM.JRG.F.05.001) for one equipment - same
+    src.vibration_report.build_docx the Streamlit Vibrasi workspace uses."""
+    from src import domain_measurements as dm
+    from src import vibration_report
+
+    frame = dm.filter_measurements("VIBRASI", equipment=equipment)
+    if frame.empty:
+        console.print(f"[red]Tidak ada pengukuran Vibrasi untuk equipment '{equipment}'.[/red]")
+        raise typer.Exit(code=1)
+
+    payload = vibration_report.build_docx(equipment)
+    with open(out, "wb") as f:
+        f.write(payload)
+    console.print(f"[bold green]DETAIL REPORT VIBRASI disimpan ke {out}[/bold green]")
 
 
 @agents_app.command("list")

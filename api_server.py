@@ -176,6 +176,13 @@ app.add_middleware(
 from pple.api.router import router as pple_api_v2_router
 app.include_router(pple_api_v2_router)
 
+# PPLE V2: additive /api/v2/domain/* routes over the shared 5-domain
+# measurement store (Vibrasi/DGA/Tribology/Thermal/PD) - the same
+# upload/preview/report src.domain_ingest/src.domain_report already give
+# the Streamlit workspace, now reachable from the React frontend/pple CLI too.
+from pple.api.domain_router import router as pple_api_v2_domain_router
+app.include_router(pple_api_v2_domain_router)
+
 # Global Data Cache
 _cached_raw_df: Optional[pd.DataFrame] = None
 _cached_latest_df: Optional[pd.DataFrame] = None
