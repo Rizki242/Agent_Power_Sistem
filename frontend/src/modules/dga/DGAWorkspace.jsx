@@ -282,6 +282,15 @@ export default function DGAWorkspace() {
 
               {loadingDetail ? (
                 <div className="py-8 text-center text-muted text-xs">Memuat detail spektroskopi gas trafo...</div>
+              ) : detailError ? (
+                <div className="py-4">
+                  <ErrorState
+                    title="Gagal Mengambil Detail Trafo"
+                    message={detailError.message}
+                    correlationId={detailError.correlationId}
+                    onRetry={() => fetchTransformerDetail(selectedId)}
+                  />
+                </div>
               ) : trfDetail ? (
                 <div className="flex flex-col gap-4">
                   {/* TAB 1: Gas Concentrations */}

@@ -6,6 +6,7 @@ import {
   FilterBar,
   TabNavigation,
   DataDisclaimerBanner,
+  ErrorState,
 } from '../../components/common';
 import {
   PDSummaryCards,
@@ -13,7 +14,7 @@ import {
   PDParameterGrid,
   PDAssessmentPanel,
 } from './components';
-import { apiFetch, apiUrl } from '../../api';
+import { apiFetch, apiUrl, parseApiError } from '../../api';
 
 // Selected sample is driven by the route (/workspace/partial_discharge/:equipmentId),
 // same redesign as the other five workspaces (desaindakhir.md / docs/final.md
@@ -27,6 +28,7 @@ export default function PDWorkspace() {
   // --- Sample List State ---
   const [samples, setSamples] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState(null);
   const [search, setSearch] = useState('');
   const [unitFilter, setUnitFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -35,6 +37,7 @@ export default function PDWorkspace() {
   // --- Sample Detail State ---
   const [sampleDetail, setSampleDetail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [detailError, setDetailError] = useState(null);
   const [assessment, setAssessment] = useState(null);
   const [loadingAssessment, setLoadingAssessment] = useState(false);
   const [activeTab, setActiveTab] = useState('params'); // 'params' | 'assessment'
@@ -45,24 +48,40 @@ export default function PDWorkspace() {
     navigate(`/workspace/partial_discharge/${encodeURIComponent(id)}`, opts);
   }, [navigate]);
 
-  useEffect(() => {
-    if (!selectedSampleId) {
+  const fetchSampleDetail = useCallback((id) => {
+    if (!id) {
       setSampleDetail(null);
       setAssessment(null);
+      setDetailError(null);
       return;
     }
     setLoadingDetail(true);
-    apiFetch(apiUrl(`/api/pd/samples/${encodeURIComponent(selectedSampleId)}`))
-      .then(res => res.json())
+    setDetailError(null);
+    apiFetch(apiUrl(`/api/pd/samples/${encodeURIComponent(id)}`))
+      .then(async res => {
+        if (!res.ok) {
+          const parsed = await parseApiError(res, 'Gagal memuat detail sampel PD');
+          throw parsed;
+        }
+        return res.json();
+      })
       .then(data => {
         setSampleDetail(data);
         setLoadingDetail(false);
       })
       .catch(err => {
         console.error('Gagal memuat detail sampel PD:', err);
+        setDetailError({
+          message: err.message || 'Gagal memuat detail sampel PD',
+          correlationId: err.correlationId || null
+        });
         setLoadingDetail(false);
       });
-  }, [selectedSampleId]);
+  }, []);
+
+  useEffect(() => {
+    fetchSampleDetail(selectedSampleId);
+  }, [selectedSampleId, fetchSampleDetail]);
 
   // PDAgent runs server-side; only fetch it when the tab is actually opened.
   useEffect(() => {
@@ -83,13 +102,20 @@ export default function PDWorkspace() {
   // --- Fetch Samples ---
   const fetchSamples = useCallback(() => {
     setLoading(true);
+    setListError(null);
     let url = apiUrl('/api/pd/samples?');
     if (unitFilter !== 'ALL') url += `unit=${encodeURIComponent(unitFilter)}&`;
     if (statusFilter !== 'ALL') url += `status=${encodeURIComponent(statusFilter)}&`;
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
     apiFetch(url)
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const parsed = await parseApiError(res, 'Gagal mengambil data sampel PD');
+          throw parsed;
+        }
+        return res.json();
+      })
       .then(data => {
         setSamples(data.samples || []);
         setLoading(false);
@@ -99,6 +125,10 @@ export default function PDWorkspace() {
       })
       .catch(err => {
         console.error('Gagal mengambil data sampel PD:', err);
+        setListError({
+          message: err.message || 'Gagal mengambil data sampel PD',
+          correlationId: err.correlationId || null
+        });
         setLoading(false);
       });
   }, [unitFilter, statusFilter, search, selectedSampleId, goToSample]);
@@ -158,6 +188,8 @@ export default function PDWorkspace() {
           <PDSampleList
             samples={samples}
             loading={loading}
+            error={listError}
+            onRetry={fetchSamples}
             selectedSampleId={selectedSampleId}
             onSelect={goToSample}
           />
@@ -188,6 +220,15 @@ export default function PDWorkspace() {
 
               {loadingDetail ? (
                 <div className="py-8 text-center text-muted text-xs">Memuat detail pengukuran PD...</div>
+              ) : detailError ? (
+                <div className="py-4">
+                  <ErrorState
+                    title="Gagal Mengambil Detail Sampel PD"
+                    message={detailError.message}
+                    correlationId={detailError.correlationId}
+                    onRetry={() => fetchSampleDetail(selectedSampleId)}
+                  />
+                </div>
               ) : sampleDetail ? (
                 <div className="flex flex-col gap-4">
                   {activeTab === 'params' && (

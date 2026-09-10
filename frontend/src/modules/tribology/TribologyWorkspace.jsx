@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AIChatPanel from '../../components/AIChatPanel';
-import { StatusBadge, FilterBar, TabNavigation } from '../../components/common';
+import { StatusBadge, FilterBar, TabNavigation, ErrorState } from '../../components/common';
 import {
   TribologySummaryCards,
   OilPropertiesGrid,
   WearDebrisPanel,
   OilConditionCalculator
 } from './components';
-import { apiFetch, apiUrl } from '../../api';
+import { apiFetch, apiUrl, parseApiError } from '../../api';
 
 // Selected sample is driven by the route (/workspace/tribology/:equipmentId),
 // same redesign as MCSAWorkspace (desaindakhir.md / docs/final.md Phase 25).
@@ -20,6 +20,7 @@ export default function TribologyWorkspace() {
   // --- Oil Samples List State ---
   const [samples, setSamples] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState(null);
   const [search, setSearch] = useState('');
   const [unitFilter, setUnitFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -29,6 +30,7 @@ export default function TribologyWorkspace() {
   // --- Sample Detail State ---
   const [sampleDetail, setSampleDetail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [detailError, setDetailError] = useState(null);
   const [activeTab, setActiveTab] = useState('params'); // 'params' | 'wear' | 'history' | 'evaluator'
 
   // Navigating (not just setting local state) keeps the sidebar tree's
@@ -40,17 +42,26 @@ export default function TribologyWorkspace() {
   useEffect(() => {
     if (!selectedSampleId) {
       setSampleDetail(null);
+      setDetailError(null);
       return;
     }
     setLoadingDetail(true);
+    setDetailError(null);
     apiFetch(apiUrl(`/api/tribology/samples/${encodeURIComponent(selectedSampleId)}`))
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          throw err;
+        }
+        return res.json();
+      })
       .then(data => {
         setSampleDetail(data);
         setLoadingDetail(false);
       })
       .catch(err => {
         console.error('Gagal memuat detail sample:', err);
+        setDetailError(err);
         setLoadingDetail(false);
       });
   }, [selectedSampleId]);
@@ -58,6 +69,7 @@ export default function TribologyWorkspace() {
   // --- Fetch Samples ---
   const fetchSamples = useCallback(() => {
     setLoading(true);
+    setListError(null);
     let url = apiUrl('/api/tribology/samples?');
     if (unitFilter !== 'ALL') url += `unit=${encodeURIComponent(unitFilter)}&`;
     if (statusFilter !== 'ALL') url += `status=${encodeURIComponent(statusFilter)}&`;
@@ -65,7 +77,13 @@ export default function TribologyWorkspace() {
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
     apiFetch(url)
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const err = await parseApiError(res);
+          throw err;
+        }
+        return res.json();
+      })
       .then(data => {
         setSamples(data.samples || []);
         setLoading(false);
@@ -75,6 +93,7 @@ export default function TribologyWorkspace() {
       })
       .catch(err => {
         console.error('Gagal mengambil data tribology samples:', err);
+        setListError(err);
         setLoading(false);
       });
   }, [unitFilter, statusFilter, oilTypeFilter, search, selectedSampleId, goToSample]);
@@ -155,6 +174,17 @@ export default function TribologyWorkspace() {
                     <tr>
                       <td colSpan="7" className="py-8 text-center text-muted">Memuat data sampel pelumas...</td>
                     </tr>
+                  ) : listError ? (
+                    <tr>
+                      <td colSpan="7" className="p-4">
+                        <ErrorState
+                          title="Gagal Mengambil Data Sampel Pelumas"
+                          message={listError.message}
+                          correlationId={listError.correlationId}
+                          onRetry={fetchSamples}
+                        />
+                      </td>
+                    </tr>
                   ) : samples.length === 0 ? (
                     <tr>
                       <td colSpan="7" className="py-8 text-center text-muted">Tidak ada data sampel yang sesuai filter.</td>
@@ -212,6 +242,15 @@ export default function TribologyWorkspace() {
 
               {loadingDetail ? (
                 <div className="py-8 text-center text-muted text-xs">Memuat detail spektrometri oli...</div>
+              ) : detailError ? (
+                <div className="py-4">
+                  <ErrorState
+                    title="Gagal Mengambil Detail Sampel"
+                    message={detailError.message}
+                    correlationId={detailError.correlationId}
+                    onRetry={() => fetchSampleDetail(selectedSampleId)}
+                  />
+                </div>
               ) : sampleDetail ? (
                 <div className="flex flex-col gap-4">
                   {/* TAB 1: Physicochemical Parameters */}

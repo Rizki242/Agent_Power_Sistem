@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AIChatPanel from '../../components/AIChatPanel';
-import { StatusBadge, FilterBar } from '../../components/common';
+import { StatusBadge, FilterBar, ErrorState } from '../../components/common';
 import {
   ThermalSummaryCards,
   ThermalDetailCard,
   ThermalSeverityMatrix
 } from './components';
-import { apiFetch, apiUrl } from '../../api';
+import { apiFetch, apiUrl, parseApiError } from '../../api';
 
 // Selected inspection point is driven by the route
 // (/workspace/thermal/:equipmentId), same redesign as MCSAWorkspace
@@ -23,6 +23,7 @@ export default function ThermalWorkspace() {
 
   const [inspections, setInspections] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState(null);
   const [search, setSearch] = useState('');
   const [unitFilter, setUnitFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -41,13 +42,20 @@ export default function ThermalWorkspace() {
 
   const fetchInspections = useCallback(() => {
     setLoading(true);
+    setListError(null);
     let url = apiUrl('/api/thermal/inspections?');
     if (unitFilter !== 'ALL') url += `unit=${encodeURIComponent(unitFilter)}&`;
     if (statusFilter !== 'ALL') url += `status=${encodeURIComponent(statusFilter)}&`;
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
     apiFetch(url)
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const parsed = await parseApiError(res, 'Gagal memuat data thermography');
+          throw parsed;
+        }
+        return res.json();
+      })
       .then(data => {
         setInspections(data.inspections || []);
         setLoading(false);
@@ -57,6 +65,10 @@ export default function ThermalWorkspace() {
       })
       .catch(err => {
         console.error('Gagal memuat data thermography:', err);
+        setListError({
+          message: err.message || 'Gagal memuat data thermography',
+          correlationId: err.correlationId || null
+        });
         setLoading(false);
       });
   }, [unitFilter, statusFilter, search, selectedId, goToPoint]);
@@ -128,6 +140,17 @@ export default function ThermalWorkspace() {
                   {loading ? (
                     <tr>
                       <td colSpan="7" className="py-8 text-center text-muted">Memuat data inspeksi thermography...</td>
+                    </tr>
+                  ) : listError ? (
+                    <tr>
+                      <td colSpan="7" className="p-4">
+                        <ErrorState
+                          title="Gagal Mengambil Data Thermography"
+                          message={listError.message}
+                          correlationId={listError.correlationId}
+                          onRetry={fetchInspections}
+                        />
+                      </td>
                     </tr>
                   ) : inspections.length === 0 ? (
                     <tr>

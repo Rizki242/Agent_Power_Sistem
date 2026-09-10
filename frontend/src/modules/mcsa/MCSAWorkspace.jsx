@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AIChatPanel from '../../components/AIChatPanel';
-import { apiFetch, apiUrl } from '../../api';
+import { ErrorState } from '../../components/common';
+import { apiFetch, apiUrl, parseApiError } from '../../api';
 
 // Equipment selection is driven by the route (/workspace/mcsa/:equipmentId)
 // rather than internal state, so the sidebar tree and this page can never
@@ -15,12 +16,14 @@ export default function MCSAWorkspace() {
 
   const [equipmentList, setEquipmentList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState(null);
   const [search, setSearch] = useState('');
   const [unitFilter, setUnitFilter] = useState('ALL');
   const [voltageFilter, setVoltageFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [eqDetail, setEqDetail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [detailError, setDetailError] = useState(null);
   const [activeTab, setActiveTab] = useState('telemetry'); // 'telemetry' | 'summary' | 'specs' | 'history'
 
   // Rotor Bar Calculator state
@@ -47,26 +50,43 @@ export default function MCSAWorkspace() {
     navigate(`/workspace/mcsa/${encodeURIComponent(eqName)}`, opts);
   }, [navigate]);
 
-  useEffect(() => {
-    if (!selectedEquipment) {
+  const fetchEquipmentDetail = useCallback((eqName) => {
+    if (!eqName) {
       setEqDetail(null);
+      setDetailError(null);
       return;
     }
     setLoadingDetail(true);
-    apiFetch(apiUrl(`/api/equipment/${encodeURIComponent(selectedEquipment)}`))
-      .then(res => res.json())
+    setDetailError(null);
+    apiFetch(apiUrl(`/api/equipment/${encodeURIComponent(eqName)}`))
+      .then(async res => {
+        if (!res.ok) {
+          const parsed = await parseApiError(res, 'Gagal memuat detail equipment');
+          throw parsed;
+        }
+        return res.json();
+      })
       .then(data => {
         setEqDetail(data);
         setLoadingDetail(false);
       })
       .catch(err => {
         console.error('Gagal memuat detail equipment:', err);
+        setDetailError({
+          message: err.message || 'Gagal memuat detail equipment',
+          correlationId: err.correlationId || null
+        });
         setLoadingDetail(false);
       });
-  }, [selectedEquipment]);
+  }, []);
+
+  useEffect(() => {
+    fetchEquipmentDetail(selectedEquipment);
+  }, [selectedEquipment, fetchEquipmentDetail]);
 
   const fetchEquipment = useCallback(() => {
     setLoading(true);
+    setListError(null);
     let url = apiUrl('/api/equipment?');
     if (unitFilter !== 'ALL') url += `unit=${encodeURIComponent(unitFilter)}&`;
     if (voltageFilter !== 'ALL') url += `voltage=${encodeURIComponent(voltageFilter)}&`;
@@ -74,7 +94,13 @@ export default function MCSAWorkspace() {
     if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
     apiFetch(url)
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          const parsed = await parseApiError(res, 'Gagal mengambil data equipment');
+          throw parsed;
+        }
+        return res.json();
+      })
       .then(data => {
         setEquipmentList(data.equipment || []);
         setLoading(false);
@@ -84,6 +110,10 @@ export default function MCSAWorkspace() {
       })
       .catch(err => {
         console.error('Gagal mengambil data equipment:', err);
+        setListError({
+          message: err.message || 'Gagal mengambil data equipment',
+          correlationId: err.correlationId || null
+        });
         setLoading(false);
       });
   }, [unitFilter, voltageFilter, statusFilter, search, selectedEquipment, goToEquipment]);
@@ -324,6 +354,17 @@ export default function MCSAWorkspace() {
                     <tr>
                       <td colSpan="7" className="py-8 text-center text-muted">Memuat database MCSA...</td>
                     </tr>
+                  ) : listError ? (
+                    <tr>
+                      <td colSpan="7" className="p-4">
+                        <ErrorState
+                          title="Gagal Mengambil Database MCSA"
+                          message={listError.message}
+                          correlationId={listError.correlationId}
+                          onRetry={fetchEquipment}
+                        />
+                      </td>
+                    </tr>
                   ) : equipmentList.length === 0 ? (
                     <tr>
                       <td colSpan="7" className="py-8 text-center text-muted">Tidak ada equipment yang cocok dengan filter pencarian.</td>
@@ -409,6 +450,15 @@ export default function MCSAWorkspace() {
 
               {loadingDetail ? (
                 <div className="py-8 text-center text-muted text-xs">Memuat detail telemetry peralatan...</div>
+              ) : detailError ? (
+                <div className="py-4">
+                  <ErrorState
+                    title="Gagal Mengambil Detail Telemetry Equipment"
+                    message={detailError.message}
+                    correlationId={detailError.correlationId}
+                    onRetry={() => fetchEquipmentDetail(selectedEquipment)}
+                  />
+                </div>
               ) : eqDetail ? (
                 <div className="flex flex-col gap-4">
                   {/* TAB 1: Structured Telemetry Cards */}

@@ -1,7 +1,7 @@
 import React from 'react';
-import { StatusBadge } from '../../../components/common';
+import { StatusBadge, ErrorState } from '../../../components/common';
 
-export default function PDSampleList({ samples, loading, selectedSampleId, onSelect }) {
+export default function PDSampleList({ samples, loading, error, onRetry, selectedSampleId, onSelect }) {
   return (
     <div className="border border-line rounded-2xl bg-card-gradient shadow-neon p-4 overflow-hidden">
       <div className="flex justify-between items-center mb-3">
@@ -28,6 +28,17 @@ export default function PDSampleList({ samples, loading, selectedSampleId, onSel
             {loading ? (
               <tr>
                 <td colSpan="8" className="py-8 text-center text-muted">Memuat data sampel partial discharge...</td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan="8" className="p-4">
+                  <ErrorState
+                    title="Gagal Mengambil Data Sampel PD"
+                    message={error.message}
+                    correlationId={error.correlationId}
+                    onRetry={onRetry}
+                  />
+                </td>
               </tr>
             ) : samples.length === 0 ? (
               <tr>
