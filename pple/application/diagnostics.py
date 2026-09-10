@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any, Dict, Optional
 import pandas as pd
 
+from pple.core.logging import log_diagnosis
 from src.agents.asset_graph import AssetKnowledgeGraph
 from src.agents.fusion_engine import ReliabilityFusionAgent
 from src.agents.fusion_inputs import extract_mcsa_fusion_inputs
@@ -34,7 +36,8 @@ class DiagnoseEquipmentUseCase:
         thermal: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Run fusion diagnosis from explicit multi-domain telemetry inputs."""
-        return self.fusion_agent.run_full_fusion(
+        t0 = time.perf_counter()
+        result = self.fusion_agent.run_full_fusion(
             equipment=equipment,
             asset_type=asset_type or "Motor-Pump",
             criticality=criticality or "A",
@@ -45,6 +48,18 @@ class DiagnoseEquipmentUseCase:
             oil_data=tribology,
             thermal_data=thermal,
         )
+        duration_ms = (time.perf_counter() - t0) * 1000
+        health_index = float(result.get("health_index", 0.0))
+        health_status = str(result.get("overall_status") or result.get("health_status") or "UNKNOWN")
+        log_diagnosis(
+            equipment=equipment,
+            health_index=health_index,
+            health_status=health_status,
+            duration_ms=duration_ms,
+            asset_type=asset_type,
+            criticality=criticality,
+        )
+        return result
 
     def diagnose_from_mcsa_dataset(
         self,
@@ -61,13 +76,27 @@ class DiagnoseEquipmentUseCase:
 
         fusion_inputs = extract_mcsa_fusion_inputs(eq_data)
 
+        t0 = time.perf_counter()
         fusion_res = self.fusion_agent.run_full_fusion(
             equipment=equipment,
             asset_type=node.get("asset_type", "Electric Motor-Pump"),
             criticality=node.get("criticality", "A"),
             **fusion_inputs,
         )
+        duration_ms = (time.perf_counter() - t0) * 1000
 
         fusion_res["asset_node"] = node
         fusion_res["data_sources"] = sorted(fusion_inputs.keys())
+
+        health_index = float(fusion_res.get("health_index", 0.0))
+        health_status = str(fusion_res.get("overall_status") or fusion_res.get("health_status") or "UNKNOWN")
+        log_diagnosis(
+            equipment=equipment,
+            health_index=health_index,
+            health_status=health_status,
+            duration_ms=duration_ms,
+            data_sources=fusion_res["data_sources"],
+            asset_type=node.get("asset_type"),
+            criticality=node.get("criticality"),
+        )
         return fusion_res

@@ -1,4 +1,4 @@
-﻿"""Pydantic response schemas for core MCSA, equipment, and agents endpoints."""
+"""Pydantic response schemas for core MCSA, equipment, and agents endpoints."""
 
 from __future__ import annotations
 
@@ -11,6 +11,11 @@ class HealthResponse(BaseModel):
 
     status: str
     app: str
+    uptime_seconds: Optional[float] = None
+    version: Optional[str] = "2.0.0"
+    active_domains: Optional[List[str]] = None
+    cache_loaded: Optional[bool] = None
+
 
 
 class MCSACounts(BaseModel):

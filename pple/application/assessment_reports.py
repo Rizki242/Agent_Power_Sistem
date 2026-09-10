@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import time
 from datetime import datetime
 from typing import Any, Dict, Optional
 
+from pple.core.logging import log_report_generation
 from src.agents.subagent_coordinator import SubAgentCoordinator
 
 
@@ -16,12 +18,24 @@ class GenerateAssessmentReportUseCase:
 
     def generate_report(self, equipment: str) -> Dict[str, Any]:
         """Generate a complete multi-modal condition assessment report for an asset."""
+        t0 = time.perf_counter()
         collab = self.coordinator.run_collaborative_diagnosis(
             equipment=equipment,
             query=f"Laporan komprehensif assessment kondisi {equipment}",
         )
 
         rpt_no = f"CBM-RPT-{datetime.now().strftime('%Y%m')}-{abs(hash(equipment)) % 10000:04d}"
+        duration_ms = (time.perf_counter() - t0) * 1000
+
+        log_report_generation(
+            report_id=rpt_no,
+            equipment=equipment,
+            report_type="CBM_ASSESSMENT",
+            status="SUCCESS",
+            duration_ms=round(duration_ms, 2),
+            health_index=collab.get("consensus_health_index", 90.0),
+            health_status=collab.get("consensus_health_status", "HEALTHY"),
+        )
 
         return {
             "report_id": rpt_no,

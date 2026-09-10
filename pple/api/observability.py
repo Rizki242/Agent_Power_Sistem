@@ -1,4 +1,4 @@
-﻿"""Request correlation ID and standard error envelope middleware for FastAPI."""
+"""Request correlation ID and standard error envelope middleware for FastAPI."""
 
 from __future__ import annotations
 
@@ -31,6 +31,10 @@ def format_error_envelope(
     }
 
 
+import time
+from pple.core.logging import log_event, set_correlation_id
+
+
 def setup_observability_and_errors(app: FastAPI) -> None:
     """Attaches correlation ID middleware and standardized error handlers to FastAPI app."""
 
@@ -43,11 +47,26 @@ def setup_observability_and_errors(app: FastAPI) -> None:
             or str(uuid.uuid4())
         )
         request.state.correlation_id = corr_id
+        set_correlation_id(corr_id)
+        start_time = time.time()
 
-        response: Response = await call_next(request)
-        response.headers[CORRELATION_ID_HEADER] = corr_id
-        response.headers[REQUEST_ID_HEADER] = corr_id
-        return response
+        try:
+            response: Response = await call_next(request)
+            response.headers[CORRELATION_ID_HEADER] = corr_id
+            response.headers[REQUEST_ID_HEADER] = corr_id
+            elapsed_ms = round((time.time() - start_time) * 1000, 2)
+            log_event(
+                event="http_request",
+                logger_name="pple.http",
+                method=request.method,
+                path=request.url.path,
+                status_code=response.status_code,
+                duration_ms=elapsed_ms,
+            )
+            return response
+        finally:
+            set_correlation_id(None)
+
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):

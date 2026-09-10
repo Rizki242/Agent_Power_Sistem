@@ -54,9 +54,24 @@ class RotorBarCalculateRequest(BaseModel):
     se_harm: Optional[float] = None
 
 
+import time
+
+_server_start_time = time.time()
+
+
 @router.get("/health", response_model=HealthResponse)
 def health_check():
-    return {"status": "ok", "app": "MCSA Assistant API v2.0"}
+    uptime = round(time.time() - _server_start_time, 2)
+    cache_loaded = _cached_raw_df is not None and _cached_latest_df is not None
+    return {
+        "status": "ok",
+        "app": "MCSA Assistant API v2.0",
+        "uptime_seconds": uptime,
+        "version": "2.0.0",
+        "active_domains": ["VIBRASI", "MCSA", "DGA", "TRIBOLOGY", "THERMAL", "PD"],
+        "cache_loaded": cache_loaded,
+    }
+
 
 
 @router.get("/summary", response_model=SummaryResponse)

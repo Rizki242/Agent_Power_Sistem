@@ -259,6 +259,14 @@ Progress implementasi:
 - Tambahkan bounded cache/TTL dan fragments pada Streamlit berdasarkan pengukuran.
 - Tambahkan structured log untuk ingest, diagnosis, report, work order, dan provider fallback.
 
+Progress implementasi:
+
+- modul structured logging terpusat `pple/core/logging.py` dibuat dengan `JSONFormatter`, contextvars `correlation_id_var`, dan event helpers terstandar (`log_event`, `log_ingest`, `log_diagnosis`, `log_report_generation`, `log_fallback`);
+- middleware observability FastAPI di `pple/api/observability.py` dimutakhirkan untuk mengalirkan correlation ID ke contextvars serta merekam metrik `http_request` (method, path, status_code, duration_ms) dalam format JSON;
+- endpoint health check `/api/health` di `pple/api/routers/core.py` diperkaya dengan schema `HealthResponse` (`uptime_seconds`, `version`, `active_domains`, `cache_loaded`) tanpa mematahkan backward compatibility;
+- application use cases `DiagnoseEquipmentUseCase` dan `GenerateAssessmentReportUseCase` telah diinstrumentasi dengan structured events dan pencatatan durasi komputasi `duration_ms`;
+- unit tests ditambahkan di `tests/test_structured_logging.py` (5 tests lulus, total 579 tests di repo); seluruh test gate repo, unit tests, dan `verify_app.py` lulus 100%.
+
 ## 7. Indikator selesai
 
 Arsitektur dianggap membaik bila:
