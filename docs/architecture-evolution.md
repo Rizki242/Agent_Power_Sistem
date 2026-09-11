@@ -250,8 +250,8 @@ Progress implementasi:
   - `GenerateAssessmentReportUseCase` (`pple/application/assessment_reports.py`): orkestrasi multi-agent CBM condition assessment report;
 - endpoint FastAPI di `pple/api/routers/reports.py` (`/api/reliability/fleet`, `/api/reliability/fusion/{equipment}`, `/api/reliability/diagnose`, `/api/reports/assessment/{equipment}`) telah dimigrasikan untuk memanggil use cases tersebut;
 - CLI Typer di `pple/cli/main.py` diperluas dengan command `pple reliability fleet` dan `pple reliability report <equipment>` yang mengeksekusi use case yang sama persis (Single Source of Truth);
-- unit test komprehensif ditambahkan di `tests/test_application_use_cases.py` (4 tests lulus, total 574 tests di repo).
-
+- presenter Streamlit di `src/pages/agent_dashboard_page.py` (`_run_equipment_diagnosis` dan overview fleet reliability) telah diintegrasikan langsung dengan `DiagnoseEquipmentUseCase` dan `FleetReliabilityUseCase`, memicu logging terstruktur secara otomatis saat user menjelajah UI;
+- unit test dan characterization test komprehensif ditambahkan di `tests/test_application_use_cases.py` dan `tests/test_agent_dashboard_page.py` (total 584 tests di repo).
 
 ### Fase 4 - Performance dan observability
 

@@ -10,11 +10,11 @@ from typing import Optional
 
 import pandas as pd
 
-from src.agents.fusion_inputs import extract_mcsa_fusion_inputs
+from pple.application.diagnostics import DiagnoseEquipmentUseCase
+from pple.application.fleet import FleetReliabilityUseCase
 from src.agents.subagent_coordinator import SubAgentCoordinator
 from src.components.agent_result import render_agent_result
 from src.components.theme import render_page_header
-from src.fleet_reliability import build_fleet_reliability
 
 HEALTH_CHIP_COLORS = {
     "HEALTHY": "#10B981",
@@ -130,17 +130,20 @@ def _render_roster(st, specialists: list) -> None:
 
 
 def _run_equipment_diagnosis(coordinator: SubAgentCoordinator, df_latest_all: pd.DataFrame, equipment: str) -> dict:
-    eq_rows = df_latest_all[df_latest_all["Equipment"].astype(str) == str(equipment)]
-    inputs = extract_mcsa_fusion_inputs(eq_rows)
-    node = coordinator.asset_graph.get_equipment_node(equipment)
-    safety = coordinator.safety_guard.check_safety(f"Diagnosa {equipment}")
-    fusion_res = coordinator.fusion_agent.run_full_fusion(
-        equipment=equipment,
-        asset_type=node.get("asset_type", "Electric Motor-Pump"),
-        criticality=node.get("criticality", "A"),
-        **inputs,
+    use_case = DiagnoseEquipmentUseCase(
+        fusion_agent=coordinator.fusion_agent,
+        asset_graph=coordinator.asset_graph,
     )
-    return {"fusion": fusion_res, "safety": safety, "data_sources": sorted(inputs.keys())}
+    safety = coordinator.safety_guard.check_safety(f"Diagnosa {equipment}")
+    fusion_res = use_case.diagnose_from_mcsa_dataset(
+        equipment=equipment,
+        df_latest=df_latest_all,
+    )
+    return {
+        "fusion": fusion_res,
+        "safety": safety,
+        "data_sources": fusion_res.get("data_sources", []),
+    }
 
 
 def render_agent_dashboard_page(st, df_latest_all: pd.DataFrame, mcsa_page=None) -> None:
@@ -150,7 +153,11 @@ def render_agent_dashboard_page(st, df_latest_all: pd.DataFrame, mcsa_page=None)
 
     fleet = st.session_state.get("_agent_fleet_result")
     if fleet is None or st.session_state.get("_agent_fleet_key") != data_key:
-        fleet = build_fleet_reliability(df_latest_all, coordinator.fusion_agent, coordinator.asset_graph)
+        fleet_use_case = FleetReliabilityUseCase(
+            fusion_agent=coordinator.fusion_agent,
+            asset_graph=coordinator.asset_graph,
+        )
+        fleet = fleet_use_case.get_fleet_summary(df_latest_all)
         st.session_state["_agent_fleet_key"] = data_key
         st.session_state["_agent_fleet_result"] = fleet
 
