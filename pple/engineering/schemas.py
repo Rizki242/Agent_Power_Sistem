@@ -18,6 +18,27 @@ class Severity(str, Enum):
         return {1: cls.NORMAL, 2: cls.WATCH, 3: cls.ALARM, 4: cls.CRITICAL}.get(level, cls.NORMAL)
 
 
+class DataQualityStatus(str, Enum):
+    VALID = "valid"
+    PARTIAL = "partial"
+    INVALID = "invalid"
+    STALE = "stale"
+    INSUFFICIENT_DATA = "insufficient_data"
+
+
+class DataQuality(BaseModel):
+    status: DataQualityStatus = DataQualityStatus.PARTIAL
+    observed_fields: list[str] = Field(default_factory=list)
+    missing_context: list[str] = Field(default_factory=list)
+    limitations: list[str] = Field(default_factory=list)
+
+
+class SourceTrace(BaseModel):
+    source_id: str | None = None
+    input_hash: str | None = None
+    rule_set_version: str | None = None
+
+
 class Evidence(BaseModel):
     text: str
 
@@ -53,5 +74,10 @@ class DiagnosticResult(BaseModel):
     evidence: list[Evidence] = Field(default_factory=list)
     recommendations: list[Recommendation] = Field(default_factory=list)
     standards: list[StandardReference] = Field(default_factory=list)
+
+    data_quality: DataQuality = Field(default_factory=DataQuality)
+    source_trace: SourceTrace = Field(default_factory=SourceTrace)
+    required_confirmation: list[str] = Field(default_factory=list)
+    abstention_reason: str | None = None
 
     metadata: dict = Field(default_factory=dict)

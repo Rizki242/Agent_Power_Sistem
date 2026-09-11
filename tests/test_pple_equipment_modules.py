@@ -162,7 +162,8 @@ class EquipmentModuleWiringTests(unittest.TestCase):
         disabled_result = fusion.run_full_fusion(equipment="CWP-1A", oil_data={"fe_ppm": 999.0})
         unaffected_result = fusion.run_full_fusion(equipment="CWP-1B", oil_data={"fe_ppm": 999.0})
 
-        self.assertGreaterEqual(disabled_result["health_index"], 90.0)
+        self.assertIsNone(disabled_result["health_index"])
+        self.assertEqual(disabled_result["health_status"], "UNKNOWN")
         self.assertLess(unaffected_result["health_index"], 90.0)
 
     def test_coordinator_omits_disabled_module_trace(self):

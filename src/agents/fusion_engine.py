@@ -15,6 +15,7 @@ from pple.engineering.modules.dga import DGAModule
 from pple.engineering.modules.partial_discharge import PartialDischargeModule
 from pple.engineering.modules.tribology import TribologyModule
 from pple.engineering.modules.thermal import ThermalModule
+from src.agents.fault_taxonomy import FaultCode, MechanismTag
 
 
 class FailureModeDiagnosisAgent:
@@ -38,6 +39,7 @@ class FailureModeDiagnosisAgent:
         pd_mode = pd.get("failure_mode", "")
 
         fused_evidence = []
+        ranked_hypotheses = []
         root_causes = []
         mitigations = []
         confidence = 0.80
@@ -52,26 +54,101 @@ class FailureModeDiagnosisAgent:
 
         primary_failure = "Normal Operation / In-Service Baseline"
 
+        def add_hypothesis(
+            fault_code: str,
+            failure_mode: str,
+            physical_mechanism: str,
+            supporting_evidence: List[str],
+            expected_domains: List[str],
+            required_confirmation: List[str],
+            hypothesis_confidence: float,
+            contradicting_evidence: Optional[List[str]] = None,
+        ) -> None:
+            contradictions = contradicting_evidence or []
+            missing = [domain for domain in expected_domains if domain not in specialist_results]
+            ranking_score = max(
+                0.0,
+                min(1.0, hypothesis_confidence - (0.04 * len(missing)) - (0.06 * len(contradictions))),
+            )
+            if ranking_score >= 0.85:
+                status = "PROBABLE"
+            elif ranking_score >= 0.65:
+                status = "POSSIBLE"
+            else:
+                status = "INCONCLUSIVE"
+            ranked_hypotheses.append({
+                "rank": 0,
+                "fault_code": fault_code,
+                "failure_mode": failure_mode,
+                "physical_mechanism": physical_mechanism,
+                "supporting_evidence": supporting_evidence,
+                "contradicting_evidence": contradictions,
+                "missing_evidence": missing,
+                "confidence": round(hypothesis_confidence, 2),
+                "ranking_score": round(ranking_score, 2),
+                "status": status,
+                "confidence_rationale": (
+                    f"Didukung {len(supporting_evidence)} domain/kelompok bukti; confidence "
+                    "dibatasi sampai dikonfirmasi dengan tren dan konteks operasi."
+                ),
+                "required_confirmation": required_confirmation,
+            })
+
         # 1. BEARING MULTI-MODAL FUSION RULE
         # Correlates: Vibration BPFO/BPFI + MCSA Bearing Sideband + Tribology Fe Debris + Thermal Bearing Temp
         bearing_evidence_count = 0
-        if "Bearing" in vib_mode and vib.get("severity", 1) >= 2:
+        bearing_support = []
+        bearing_contradictions = []
+        bearing_codes = {
+            FaultCode.BEARING_OUTER_RACE.value,
+            FaultCode.BEARING_INNER_RACE.value,
+            FaultCode.BEARING_WEAR.value,
+            FaultCode.BEARING_OVERHEAT.value,
+        }
+
+        def supports_bearing(result: Dict[str, Any]) -> bool:
+            return (
+                result.get("fault_code") in bearing_codes
+                or MechanismTag.BEARING_DEGRADATION.value in result.get("mechanism_tags", [])
+            )
+
+        if supports_bearing(vib) and vib.get("severity", 1) >= 2:
             bearing_evidence_count += 2
-            fused_evidence.append(f"• Vibration: {vib_mode} ({vib.get('metrics', {}).get('bpfo_amp', 0):.2f} mm/s)")
+            evidence = f"Vibration: indikasi cacat race bearing ({vib.get('metrics', {}).get('bpfo_amp', 0):.2f} mm/s)"
+            bearing_support.append(evidence)
+            fused_evidence.append(f"• {evidence}")
+        elif vib and vib.get("severity", 1) <= 1:
+            bearing_contradictions.append("Vibration: belum ada signature cacat bearing yang signifikan.")
+
         mcsa_evs = mcsa.get("evidence") or []
-        if (mcsa_evs and any("Bearing" in str(e) for e in mcsa_evs)) or mcsa.get("metrics", {}).get("bearing_status") in ["Alarm", "High"]:
+        if supports_bearing(mcsa) or mcsa.get("metrics", {}).get("bearing_status") in ["Alarm", "High"]:
             bearing_evidence_count += 1
-            fused_evidence.append("• MCSA: Fluktuasi air-gap frekuensi bearing terdeteksi pada spektrum arus")
-        if "Bearing" in oil_mode or oil.get("metrics", {}).get("fe_ppm", 0) >= 35.0:
+            evidence = "MCSA: fluktuasi air-gap frekuensi bearing terdeteksi pada spektrum arus"
+            bearing_support.append(evidence)
+            fused_evidence.append(f"• {evidence}")
+        elif mcsa and mcsa.get("metrics", {}).get("bearing_status") == "Normal":
+            bearing_contradictions.append("MCSA: indikator bearing masih berstatus normal.")
+
+        if supports_bearing(oil) or oil.get("metrics", {}).get("fe_ppm", 0) >= 35.0:
             bearing_evidence_count += 2
-            fused_evidence.append(f"• Tribology: Partikel keausan besi (Fe) meningkat ({oil.get('metrics', {}).get('fe_ppm', 0):.1f} ppm)")
-        if "Bearing" in thermal_mode or thermal.get("metrics", {}).get("bearing_temp_c", 0) >= 75.0:
+            evidence = f"Tribology: partikel keausan besi (Fe) meningkat ({oil.get('metrics', {}).get('fe_ppm', 0):.1f} ppm)"
+            bearing_support.append(evidence)
+            fused_evidence.append(f"• {evidence}")
+        elif oil and oil.get("metrics", {}).get("fe_ppm", 0) < 35.0:
+            bearing_contradictions.append("Tribology: konsentrasi Fe belum mendukung keausan aktif.")
+
+        if supports_bearing(thermal) or thermal.get("metrics", {}).get("bearing_temp_c", 0) >= 75.0:
             bearing_evidence_count += 1
-            fused_evidence.append(f"• Thermal: Suhu bearing elevated ({thermal.get('metrics', {}).get('bearing_temp_c', 0):.1f}°C)")
+            evidence = f"Thermal: suhu bearing meningkat ({thermal.get('metrics', {}).get('bearing_temp_c', 0):.1f}°C)"
+            bearing_support.append(evidence)
+            fused_evidence.append(f"• {evidence}")
+        elif thermal and thermal.get("metrics", {}).get("bearing_temp_c", 0) < 70.0:
+            bearing_contradictions.append("Thermal: suhu bearing belum menunjukkan elevasi.")
 
         if bearing_evidence_count >= 3:
             primary_failure = "Rolling Element Bearing Outer/Inner Race Fatigue Degradation"
-            confidence = min(0.95, 0.82 + (bearing_evidence_count * 0.03))
+            independent_domains = len(bearing_support)
+            confidence = min(0.95, 0.62 + (independent_domains * 0.08))
             severity = max(severity, 3)
             root_causes.extend([
                 "Inadequate / degraded lubrication film (lubricant starvation)",
@@ -83,15 +160,38 @@ class FailureModeDiagnosisAgent:
                 "Periksa kondisi gemuk/oli pelumas dan lakukan re-greasing dengan grease grade yang sesuai",
                 "Siapkan suku cadang bearing pengganti untuk penggantian pada outage terencana terdekat"
             ])
+            add_hypothesis(
+                FaultCode.BEARING_DEGRADATION.value,
+                primary_failure,
+                (
+                    "Kerusakan permukaan/subpermukaan race bearing meningkatkan impuls getaran, "
+                    "debris ferrous, gesekan, dan temperatur saat degradasi berkembang."
+                ),
+                bearing_support,
+                ["Vibration", "MCSA", "Tribology", "Thermal"],
+                [
+                    "Konfirmasi spectrum envelope/demodulation pada bearing DE dan NDE.",
+                    "Verifikasi tren terhadap baseline dan kondisi beban yang sebanding.",
+                    "Konfirmasi kondisi pelumas/debris sebelum keputusan penggantian komponen.",
+                ],
+                confidence,
+                bearing_contradictions,
+            )
 
         # 2. ROTOR BAR & END RING FUSION RULE
-        elif "Rotor Bar" in mcsa_mode and mcsa.get("severity", 1) >= 2:
+        if (
+            mcsa.get("fault_code") == FaultCode.ROTOR_BAR_DEGRADATION.value
+            or MechanismTag.ROTOR_ELECTRICAL_DEGRADATION.value in mcsa.get("mechanism_tags", [])
+        ) and mcsa.get("severity", 1) >= 2:
             primary_failure = mcsa_mode
             confidence = 0.92
+            rotor_support = []
             if mcsa_evs:
                 fused_evidence.append(f"• MCSA: {mcsa_evs[0]}")
+                rotor_support.append(f"MCSA: {mcsa_evs[0]}")
             if vib.get("severity", 1) >= 2:
                 fused_evidence.append(f"• Vibration: Modulasi amplitudo 1X terdeteksi ({vib.get('metrics', {}).get('amp_1x', 0):.2f} mm/s)")
+                rotor_support.append("Vibration: modulasi amplitudo 1X mendukung respons mekanis rotor.")
             root_causes.extend([
                 "Thermal stress & fatigue cracking pada sambungan rotor bar ke end-ring",
                 "Sering mengalami high-inertia starting cycle",
@@ -101,9 +201,24 @@ class FailureModeDiagnosisAgent:
                 "Lakukan static motor testing (MCE / PdMA) untuk verifikasi rotor balance",
                 "Batasi frekuensi start-stop berurutan pada motor"
             ])
+            add_hypothesis(
+                FaultCode.ROTOR_BAR_DEGRADATION.value,
+                primary_failure,
+                "Asimetri resistansi rotor memodulasi arus stator dan dapat memicu respons torsi/getaran periodik.",
+                rotor_support or ["MCSA: fault code rotor-bar dari rule deterministik."],
+                ["MCSA", "Vibration", "Thermal"],
+                [
+                    "Ulangi MCSA pada beban stabil dan catat slip motor.",
+                    "Konfirmasi dengan static motor test saat outage tersedia.",
+                ],
+                confidence,
+            )
 
         # 3. MISALIGNMENT / COUPLING FUSION RULE
-        elif "Misalignment" in vib_mode and vib.get("severity", 1) >= 2:
+        if (
+            vib.get("fault_code") == FaultCode.SHAFT_MISALIGNMENT.value
+            or MechanismTag.SHAFT_ALIGNMENT.value in vib.get("mechanism_tags", [])
+        ) and vib.get("severity", 1) >= 2:
             primary_failure = "Shaft Misalignment & Coupling Stress"
             confidence = 0.88
             fused_evidence.append(f"• Vibration: {vib.get('evidence', [''])[0]}")
@@ -118,14 +233,35 @@ class FailureModeDiagnosisAgent:
                 "Lakukan dial indicator / laser alignment check saat unit shutdown",
                 "Periksa nilai soft foot dan kondisi shim pada baseplate"
             ])
+            add_hypothesis(
+                FaultCode.SHAFT_MISALIGNMENT.value,
+                primary_failure,
+                "Offset/angular misalignment menaikkan gaya periodik radial-aksial pada shaft dan coupling.",
+                ["Vibration: pola harmonik/aksial dari rule deterministik."],
+                ["Vibration", "Thermal"],
+                [
+                    "Konfirmasi phase vibration radial-aksial di kedua sisi coupling.",
+                    "Lakukan laser alignment dan pemeriksaan soft foot saat unit aman diisolasi.",
+                ],
+                confidence,
+            )
 
         # 4. TRANSFORMER DGA + PD FUSION RULE
-        elif "DGA" in specialist_results and dga.get("severity", 1) >= 2:
+        if dga.get("fault_code") in {
+            FaultCode.DGA_HIGH_ENERGY_DISCHARGE.value,
+            FaultCode.DGA_THERMAL_FAULT.value,
+            FaultCode.DGA_PARTIAL_DISCHARGE.value,
+        } and dga.get("severity", 1) >= 2:
             primary_failure = dga_mode
             confidence = dga.get("confidence", 0.90)
             fused_evidence.extend(dga.get("evidence", []))
-            if pd.get("severity", 1) >= 2:
+            transformer_support = [f"DGA: {item}" for item in dga.get("evidence", [])]
+            if (
+                pd.get("fault_code") == FaultCode.PARTIAL_DISCHARGE_ACTIVE.value
+                and pd.get("severity", 1) >= 2
+            ):
                 fused_evidence.append(f"• PD: Aktivitas peluahan parsial {pd_mode}")
+                transformer_support.append("Partial Discharge: aktivitas PRPD mendukung mekanisme discharge.")
                 confidence = min(0.96, confidence + 0.05)
             root_causes.extend([
                 "Pelepasan muatan listrik berenergi tinggi (electrical arcing)",
@@ -136,6 +272,56 @@ class FailureModeDiagnosisAgent:
                 "Lakukan acoustic PD pin-pointing dan tes dissolved water & breakdown voltage",
                 "Monitor laju kenaikan gas (rate of change ppm/day) secara berkala"
             ])
+            add_hypothesis(
+                dga.get("fault_code"),
+                primary_failure,
+                "Energi listrik atau panas memecah minyak/isolasi dan membentuk pola gas; PD membantu mengonfirmasi discharge aktif.",
+                transformer_support or ["DGA: fault code dari rule deterministik."],
+                ["DGA", "Partial Discharge", "Thermal"],
+                [
+                    "Validasi kualitas sampel dan tren rate-of-change DGA.",
+                    "Lokalisasi PD serta inspeksi thermal pada area yang dicurigai.",
+                ],
+                confidence,
+            )
+
+        # 5. STANDALONE PARTIAL-DISCHARGE RULE
+        if (
+            pd.get("fault_code") == FaultCode.PARTIAL_DISCHARGE_ACTIVE.value
+            and pd.get("severity", 1) >= 2
+        ):
+            primary_failure = pd_mode
+            confidence = pd.get("confidence", 0.85)
+            pd_support = [f"Partial Discharge: {item}" for item in pd.get("evidence", [])]
+            fused_evidence.extend([f"• {item}" for item in pd_support])
+            root_causes.extend([
+                "Degradasi lokal sistem isolasi atau void internal",
+                "Kontaminasi, kelembapan, atau medan listrik lokal yang tidak seragam",
+            ])
+            mitigations.extend(pd.get("recommendation", []))
+            add_hypothesis(
+                FaultCode.PARTIAL_DISCHARGE_ACTIVE.value,
+                primary_failure,
+                "Aktivitas discharge berulang mengikis material isolasi dan dapat berkembang menjadi breakdown.",
+                pd_support or ["Partial Discharge: fault code dari rule deterministik."],
+                ["Partial Discharge", "DGA", "Thermal"],
+                [
+                    "Validasi noise rejection dan pola PRPD pada kondisi operasi sebanding.",
+                    "Lokalisasi sumber dengan metode acoustic/UHF yang sesuai aset.",
+                ],
+                confidence,
+            )
+
+        ranked_hypotheses.sort(key=lambda item: item["ranking_score"], reverse=True)
+        for rank, hypothesis in enumerate(ranked_hypotheses, start=1):
+            hypothesis["rank"] = rank
+        if ranked_hypotheses:
+            leading = ranked_hypotheses[0]
+            primary_failure = leading["failure_mode"]
+            confidence = leading["ranking_score"]
+            diagnosis_status = leading["status"]
+        else:
+            diagnosis_status = "INCONCLUSIVE"
 
         # Default fallback
         if not fused_evidence:
@@ -148,11 +334,13 @@ class FailureModeDiagnosisAgent:
 
         return {
             "primary_failure_mode": primary_failure,
+            "diagnosis_status": diagnosis_status,
             "confidence": round(confidence, 2),
             "severity": severity,
             "fused_evidence": fused_evidence,
             "root_causes": root_causes if root_causes else ["Normal operation / wear within operational tolerance"],
-            "mitigation_recommendations": mitigations[:4]
+            "mitigation_recommendations": mitigations[:4],
+            "ranked_hypotheses": ranked_hypotheses,
         }
 
 
@@ -383,24 +571,72 @@ class ReliabilityFusionAgent:
         # not being provided at all: excluded from both the result set and the
         # health-index weighting below, never given a fabricated score.
         store = self.equipment_module_store
-        if vibration_data is not None and store.is_enabled(equipment, "vibration"):
+        if vibration_data and store.is_enabled(equipment, "vibration"):
             specialist_results["Vibration"] = self._analyze("vibration", equipment, vibration_data)
             health_weights["Vibration"] = 0.28
-        if mcsa_data is not None and store.is_enabled(equipment, "mcsa"):
+        if mcsa_data and store.is_enabled(equipment, "mcsa"):
             specialist_results["MCSA"] = self._analyze("mcsa", equipment, mcsa_data)
             health_weights["MCSA"] = 0.28
-        if thermal_data is not None and store.is_enabled(equipment, "thermal"):
+        if thermal_data and store.is_enabled(equipment, "thermal"):
             specialist_results["Thermal"] = self._analyze("thermal", equipment, thermal_data)
             health_weights["Thermal"] = 0.20
-        if oil_data is not None and store.is_enabled(equipment, "tribology"):
+        if oil_data and store.is_enabled(equipment, "tribology"):
             specialist_results["Tribology"] = self._analyze("tribology", equipment, oil_data)
             health_weights["Tribology"] = 0.14
-        if dga_data is not None and store.is_enabled(equipment, "dga"):
+        if dga_data and store.is_enabled(equipment, "dga"):
             specialist_results["DGA"] = self._analyze("dga", equipment, dga_data)
             health_weights["DGA"] = 0.35
-        if pd_data is not None and store.is_enabled(equipment, "partial_discharge"):
+        if pd_data and store.is_enabled(equipment, "partial_discharge"):
             specialist_results["Partial Discharge"] = self._analyze("partial_discharge", equipment, pd_data)
             health_weights["Partial Discharge"] = 0.25
+
+        if not specialist_results:
+            return {
+                "equipment": equipment,
+                "asset_type": asset_type,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "health_index": None,
+                "health_status": "UNKNOWN",
+                "health_color": "#64748B",
+                "specialist_evaluations": {},
+                "failure_mode_diagnosis": {
+                    "primary_failure_mode": "Insufficient measurement data",
+                    "diagnosis_status": "INSUFFICIENT_DATA",
+                    "confidence": 0.0,
+                    "severity": 0,
+                    "fused_evidence": [],
+                    "root_causes": [],
+                    "mitigation_recommendations": [
+                        "Lengkapi pengukuran domain yang relevan sebelum menetapkan kondisi aset."
+                    ],
+                    "ranked_hypotheses": [],
+                },
+                "predictive_rul": {
+                    "status": "unavailable",
+                    "estimated_rul_days": None,
+                    "rul_min_days": None,
+                    "rul_max_days": None,
+                    "failure_probability_30d": None,
+                    "recommended_window": "Measurement required",
+                    "prognostic_status": "unavailable_insufficient_data",
+                },
+                "risk_assessment": {
+                    "risk_level": "UNKNOWN",
+                    "risk_index": None,
+                    "reason": "Tidak ada bukti pengukuran yang dapat dinilai.",
+                },
+                "maintenance_decision": {
+                    "decision": "COLLECT_DATA",
+                    "work_order": None,
+                    "recommendations": [
+                        "Ambil data pengukuran yang representatif sesuai domain dan kondisi operasi."
+                    ],
+                },
+                "data_quality": {
+                    "status": "insufficient_data",
+                    "limitations": ["Tidak ada telemetry domain yang diberikan."],
+                },
+            }
 
         # If transformer asset, rebalance weights
         if "Transformer" in asset_type or "DGA" in specialist_results:
@@ -414,7 +650,7 @@ class ReliabilityFusionAgent:
                 for k, res in specialist_results.items()
             ) / total_w
         else:
-            weighted_health = 90.0
+            weighted_health = 0.0
 
         health_index = round(weighted_health, 1)
 

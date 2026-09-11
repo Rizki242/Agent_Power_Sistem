@@ -7,6 +7,8 @@ Each agent evaluates raw sensor/laboratory data and returns standardized diagnos
 from typing import Dict, Any, List, Optional
 import math
 
+from src.agents.fault_taxonomy import FaultCode, MechanismTag
+
 
 class BaseSpecialistAgent:
     """Base class for all condition monitoring specialist agents."""
@@ -15,6 +17,38 @@ class BaseSpecialistAgent:
 
     def evaluate(self, equipment: str, data: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError
+
+    def _insufficient_if_empty(
+        self, equipment: str, data: Dict[str, Any], recognized_fields: set[str]
+    ) -> Optional[Dict[str, Any]]:
+        normalized = {str(key).lower(): value for key, value in (data or {}).items()}
+        observed = sorted(
+            key for key in recognized_fields
+            if key in normalized and normalized[key] is not None and str(normalized[key]).strip() != ""
+        )
+        if observed:
+            return None
+        return {
+            "equipment": equipment,
+            "domain": self.domain_name,
+            "condition": "UNKNOWN",
+            "health_score": None,
+            "failure_mode": "Insufficient measurement data",
+            "fault_code": FaultCode.UNKNOWN.value,
+            "mechanism_tags": [],
+            "severity": 0,
+            "confidence": 0.0,
+            "evidence": [],
+            "recommendation": [
+                "Lengkapi data pengukuran yang relevan sebelum menetapkan kondisi aset."
+            ],
+            "metrics": {},
+            "data_quality": {
+                "status": "insufficient_data",
+                "observed_fields": [],
+                "limitations": ["Tidak ada field pengukuran yang dikenali."],
+            },
+        }
 
 
 class VibrationAgent(BaseSpecialistAgent):
@@ -26,6 +60,12 @@ class VibrationAgent(BaseSpecialistAgent):
         super().__init__("Vibration")
 
     def evaluate(self, equipment: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        insufficient = self._insufficient_if_empty(equipment, data, {
+            "overall_rms", "rms", "bpfo_amp", "bpfo", "bpfi_amp", "bpfi",
+            "amp_1x", "1x", "amp_2x", "2x", "axial_1x",
+        })
+        if insufficient:
+            return insufficient
         overall_rms = float(data.get("overall_rms", data.get("rms", 2.2)))
         bpfo = float(data.get("bpfo_amp", data.get("bpfo", 0.0)))
         bpfi = float(data.get("bpfi_amp", data.get("bpfi", 0.0)))
@@ -38,6 +78,8 @@ class VibrationAgent(BaseSpecialistAgent):
         severity = 1
         condition = "HEALTHY"
         failure_mode = "Normal Operation"
+        fault_code = FaultCode.NORMAL.value
+        mechanism_tags = []
         confidence = 0.95
         health_score = 95.0
 
@@ -64,6 +106,11 @@ class VibrationAgent(BaseSpecialistAgent):
             severity = max(severity, 3)
             condition = "ALERT" if severity < 4 else "CRITICAL"
             failure_mode = f"Bearing {defect_type} Defect"
+            fault_code = (
+                FaultCode.BEARING_OUTER_RACE.value
+                if bpfo > bpfi else FaultCode.BEARING_INNER_RACE.value
+            )
+            mechanism_tags.append(MechanismTag.BEARING_DEGRADATION.value)
             confidence = 0.89
             health_score = min(health_score, 50.0)
             evidence.append(f"Frekuensi cacat bearing terdeteksi: {defect_type} amplitudo {max(bpfo, bpfi):.2f} mm/s pk")
@@ -73,6 +120,8 @@ class VibrationAgent(BaseSpecialistAgent):
             severity = max(severity, 2)
             condition = "WARNING" if severity == 2 else condition
             failure_mode = "Shaft Misalignment / Coupling Angularity"
+            fault_code = FaultCode.SHAFT_MISALIGNMENT.value
+            mechanism_tags.append(MechanismTag.SHAFT_ALIGNMENT.value)
             confidence = 0.86
             health_score = min(health_score, 65.0)
             evidence.append(f"Dominasi spektrum 2X ({f2x:.2f} mm/s) dan getaran aksial 1X ({axial_1x:.2f} mm/s)")
@@ -81,6 +130,7 @@ class VibrationAgent(BaseSpecialistAgent):
             severity = max(severity, 2)
             condition = "WARNING" if severity == 2 else condition
             failure_mode = "Rotor Dynamic Unbalance"
+            fault_code = FaultCode.ROTOR_UNBALANCE.value
             confidence = 0.88
             health_score = min(health_score, 68.0)
             evidence.append(f"Puncak getaran dominan 1X rotasi tinggi ({f1x:.2f} mm/s)")
@@ -95,6 +145,8 @@ class VibrationAgent(BaseSpecialistAgent):
             "condition": condition,
             "health_score": round(health_score, 1),
             "failure_mode": failure_mode,
+            "fault_code": fault_code,
+            "mechanism_tags": mechanism_tags,
             "severity": severity,
             "confidence": confidence,
             "evidence": evidence,
@@ -119,6 +171,12 @@ class MCSAAgent(BaseSpecialistAgent):
         super().__init__("MCSA")
 
     def evaluate(self, equipment: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        insufficient = self._insufficient_if_empty(equipment, data, {
+            "upper_sb", "lower_sb", "bearing_status", "dev_current", "i_unbalance",
+            "dev_voltage", "v_unbalance", "thd_current", "thd_i", "thd_voltage", "thd_v",
+        })
+        if insufficient:
+            return insufficient
         upper_sb = float(data.get("upper_sb", data.get("Upper Sideband", -55.0)))
         lower_sb = float(data.get("lower_sb", data.get("Lower Sideband", -56.0)))
         dev_curr = float(data.get("dev_current", data.get("Dev Current", 1.2)))
@@ -132,6 +190,8 @@ class MCSAAgent(BaseSpecialistAgent):
         severity = 1
         condition = "HEALTHY"
         failure_mode = "Normal Operation"
+        fault_code = FaultCode.NORMAL.value
+        mechanism_tags = []
         confidence = 0.92
         health_score = 94.0
 
@@ -140,6 +200,8 @@ class MCSAAgent(BaseSpecialistAgent):
             severity = 4
             condition = "CRITICAL"
             failure_mode = "Multiple Broken Rotor Bars / Severe End Ring Crack"
+            fault_code = FaultCode.ROTOR_BAR_DEGRADATION.value
+            mechanism_tags.append(MechanismTag.ROTOR_ELECTRICAL_DEGRADATION.value)
             confidence = 0.94
             health_score = 30.0
             evidence.append(f"Sideband pole-pass rotor bar kritis ({max_sb:.1f} dB >= -45 dB) - Level 4")
@@ -148,6 +210,8 @@ class MCSAAgent(BaseSpecialistAgent):
             severity = 3
             condition = "ALERT"
             failure_mode = "Single Broken Rotor Bar / High Resistance Joint"
+            fault_code = FaultCode.ROTOR_BAR_DEGRADATION.value
+            mechanism_tags.append(MechanismTag.ROTOR_ELECTRICAL_DEGRADATION.value)
             confidence = 0.88
             health_score = 55.0
             evidence.append(f"Sideband rotor bar tinggi ({max_sb:.1f} dB) - Level 3 Alert")
@@ -156,6 +220,8 @@ class MCSAAgent(BaseSpecialistAgent):
             severity = 2
             condition = "WATCH"
             failure_mode = "Rotor Bar Porosity / Early Resistance Imbalance"
+            fault_code = FaultCode.ROTOR_BAR_DEGRADATION.value
+            mechanism_tags.append(MechanismTag.ROTOR_ELECTRICAL_DEGRADATION.value)
             confidence = 0.82
             health_score = 75.0
             evidence.append(f"Sideband rotor bar termonitor ({max_sb:.1f} dB) - Level 2 Watch")
@@ -171,6 +237,7 @@ class MCSAAgent(BaseSpecialistAgent):
 
         # Bearing Indication in MCSA
         if bearing_stat in ["Alarm", "High"]:
+            mechanism_tags.append(MechanismTag.BEARING_DEGRADATION.value)
             evidence.append(f"Indikasi fluktuasi air-gap frekuensi bearing MCSA berstatus {bearing_stat}")
             health_score = min(health_score, 65.0)
 
@@ -183,6 +250,8 @@ class MCSAAgent(BaseSpecialistAgent):
             "condition": condition,
             "health_score": round(health_score, 1),
             "failure_mode": failure_mode,
+            "fault_code": fault_code,
+            "mechanism_tags": mechanism_tags,
             "severity": severity,
             "confidence": confidence,
             "evidence": evidence,
@@ -208,6 +277,11 @@ class DGAAgent(BaseSpecialistAgent):
         super().__init__("DGA")
 
     def evaluate(self, equipment: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        insufficient = self._insufficient_if_empty(equipment, data, {
+            "h2", "ch4", "c2h2", "c2h4", "c2h6", "co", "co2", "tdcg",
+        })
+        if insufficient:
+            return insufficient
         h2 = float(data.get("h2", data.get("H2", 15.0)))
         ch4 = float(data.get("ch4", data.get("CH4", 25.0)))
         c2h2 = float(data.get("c2h2", data.get("C2H2", 0.5)))
@@ -222,6 +296,8 @@ class DGAAgent(BaseSpecialistAgent):
         severity = 1
         condition = "HEALTHY"
         failure_mode = "Normal In-Service"
+        fault_code = FaultCode.NORMAL.value
+        mechanism_tags = []
         confidence = 0.95
         health_score = 96.0
 
@@ -239,6 +315,8 @@ class DGAAgent(BaseSpecialistAgent):
             severity = 4
             condition = "CRITICAL"
             failure_mode = "D2 - High Energy Electrical Arc Discharge"
+            fault_code = FaultCode.DGA_HIGH_ENERGY_DISCHARGE.value
+            mechanism_tags.append(MechanismTag.ELECTRICAL_DISCHARGE.value)
             confidence = 0.96
             health_score = 25.0
             evidence.append(f"Acetylene (C2H2) terdeteksi tinggi ({c2h2:.1f} ppm, Duval %C2H2={pct_c2h2:.1f}%)")
@@ -247,6 +325,7 @@ class DGAAgent(BaseSpecialistAgent):
             severity = 3
             condition = "ALERT"
             failure_mode = "T3 - Thermal Fault T > 700°C (Hotspot/Overheating)"
+            fault_code = FaultCode.DGA_THERMAL_FAULT.value
             confidence = 0.91
             health_score = 48.0
             evidence.append(f"Ethylene (C2H4) dominan ({c2h4:.1f} ppm) mengindikasikan overheating termal parah")
@@ -255,6 +334,8 @@ class DGAAgent(BaseSpecialistAgent):
             severity = 2
             condition = "WARNING"
             failure_mode = "PD - Partial Discharge / Corona in Gas Bubbles"
+            fault_code = FaultCode.DGA_PARTIAL_DISCHARGE.value
+            mechanism_tags.append(MechanismTag.ELECTRICAL_DISCHARGE.value)
             confidence = 0.85
             health_score = 70.0
             evidence.append(f"Konsentrasi Hydrogen ({h2:.1f} ppm) dan Methane tinggi mengindikasikan pelepasan muatan parsial")
@@ -281,6 +362,8 @@ class DGAAgent(BaseSpecialistAgent):
             "condition": condition,
             "health_score": round(health_score, 1),
             "failure_mode": failure_mode,
+            "fault_code": fault_code,
+            "mechanism_tags": mechanism_tags,
             "severity": severity,
             "confidence": confidence,
             "evidence": evidence,
@@ -308,6 +391,11 @@ class PDAgent(BaseSpecialistAgent):
         super().__init__("Partial Discharge")
 
     def evaluate(self, equipment: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        insufficient = self._insufficient_if_empty(equipment, data, {
+            "pulse_magnitude_pc", "magnitude", "pd_type", "phase_clustering_deg", "nqn",
+        })
+        if insufficient:
+            return insufficient
         pulse_mag = float(data.get("pulse_magnitude_pc", data.get("magnitude", 120.0)))
         pd_type = str(data.get("pd_type", "Internal Void")).strip()
         phase_clustering = float(data.get("phase_clustering_deg", 45.0))
@@ -318,6 +406,8 @@ class PDAgent(BaseSpecialistAgent):
         severity = 1
         condition = "HEALTHY"
         failure_mode = "Normal Insulation"
+        fault_code = FaultCode.NORMAL.value
+        mechanism_tags = []
         confidence = 0.90
         health_score = 95.0
 
@@ -325,6 +415,11 @@ class PDAgent(BaseSpecialistAgent):
             severity = 4
             condition = "CRITICAL"
             failure_mode = f"Severe {pd_type} Activity"
+            fault_code = FaultCode.PARTIAL_DISCHARGE_ACTIVE.value
+            mechanism_tags.extend([
+                MechanismTag.ELECTRICAL_DISCHARGE.value,
+                MechanismTag.INSULATION_DEGRADATION.value,
+            ])
             confidence = 0.93
             health_score = 30.0
             evidence.append(f"Amplitudo pelepasan parsial sangat tinggi ({pulse_mag:.0f} pC > 1500 pC)")
@@ -334,6 +429,11 @@ class PDAgent(BaseSpecialistAgent):
             severity = 3
             condition = "ALERT"
             failure_mode = f"Active {pd_type}"
+            fault_code = FaultCode.PARTIAL_DISCHARGE_ACTIVE.value
+            mechanism_tags.extend([
+                MechanismTag.ELECTRICAL_DISCHARGE.value,
+                MechanismTag.INSULATION_DEGRADATION.value,
+            ])
             confidence = 0.87
             health_score = 55.0
             evidence.append(f"Aktivitas PRPD terdeteksi aktif ({pulse_mag:.0f} pC)")
@@ -342,6 +442,8 @@ class PDAgent(BaseSpecialistAgent):
             severity = 2
             condition = "WATCH"
             failure_mode = f"Early {pd_type}"
+            fault_code = FaultCode.PARTIAL_DISCHARGE_ACTIVE.value
+            mechanism_tags.append(MechanismTag.INSULATION_DEGRADATION.value)
             confidence = 0.80
             health_score = 75.0
             evidence.append(f"Aktivitas PD tahap awal termonitor ({pulse_mag:.0f} pC)")
@@ -356,6 +458,8 @@ class PDAgent(BaseSpecialistAgent):
             "condition": condition,
             "health_score": round(health_score, 1),
             "failure_mode": failure_mode,
+            "fault_code": fault_code,
+            "mechanism_tags": mechanism_tags,
             "severity": severity,
             "confidence": confidence,
             "evidence": evidence,
@@ -378,6 +482,12 @@ class TribologyAgent(BaseSpecialistAgent):
         super().__init__("Tribology")
 
     def evaluate(self, equipment: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        insufficient = self._insufficient_if_empty(equipment, data, {
+            "viscosity_40c", "viscosity", "nominal_viscosity", "tan", "water_ppm",
+            "water", "fe_ppm", "fe", "cu_ppm", "cu", "iso_cleanliness",
+        })
+        if insufficient:
+            return insufficient
         visc = float(data.get("viscosity_40c", data.get("viscosity", 46.0)))
         nominal_visc = float(data.get("nominal_viscosity", 46.0))
         tan = float(data.get("tan", 0.15))
@@ -392,6 +502,8 @@ class TribologyAgent(BaseSpecialistAgent):
         severity = 1
         condition = "HEALTHY"
         failure_mode = "Normal Lubrication"
+        fault_code = FaultCode.NORMAL.value
+        mechanism_tags = []
         confidence = 0.94
         health_score = 95.0
 
@@ -399,6 +511,8 @@ class TribologyAgent(BaseSpecialistAgent):
             severity = 4
             condition = "CRITICAL"
             failure_mode = "Severe Ferrous Bearing / Gear Wear Degradation"
+            fault_code = FaultCode.BEARING_WEAR.value
+            mechanism_tags.append(MechanismTag.BEARING_DEGRADATION.value)
             confidence = 0.95
             health_score = 30.0
             evidence.append(f"Konsentrasi partikel keausan besi (Fe) sangat tinggi ({fe:.1f} ppm > 80 ppm)")
@@ -407,6 +521,8 @@ class TribologyAgent(BaseSpecialistAgent):
             severity = max(severity, 3)
             condition = "ALERT"
             failure_mode = "Active Bearing Sliding / Fatigue Wear"
+            fault_code = FaultCode.BEARING_WEAR.value
+            mechanism_tags.append(MechanismTag.BEARING_DEGRADATION.value)
             confidence = 0.88
             health_score = min(health_score, 55.0)
             evidence.append(f"Konsentrasi Fe meningkat ({fe:.1f} ppm Alert)")
@@ -435,6 +551,8 @@ class TribologyAgent(BaseSpecialistAgent):
             "condition": condition,
             "health_score": round(health_score, 1),
             "failure_mode": failure_mode,
+            "fault_code": fault_code,
+            "mechanism_tags": mechanism_tags,
             "severity": severity,
             "confidence": confidence,
             "evidence": evidence,
@@ -460,6 +578,11 @@ class ThermalAgent(BaseSpecialistAgent):
         super().__init__("Thermal")
 
     def evaluate(self, equipment: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        insufficient = self._insufficient_if_empty(equipment, data, {
+            "bearing_temp", "temp", "winding_temp", "ambient_temp", "delta_t_phase", "hotspot_temp",
+        })
+        if insufficient:
+            return insufficient
         bearing_temp = float(data.get("bearing_temp", data.get("temp", 62.0)))
         winding_temp = float(data.get("winding_temp", 75.0))
         ambient_temp = float(data.get("ambient_temp", 32.0))
@@ -472,6 +595,8 @@ class ThermalAgent(BaseSpecialistAgent):
         severity = 1
         condition = "HEALTHY"
         failure_mode = "Normal Thermal State"
+        fault_code = FaultCode.NORMAL.value
+        mechanism_tags = []
         confidence = 0.93
         health_score = 96.0
 
@@ -479,6 +604,8 @@ class ThermalAgent(BaseSpecialistAgent):
             severity = 4
             condition = "CRITICAL"
             failure_mode = "Severe Bearing Overheating / Inadequate Lubrication"
+            fault_code = FaultCode.BEARING_OVERHEAT.value
+            mechanism_tags.append(MechanismTag.BEARING_DEGRADATION.value)
             confidence = 0.95
             health_score = 30.0
             evidence.append(f"Suhu bearing sangat tinggi ({bearing_temp:.1f}°C, Delta-T {delta_t_ambient:.1f}°C)")
@@ -487,6 +614,14 @@ class ThermalAgent(BaseSpecialistAgent):
             severity = 3
             condition = "ALERT"
             failure_mode = "Thermal Hotspot / Loose Electrical Connection" if delta_t_phase >= 15.0 else "Bearing Thermal Elevation"
+            if delta_t_phase >= 15.0:
+                fault_code = FaultCode.ELECTRICAL_HOTSPOT.value
+                mechanism_tags.append(MechanismTag.THERMAL_ELECTRICAL.value)
+                if bearing_temp >= 80.0:
+                    mechanism_tags.append(MechanismTag.BEARING_DEGRADATION.value)
+            else:
+                fault_code = FaultCode.BEARING_OVERHEAT.value
+                mechanism_tags.append(MechanismTag.BEARING_DEGRADATION.value)
             confidence = 0.89
             health_score = 58.0
             if delta_t_phase >= 15.0:
@@ -510,6 +645,8 @@ class ThermalAgent(BaseSpecialistAgent):
             "condition": condition,
             "health_score": round(health_score, 1),
             "failure_mode": failure_mode,
+            "fault_code": fault_code,
+            "mechanism_tags": mechanism_tags,
             "severity": severity,
             "confidence": confidence,
             "evidence": evidence,

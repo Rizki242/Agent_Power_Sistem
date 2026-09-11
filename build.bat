@@ -91,6 +91,6 @@ echo.
 echo Jalankan aplikasi menggunakan salah satu skrip berikut:
 echo - Streamlit Dashboard : run.bat
 echo - FastAPI Backend     : run_api.bat
-echo - Frontend Dev Server : run_frontend.bat
+echo - Full Stack (Streamlit + API) : run_all.bat
 echo.
 pause

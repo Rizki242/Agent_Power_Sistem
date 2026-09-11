@@ -21,6 +21,7 @@ from src.asset_registry import (
     list_assets,
     load_condition_history,
     save_evidence,
+    sync_assets_from_equipment_master,
     update_condition_record,
     upsert_asset,
 )
@@ -47,9 +48,25 @@ def render_asset_registry_page(st, edit_mode: bool) -> None:
     tab_list, tab_new, tab_condition = st.tabs(["Daftar Aset", "Tambah / Ubah Aset", "Catat Riwayat Kondisi"])
 
     with tab_list:
+        c_act1, c_act2 = st.columns([3, 1])
+        with c_act2:
+            if st.button("🔄 Sinkronisasi Master", help="Impor otomatis seluruh aset dari Master Equipment Pembangkit", disabled=not edit_mode):
+                added = sync_assets_from_equipment_master()
+                if added > 0:
+                    st.success(f"Berhasil menambahkan {added} aset baru dari Master Equipment.")
+                else:
+                    st.info("Semua aset dari Master Equipment sudah terdaftar.")
+                st.rerun()
+
         if not assets:
-            st.info("Belum ada aset terdaftar. Gunakan tab 'Tambah / Ubah Aset' untuk mulai.")
+            st.info("Belum ada aset terdaftar. Gunakan tombol 'Sinkronisasi Master' atau tab 'Tambah / Ubah Aset' untuk mulai.")
         else:
+            with c_act1:
+                units_avail = ["Semua Unit"] + sorted(list({str(a.get("unit", "Unknown")) for a in assets}))
+                selected_unit = st.selectbox("Filter Unit", units_avail, index=0, key="_reg_unit_filter")
+
+            filtered_assets = assets if selected_unit == "Semua Unit" else [a for a in assets if str(a.get("unit")) == selected_unit]
+
             st.dataframe(
                 [
                     {
@@ -61,10 +78,11 @@ def render_asset_registry_page(st, edit_mode: bool) -> None:
                         "Status": a.get("lifecycle_status", "-"),
                         "Modul Monitoring": ", ".join(a.get("monitoring_modules", [])) or "-",
                     }
-                    for a in assets
+                    for a in filtered_assets
                 ],
                 hide_index=True, width="stretch",
             )
+            st.caption(f"Menampilkan {len(filtered_assets)} dari total {len(assets)} aset terdaftar.")
 
     with tab_new:
         existing_ids = ["(Aset Baru)"] + [a["asset_id"] for a in assets]

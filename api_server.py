@@ -1,45 +1,11 @@
 import os
-import io
-import json
-import math
-import glob
-from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException, UploadFile, File, Query, Depends, Request, Form, Body
+from typing import Optional
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
-from pydantic import BaseModel, Field
 import pandas as pd
-import numpy as np
 
-from pple.api.schemas.core import (
-    EquipmentListResponse,
-    HealthResponse,
-    RotorBarCalculationResponse,
-    SpecialistSubAgentsResponse,
-    SummaryResponse,
-)
 
-def extract_text_from_upload(file_bytes: bytes, filename: str) -> str:
-    ext = os.path.splitext(filename)[1].lower()
-    try:
-        if ext in ['.txt', '.csv', '.json', '.md', '.log']:
-            return file_bytes.decode('utf-8', errors='ignore')
-        elif ext == '.pdf':
-            import pypdf
-            reader = pypdf.PdfReader(io.BytesIO(file_bytes))
-            pages = [page.extract_text() or '' for page in reader.pages]
-            return "\n".join(pages)
-        elif ext in ['.docx', '.docm']:
-            import docx
-            doc = docx.Document(io.BytesIO(file_bytes))
-            paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
-            return "\n".join(paragraphs)
-        elif ext in ['.xlsx', '.xls']:
-            excel_df = pd.read_excel(io.BytesIO(file_bytes))
-            return excel_df.to_string(max_rows=100)
-    except Exception as e:
-        return f"[File text extraction note: {e}]"
-    return f"[File {filename} attached]"
+
 
 from src.data_loader import (
     load_mcsa_data,
@@ -57,29 +23,6 @@ from src.vibration_data import (
     get_equipment_class_list,
     get_bearing_info,
     load_vibration_monthly_tests,
-)
-from src.chatbot import MCSAChatbot
-from src.rotorbar import evaluate_rotorbar
-from src.docx_parser import parse_docx_report
-from src.report_batches import create_batch, preview_batch, commit_batch, list_recent_batches
-from src.ppt_generator import create_ppt
-from src.knowledge_retriever import search_knowledge_base, load_knowledge_base
-from src.standards import generate_initial_analysis, calculate_condition
-from src.llm_assistant import MCSALLMAssistant, resolve_provider_key
-from src.agents.fusion_engine import ReliabilityFusionAgent
-from src.agents.safety_guard import SafetyGuardrailAgent
-from src.agents.asset_graph import AssetKnowledgeGraph
-from src.agents.fusion_inputs import extract_mcsa_fusion_inputs
-from src.fleet_reliability import build_fleet_reliability
-
-fusion_agent = ReliabilityFusionAgent()
-safety_guard = SafetyGuardrailAgent()
-asset_graph = AssetKnowledgeGraph()
-
-from pple.api.routers.work_orders import (
-    _load_work_orders,
-    _save_work_orders,
-    _get_work_orders_store_path,
 )
 
 from pple.api.security import (
@@ -183,10 +126,6 @@ set_reports_data_frames_provider(get_data_frames)
 
 from pple.api.routers.agents import (
     set_data_frames_provider as set_agents_data_frames_provider,
-    plant_skill_learner,
-    env_rigger,
-    subagent_coordinator,
-    self_improver,
 )
 set_agents_data_frames_provider(get_data_frames)
 

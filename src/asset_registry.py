@@ -246,3 +246,84 @@ def save_evidence(asset_id: str, module: str, filename: str, content: bytes, tes
     target = folder / safe_name
     target.write_bytes(content)
     return str(target)
+
+
+def sync_assets_from_equipment_master() -> int:
+    """Sync equipment from equipment_master.json into the central Asset Registry.
+    Ensures all plant equipment tracked in MCSA is available across all CBM disciplines.
+    Returns the count of newly added assets.
+    """
+    master_path = Path(get_data_path("config", "equipment_master.json"))
+    if not master_path.exists():
+        return 0
+
+    try:
+        with master_path.open("r", encoding="utf-8") as handle:
+            master_items = json.load(handle)
+    except (OSError, json.JSONDecodeError):
+        return 0
+
+    if not isinstance(master_items, list):
+        return 0
+
+    records = _read_registry()
+    existing_names = {
+        str(r.get("name", "")).strip().upper() for r in records.values()
+    }
+    existing_eq_codes = {
+        re.sub(r"[^A-Z0-9]", "", str(r.get("name", "")).upper()) for r in records.values()
+    }
+
+    added_count = 0
+    for item in master_items:
+        full_name = str(item.get("Full_Name") or item.get("Equipment") or "").strip()
+        eq_code = str(item.get("Equipment") or "").strip()
+        if not full_name:
+            continue
+
+        norm_code = re.sub(r"[^A-Z0-9]", "", full_name.upper())
+        if full_name.upper() in existing_names or norm_code in existing_eq_codes:
+            continue
+
+        unit = str(item.get("Unit_Name") or "Unknown").strip()
+        volt = str(item.get("Voltage_Level") or "-").strip()
+
+        # Infer basic equipment type
+        name_upper = full_name.upper()
+        if any(k in name_upper for k in ["PUMP", "WP", "BFP", "CWP", "CEP", "VCP"]):
+            eq_type = "Motor Pump"
+        elif any(k in name_upper for k in ["FAN", "IDF", "PAF", "SAF", "CTF"]):
+            eq_type = "Motor Fan / Blower"
+        elif any(k in name_upper for k in ["CRUSHER", "SCREEN", "RS"]):
+            eq_type = "Mechanical Screen / Crusher"
+        elif any(k in name_upper for k in ["BC", "CONVEYOR"]):
+            eq_type = "Belt Conveyor Drive"
+        elif any(k in name_upper for k in ["TRAFO", "TRANSFORMER"]):
+            eq_type = "Power Transformer"
+        else:
+            eq_type = "Electric Drive"
+
+        modules = ["MCSA", "VIBRASI", "TRIBOLOGY", "THERMAL"]
+        if "TRAFO" in name_upper:
+            modules = ["DGA", "PD", "THERMAL"]
+
+        slug = re.sub(r"[^A-Z0-9]+", "-", eq_code.upper() or full_name.upper()).strip("-")[:16]
+        asset_id = f"AST-{slug}"
+        if asset_id in records:
+            asset_id = make_asset_id(full_name)
+
+        upsert_asset({
+            "asset_id": asset_id,
+            "name": full_name,
+            "unit": unit,
+            "equipment_type": eq_type,
+            "voltage_level": volt,
+            "lifecycle_status": "Aktif",
+            "monitoring_modules": modules,
+            "notes": f"Sinkronisasi otomatis dari Master Equipment Pembangkit ({eq_code})",
+        })
+        existing_names.add(full_name.upper())
+        existing_eq_codes.add(norm_code)
+        added_count += 1
+
+    return added_count

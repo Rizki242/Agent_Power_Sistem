@@ -8,6 +8,8 @@ from pple.engineering.modules.partial_discharge import PartialDischargeModule
 from pple.engineering.modules.thermal import ThermalModule
 from pple.engineering.modules.tribology import TribologyModule
 from pple.engineering.modules.vibration import VibrationModule
+from pple.core.exceptions import ModuleValidationError
+from pple.engineering.schemas import DataQualityStatus
 from src.agents.specialist_agents import (
     DGAAgent,
     MCSAAgent,
@@ -68,11 +70,13 @@ class _LegacyAdapterEquivalenceMixin:
         self.assertEqual(self.module.id, self.expected_module_id)
         self.assertIn(self.one_applicable_equipment, self.module.applicable_equipment)
 
-    def test_healthy_default_input(self):
-        result = self.module.run("CWP 1A", {})
-        self.assertEqual(result.equipment_id, "CWP 1A")
-        self.assertEqual(result.module_id, self.expected_module_id)
-        self.assertEqual(result.severity.value, "NORMAL")
+    def test_empty_input_is_rejected_instead_of_assumed_healthy(self):
+        with self.assertRaises(ModuleValidationError):
+            self.module.run("CWP 1A", {})
+
+    def test_unknown_measurement_fields_are_rejected(self):
+        with self.assertRaises(ModuleValidationError):
+            self.module.run("CWP 1A", {"unrelated_field": 1.0})
 
     def test_defect_input_matches_legacy_agent(self):
         legacy = self.legacy.evaluate("CWP 1A", self.defect_data)
@@ -83,6 +87,9 @@ class _LegacyAdapterEquivalenceMixin:
         self.assertEqual(result.health_score, legacy["health_score"])
         self.assertEqual(result.confidence, legacy["confidence"])
         self.assertEqual(result.severity.value, self.expected_severity)
+        self.assertEqual(result.data_quality.status, DataQualityStatus.PARTIAL)
+        self.assertTrue(result.data_quality.missing_context)
+        self.assertEqual(result.source_trace.rule_set_version, self.module.version)
         self.assertEqual(
             sorted(r.text for r in result.recommendations),
             sorted(legacy["recommendation"]),
@@ -118,6 +125,12 @@ class DGAModuleAdapterTests(_LegacyAdapterEquivalenceMixin, unittest.TestCase):
     expected_severity = "CRITICAL"  # legacy severity 4 (C2H2 >= 5.0)
     expected_module_id = "dga"
     one_applicable_equipment = "TRANSFORMER"
+
+    def test_uppercase_source_keys_are_normalized_for_rule_engine(self):
+        result = self.module.run("TRF-1", {"H2": 8.0, "CH4": 9.0, "C2H2": 15.0})
+
+        self.assertEqual(result.severity.value, "CRITICAL")
+        self.assertIn("c2h2", result.data_quality.observed_fields)
 
 
 class PartialDischargeModuleAdapterTests(_LegacyAdapterEquivalenceMixin, unittest.TestCase):

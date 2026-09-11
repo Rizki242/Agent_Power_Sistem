@@ -268,12 +268,14 @@ class SubAgentCoordinator:
         
         # Telemetry data unpacking
         data = custom_telemetry or {}
-        vib_data = data.get("vibration") or {"overall_rms": 2.6, "bpfo_amp": 0.0, "amp_1x": 1.2}
-        mcsa_data = data.get("mcsa") or {"upper_sb": -56.0, "lower_sb": -58.0, "bearing_status": "Normal"}
-        dga_data = data.get("dga") or {"tdcg": 180.0, "h2": 15.0, "c2h2": 0.2}
-        pd_data = data.get("pd") or {"pulse_magnitude_pc": 120.0, "nqn": 15.0}
-        oil_data = data.get("oil") or {"viscosity_40c": 46.0, "fe_ppm": 12.0, "water_ppm": 60.0}
-        thermal_data = data.get("thermal") or {"bearing_temp": 58.0, "delta_t_phase": 2.5}
+        # Missing modalities stay missing. Synthetic healthy baselines would
+        # make an absent measurement indistinguishable from a real normal one.
+        vib_data = data.get("vibration")
+        mcsa_data = data.get("mcsa")
+        dga_data = data.get("dga")
+        pd_data = data.get("pd")
+        oil_data = data.get("oil")
+        thermal_data = data.get("thermal")
 
         # 1. Run Specialist Sub-Agents - a module disabled for this equipment
         # (EquipmentModuleStore, Phase 8) is left out of the trace entirely,
@@ -282,7 +284,7 @@ class SubAgentCoordinator:
         store = self.equipment_module_store
 
         # Vibration Sub-Agent
-        if store.is_enabled(equipment, "vibration"):
+        if vib_data and store.is_enabled(equipment, "vibration"):
             vib_eval = self._analyze("vibration", equipment, vib_data)
             traces.append({
                 "subagent": self._registry["vibration"].to_dict(),
@@ -293,7 +295,7 @@ class SubAgentCoordinator:
             })
 
         # MCSA Sub-Agent
-        if store.is_enabled(equipment, "mcsa"):
+        if mcsa_data and store.is_enabled(equipment, "mcsa"):
             mcsa_eval = self._analyze("mcsa", equipment, mcsa_data)
             traces.append({
                 "subagent": self._registry["mcsa"].to_dict(),
@@ -304,7 +306,7 @@ class SubAgentCoordinator:
             })
 
         # Tribology Sub-Agent
-        if store.is_enabled(equipment, "tribology"):
+        if oil_data and store.is_enabled(equipment, "tribology"):
             oil_eval = self._analyze("tribology", equipment, oil_data)
             traces.append({
                 "subagent": self._registry["tribology"].to_dict(),
@@ -315,7 +317,7 @@ class SubAgentCoordinator:
             })
 
         # Thermal Sub-Agent
-        if store.is_enabled(equipment, "thermal"):
+        if thermal_data and store.is_enabled(equipment, "thermal"):
             therm_eval = self._analyze("thermal", equipment, thermal_data)
             traces.append({
                 "subagent": self._registry["thermal"].to_dict(),
@@ -326,7 +328,7 @@ class SubAgentCoordinator:
             })
 
         # DGA Sub-Agent (for Transformers) or PD Sub-Agent
-        if ("transformer" in equipment.lower() or "trafo" in equipment.lower()) and store.is_enabled(equipment, "dga"):
+        if dga_data and ("transformer" in equipment.lower() or "trafo" in equipment.lower()) and store.is_enabled(equipment, "dga"):
             dga_eval = self._analyze("dga", equipment, dga_data)
             traces.append({
                 "subagent": self._registry["dga"].to_dict(),

@@ -32,6 +32,7 @@ Phase 2-4) exists - there is nowhere durable to write new records to yet.
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 
@@ -659,7 +660,13 @@ def analyze(
     registry, _ = load_modules_from_manifests()
     m = _get_active_module(registry, module_id)
 
-    result = m.run(equipment, payload)
+    from pple.core.exceptions import ModuleValidationError
+
+    try:
+        result = m.run(equipment, payload)
+    except ModuleValidationError as exc:
+        console.print(f"[red]Data pengukuran tidak dapat dianalisis: {exc}[/red]")
+        raise typer.Exit(code=1) from exc
 
     severity_color = {"NORMAL": "green", "WATCH": "yellow", "ALARM": "yellow", "CRITICAL": "red"}.get(result.severity.value, "white")
     console.print(f"\n[bold]{module_id.upper()} ANALYSIS[/bold] - {equipment}\n")
@@ -956,6 +963,18 @@ def _print_serve_banner(*, api: bool, frontend: bool, host: str = "0.0.0.0", por
     console.print("\n[bold green]PPLE READY[/bold green]\n")
 
 
+def _resolve_npm_command() -> str:
+    """Resolve npm's executable, including the ``npm.cmd`` Windows shim."""
+    candidates = ("npm.cmd", "npm") if os.name == "nt" else ("npm",)
+    for candidate in candidates:
+        executable = shutil.which(candidate)
+        if executable:
+            return executable
+    raise typer.BadParameter(
+        "npm tidak ditemukan. Instal Node.js/npm dan pastikan lokasinya tersedia di PATH."
+    )
+
+
 @serve_app.command("api")
 def serve_api(
     host: str = typer.Option(None, "--host", help="Default: env HOST or 0.0.0.0"),
@@ -978,7 +997,7 @@ def serve_frontend():
     """Start the Vite/React dev server - same command run_frontend.bat
     runs (`npm --prefix frontend run dev`). Blocks until Ctrl+C."""
     _print_serve_banner(api=False, frontend=True)
-    subprocess.run(["npm", "--prefix", "frontend", "run", "dev"])
+    subprocess.run([_resolve_npm_command(), "--prefix", "frontend", "run", "dev"])
 
 
 @serve_app.command("all")
@@ -1001,7 +1020,7 @@ def serve_all(
         "--host", resolved_host, "--port", str(resolved_port), "--reload",
     ])
     try:
-        subprocess.run(["npm", "--prefix", "frontend", "run", "dev"])
+        subprocess.run([_resolve_npm_command(), "--prefix", "frontend", "run", "dev"])
     finally:
         api_proc.terminate()
         try:

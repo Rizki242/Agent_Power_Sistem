@@ -112,10 +112,11 @@ class CLIAnalyzeCommandTests(unittest.TestCase):
         result = runner.invoke(app, ["analyze", "does-not-exist", "CWP 1A"])
         self.assertEqual(result.exit_code, 1)
 
-    def test_analyze_healthy_default_when_no_data_given(self):
+    def test_analyze_rejects_missing_data_instead_of_assuming_healthy(self):
         result = runner.invoke(app, ["analyze", "vibration", "CWP 1A"])
-        self.assertEqual(result.exit_code, 0)
-        self.assertIn("NORMAL", result.stdout)
+        self.assertEqual(result.exit_code, 1)
+        self.assertIn("Data pengukuran tidak dapat dianalisis", result.stdout)
+        self.assertIn("missing data", result.stdout)
 
 
 class CLIAssetsCommandTests(unittest.TestCase):
@@ -177,6 +178,19 @@ class CLIAgentsCommandTests(unittest.TestCase):
             self.assertIn(domain, result.stdout)
         self.assertIn("ACTIVE", result.stdout)
         self.assertIn("ONLINE", result.stdout)
+
+
+class CLIServeCommandTests(unittest.TestCase):
+    @patch("pple.cli.main.subprocess.run")
+    @patch("pple.cli.main._resolve_npm_command", return_value=r"C:\Program Files\nodejs\npm.cmd")
+    def test_serve_frontend_uses_resolved_windows_npm_shim(self, resolve_npm, run):
+        result = runner.invoke(app, ["serve", "frontend"])
+
+        self.assertEqual(result.exit_code, 0)
+        resolve_npm.assert_called_once_with()
+        run.assert_called_once_with([
+            r"C:\Program Files\nodejs\npm.cmd", "--prefix", "frontend", "run", "dev",
+        ])
 
 
 if __name__ == "__main__":

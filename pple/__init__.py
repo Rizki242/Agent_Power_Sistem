@@ -11,3 +11,13 @@ adapter over src.agents.specialist_agents.VibrationAgent). All other
 subpackages are placeholders for later phases - see
 docs/pple_v2_baseline.md for the phase-by-phase plan.
 """
+
+import sys
+from pathlib import Path
+
+# Ensure the repository root (containing `src`) is on sys.path so that
+# console scripts (like `pple.exe`) can resolve `src.*` modules reliably.
+_repo_root = str(Path(__file__).resolve().parent.parent)
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+

@@ -22,6 +22,11 @@ class ValueType(str, Enum):
     LLM_INTERPRETATION = "LLM_interpretation"
 
 
+class PrognosticStatus(str, Enum):
+    HEURISTIC_UNVALIDATED = "heuristic_unvalidated"
+    CALIBRATED_MODEL = "calibrated_model"
+
+
 class DomainContribution(BaseModel):
     """One EngineeringModule's DiagnosticResult as it fed into the fusion."""
     module_id: str
@@ -52,6 +57,11 @@ class FusionResult(BaseModel):
     rul_min_days: int
     rul_max_days: int
     rul_type: ValueType = ValueType.RULE_BASED
+    prognostic_status: PrognosticStatus = PrognosticStatus.HEURISTIC_UNVALIDATED
+    prognostic_disclaimer: str = (
+        "Estimasi berbasis bucket rule/health score; bukan prediksi ML dan belum dikalibrasi "
+        "terhadap histori kegagalan aset."
+    )
 
     recommended_window: str = ""
 

@@ -49,7 +49,8 @@ class DiagnoseEquipmentUseCase:
             thermal_data=thermal,
         )
         duration_ms = (time.perf_counter() - t0) * 1000
-        health_index = float(result.get("health_index", 0.0))
+        raw_health_index = result.get("health_index")
+        health_index = float(raw_health_index) if raw_health_index is not None else None
         health_status = str(result.get("overall_status") or result.get("health_status") or "UNKNOWN")
         log_diagnosis(
             equipment=equipment,
@@ -88,7 +89,8 @@ class DiagnoseEquipmentUseCase:
         fusion_res["asset_node"] = node
         fusion_res["data_sources"] = sorted(fusion_inputs.keys())
 
-        health_index = float(fusion_res.get("health_index", 0.0))
+        raw_health_index = fusion_res.get("health_index")
+        health_index = float(raw_health_index) if raw_health_index is not None else None
         health_status = str(fusion_res.get("overall_status") or fusion_res.get("health_status") or "UNKNOWN")
         log_diagnosis(
             equipment=equipment,

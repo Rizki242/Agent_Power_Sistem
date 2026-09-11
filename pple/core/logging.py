@@ -114,7 +114,7 @@ def log_ingest(
 
 def log_diagnosis(
     equipment: str,
-    health_index: float,
+    health_index: Optional[float],
     health_status: str,
     duration_ms: Optional[float] = None,
     **extra: Any,

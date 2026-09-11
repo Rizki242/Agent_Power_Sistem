@@ -87,6 +87,32 @@ class TestSubAgentCoordinator(unittest.TestCase):
         self.assertTrue(len(safety_traces) > 0)
         self.assertEqual(safety_traces[0]["status"], "BLOCKED")
 
+    def test_empty_telemetry_is_reported_as_data_gap(self):
+        res = self.coordinator.run_collaborative_diagnosis(
+            equipment="BFP 1A",
+            query="Evaluasi kondisi",
+            custom_telemetry={},
+        )
+
+        self.assertIsNone(res["consensus_health_index"])
+        self.assertEqual(res["consensus_health_status"], "UNKNOWN")
+        domains = {trace["subagent"]["domain"] for trace in res["subagent_traces"]}
+        self.assertNotIn("Vibration", domains)
+        self.assertNotIn("MCSA", domains)
+        self.assertNotIn("Tribology", domains)
+
+    def test_missing_domain_is_not_filled_with_synthetic_baseline(self):
+        res = self.coordinator.run_collaborative_diagnosis(
+            equipment="BFP 1A",
+            custom_telemetry={"vibration": {"overall_rms": 2.2}},
+        )
+
+        evaluations = res["subagent_traces"]
+        domains = {trace["subagent"]["domain"] for trace in evaluations}
+        self.assertIn("Vibration", domains)
+        self.assertNotIn("Thermal", domains)
+        self.assertNotIn("Tribology", domains)
+
 
 if __name__ == "__main__":
     unittest.main()

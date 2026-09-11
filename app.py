@@ -304,37 +304,26 @@ def _word_entry():
 
 
 def _reliability_entry():
-    render_placeholder_page = _load_page_symbol(
-        "src.pages.placeholder_page", "render_placeholder_page"
+    render_reliability_page = _load_page_symbol(
+        "src.pages.reliability_page", "render_reliability_page"
     )
-    render_placeholder_page(
-        st,
-        "Reliability",
-        "Fusion engine (health index, risk, RUL, work order) kini terintegrasi "
-        "di halaman Agent Dashboard pada menu Command Center.",
-    )
+    render_reliability_page(st)
+
 
 
 def _work_orders_entry():
-    render_placeholder_page = _load_page_symbol(
-        "src.pages.placeholder_page", "render_placeholder_page"
+    render_work_orders_page = _load_page_symbol(
+        "src.pages.work_orders_page", "render_work_orders_page"
     )
-    render_placeholder_page(
-        st,
-        "Work Orders",
-        "Integrasi Work Order / EAM belum tersedia di Streamlit UI.",
-    )
+    render_work_orders_page(st)
 
 
 def _help_entry():
-    render_placeholder_page = _load_page_symbol(
-        "src.pages.placeholder_page", "render_placeholder_page"
+    render_help_page = _load_page_symbol(
+        "src.pages.help_page", "render_help_page"
     )
-    render_placeholder_page(
-        st,
-        "Help & Support",
-        "Dokumentasi dan bantuan akan hadir di rilis mendatang.",
-    )
+    render_help_page(st)
+
 
 
 PAGE_SPECS = {
@@ -371,15 +360,18 @@ for page_key, (entrypoint, title, icon, default) in PAGE_SPECS.items():
 
 active_page = st.navigation(
     {
-        "Command Center": [PAGES["agent_dashboard"], PAGES["chatbot"], PAGES["materi"]],
+        "Command Center": [
+            PAGES["agent_dashboard"],
+            PAGES["chatbot"],
+            PAGES["materi"],
+        ],
         "Asset Management": [
             PAGES["asset_registry"],
             PAGES["asset_reports"],
-            PAGES["data_management"],
-            PAGES["sync_word"],
-            PAGES["quality"],
+            PAGES["reliability"],
+            PAGES["work_orders"],
         ],
-        "Engineering": [
+        "Condition Monitoring (PdM)": [
             PAGES["mcsa"],
             PAGES["vibrasi"],
             PAGES["dga"],
@@ -388,9 +380,12 @@ active_page = st.navigation(
             PAGES["partial_discharge"],
             PAGES["condition_control"],
         ],
-        "Reliability": [PAGES["reliability"]],
+        "MCSA Ingestion & Data": [
+            PAGES["sync_word"],
+            PAGES["quality"],
+            PAGES["data_management"],
+        ],
         "Reports": [PAGES["ppt"], PAGES["word"]],
-        "Work Orders": [PAGES["work_orders"]],
         "Utilitas": [PAGES["settings"], PAGES["help"]],
     },
     expanded=False,

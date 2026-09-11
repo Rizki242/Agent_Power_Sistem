@@ -37,24 +37,51 @@ class FleetReliabilityResponse(BaseModel):
     asset_matrix: List[Dict[str, Any]] = Field(default_factory=list)
 
 
+class FailureHypothesisModel(BaseModel):
+    rank: int
+    fault_code: str
+    failure_mode: str
+    physical_mechanism: str
+    supporting_evidence: List[str] = Field(default_factory=list)
+    contradicting_evidence: List[str] = Field(default_factory=list)
+    missing_evidence: List[str] = Field(default_factory=list)
+    confidence: float = Field(ge=0.0, le=1.0)
+    ranking_score: float = Field(ge=0.0, le=1.0)
+    status: str
+    confidence_rationale: str
+    required_confirmation: List[str] = Field(default_factory=list)
+
+
+class FailureModeDiagnosisModel(BaseModel):
+    primary_failure_mode: str
+    diagnosis_status: str = "INCONCLUSIVE"
+    confidence: float = Field(ge=0.0, le=1.0)
+    severity: int = Field(ge=0, le=4)
+    fused_evidence: List[str] = Field(default_factory=list)
+    root_causes: List[str] = Field(default_factory=list)
+    mitigation_recommendations: List[str] = Field(default_factory=list)
+    ranked_hypotheses: List[FailureHypothesisModel] = Field(default_factory=list)
+
+
 class FusionDiagnosisResponse(BaseModel):
     equipment: str
     asset_type: str = "Electric Motor-Pump"
     timestamp: Optional[str] = None
-    health_index: float
+    health_index: Optional[float] = None
     health_status: str
     health_color: Optional[str] = None
     specialist_evaluations: Optional[Dict[str, Any]] = Field(default_factory=dict)
-    failure_mode_diagnosis: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    failure_mode_diagnosis: FailureModeDiagnosisModel
     predictive_rul: Optional[Dict[str, Any]] = Field(default_factory=dict)
     risk_assessment: Optional[Dict[str, Any]] = Field(default_factory=dict)
     maintenance_decision: Optional[Dict[str, Any]] = Field(default_factory=dict)
     asset_node: Optional[Dict[str, Any]] = None
     data_sources: Optional[List[str]] = Field(default_factory=list)
+    data_quality: Optional[Dict[str, Any]] = None
 
 
 class AssessmentSummaryModel(BaseModel):
-    health_index: float
+    health_index: Optional[float] = None
     health_status: str
     primary_failure_mode: str
     confidence_percent: float

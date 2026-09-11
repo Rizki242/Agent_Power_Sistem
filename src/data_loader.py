@@ -318,7 +318,7 @@ def load_equipment_mapping():
         map_path = os.path.join(base_dir, 'src', 'equipment_mapping.json')
         with open(map_path, 'r') as f:
             return json.load(f)
-    except:
+    except Exception:
         return {}
 
 
@@ -456,14 +456,14 @@ def load_mcsa_data(file_path, force_excel=False, include_word=False):
                 df = _normalize_status_columns(df)
                 df = _normalize_unit_voltage_columns(df)
                 df = _add_status_category(df)
-            except:
+            except Exception:
                 pass
 
             if include_word:
                 try:
                     from src.docx_parser import parse_all_reports
                     df_word = parse_all_reports(laporan_path, folder_mapping)
-                except:
+                except Exception:
                     df_word = pd.DataFrame()
 
                 if not df_word.empty:
@@ -495,12 +495,12 @@ def load_mcsa_data(file_path, force_excel=False, include_word=False):
                         merged = _normalize_status_columns(merged)
                         merged = _normalize_unit_voltage_columns(merged)
                         merged = _add_status_category(merged)
-                    except:
+                    except Exception:
                         pass
                     return merged
 
             return df
-        except:
+        except Exception:
             pass
     try:
         # Read the file, skipping initial rows to align with the header structure we found
@@ -592,7 +592,7 @@ def load_mcsa_data(file_path, force_excel=False, include_word=False):
             try:
                 from src.docx_parser import parse_all_reports
                 df_word = parse_all_reports(laporan_path, folder_mapping)
-            except:
+            except Exception:
                 df_word = pd.DataFrame()
 
         if not df_word.empty:
@@ -846,3 +846,183 @@ if __name__ == "__main__":
     data = load_mcsa_data(path)
     print(data.head())
     print("Unique Parameters:", data['Parameter'].unique())
+
+
+def load_vibration_data(file_path):
+    """
+    Loads and normalizes generic Vibration data from a CSV file.
+    Expected to have columns: Equipment, Date, Parameter, Value
+    Where Parameter might be 'Velocity_RMS', 'Acceleration_RMS', etc.
+    """
+    try:
+        df = pd.read_csv(file_path)
+        if 'Equipment' not in df.columns: return pd.DataFrame()
+        if 'Parameter' not in df.columns: df['Parameter'] = 'Velocity_RMS'
+        if 'Value' not in df.columns and 'Raw_Value' in df.columns:
+            df['Value'] = pd.to_numeric(df['Raw_Value'], errors='coerce')
+        elif 'Raw_Value' not in df.columns and 'Value' in df.columns:
+            df['Raw_Value'] = df['Value'].astype(str)
+
+        master_df = load_equipment_master()
+        df = enrich_equipment_metadata(df, master_df=master_df, folder_metadata={})
+        df = _normalize_date_columns(df)
+        df = _normalize_unit_voltage_columns(df)
+        
+        # Status calculation group by equipment & date
+        from src.standards import evaluate_vibration
+        
+        status_map = {}
+        for (eq, dt), group in df.groupby(['Equipment', 'Date'], dropna=False):
+            params = {}
+            for _, r in group.iterrows():
+                params[str(r['Parameter'])] = r.get('Value')
+            res = evaluate_vibration(params)
+            status_map[(eq, dt)] = res.get('Overall', 'Normal')
+            
+        def _get_status(row):
+            return status_map.get((row['Equipment'], row['Date']), 'Normal')
+            
+        df['Status'] = df.apply(_get_status, axis=1)
+        df['Status_Category'] = df['Status']
+        
+        level_map = {'Standby': 0, 'Normal': 1, 'Alarm': 2, 'High': 3, 'Unknown': -1}
+        df['Status_Level'] = df['Status_Category'].map(level_map).fillna(-1).astype(int)
+        
+        if 'Full_Name' not in df.columns: df['Full_Name'] = df['Equipment']
+        return df
+    except Exception as e:
+        print(f"Error loading vibration data: {e}")
+        return pd.DataFrame()
+
+
+def load_dga_data(file_path):
+    """
+    Loads and normalizes generic DGA data from a CSV file.
+    Expected to have columns: Equipment, Date, Parameter, Value
+    Where Parameter might be 'H2', 'CH4', 'C2H2', etc. (in ppm).
+    """
+    try:
+        df = pd.read_csv(file_path)
+        if 'Equipment' not in df.columns: return pd.DataFrame()
+        if 'Value' not in df.columns and 'Raw_Value' in df.columns:
+            df['Value'] = pd.to_numeric(df['Raw_Value'], errors='coerce')
+        elif 'Raw_Value' not in df.columns and 'Value' in df.columns:
+            df['Raw_Value'] = df['Value'].astype(str)
+
+        master_df = load_equipment_master()
+        df = enrich_equipment_metadata(df, master_df=master_df, folder_metadata={})
+        df = _normalize_date_columns(df)
+        df = _normalize_unit_voltage_columns(df)
+        
+        # Status calculation group by equipment & date
+        from src.standards import evaluate_dga
+        
+        status_map = {}
+        for (eq, dt), group in df.groupby(['Equipment', 'Date'], dropna=False):
+            params = {}
+            for _, r in group.iterrows():
+                params[str(r['Parameter'])] = r.get('Value')
+            res = evaluate_dga(params)
+            status_map[(eq, dt)] = res.get('Overall', 'Normal')
+            
+        def _get_status(row):
+            return status_map.get((row['Equipment'], row['Date']), 'Normal')
+            
+        df['Status'] = df.apply(_get_status, axis=1)
+        df['Status_Category'] = df['Status']
+        
+        level_map = {'Standby': 0, 'Normal': 1, 'Alarm': 2, 'High': 3, 'Unknown': -1}
+        df['Status_Level'] = df['Status_Category'].map(level_map).fillna(-1).astype(int)
+        
+        if 'Full_Name' not in df.columns: df['Full_Name'] = df['Equipment']
+        return df
+    except Exception as e:
+        print(f"Error loading DGA data: {e}")
+        return pd.DataFrame()
+
+
+def load_thermal_data(file_path):
+    """
+    Loads and normalizes generic Thermal data from CSV.
+    """
+    try:
+        df = pd.read_csv(file_path)
+        if 'Equipment' not in df.columns: return pd.DataFrame()
+        if 'Parameter' not in df.columns: df['Parameter'] = 'Temperature'
+        if 'Value' not in df.columns and 'Raw_Value' in df.columns:
+            df['Value'] = pd.to_numeric(df['Raw_Value'], errors='coerce')
+        elif 'Raw_Value' not in df.columns and 'Value' in df.columns:
+            df['Raw_Value'] = df['Value'].astype(str)
+
+        master_df = load_equipment_master()
+        df = enrich_equipment_metadata(df, master_df=master_df, folder_metadata={})
+        df = _normalize_date_columns(df)
+        df = _normalize_unit_voltage_columns(df)
+        
+        from src.standards import evaluate_thermal
+        
+        status_map = {}
+        for (eq, dt), group in df.groupby(['Equipment', 'Date'], dropna=False):
+            params = {}
+            for _, r in group.iterrows():
+                params[str(r['Parameter'])] = r.get('Value')
+            res = evaluate_thermal(params)
+            status_map[(eq, dt)] = res.get('Overall', 'Normal')
+            
+        def _get_status(row):
+            return status_map.get((row['Equipment'], row['Date']), 'Normal')
+            
+        df['Status'] = df.apply(_get_status, axis=1)
+        df['Status_Category'] = df['Status']
+        
+        level_map = {'Standby': 0, 'Normal': 1, 'Alarm': 2, 'High': 3, 'Unknown': -1}
+        df['Status_Level'] = df['Status_Category'].map(level_map).fillna(-1).astype(int)
+        
+        if 'Full_Name' not in df.columns: df['Full_Name'] = df['Equipment']
+        return df
+    except Exception as e:
+        print(f"Error loading thermal data: {e}")
+        return pd.DataFrame()
+
+def load_tribology_data(file_path):
+    """
+    Loads and normalizes generic Tribology (Oil Analysis) data from CSV.
+    """
+    try:
+        df = pd.read_csv(file_path)
+        if 'Equipment' not in df.columns: return pd.DataFrame()
+        if 'Parameter' not in df.columns: df['Parameter'] = 'Water_ppm' # generic fallback
+        if 'Value' not in df.columns and 'Raw_Value' in df.columns:
+            df['Value'] = pd.to_numeric(df['Raw_Value'], errors='coerce')
+        elif 'Raw_Value' not in df.columns and 'Value' in df.columns:
+            df['Raw_Value'] = df['Value'].astype(str)
+
+        master_df = load_equipment_master()
+        df = enrich_equipment_metadata(df, master_df=master_df, folder_metadata={})
+        df = _normalize_date_columns(df)
+        df = _normalize_unit_voltage_columns(df)
+        
+        from src.standards import evaluate_tribology
+        
+        status_map = {}
+        for (eq, dt), group in df.groupby(['Equipment', 'Date'], dropna=False):
+            params = {}
+            for _, r in group.iterrows():
+                params[str(r['Parameter'])] = r.get('Value')
+            res = evaluate_tribology(params)
+            status_map[(eq, dt)] = res.get('Overall', 'Normal')
+            
+        def _get_status(row):
+            return status_map.get((row['Equipment'], row['Date']), 'Normal')
+            
+        df['Status'] = df.apply(_get_status, axis=1)
+        df['Status_Category'] = df['Status']
+        
+        level_map = {'Standby': 0, 'Normal': 1, 'Alarm': 2, 'High': 3, 'Unknown': -1}
+        df['Status_Level'] = df['Status_Category'].map(level_map).fillna(-1).astype(int)
+        
+        if 'Full_Name' not in df.columns: df['Full_Name'] = df['Equipment']
+        return df
+    except Exception as e:
+        print(f"Error loading tribology data: {e}")
+        return pd.DataFrame()

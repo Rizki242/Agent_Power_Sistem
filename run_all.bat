@@ -16,14 +16,14 @@ if not exist ".venv\Scripts\python.exe" (
 echo [1/2] Menjalankan FastAPI Backend Server di Port 8000...
 start "PPLE Backend API (Port 8000)" cmd /k "chcp 65001 >nul && cd /d "%~dp0" && .\.venv\Scripts\python.exe -m uvicorn api_server:app --host 0.0.0.0 --port 8000 --reload"
 
-echo [2/2] Menjalankan Vite React Frontend di Port 5173...
-start "PPLE React Frontend (Port 5173)" cmd /k "chcp 65001 >nul && cd /d "%~dp0\frontend" && npm run dev"
+echo [2/2] Menjalankan Streamlit Dashboard di Port 8501...
+start "PPLE Streamlit Dashboard (Port 8501)" cmd /k "chcp 65001 >nul && cd /d "%~dp0" && .\.venv\Scripts\python.exe -m streamlit run app.py"
 
 echo.
 echo ===================================================
-echo [ONLINE] Kedua layanan telah dijalankan!
+echo [ONLINE] Layanan telah dijalankan!
 echo ===================================================
-echo - Backend API : http://localhost:8000 (Swagger: http://localhost:8000/docs)
-echo - Frontend UI : http://localhost:5173
+echo - Streamlit UI : http://localhost:8501
+echo - Backend API  : http://localhost:8000 (Swagger: http://localhost:8000/docs)
 echo.
 pause

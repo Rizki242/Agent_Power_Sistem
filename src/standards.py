@@ -300,7 +300,7 @@ def load_thresholds_config():
                     data = json.load(fp)
                 for k, v in (data or {}).items():
                     cfg[k] = v
-        except:
+        except Exception:
             pass
     return cfg
 
@@ -369,7 +369,7 @@ def load_esa_mcsa_guidance_config():
         if os.path.exists(cfg_path):
             with open(cfg_path, 'r', encoding='utf-8') as fp:
                 override = json.load(fp) or {}
-    except:
+    except Exception:
         override = {}
 
     def _deep_merge(a, b):
@@ -731,3 +731,164 @@ def generate_detailed_analysis_report(statuses, values, overall_status):
         report.append("Lakukan monitoring intensif (harian/mingguan) hingga perbaikan atau penggantian motor dilakukan.")
 
     return "\n".join(report)
+
+
+def evaluate_vibration(params: dict) -> dict:
+    """
+    Evaluates vibration based on ISO 10816 / ISO 20816 simple rules (Class III/IV generic).
+    Expected keys: 'Velocity_RMS' (mm/s), 'Acceleration_RMS' (g), 'Displacement_PkPk' (um).
+    """
+    results = {'Overall': 'Normal'}
+    current_max = 1
+    
+    velocity = _safe_float(params.get('Velocity_RMS'))
+    if velocity is not None:
+        if velocity > 7.1:
+            results['Velocity_RMS'] = 'High'
+            current_max = 3
+        elif velocity > 4.5:
+            results['Velocity_RMS'] = 'Alarm'
+            current_max = max(current_max, 2)
+        else:
+            results['Velocity_RMS'] = 'Normal'
+            
+    accel = _safe_float(params.get('Acceleration_RMS'))
+    if accel is not None:
+        if accel > 1.5:  # Generic bearing threshold
+            results['Acceleration_RMS'] = 'High'
+            current_max = 3
+        elif accel > 0.5:
+            results['Acceleration_RMS'] = 'Alarm'
+            current_max = max(current_max, 2)
+        else:
+            results['Acceleration_RMS'] = 'Normal'
+            
+    if current_max == 3:
+        results['Overall'] = 'High'
+    elif current_max == 2:
+        results['Overall'] = 'Alarm'
+        
+    return results
+
+
+def evaluate_dga(params: dict) -> dict:
+    """
+    Evaluates DGA based on simplified IEEE C57.104 TDCG limit or individual gas limits.
+    Expected keys (in ppm): 'H2', 'CH4', 'C2H2', 'C2H4', 'C2H6', 'CO', 'CO2'.
+    """
+    results = {'Overall': 'Normal'}
+    current_max = 1
+    
+    # Calculate TDCG
+    combustible_gases = ['H2', 'CH4', 'C2H2', 'C2H4', 'C2H6', 'CO']
+    tdcg = 0.0
+    has_gas_data = False
+    
+    for gas in combustible_gases:
+        val = _safe_float(params.get(gas))
+        if val is not None:
+            has_gas_data = True
+            tdcg += val
+            
+    if has_gas_data:
+        results['TDCG'] = tdcg
+        if tdcg > 4630: # Condition 4
+            results['TDCG_Status'] = 'High'
+            current_max = 3
+        elif tdcg > 720: # Condition 2/3
+            results['TDCG_Status'] = 'Alarm'
+            current_max = max(current_max, 2)
+        else:
+            results['TDCG_Status'] = 'Normal'
+            
+    # Key individual gases: C2H2 (Acetylene) is very critical (Arcing)
+    c2h2 = _safe_float(params.get('C2H2'))
+    if c2h2 is not None:
+        if c2h2 > 35:
+            results['C2H2_Status'] = 'High'
+            current_max = 3
+        elif c2h2 > 9:
+            results['C2H2_Status'] = 'Alarm'
+            current_max = max(current_max, 2)
+            
+    if current_max == 3:
+        results['Overall'] = 'High'
+    elif current_max == 2:
+        results['Overall'] = 'Alarm'
+        
+    return results
+
+
+def evaluate_thermal(params: dict) -> dict:
+    """
+    Evaluates thermal data (Temperature).
+    Expected keys: 'Temperature', 'Bearing_Temp', 'Winding_Temp' in Celsius.
+    """
+    results = {'Overall': 'Normal'}
+    current_max = 1
+    
+    # Generic temperature thresholds
+    temp_keys = ['Temperature', 'Bearing_Temp', 'Winding_Temp']
+    for key in temp_keys:
+        val = _safe_float(params.get(key))
+        if val is not None:
+            if val > 100:  # Critical generic threshold
+                results[key] = 'High'
+                current_max = 3
+            elif val > 80: # Warning generic threshold
+                results[key] = 'Alarm'
+                current_max = max(current_max, 2)
+            else:
+                results[key] = 'Normal'
+                
+    if current_max == 3:
+        results['Overall'] = 'High'
+    elif current_max == 2:
+        results['Overall'] = 'Alarm'
+        
+    return results
+
+def evaluate_tribology(params: dict) -> dict:
+    """
+    Evaluates tribology (oil analysis) data.
+    Expected keys: 'Water_ppm', 'TAN' (mgKOH/g), 'Viscosity_cSt', 'Fe_ppm'.
+    """
+    results = {'Overall': 'Normal'}
+    current_max = 1
+    
+    # 1. Water Content (ppm)
+    water = _safe_float(params.get('Water_ppm'))
+    if water is not None:
+        if water > 1000:
+            results['Water_ppm'] = 'High'
+            current_max = 3
+        elif water > 500:
+            results['Water_ppm'] = 'Alarm'
+            current_max = max(current_max, 2)
+            
+    # 2. Total Acid Number (TAN)
+    tan = _safe_float(params.get('TAN'))
+    if tan is not None:
+        if tan > 1.0:
+            results['TAN'] = 'High'
+            current_max = 3
+        elif tan > 0.5:
+            results['TAN'] = 'Alarm'
+            current_max = max(current_max, 2)
+            
+    # 3. Wear Metal: Iron (Fe)
+    fe = _safe_float(params.get('Fe_ppm'))
+    if fe is not None:
+        if fe > 100:
+            results['Fe_ppm'] = 'High'
+            current_max = 3
+        elif fe > 50:
+            results['Fe_ppm'] = 'Alarm'
+            current_max = max(current_max, 2)
+            
+    if current_max == 3:
+        results['Overall'] = 'High'
+    elif current_max == 2:
+        results['Overall'] = 'Alarm'
+        
+    return results

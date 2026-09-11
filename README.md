@@ -130,6 +130,17 @@ pple serve frontend                      # setara run_frontend.bat
 pple serve all                           # setara run_all.bat (API sebagai subprocess + frontend di depan)
 ```
 
+`pple analyze` wajib menerima setidaknya satu field pengukuran yang dikenali
+oleh modul. Payload kosong atau field yang tidak relevan ditolak agar data yang
+hilang tidak pernah ditampilkan sebagai kondisi sehat. Hasil diagnosis V2
+menyertakan status kualitas data, konteks yang masih kurang, hash input, dan
+versi rule untuk traceability. Nilai RUL serta probabilitas gagal saat ini
+berstatus `heuristic_unvalidated`: keduanya adalah proyeksi rule-based dari
+Health Index, bukan prediksi ML yang telah dikalibrasi terhadap histori kegagalan.
+Aturan yang sama berlaku pada diagnosis kolaboratif: modality yang tidak dikirim
+tidak diisi dengan baseline sintetis. Tanpa telemetry yang dapat dinilai, hasilnya
+adalah `UNKNOWN`, RUL/risk tidak tersedia, dan tindak lanjutnya `COLLECT_DATA`.
+
 Klasifikasi risiko (`pple/cli/safety.py`) memisahkan command menjadi **READ** (selalu boleh), **WRITE** (minta konfirmasi eksplisit), dan **HIGH-RISK** (diblokir total oleh `SafetyGuardrailAgent` yang sama dengan yang dipakai UI — tidak ada jalur pintas). `pple config` membaca/menulis `data/MCSA/config/ai_settings.json` yang sama dengan halaman Settings Streamlit — CLI dan UI berbagi satu preferensi, dan API key tidak pernah ikut tersimpan di file itu.
 
 Flag global `--offline` (docs/final.md Phase 22) memastikan PPLE tetap bisa dipakai tanpa internet: jawaban `pple chat` selalu dari `src.chatbot.MCSAChatbot` (rule-based) lebih dulu, LLM (cloud maupun Ollama lokal) hanya memperkaya narasinya dan tidak pernah menjadi sumber kebenaran untuk threshold/status engineering.
@@ -251,4 +262,7 @@ docs/readme-assets/    Diagram SVG yang dipakai README ini
 
 - Partial Discharge dapat menggunakan data contoh/default bila data sumber belum tersedia; interpretasikan hasilnya sesuai penanda di aplikasi.
 - Data modalitas yang tidak tersedia tidak boleh dianggap sebagai bukti diagnosis; fusion hanya menggunakan pengukuran yang ada.
+- Korelasi bearing menggunakan `fault_code` dan `mechanism_tags` yang stabil, bukan pencocokan teks diagnosis. Hasil fusion menambahkan `ranked_hypotheses` berisi bukti pendukung, bukti yang bertentangan, bukti yang belum tersedia, mekanisme fisik, alasan confidence, dan konfirmasi yang diwajibkan.
+- Rule rotor bar, shaft misalignment, DGA, dan partial discharge juga menggunakan taxonomy terstruktur. Kontrak `failure_mode_diagnosis` dan setiap item hipotesis divalidasi oleh schema API, dengan confidence dibatasi pada rentang `0..1` dan severity `0..4`.
+- Fusion V2 mengevaluasi kandidat secara independen, mengurutkan beberapa hipotesis dengan `ranking_score`, serta memberi penalti eksplisit untuk bukti yang bertentangan dan domain konfirmasi yang belum tersedia. Status diagnosis dibatasi secara konservatif menjadi `PROBABLE`, `POSSIBLE`, `INCONCLUSIVE`, atau `INSUFFICIENT_DATA`; `CONFIRMED` memerlukan outcome lapangan terverifikasi.
 - Sebelum rilis, jalankan unit test dan `verify_app.py`, lalu lakukan satu batch uji untuk memastikan backup serta `manifest.json` terbentuk.

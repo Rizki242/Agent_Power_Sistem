@@ -63,11 +63,13 @@ class EngineeringModule(ABC):
         from datetime import datetime, timezone
 
         from pple.engineering.schemas import (
+            DataQuality,
             DiagnosticResult,
             Evidence,
             Finding,
             Recommendation,
             Severity,
+            SourceTrace,
         )
 
         return DiagnosticResult(
@@ -80,5 +82,9 @@ class EngineeringModule(ABC):
             findings=[Finding(text=t) for t in diagnostic.get("findings", [])],
             evidence=[Evidence(text=t) for t in diagnostic.get("evidence", [])],
             recommendations=[Recommendation(text=t) for t in recommendations],
+            data_quality=DataQuality.model_validate(diagnostic.get("data_quality", {})),
+            source_trace=SourceTrace.model_validate(diagnostic.get("source_trace", {})),
+            required_confirmation=list(diagnostic.get("required_confirmation", [])),
+            abstention_reason=diagnostic.get("abstention_reason"),
             metadata=diagnostic.get("metadata", {}),
         )

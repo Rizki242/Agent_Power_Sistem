@@ -173,7 +173,7 @@ class MCSAChatbot:
         lines = []
         for _, r in status_map.iterrows():
             st_val = str(r["Raw_Value"]).strip().upper()
-            icon = "🟢" if st_val == "NORMAL" else ("⚪" if st_val == "STANDBY" else "🔴")
+            icon = "🟢" if st_val == "NORMAL" else ("⚪" if st_val == "STANDBY" else ("🔴" if st_val in ["HIGH", "CRITICAL", "BAD", "RUSAK"] else "🟡"))
             lines.append(f"- {icon} {r['Equipment']}: {st_val}")
 
         title_parts = []

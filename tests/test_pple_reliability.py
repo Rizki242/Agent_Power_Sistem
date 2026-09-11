@@ -71,6 +71,8 @@ class FuseTests(unittest.TestCase):
         self.assertEqual(result.failure_probability_type.value, "rule_based")
         self.assertEqual(result.rul_type.value, "rule_based")
         self.assertEqual(result.domain_contributions[0].value_type.value, "measured")
+        self.assertEqual(result.prognostic_status.value, "heuristic_unvalidated")
+        self.assertIn("bukan prediksi ML", result.prognostic_disclaimer)
 
 
 class FuseEquipmentTests(unittest.TestCase):
