@@ -187,6 +187,11 @@ def render_agent_dashboard_page(st, df_latest_all: pd.DataFrame, mcsa_page=None)
     if not eq_options:
         st.info("Tidak ada data equipment untuk diagnosis multi-agent.")
         return
+
+    _render_diagnosis_fragment(st, eq_options, fleet, coordinator, df_latest_all, data_key, mcsa_page)
+
+
+def _render_equipment_diagnosis_section(st, eq_options: list, fleet: dict, coordinator: SubAgentCoordinator, df_latest_all: pd.DataFrame, data_key: str, mcsa_page=None) -> None:
     sel_eq = st.selectbox(
         "Pilih equipment",
         eq_options,
@@ -263,3 +268,13 @@ def render_agent_dashboard_page(st, df_latest_all: pd.DataFrame, mcsa_page=None)
     if mcsa_page is not None:
         if st.button("Buka detail MCSA", icon=":material/electric_bolt:"):
             st.switch_page(mcsa_page)
+
+
+def _render_diagnosis_fragment(st, eq_options: list, fleet: dict, coordinator: SubAgentCoordinator, df_latest_all: pd.DataFrame, data_key: str, mcsa_page=None) -> None:
+    if hasattr(st, "fragment"):
+        @st.fragment
+        def _frag():
+            _render_equipment_diagnosis_section(st, eq_options, fleet, coordinator, df_latest_all, data_key, mcsa_page)
+        _frag()
+    else:
+        _render_equipment_diagnosis_section(st, eq_options, fleet, coordinator, df_latest_all, data_key, mcsa_page)
