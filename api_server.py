@@ -80,18 +80,22 @@ app.include_router(specialist_router)
 
 from pple.api.routers import (
     agents_router,
+    automations_router,
     core_router,
     equipment_router,
     knowledge_router,
     reports_router,
+    settings_router,
     vibration_router,
     work_orders_router,
 )
 app.include_router(agents_router)
+app.include_router(automations_router)
 app.include_router(core_router)
 app.include_router(equipment_router)
 app.include_router(knowledge_router)
 app.include_router(reports_router)
+app.include_router(settings_router)
 app.include_router(vibration_router)
 app.include_router(work_orders_router)
 
