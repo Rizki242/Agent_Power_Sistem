@@ -1,6 +1,111 @@
 {
   "skills": [
     {
+      "id": "SKILL-PLTU-018",
+      "title": "Pola prekursor degradasi WJP3B (auto-mined)",
+      "equipment": "WJP3B",
+      "system": "Data Historis MCSA (Automated Mining)",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Upper Sideband berubah +7.71 menuju -65.25 sebelum degradasi",
+        "Lower Sideband berubah +5.29 menuju -66.36 sebelum degradasi",
+        "Se Fund berubah +3.66 menuju 12.51 sebelum degradasi"
+      ],
+      "verified_root_cause": "Belum diverifikasi - pola statistik dari tren pengukuran historis.",
+      "corrective_action_taken": "Belum ada - menunggu verifikasi engineer lapangan.",
+      "lesson_learned": "Pada WJP3B, kombinasi perubahan parameter berikut mendahului perubahan kondisi: Upper Sideband berubah +7.71 menuju -65.25 sebelum degradasi; Lower Sideband berubah +5.29 menuju -66.36 sebelum degradasi; Se Fund berubah +3.66 menuju 12.51 sebelum degradasi. Gunakan pola ini sebagai early-warning; verifikasi dengan pengukuran lapangan.",
+      "author": "PPLE Self-Improvement Engine",
+      "verified_at": "2026-09-11",
+      "accuracy_boost_weight": 1.0,
+      "source": "auto_mined",
+      "needs_verification": true,
+      "transition_date": "2026-07-20"
+    },
+    {
+      "id": "SKILL-PLTU-017",
+      "title": "Pola prekursor degradasi PAF1B (auto-mined)",
+      "equipment": "PAF1B",
+      "system": "Data Historis MCSA (Automated Mining)",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Voltage 2 berubah -12.00 menuju 6234.00 sebelum degradasi",
+        "Voltage 3 berubah -12.00 menuju 6240.00 sebelum degradasi",
+        "Se Fund berubah -6.26 menuju 6.26 sebelum degradasi"
+      ],
+      "verified_root_cause": "Belum diverifikasi - pola statistik dari tren pengukuran historis.",
+      "corrective_action_taken": "Belum ada - menunggu verifikasi engineer lapangan.",
+      "lesson_learned": "Pada PAF1B, kombinasi perubahan parameter berikut mendahului perubahan kondisi: Voltage 2 berubah -12.00 menuju 6234.00 sebelum degradasi; Voltage 3 berubah -12.00 menuju 6240.00 sebelum degradasi; Se Fund berubah -6.26 menuju 6.26 sebelum degradasi. Gunakan pola ini sebagai early-warning; verifikasi dengan pengukuran lapangan.",
+      "author": "PPLE Self-Improvement Engine",
+      "verified_at": "2026-09-11",
+      "accuracy_boost_weight": 1.0,
+      "source": "auto_mined",
+      "needs_verification": true,
+      "transition_date": "2026-07-29"
+    },
+    {
+      "id": "SKILL-PLTU-016",
+      "title": "Pola prekursor degradasi CONDENSATE PUMP B (auto-mined)",
+      "equipment": "CONDENSATE PUMP B",
+      "system": "Data Historis MCSA (Automated Mining)",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Voltage 1 berubah -3.40 menuju 390.50 sebelum degradasi",
+        "Voltage 3 berubah -3.30 menuju 391.80 sebelum degradasi",
+        "Voltage 2 berubah -3.10 menuju 389.50 sebelum degradasi"
+      ],
+      "verified_root_cause": "Belum diverifikasi - pola statistik dari tren pengukuran historis.",
+      "corrective_action_taken": "Belum ada - menunggu verifikasi engineer lapangan.",
+      "lesson_learned": "Pada CONDENSATE PUMP B, kombinasi perubahan parameter berikut mendahului perubahan kondisi: Voltage 1 berubah -3.40 menuju 390.50 sebelum degradasi; Voltage 3 berubah -3.30 menuju 391.80 sebelum degradasi; Voltage 2 berubah -3.10 menuju 389.50 sebelum degradasi. Gunakan pola ini sebagai early-warning; verifikasi dengan pengukuran lapangan.",
+      "author": "PPLE Self-Improvement Engine",
+      "verified_at": "2026-09-11",
+      "accuracy_boost_weight": 1.0,
+      "source": "auto_mined",
+      "needs_verification": true,
+      "transition_date": "2026-03-01"
+    },
+    {
+      "id": "SKILL-PLTU-015",
+      "title": "Pola prekursor degradasi CEP3B (auto-mined)",
+      "equipment": "CEP3B",
+      "system": "Data Historis MCSA (Automated Mining)",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Upper Sideband berubah +6.52 menuju -62.15 sebelum degradasi",
+        "Lower Sideband berubah +4.48 menuju -62.38 sebelum degradasi",
+        "Load berubah -2.22 menuju 77.35 sebelum degradasi"
+      ],
+      "verified_root_cause": "Belum diverifikasi - pola statistik dari tren pengukuran historis.",
+      "corrective_action_taken": "Belum ada - menunggu verifikasi engineer lapangan.",
+      "lesson_learned": "Pada CEP3B, kombinasi perubahan parameter berikut mendahului perubahan kondisi: Upper Sideband berubah +6.52 menuju -62.15 sebelum degradasi; Lower Sideband berubah +4.48 menuju -62.38 sebelum degradasi; Load berubah -2.22 menuju 77.35 sebelum degradasi. Gunakan pola ini sebagai early-warning; verifikasi dengan pengukuran lapangan.",
+      "author": "PPLE Self-Improvement Engine",
+      "verified_at": "2026-09-11",
+      "accuracy_boost_weight": 1.0,
+      "source": "auto_mined",
+      "needs_verification": true,
+      "transition_date": "2026-07-13"
+    },
+    {
+      "id": "SKILL-PLTU-014",
+      "title": "Pola prekursor degradasi C3WP1B (auto-mined)",
+      "equipment": "C3WP1B",
+      "system": "Data Historis MCSA (Automated Mining)",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Lower Sideband berubah +43.98 menuju -56.02 sebelum degradasi",
+        "Upper Sideband berubah +41.78 menuju -58.22 sebelum degradasi",
+        "Dev Current berubah -20.30 menuju 0.70 sebelum degradasi"
+      ],
+      "verified_root_cause": "Belum diverifikasi - pola statistik dari tren pengukuran historis.",
+      "corrective_action_taken": "Belum ada - menunggu verifikasi engineer lapangan.",
+      "lesson_learned": "Pada C3WP1B, kombinasi perubahan parameter berikut mendahului perubahan kondisi: Lower Sideband berubah +43.98 menuju -56.02 sebelum degradasi; Upper Sideband berubah +41.78 menuju -58.22 sebelum degradasi; Dev Current berubah -20.30 menuju 0.70 sebelum degradasi. Gunakan pola ini sebagai early-warning; verifikasi dengan pengukuran lapangan.",
+      "author": "PPLE Self-Improvement Engine",
+      "verified_at": "2026-09-11",
+      "accuracy_boost_weight": 1.0,
+      "source": "auto_mined",
+      "needs_verification": true,
+      "transition_date": "2026-07-13"
+    },
+    {
       "id": "SKILL-PLTU-013",
       "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-352",
       "equipment": "BFP 1A",
@@ -218,6 +323,6 @@
       "accuracy_boost_weight": 1.2
     }
   ],
-  "last_updated": "2026-08-31T07:09:12.326771",
-  "total_skills_count": 13
+  "last_updated": "2026-09-11T17:30:33.426465",
+  "total_skills_count": 18
 }

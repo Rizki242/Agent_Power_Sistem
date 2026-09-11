@@ -17,9 +17,9 @@ def render_sidebar_brand(st):
         <div class="mcsa-header-card">
             <div class="mcsa-header-title">
                 <span class="mcsa-pulse-dot"></span>
-                <span>MCSA Control</span>
+                <span>CBM AI Hub</span>
             </div>
-            <div class="mcsa-header-sub">PLTU Predictive Maintenance Suite</div>
+            <div class="mcsa-header-sub">Asset Reliability & Condition Monitoring</div>
         </div>
         """,
         unsafe_allow_html=True,

@@ -86,6 +86,18 @@ def run_cron_loop(interval_seconds: int = 300):
             except Exception as exc:
                 print(f"[{now.strftime('%H:%M:%S')}] Siklus belajar gagal (daemon lanjut): {exc}")
 
+            try:
+                from src.automations import run_due_workflows
+
+                automation_runs = run_due_workflows()
+                if automation_runs:
+                    print(
+                        f"[{now.strftime('%H:%M:%S')}] "
+                        f"Workflow otomasi diproses: {len(automation_runs)}"
+                    )
+            except Exception as exc:
+                print(f"[{now.strftime('%H:%M:%S')}] Workflow otomasi gagal (daemon lanjut): {exc}")
+
             time.sleep(interval_seconds)
 
     except KeyboardInterrupt:

@@ -65,7 +65,7 @@ except BaseException as exc:
     _fatal_dependency_error("modul internal (src/*)", exc)
 
 
-st.set_page_config(page_title="MCSA Dashboard & Chatbot", layout="wide")
+st.set_page_config(page_title="CBM AI — Asset Reliability Management", layout="wide")
 render_sidebar_brand(st)
 
 PAGES = {}
@@ -137,6 +137,13 @@ def _dashboard_entry():
     )
 
 
+def _data_ingestion_hub_entry():
+    render_data_ingestion_hub_page = _load_page_symbol(
+        "src.pages.data_ingestion_hub_page", "render_data_ingestion_hub_page"
+    )
+    render_data_ingestion_hub_page(st)
+
+
 def _data_management_entry():
     render_data_management_page = _load_page_symbol(
         "src.pages.data_management_page", "render_data_management_page"
@@ -185,6 +192,19 @@ def _quality_entry():
         get_data_path=data_loader.get_data_path,
         get_folder_metadata=data_loader.get_folder_metadata,
         parse_all_reports_with_report=parse_all_reports_with_report,
+    )
+
+
+
+def _asset_360_entry():
+    render_asset_360_page = _load_page_symbol(
+        "src.pages.asset_360_page", "render_asset_360_page"
+    )
+    context = _require_base_context()
+    render_asset_360_page(
+        st,
+        df_latest_all=context.df_latest_all,
+        df_all=context.df,
     )
 
 
@@ -328,7 +348,9 @@ def _help_entry():
 
 PAGE_SPECS = {
     "agent_dashboard": (_agent_dashboard_entry, "Agent Dashboard", ":material/dashboard:", True),
+    "asset_360": (_asset_360_entry, "Asset 360° View", ":material/radar:", False),
     "mcsa": (_dashboard_entry, "MCSA", ":material/electric_bolt:", False),
+    "data_ingestion_hub": (_data_ingestion_hub_entry, "Pusat Ingesti & Telemetri", ":material/upload:", False),
     "data_management": (_data_management_entry, "Manajemen Data", ":material/database:", False),
     "sync_word": (_sync_word_entry, "Sync Laporan Word", ":material/upload_file:", False),
     "quality": (_quality_entry, "Quality Check Laporan", ":material/fact_check:", False),
@@ -366,6 +388,7 @@ active_page = st.navigation(
             PAGES["materi"],
         ],
         "Asset Management": [
+            PAGES["asset_360"],
             PAGES["asset_registry"],
             PAGES["asset_reports"],
             PAGES["reliability"],
@@ -380,13 +403,14 @@ active_page = st.navigation(
             PAGES["partial_discharge"],
             PAGES["condition_control"],
         ],
-        "MCSA Ingestion & Data": [
+        "Data Ingestion & Sync": [
+            PAGES["data_ingestion_hub"],
             PAGES["sync_word"],
             PAGES["quality"],
             PAGES["data_management"],
         ],
-        "Reports": [PAGES["ppt"], PAGES["word"]],
-        "Utilitas": [PAGES["settings"], PAGES["help"]],
+        "Laporan & Dokumen": [PAGES["ppt"], PAGES["word"]],
+        "Pengaturan & Bantuan": [PAGES["settings"], PAGES["help"]],
     },
     expanded=False,
 )

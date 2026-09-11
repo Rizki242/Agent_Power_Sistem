@@ -29,6 +29,7 @@ from src.standby import compute_standby
 MCSA_DATA_PAGE_KEYS = frozenset(
     {
         "agent_dashboard",
+        "asset_360",
         "mcsa",
         "data_management",
         "sync_word",

@@ -329,6 +329,67 @@ _STATIC_CSS = """
       ::-webkit-scrollbar-thumb:hover {
         background: var(--mcsa-slate-400);
       }
+
+      /* Asset 360° Hero & Cards */
+      .asset-360-hero {
+        background: linear-gradient(135deg, var(--mcsa-card) 0%%, var(--mcsa-slate-100) 100%%);
+        border: 1px solid var(--mcsa-border);
+        border-radius: var(--radius-lg);
+        padding: 24px 28px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow-sm);
+      }
+      .domain-card {
+        background-color: var(--mcsa-card);
+        border: 1px solid var(--mcsa-border);
+        border-radius: var(--radius-md);
+        padding: 18px 20px;
+        height: 100%%;
+        box-shadow: var(--shadow-xs);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      .domain-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--mcsa-primary);
+      }
+      .domain-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        border-bottom: 1px solid var(--mcsa-border);
+        padding-bottom: 8px;
+      }
+      .domain-card-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--mcsa-slate-900);
+      }
+      .domain-card-body {
+        font-size: 0.84rem;
+        color: var(--mcsa-slate-700);
+      }
+      .domain-metric-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        border-bottom: 1px dashed var(--mcsa-border);
+      }
+      .domain-metric-row:last-child {
+        border-bottom: none;
+      }
+      .domain-metric-label {
+        color: var(--mcsa-slate-500);
+        font-size: 0.8rem;
+      }
+      .domain-metric-val {
+        font-weight: 600;
+        color: var(--mcsa-slate-900);
+      }
     </style>
     """
 
@@ -356,9 +417,9 @@ def render_sidebar_brand(st):
         <div class="mcsa-header-card">
             <div class="mcsa-header-title">
                 <span class="mcsa-pulse-dot"></span>
-                <span>MCSA Control</span>
+                <span>CBM AI Hub</span>
             </div>
-            <div class="mcsa-header-sub">PLTU Predictive Maintenance Suite</div>
+            <div class="mcsa-header-sub">Asset Reliability & Condition Monitoring</div>
         </div>
         """,
         unsafe_allow_html=True,

@@ -68,3 +68,13 @@ archive-*/
 # get_data_path() bisa menaruhnya di data/ atau data/MCSA/.
 data/**/audit/
 data/audit/
+
+# Runtime state yang ditulis ulang otomatis (memori chatbot, continuous
+# learning) - bukan source of truth, jangan di-commit.
+data/agent_memory.db
+data/learning/improvement_history.json
+data/learning/improvement_state.json
+
+# Artefak sisa scratch/testing lokal, bukan bagian repo.
+.tmp-test-runtime/
+.venv-linux-backup/
