@@ -253,6 +253,7 @@ def _build_parameter_table(
     rows["Parameter"] = rows.get("Parameter", "").astype(str)
     existing_parameters = set(rows["Parameter"].astype(str))
 
+    extra_rows = []
     for parameter in ["THD Voltage %", "THD Current %"]:
         if parameter in existing_parameters:
             continue
@@ -269,8 +270,11 @@ def _build_parameter_table(
             row_data["Status"] = "Unknown"
         if "Status_Category" in base_columns and _is_blank(row_data.get("Status_Category")):
             row_data["Status_Category"] = row_data.get("Status")
-        rows = pd.concat([rows, pd.DataFrame([row_data])], ignore_index=True)
+        extra_rows.append(row_data)
         existing_parameters.add(parameter)
+
+    if extra_rows:
+        rows = pd.concat([rows, pd.DataFrame(extra_rows)], ignore_index=True)
 
     raw_values = rows.get(
         "Raw_Value", pd.Series([""] * len(rows), index=rows.index)

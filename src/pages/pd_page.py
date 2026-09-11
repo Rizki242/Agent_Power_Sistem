@@ -111,11 +111,11 @@ def _render_pd_summary(st) -> None:
         st.markdown("**Parameter PRPD**")
         st.dataframe(
             [
-                {"Parameter": "Pulse Magnitude (pC)", "Nilai": detail.get("pulse_magnitude_pc")},
-                {"Parameter": "Tipe Discharge", "Nilai": detail.get("pd_type")},
-                {"Parameter": "Phase Clustering (deg)", "Nilai": detail.get("phase_clustering_deg")},
-                {"Parameter": "NQN", "Nilai": detail.get("nqn")},
-                {"Parameter": "Tanggal Uji", "Nilai": detail.get("test_date")},
+                {"Parameter": "Pulse Magnitude (pC)", "Nilai": str(detail.get("pulse_magnitude_pc", "-"))},
+                {"Parameter": "Tipe Discharge", "Nilai": str(detail.get("pd_type", "-"))},
+                {"Parameter": "Phase Clustering (deg)", "Nilai": str(detail.get("phase_clustering_deg", "-"))},
+                {"Parameter": "NQN", "Nilai": str(detail.get("nqn", "-"))},
+                {"Parameter": "Tanggal Uji", "Nilai": str(detail.get("test_date", "-"))},
             ],
             hide_index=True, width="stretch",
         )

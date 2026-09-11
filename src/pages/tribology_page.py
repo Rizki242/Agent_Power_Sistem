@@ -110,13 +110,13 @@ def _render_tribology_summary(st) -> None:
         st.markdown("**Parameter Fisikokimia**")
         st.dataframe(
             [
-                {"Parameter": "Viskositas 40°C (cSt)", "Nilai": detail.get("viscosity_40c")},
-                {"Parameter": "TAN (mg KOH/g)", "Nilai": detail.get("tan")},
-                {"Parameter": "Air (ppm)", "Nilai": detail.get("water_ppm")},
-                {"Parameter": "ISO Cleanliness", "Nilai": detail.get("iso_cleanliness")},
-                {"Parameter": "Wear Fe (ppm)", "Nilai": detail.get("wear_fe")},
-                {"Parameter": "Wear Cu (ppm)", "Nilai": detail.get("wear_cu")},
-                {"Parameter": "Flash Point (°C)", "Nilai": detail.get("flash_point")},
+                {"Parameter": "Viskositas 40°C (cSt)", "Nilai": str(detail.get("viscosity_40c", "-"))},
+                {"Parameter": "TAN (mg KOH/g)", "Nilai": str(detail.get("tan", "-"))},
+                {"Parameter": "Air (ppm)", "Nilai": str(detail.get("water_ppm", "-"))},
+                {"Parameter": "ISO Cleanliness", "Nilai": str(detail.get("iso_cleanliness", "-"))},
+                {"Parameter": "Wear Fe (ppm)", "Nilai": str(detail.get("wear_fe", "-"))},
+                {"Parameter": "Wear Cu (ppm)", "Nilai": str(detail.get("wear_cu", "-"))},
+                {"Parameter": "Flash Point (°C)", "Nilai": str(detail.get("flash_point", "-"))},
             ],
             hide_index=True, width="stretch",
         )

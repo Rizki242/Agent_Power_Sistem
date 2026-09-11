@@ -132,10 +132,10 @@ def _render_thermal_summary(st) -> None:
         st.markdown("**Hasil Inspeksi**")
         st.dataframe(
             [
-                {"Parameter": "Status Kondisi", "Nilai": detail.get("raw_status")},
-                {"Parameter": "Standard/Metode", "Nilai": detail.get("standard")},
-                {"Parameter": "Tanggal Uji", "Nilai": detail.get("test_date")},
-                {"Parameter": "No KKS", "Nilai": detail.get("kks")},
+                {"Parameter": "Status Kondisi", "Nilai": str(detail.get("raw_status", "-"))},
+                {"Parameter": "Standard/Metode", "Nilai": str(detail.get("standard", "-"))},
+                {"Parameter": "Tanggal Uji", "Nilai": str(detail.get("test_date", "-"))},
+                {"Parameter": "No KKS", "Nilai": str(detail.get("kks", "-"))},
             ],
             hide_index=True, width="stretch",
         )
