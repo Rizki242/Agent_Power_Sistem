@@ -35,7 +35,7 @@ class ServeApiTests(unittest.TestCase):
 
 class ServeFrontendTests(unittest.TestCase):
     def test_serve_frontend_runs_npm_dev(self):
-        with mock.patch("subprocess.run") as mocked_run:
+        with mock.patch("shutil.which", return_value="npm"), mock.patch("subprocess.run") as mocked_run:
             result = runner.invoke(app, ["serve", "frontend"])
         self.assertEqual(result.exit_code, 0)
         self.assertIn("localhost:5173", result.stdout)
@@ -44,7 +44,8 @@ class ServeFrontendTests(unittest.TestCase):
 
 class ServeAllTests(unittest.TestCase):
     def test_serve_all_starts_api_subprocess_and_blocks_on_frontend(self):
-        with mock.patch("subprocess.Popen") as mocked_popen, \
+        with mock.patch("shutil.which", return_value="npm"), \
+             mock.patch("subprocess.Popen") as mocked_popen, \
              mock.patch("subprocess.run") as mocked_run:
             result = runner.invoke(app, ["serve", "all", "--port", "9002"])
         self.assertEqual(result.exit_code, 0)

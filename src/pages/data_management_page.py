@@ -54,7 +54,11 @@ def render_data_management_page(st, df, df_latest_all, edit_mode):
             )
             st.rerun()
 
-    action = st.radio("Aksi:", ["Edit/Update Data", "Hapus Data Equipment", "Reload dari Excel (Reset)"])
+    action = st.segmented_control(
+        "Pilih aksi manajemen",
+        ["Edit/Update Data", "Hapus Data Equipment", "Reload dari Excel (Reset)"],
+        default="Edit/Update Data",
+    )
 
     all_eq_list = sorted(df_latest_all["Equipment"].unique())
     selected_eq_manage = st.selectbox("Pilih Equipment:", all_eq_list, key="manage_eq")
@@ -181,6 +185,7 @@ def render_data_management_page(st, df, df_latest_all, edit_mode):
                 save_mcsa_data(updated_df, file_path)
 
                 st.session_state.data_changed = True
+                st.cache_data.clear()
                 st.success("Data berhasil disimpan.")
                 st.rerun()
 
@@ -192,6 +197,7 @@ def render_data_management_page(st, df, df_latest_all, edit_mode):
             save_mcsa_data(cleaned_df, file_path)
 
             st.session_state.data_changed = True
+            st.cache_data.clear()
             st.success(f"Data {selected_eq_manage} telah dihapus.")
             st.rerun()
 

@@ -561,7 +561,7 @@ class TestSpecialistDomainRouterArchitecture(unittest.TestCase):
 
         kn_mod = importlib.import_module("pple.api.routers.knowledge")
         kn_paths = {r.path for r in kn_mod.router.routes}
-        self.assertEqual(kn_paths, {"/api/materi", "/api/materi/search"})
+        self.assertEqual(kn_paths, {"/api/materi", "/api/materi/search", "/api/materi/upload"})
 
         vib_mod = importlib.import_module("pple.api.routers.vibration")
         vib_paths = {r.path for r in vib_mod.router.routes}
@@ -575,6 +575,54 @@ class TestSpecialistDomainRouterArchitecture(unittest.TestCase):
                 "/api/vibration/tests",
             },
         )
+
+
+class TestKnowledgeUploadAPI(unittest.TestCase):
+    def setUp(self):
+        self.client = TestClient(app)
+
+    @patch("pple.api.routers.knowledge.process_and_save_knowledge_file")
+    def test_upload_processes_document_with_metadata(self, process_file):
+        process_file.return_value = (
+            True,
+            "Dokumen tersimpan.",
+            {"id": "panduan-bearing", "title": "Panduan Bearing", "sections": [{"id": "intro"}]},
+        )
+
+        response = self.client.post(
+            "/api/materi/upload",
+            files={"file": ("bearing.md", b"# Bearing\nIsi", "text/markdown")},
+            data={"title": "Panduan Bearing", "tags": "bearing, vibration", "level": "Intermediate"},
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["document"]["section_count"], 1)
+        process_file.assert_called_once_with(
+            file_name="bearing.md",
+            file_bytes=b"# Bearing\nIsi",
+            custom_title="Panduan Bearing",
+            custom_tags=["bearing", "vibration"],
+            level="Intermediate",
+            source="API Upload",
+        )
+
+    def test_upload_rejects_unsupported_extension(self):
+        response = self.client.post(
+            "/api/materi/upload",
+            files={"file": ("payload.exe", b"invalid", "application/octet-stream")},
+        )
+        self.assertEqual(response.status_code, 415)
+
+    def test_material_list_uses_canonical_materi_directory(self):
+        knowledge = importlib.import_module("pple.api.routers.knowledge")
+        with tempfile.TemporaryDirectory() as materi_root:
+            with open(os.path.join(materi_root, "bearing-guide.json"), "w", encoding="utf-8") as handle:
+                handle.write("{}")
+            with patch.object(knowledge, "materi_dir", return_value=materi_root):
+                response = self.client.get("/api/materi")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["materi"][0]["filename"], "bearing-guide.json")
 
 
 class TestAPISecurity(unittest.TestCase):

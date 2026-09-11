@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import streamlit as st
 from src.agents.specialist_agents import DGAAgent, PDAgent, ThermalAgent, TribologyAgent, VibrationAgent
 from src.components.agent_result import render_agent_result
 from src.components.theme import render_page_header
 
 
-def _render_vibration_control(st) -> None:
+@st.fragment
+def _render_vibration_control(st_context=st) -> None:
     st.subheader("Vibrasi", anchor=False)
     st.caption("Screening overall RMS, 1X/2X, aksial, BPFO, dan BPFI.")
     with st.form("condition_control_vibration", border=True):
@@ -33,6 +35,7 @@ def _render_vibration_control(st) -> None:
         )
 
 
+@st.fragment
 def _render_dga_control(st) -> None:
     st.subheader("DGA", anchor=False)
     st.caption("Screening TDCG dan pola key gas/Duval dari sampel gas terlarut yang valid.")
@@ -60,6 +63,7 @@ def _render_dga_control(st) -> None:
         )
 
 
+@st.fragment
 def _render_tribology_control(st) -> None:
     st.subheader("Tribology", anchor=False)
     st.caption("Screening kondisi pelumas, kontaminasi air, dan wear debris.")
@@ -87,6 +91,7 @@ def _render_tribology_control(st) -> None:
         )
 
 
+@st.fragment
 def _render_thermal_control(st) -> None:
     st.subheader("Thermal", anchor=False)
     st.caption("Screening delta-T ambient, delta-T antar fasa, dan hotspot komparatif.")
@@ -126,6 +131,7 @@ def _render_thermal_control(st) -> None:
         )
 
 
+@st.fragment
 def _render_pd_control(st) -> None:
     st.subheader("Partial Discharge", anchor=False)
     st.caption("Screening magnitude pulsa, NQN, dan tipe pelepasan parsial isolasi.")

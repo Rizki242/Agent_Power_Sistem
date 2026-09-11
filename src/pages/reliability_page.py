@@ -102,22 +102,21 @@ def render_reliability_page(st_context=st, df_latest_all: pd.DataFrame = None):
     with tab_matrix:
         # Filter controls
         with st_context.container(border=True):
-            f_col1, f_col2, f_col3 = st_context.columns(3)
+            f_col1, f_col2 = st_context.columns([1, 1])
             with f_col1:
-                units = ["Semua Unit"] + sorted(list({m.get("unit", "") for m in matrix if m.get("unit")}))
-                sel_unit = st_context.selectbox("Filter Unit Pembangkit", units)
+                units = ["Semua unit"] + sorted(list({m.get("unit", "") for m in matrix if m.get("unit")}))
+                sel_unit = st_context.segmented_control("Filter unit pembangkit", units, default="Semua unit")
             with f_col2:
-                statuses = ["Semua Status", "CRITICAL", "ALERT", "WARNING", "WATCH", "HEALTHY"]
-                sel_status = st_context.selectbox("Filter Status Kesehatan", statuses)
-            with f_col3:
-                search_eq = st_context.text_input("Cari Nama Peralatan", placeholder="Ketik nama alat...")
+                statuses = ["Semua status", "CRITICAL", "ALERT", "WARNING", "WATCH", "HEALTHY"]
+                sel_status = st_context.pills("Filter status kesehatan", statuses, default="Semua status")
+            search_eq = st_context.text_input("Cari nama peralatan", placeholder="Ketik nama peralatan...", label_visibility="collapsed")
 
         # Filter dataset
         filtered_matrix = []
         for m in matrix:
-            if sel_unit != "Semua Unit" and m.get("unit") != sel_unit:
+            if sel_unit and sel_unit != "Semua unit" and m.get("unit") != sel_unit:
                 continue
-            if sel_status != "Semua Status" and m.get("health_status") != sel_status:
+            if sel_status and sel_status != "Semua status" and m.get("health_status") != sel_status:
                 continue
             if search_eq and search_eq.lower() not in m.get("equipment", "").lower():
                 continue

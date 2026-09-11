@@ -274,7 +274,11 @@ def _build_parameter_table(
         existing_parameters.add(parameter)
 
     if extra_rows:
-        rows = pd.concat([rows, pd.DataFrame(extra_rows)], ignore_index=True)
+        extra_df = pd.DataFrame(extra_rows)
+        for col in extra_df.columns:
+            if col in rows.columns and extra_df[col].isna().all():
+                extra_df[col] = extra_df[col].astype(rows[col].dtype)
+        rows = pd.concat([rows, extra_df], ignore_index=True)
 
     raw_values = rows.get(
         "Raw_Value", pd.Series([""] * len(rows), index=rows.index)

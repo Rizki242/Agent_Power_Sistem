@@ -40,6 +40,124 @@ def _get_status_color(status_str: str) -> str:
     return "#64748B"
 
 
+@st.fragment
+def _render_work_orders_list_section(st_context):
+    work_orders = load_work_orders()
+
+    # Filter section
+    with st_context.container(border=True):
+        f_col1, f_col2 = st_context.columns(2)
+        with f_col1:
+            status_filter = st_context.pills(
+                "Filter status",
+                ["Semua status", "Draft", "Approved", "In Progress", "Completed", "Rejected"],
+                default="Semua status",
+            )
+        with f_col2:
+            priority_filter = st_context.pills(
+                "Filter prioritas",
+                ["Semua prioritas", "P1 - Critical", "P2 - High", "P3 - Medium", "P4 - Low"],
+                default="Semua prioritas",
+            )
+        search_query = st_context.text_input(
+            "Cari equipment atau nomor WO",
+            placeholder="Ketik nama aset atau nomor WO...",
+            label_visibility="collapsed",
+        )
+
+    # Apply filtering
+    filtered_orders = []
+    for wo in work_orders:
+        wo_status = wo.get("status", "").lower()
+        wo_priority = wo.get("priority", "")
+        wo_eq = wo.get("equipment", "")
+        wo_num = wo.get("wo_number", "")
+        wo_title = wo.get("title", "")
+
+        # Status match
+        if status_filter and status_filter != "Semua status":
+            target = status_filter.lower()
+            if target not in wo_status:
+                continue
+
+        # Priority match
+        if priority_filter and priority_filter != "Semua prioritas":
+            if priority_filter != wo_priority:
+                continue
+
+        # Search match
+        if search_query:
+            q = search_query.lower()
+            if q not in wo_eq.lower() and q not in wo_num.lower() and q not in wo_title.lower():
+                continue
+
+        filtered_orders.append(wo)
+
+    if not filtered_orders:
+        st_context.info("Tidak ada Work Order yang sesuai dengan kriteria filter.")
+    else:
+        for idx, wo in enumerate(filtered_orders):
+            wo_num = wo.get("wo_number", f"WO-{idx}")
+            status_color = _get_status_color(wo.get("status", ""))
+            prio_color = PRIORITY_COLORS.get(wo.get("priority", ""), "#F59E0B")
+
+            with st_context.container(border=True):
+                head_col1, head_col2 = st_context.columns([3, 1])
+                with head_col1:
+                    st_context.markdown(
+                        f"#### **{wo.get('title', 'Perawatan')}**"
+                    )
+                    st_context.caption(
+                        f"**{wo_num}** · Equipment: **{wo.get('equipment', '-')}** · "
+                        f"Target: **{wo.get('target_completion_date', '-')}** · "
+                        f"Dibuat oleh: *{wo.get('created_by', 'Sistem')}* ({wo.get('created_at', '-')})"
+                    )
+                with head_col2:
+                    st_context.markdown(
+                        f"<div style='text-align: right;'>"
+                        f"<span style='display:inline-block;padding:3px 10px;border-radius:12px;background:{prio_color}22;color:{prio_color};font-weight:bold;font-size:0.85rem;border:1px solid {prio_color}55;margin-right:6px;'>{wo.get('priority', '-')}</span>"
+                        f"<span style='display:inline-block;padding:3px 10px;border-radius:12px;background:{status_color}22;color:{status_color};font-weight:bold;font-size:0.85rem;border:1px solid {status_color}55;'>{wo.get('status', '-')}</span>"
+                        f"</div>",
+                        unsafe_allow_html=True,
+                    )
+
+                st_context.markdown(f"**Justifikasi diagnosa:** {wo.get('reason', '-')}")
+
+                detail_col1, detail_col2, detail_col3 = st_context.columns(3)
+                with detail_col1:
+                    tools = wo.get("required_tools", [])
+                    st_context.markdown(f"🛠️ **Tools:** {', '.join(tools) if tools else '-'}")
+                with detail_col2:
+                    parts = wo.get("required_parts", [])
+                    st_context.markdown(f"⚙️ **Spare parts:** {', '.join(parts) if parts else '-'}")
+                with detail_col3:
+                    st_context.markdown(f"👷 **Tenaga kerja:** {wo.get('required_manpower', '-')}")
+
+                # Actions row
+                st_context.divider()
+                btn_col1, btn_col2, btn_col3, btn_col4, _ = st_context.columns([1.2, 1.2, 1.4, 1.2, 2])
+                with btn_col1:
+                    if st_context.button("✅ Setujui", key=f"app_{wo_num}", width="stretch"):
+                        update_work_order_status(wo_num, "Approve", actor="Supervisor O&M")
+                        st_context.success(f"{wo_num} berhasil disetujui!")
+                        st_context.rerun()
+                with btn_col2:
+                    if st_context.button("🚀 Kerjakan", key=f"prog_{wo_num}", width="stretch"):
+                        update_work_order_status(wo_num, "Progress", actor="Teknisi Pemeliharaan")
+                        st_context.info(f"{wo_num} status diubah ke In Progress.")
+                        st_context.rerun()
+                with btn_col3:
+                    if st_context.button("🎉 Selesai", key=f"comp_{wo_num}", width="stretch"):
+                        update_work_order_status(wo_num, "Complete", actor="Supervisor O&M")
+                        st_context.success(f"{wo_num} telah selesai dan ditutup.")
+                        st_context.rerun()
+                with btn_col4:
+                    if st_context.button("❌ Tolak", key=f"rej_{wo_num}", width="stretch"):
+                        update_work_order_status(wo_num, "Reject", actor="Supervisor O&M")
+                        st_context.warning(f"{wo_num} ditolak.")
+                        st_context.rerun()
+
+
 def render_work_orders_page(st_context=st):
     render_page_header(
         st_context,
@@ -68,118 +186,7 @@ def render_work_orders_page(st_context=st):
     tab_list, tab_create = st_context.tabs([":material/list_alt: Daftar Work Order", ":material/add_task: Buat Work Order Baru"])
 
     with tab_list:
-        # Filter section
-        with st_context.container(border=True):
-            f_col1, f_col2, f_col3 = st_context.columns([1, 1, 2])
-            with f_col1:
-                status_filter = st_context.selectbox(
-                    "Filter Status",
-                    ["Semua Status", "Draft / Menunggu Approval", "Approved / Ready", "In Progress", "Completed", "Rejected"],
-                )
-            with f_col2:
-                priority_filter = st_context.selectbox(
-                    "Filter Prioritas",
-                    ["Semua Prioritas", "P1 - Critical", "P2 - High", "P3 - Medium", "P4 - Low"],
-                )
-            with f_col3:
-                search_query = st_context.text_input("Cari Equipment / Nomor WO", placeholder="Ketik nama aset atau WO...")
-
-        # Apply filtering
-        filtered_orders = []
-        for wo in work_orders:
-            wo_status = wo.get("status", "")
-            wo_priority = wo.get("priority", "")
-            wo_eq = wo.get("equipment", "")
-            wo_num = wo.get("wo_number", "")
-            wo_title = wo.get("title", "")
-
-            # Status match
-            if status_filter == "Draft / Menunggu Approval" and "draft" not in wo_status.lower():
-                continue
-            if status_filter == "Approved / Ready" and "ready" not in wo_status.lower() and "approved" not in wo_status.lower():
-                continue
-            if status_filter == "In Progress" and "progress" not in wo_status.lower():
-                continue
-            if status_filter == "Completed" and "complete" not in wo_status.lower():
-                continue
-            if status_filter == "Rejected" and "reject" not in wo_status.lower():
-                continue
-
-            # Priority match
-            if priority_filter != "Semua Prioritas" and priority_filter != wo_priority:
-                continue
-
-            # Search match
-            if search_query:
-                q = search_query.lower()
-                if q not in wo_eq.lower() and q not in wo_num.lower() and q not in wo_title.lower():
-                    continue
-
-            filtered_orders.append(wo)
-
-        if not filtered_orders:
-            st_context.info("Tidak ada Work Order yang sesuai dengan kriteria filter.")
-        else:
-            for idx, wo in enumerate(filtered_orders):
-                wo_num = wo.get("wo_number", f"WO-{idx}")
-                status_color = _get_status_color(wo.get("status", ""))
-                prio_color = PRIORITY_COLORS.get(wo.get("priority", ""), "#F59E0B")
-
-                with st_context.container(border=True):
-                    head_col1, head_col2 = st_context.columns([3, 1])
-                    with head_col1:
-                        st_context.markdown(
-                            f"#### **{wo.get('title', 'Perawatan')}**"
-                        )
-                        st_context.caption(
-                            f"**{wo_num}** · Equipment: **{wo.get('equipment', '-')}** · "
-                            f"Target: **{wo.get('target_completion_date', '-')}** · "
-                            f"Dibuat oleh: *{wo.get('created_by', 'Sistem')}* ({wo.get('created_at', '-')})"
-                        )
-                    with head_col2:
-                        st_context.markdown(
-                            f"<div style='text-align: right;'>"
-                            f"<span style='display:inline-block;padding:3px 10px;border-radius:12px;background:{prio_color}22;color:{prio_color};font-weight:bold;font-size:0.85rem;border:1px solid {prio_color}55;margin-right:6px;'>{wo.get('priority', '-')}</span>"
-                            f"<span style='display:inline-block;padding:3px 10px;border-radius:12px;background:{status_color}22;color:{status_color};font-weight:bold;font-size:0.85rem;border:1px solid {status_color}55;'>{wo.get('status', '-')}</span>"
-                            f"</div>",
-                            unsafe_allow_html=True,
-                        )
-
-                    st_context.markdown(f"**Justifikasi Diagnosa / Alasan:** {wo.get('reason', '-')}")
-
-                    detail_col1, detail_col2, detail_col3 = st_context.columns(3)
-                    with detail_col1:
-                        tools = wo.get("required_tools", [])
-                        st_context.markdown(f"🛠️ **Tools:** {', '.join(tools) if tools else '-'}")
-                    with detail_col2:
-                        parts = wo.get("required_parts", [])
-                        st_context.markdown(f"⚙️ **Spare Parts:** {', '.join(parts) if parts else '-'}")
-                    with detail_col3:
-                        st_context.markdown(f"👷 **Tenaga Kerja:** {wo.get('required_manpower', '-')}")
-
-                    # Actions row
-                    st_context.divider()
-                    btn_col1, btn_col2, btn_col3, btn_col4, _ = st_context.columns([1.2, 1.2, 1.4, 1.2, 2])
-                    with btn_col1:
-                        if st_context.button("✅ Setujui", key=f"app_{wo_num}"):
-                            update_work_order_status(wo_num, "Approve", actor="Supervisor O&M")
-                            st_context.success(f"{wo_num} berhasil disetujui!")
-                            st_context.rerun()
-                    with btn_col2:
-                        if st_context.button("🚀 Kerjakan", key=f"prog_{wo_num}"):
-                            update_work_order_status(wo_num, "Progress", actor="Teknisi Pemeliharaan")
-                            st_context.info(f"{wo_num} status diubah ke In Progress.")
-                            st_context.rerun()
-                    with btn_col3:
-                        if st_context.button("🎉 Tandai Selesai", key=f"comp_{wo_num}"):
-                            update_work_order_status(wo_num, "Complete", actor="Supervisor O&M")
-                            st_context.success(f"{wo_num} telah selesai dan ditutup.")
-                            st_context.rerun()
-                    with btn_col4:
-                        if st_context.button("❌ Tolak", key=f"rej_{wo_num}"):
-                            update_work_order_status(wo_num, "Reject", actor="Supervisor O&M")
-                            st_context.warning(f"{wo_num} ditolak.")
-                            st_context.rerun()
+        _render_work_orders_list_section(st_context)
 
     with tab_create:
         st_context.markdown("### Formulir Perintah Kerja (Work Order Baru)")

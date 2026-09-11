@@ -96,6 +96,7 @@ def render_sync_word_page(st, df, edit_mode, get_data_path, get_folder_metadata,
             st.session_state["filter_focus_equipment"] = sorted({item.get("equipment") for item in valid_items if item.get("equipment")})
             for key in ["word_batch_path", "word_batch_preview", "word_batch_manifest", "_mcsa_data_key"]:
                 st.session_state.pop(key, None)
+            st.cache_data.clear()
             if dashboard_page is not None:
                 st.switch_page(dashboard_page)
             else:
