@@ -53,12 +53,12 @@ Navigasi Streamlit dikelompokkan sebagai berikut:
 | Kelompok | Halaman | Kegunaan |
 | --- | --- | --- |
 | Command Center | Agent Dashboard, Chatbot, Materi Training | Monitoring armada, tanya jawab teknis, dan basis pengetahuan. |
-| Asset Management | Register Aset, Laporan Kondisi, Manajemen Data, Sync Laporan Word, Quality Check Laporan | Pengelolaan aset, data, dan batch laporan. |
+| Asset Management | Register Aset, Asset 360° View, Laporan Kondisi, Manajemen Data, Sync Laporan Word, Quality Check Laporan | Pengelolaan aset, data, dan batch laporan. Asset 360° View menggabungkan MCSA/vibrasi/thermal/tribology jadi satu pandangan health index per equipment. |
 | Engineering | MCSA, Vibrasi, DGA, Tribology, Thermal, Partial Discharge, Control Condition | Analisis per disiplin condition monitoring. |
 | Reliability | Reliability | Titik masuk reliabilitas; fusion engine saat ini tersedia di Agent Dashboard. |
 | Reports | Laporan PPT, Laporan Word | Pembuatan laporan dari filter data aktif. |
-| Work Orders | Work Orders | Endpoint API tersedia; halaman Streamlit masih berupa placeholder. |
-| Utilitas | Settings, Help & Support | Pengaturan dan bantuan; beberapa fungsi masih tahap pengembangan. |
+| Work Orders | Work Orders | Endpoint API dan halaman Streamlit lengkap: KPI, filter/pencarian, approve/progress/complete/reject, form pembuatan WO baru. |
+| Utilitas | Settings, Help & Support | Help & Support sudah lengkap. Settings punya beberapa kategori ("Appearance", "API Keys terpusat", "Database config", dll.) yang masih menampilkan "akan hadir di rilis mendatang" — bagian inti (General, AI & LLM, Engineering Modules) sudah berfungsi. |
 
 Diagram rancangan target (visi jangka panjang, termasuk database dan admin config yang belum diimplementasi) tersedia di [docs/desain.png](docs/desain.png). Diagram tersebut adalah arah arsitektur, bukan gambaran kondisi saat ini — bagian [Arsitektur](#arsitektur) di bawah menjelaskan apa yang benar-benar berjalan hari ini.
 
