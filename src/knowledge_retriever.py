@@ -56,12 +56,16 @@ def load_knowledge_base(force_reload: bool = False) -> list[dict]:
 
     documents = []
 
-    # 1. Index Materi folder (.json files)
+    # 1. Index Materi folder (.json files) — recursive crawl
+    _SKIP_DIRS = {"__pycache__", ".git", "node_modules", "Installer"}
     if os.path.exists(materi_path):
-        for fn in sorted(os.listdir(materi_path)):
-            if not fn.lower().endswith(".json"):
-                continue
-            path = os.path.join(materi_path, fn)
+        for dirpath, dirnames, filenames in os.walk(materi_path):
+            # Prune subdirectories containing installers or caches
+            dirnames[:] = [d for d in dirnames if not any(s in d for s in _SKIP_DIRS)]
+            for fn in sorted(filenames):
+                if not fn.lower().endswith(".json"):
+                    continue
+                path = os.path.join(dirpath, fn)
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     data = json.load(f)
@@ -252,8 +256,28 @@ def build_knowledge_context(query: str, max_items: int = 3, max_chars: int = 250
                 context_str, citations = rag_build_context(query, max_items=max_items, max_chars=max_chars)
                 if context_str:
                     return context_str, citations
-        except Exception:
-            pass
+                else:
+                    try:
+                        from pple.core.logging import log_fallback
+                        log_fallback(
+                            component="rag_engine",
+                            reason="RAG semantic search returned empty context",
+                            fallback_used="keyword_retriever",
+                            query=query[:100],
+                        )
+                    except Exception:
+                        pass
+        except Exception as exc:
+            try:
+                from pple.core.logging import log_fallback
+                log_fallback(
+                    component="rag_engine",
+                    reason=f"RAG search execution failed: {exc}",
+                    fallback_used="keyword_retriever",
+                    query=query[:100],
+                )
+            except Exception:
+                pass
 
     matches = search_knowledge_base(query, top_k=max_items)
     if not matches:

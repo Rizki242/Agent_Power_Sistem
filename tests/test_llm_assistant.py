@@ -65,6 +65,18 @@ class LlmAssistantTests(unittest.TestCase):
         key = resolve_provider_key("groq", "gsk_test123")
         self.assertEqual(key, "gsk_test123")
 
+    def test_enhance_answer_falls_back_on_exception(self):
+        class BrokenClient:
+            def generate(self, *args, **kwargs):
+                raise ConnectionError("API connection timed out")
+
+        assistant = MCSALLMAssistant(enabled=True, provider="groq", client=BrokenClient(), model="llama-3.3-70b-versatile")
+        df = pd.DataFrame([{"Equipment": "BC101", "Parameter": "Kondisi", "Raw_Value": "Alarm"}])
+
+        answer = assistant.enhance_answer("analisa BC101", "Jawaban Rule Fallback", df)
+        self.assertEqual(answer, "Jawaban Rule Fallback")
+        self.assertIn("gagal menjawab", assistant.last_error)
+
 
 if __name__ == "__main__":
     unittest.main()

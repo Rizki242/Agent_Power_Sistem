@@ -9,29 +9,25 @@ import pandas as pd
 from src.knowledge_retriever import build_knowledge_context
 
 
-DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
+DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
 AVAILABLE_GEMINI_MODELS = [
     "gemini-2.5-flash",
-    "gemini-3.5-flash",
-    "gemini-3.6-flash",
     "gemini-2.0-flash",
     "gemini-1.5-flash",
     "gemini-2.5-pro",
 ]
 
-DEFAULT_GEMINI_ENTERPRISE_MODEL = "gemini-3.6-flash"
+DEFAULT_GEMINI_ENTERPRISE_MODEL = "gemini-2.5-flash"
 AVAILABLE_GEMINI_ENTERPRISE_MODELS = [
-    "gemini-3.6-flash",
-    "gemini-2.5-pro",
     "gemini-2.5-flash",
+    "gemini-2.5-pro",
     "gemini-1.5-pro",
     "gemini-1.5-flash",
 ]
 
-DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b"
+DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile"
 AVAILABLE_GROQ_MODELS = [
     "llama-3.3-70b-versatile",
-    "qwen/qwen3.6-27b",
     "deepseek-r1-distill-llama-70b",
     "mixtral-8x7b-32768",
     "gemma2-9b-it",
@@ -589,9 +585,29 @@ class MCSALLMAssistant:
                 return str(text).strip()
         except Exception as exc:
             self.last_error = f"LLM ({self.provider.upper()}) gagal menjawab: {exc}"
+            try:
+                from pple.core.logging import log_fallback
+                log_fallback(
+                    component=f"llm_{self.provider}",
+                    reason=str(exc),
+                    fallback_used="rule_answer",
+                    model=self.model,
+                )
+            except Exception:
+                pass
             return rule_answer
 
         self.last_error = f"Respons LLM ({self.provider.upper()}) kosong."
+        try:
+            from pple.core.logging import log_fallback
+            log_fallback(
+                component=f"llm_{self.provider}",
+                reason="empty_response",
+                fallback_used="rule_answer",
+                model=self.model,
+            )
+        except Exception:
+            pass
         return rule_answer
 
     def answer_question(
@@ -652,6 +668,17 @@ class MCSALLMAssistant:
                 return str(text).strip()
         except Exception as exc:
             self.last_error = f"LLM ({self.provider.upper()}) gagal menghasilkan analisa: {exc}"
+            try:
+                from pple.core.logging import log_fallback
+                log_fallback(
+                    component=f"llm_{self.provider}",
+                    reason=str(exc),
+                    fallback_used="rule_report",
+                    equipment=equipment_name,
+                    model=self.model,
+                )
+            except Exception:
+                pass
 
         return rule_report
 
