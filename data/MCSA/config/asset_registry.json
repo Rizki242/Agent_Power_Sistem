@@ -1,4 +1,3266 @@
 {
+  "AST-001": {
+    "aliases": [
+      "ID FAN 1#1",
+      "MOTOR ID FAN 1 #1",
+      "MOTOR ID FAN 1 Unit 1"
+    ],
+    "asset_id": "AST-001",
+    "created_at": "2026-09-13T07:37:02",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ10HNC10AN001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor ID Fan 1#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10HNC10AN001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6324",
+      "c1_power": "355 Kw",
+      "c1_speed": "985",
+      "c1_type_mfg": "YKK4003-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:02",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-002": {
+    "aliases": [
+      "ID FAN 2#1",
+      "MOTOR ID FAN 2 #1",
+      "MOTOR ID FAN 2 Unit 1"
+    ],
+    "asset_id": "AST-002",
+    "created_at": "2026-09-13T07:37:02",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ10HNC10AN002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor ID Fan 2#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10HNC10AN002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6324",
+      "c1_power": "355 Kw",
+      "c1_speed": "985",
+      "c1_type_mfg": "YKK4003-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:02",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-003": {
+    "aliases": [
+      "PRIMARY AIR FAN 1#1",
+      "MOTOR PRIMARY AIR FAN 1 #1",
+      "MOTOR PRIMARY AIR FAN 1 Unit 1"
+    ],
+    "asset_id": "AST-003",
+    "created_at": "2026-09-13T07:37:02",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ10HLB10AN001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Primary Air Fan 1#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10HLB10AN001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6224",
+      "c1_power": "280 kW",
+      "c1_speed": "1480 r/min",
+      "c1_type_mfg": "YKK 4001-4",
+      "c2_flow_rate": "50000 m2/h",
+      "c2_pressure": "13500 Pa",
+      "c2_speed": "1450 r/min",
+      "c2_type_mfg": "QALG-217D"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:02",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-004": {
+    "aliases": [
+      "PRIMARY AIR FAN 2#1",
+      "MOTOR PRIMARY AIR FAN 2 #1",
+      "MOTOR PRIMARY AIR FAN 2 Unit 1"
+    ],
+    "asset_id": "AST-004",
+    "created_at": "2026-09-13T07:37:02",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ10HLB10AN002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Primary Air Fan 2#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10HLB10AN002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6224",
+      "c1_power": "280 kW",
+      "c1_speed": "1480 r/min",
+      "c1_type_mfg": "YKK 4001-4",
+      "c2_flow_rate": "50000 m2/h",
+      "c2_pressure": "13500 Pa",
+      "c2_speed": "1450 r/min",
+      "c2_type_mfg": "QALG-217D"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:02",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-005": {
+    "aliases": [
+      "SECONDARY AIR FAN 1#1",
+      "MOTOR SECONDARY AIR FAN 1 #1",
+      "MOTOR SECONDARY AIR FAN 1 Unit 1"
+    ],
+    "asset_id": "AST-005",
+    "created_at": "2026-09-13T07:37:02",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ10HLB10AN003-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Secondary Air Fan 1#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10HLB10AN003-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6224",
+      "c1_power": "280 kW",
+      "c1_speed": "1480 r/min",
+      "c1_type_mfg": "YKK 4001-4",
+      "c2_flow_rate": "50000 m2/h",
+      "c2_pressure": "13500 Pa",
+      "c2_speed": "1450 r/min",
+      "c2_type_mfg": "QALG-217D"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:02",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-006": {
+    "aliases": [
+      "SECONDARY AIR FAN 2#1",
+      "MOTOR SECONDARY AIR FAN 2 #1",
+      "MOTOR SECONDARY AIR FAN 2 Unit 1"
+    ],
+    "asset_id": "AST-006",
+    "created_at": "2026-09-13T07:37:02",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ10HLB10AN004-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Secondary Air Fan 2#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10HLB10AN004-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6224",
+      "c1_power": "280 kW",
+      "c1_speed": "1480 r/min",
+      "c1_type_mfg": "YKK 4001-4",
+      "c2_flow_rate": "50000 m2/h",
+      "c2_pressure": "13500 Pa",
+      "c2_speed": "1450 r/min",
+      "c2_type_mfg": "QALG-217D"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:02",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-007": {
+    "aliases": [
+      "TURBIN-GENERATOR #1",
+      "TURBIN-GENERATOR Unit 1"
+    ],
+    "asset_id": "AST-007",
+    "created_at": "2026-09-13T07:37:02",
+    "equipment_type": "Turbine-Generator",
+    "kks": "LJ10MAA10HB010-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "PD",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Turbin-Generator#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10MAA10HB010-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_type_mfg": "China Changjiang Energy Corp.",
+      "c2_speed": "3000 r/min"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:02",
+    "voltage_level": "6.3 kV Phase 3 Wire"
+  },
+  "AST-008": {
+    "aliases": [
+      "CONDENSAT PUMP 2#1",
+      "MOTOR CONDENSAT PUMP 2 #1",
+      "MOTOR CONDENSAT PUMP 2 Unit 1"
+    ],
+    "asset_id": "AST-008",
+    "created_at": "2026-09-13T07:37:02",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ10LCB10AP020-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Condensat Pump 2#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10LCB10AP020-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "75 kW",
+      "c1_speed": "1430 rpm",
+      "c1_type_mfg": "YLB 250-2-4",
+      "c2_capacity": "120 m3/h",
+      "c2_power": "53 kW",
+      "c2_speed": "1480 rpm",
+      "c2_type_mfg": "5LDIN"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:02",
+    "voltage_level": "380 V"
+  },
+  "AST-009": {
+    "aliases": [
+      "VACUUM PUMP 1#1",
+      "MOTOR VACUUM PUMP 1 #1",
+      "MOTOR VACUUM PUMP 1 Unit 1"
+    ],
+    "asset_id": "AST-009",
+    "created_at": "2026-09-13T07:37:02",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ10MAG10AP011-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Vacuum Pump 1#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10MAG10AP011-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "37 kW",
+      "c1_speed": "980 rpm",
+      "c1_type_mfg": "Y2 - 250-6"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:02",
+    "voltage_level": "380 V"
+  },
+  "AST-010": {
+    "aliases": [
+      "VACUUM PUMP 2#1",
+      "MOTOR VACUUM PUMP 2 #1",
+      "MOTOR VACUUM PUMP 2 Unit 1"
+    ],
+    "asset_id": "AST-010",
+    "created_at": "2026-09-13T07:37:02",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ10MAG10AP012-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Vacuum Pump 2#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10MAG10AP012-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "37 kW",
+      "c1_speed": "980 rpm",
+      "c1_type_mfg": "Y2 - 250-6"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:02",
+    "voltage_level": "380 V"
+  },
+  "AST-011": {
+    "aliases": [
+      "BOILER FEED PUMP 1#1",
+      "MOTOR BOILER FEED PUMP 1 #1",
+      "MOTOR BOILER FEED PUMP 1 Unit 1"
+    ],
+    "asset_id": "AST-011",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ10LAC10AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Boiler Feed Pump 1#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10LAC10AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU 224EC",
+      "c1_outboard_bearing": "6224/C3",
+      "c1_power": "1000",
+      "c1_speed": "2980 rpm",
+      "c1_type_mfg": "SY23372-1028, QINGJIANG",
+      "c2_capacity": "140",
+      "c2_speed": "2980 rpm",
+      "c2_type_mfg": "SHENYANG AST PUMP MANUFACTURING CO.,LTD"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-012": {
+    "aliases": [
+      "CCCWP 1#1",
+      "MOTOR CCCWP 1 #1",
+      "MOTOR CCCWP 1 Unit 1"
+    ],
+    "asset_id": "AST-012",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ10PGB10AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CCCWP 1#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10PGB10AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "75 kW",
+      "c1_speed": "980 rpm",
+      "c1_type_mfg": "Y2 - 280-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-013": {
+    "aliases": [
+      "CCCWP 2#1",
+      "MOTOR CCCWP 2 #1",
+      "MOTOR CCCWP 2 Unit 1"
+    ],
+    "asset_id": "AST-013",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ10PGB10AP002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CCCWP 2#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10PGB10AP002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "75 kW",
+      "c1_speed": "980 rpm",
+      "c1_type_mfg": "Y2 - 280-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-014": {
+    "aliases": [
+      "CWP 355 KW 1#1",
+      "MOTOR CWP 355 KW 1 #1",
+      "MOTOR CWP 355 KW 1 Unit 1"
+    ],
+    "asset_id": "AST-014",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ10PAC10AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CWP 355 Kw 1#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10PAC10AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "315",
+      "c1_speed": "991",
+      "c1_type_mfg": "YLKK400-6"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-015": {
+    "aliases": [
+      "CWP 355 KW 2#1",
+      "MOTOR CWP 355 KW 2 #1",
+      "MOTOR CWP 355 KW 2 Unit 1"
+    ],
+    "asset_id": "AST-015",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ10PAC10AP002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CWP 355 Kw 2#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10PAC10AP002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "315",
+      "c1_speed": "991",
+      "c1_type_mfg": "YLKK400-6"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-016": {
+    "aliases": [
+      "BWRO 1#1",
+      "MOTOR BWRO 1 #1",
+      "MOTOR BWRO 1 Unit 1"
+    ],
+    "asset_id": "AST-016",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ10GCK10AP005-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor BWRO 1#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10GCK10AP005-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "7309B",
+      "c1_outboard_bearing": "6307C3",
+      "c1_power": "11 kw",
+      "c1_speed": "2920 r/min",
+      "c1_type_mfg": "AEUBKG020015FMBP3",
+      "c2_capacity": "21 m3/h",
+      "c2_power": "11 Kw",
+      "c2_speed": "2920 r/min",
+      "c2_type_mfg": "A96536974P11003"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-017": {
+    "aliases": [
+      "SWRO 2#1",
+      "MOTOR SWRO 2 #1",
+      "MOTOR SWRO 2 Unit 1"
+    ],
+    "asset_id": "AST-017",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ10GCK10AP008-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor SWRO 2#1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ10GCK10AP008-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "75",
+      "c1_speed": "2970 r/min"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-018": {
+    "aliases": [],
+    "asset_id": "AST-018",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "AC OIL PUMP UNIT 1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: -)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "37 kW",
+      "c1_speed": "980 rpm",
+      "c1_type_mfg": "Y2 - 250-6"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-019": {
+    "aliases": [
+      "ID FAN 1#2",
+      "MOTOR ID FAN 1 #2",
+      "MOTOR ID FAN 1 Unit 2"
+    ],
+    "asset_id": "AST-019",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ20HNC10AN001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor ID Fan 1#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20HNC10AN001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6324",
+      "c1_power": "355 Kw",
+      "c1_speed": "985",
+      "c1_type_mfg": "YKK4003-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-020": {
+    "aliases": [
+      "ID FAN 2#2",
+      "MOTOR ID FAN 2 #2",
+      "MOTOR ID FAN 2 Unit 2"
+    ],
+    "asset_id": "AST-020",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ20HNC10AN002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor ID Fan 2#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20HNC10AN002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6324",
+      "c1_power": "355 Kw",
+      "c1_speed": "985",
+      "c1_type_mfg": "YKK4003-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-021": {
+    "aliases": [
+      "PRIMARY AIR FAN 1#2",
+      "MOTOR PRIMARY AIR FAN 1 #2",
+      "MOTOR PRIMARY AIR FAN 1 Unit 2"
+    ],
+    "asset_id": "AST-021",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ20HLB10AN001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Primary Air Fan 1#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20HLB10AN001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6224",
+      "c1_power": "280 kW",
+      "c1_speed": "1480 r/min",
+      "c1_type_mfg": "YKK 4001-4",
+      "c2_flow_rate": "50000 m2/h",
+      "c2_pressure": "13500 Pa",
+      "c2_speed": "1450 r/min",
+      "c2_type_mfg": "QALG-217D"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-022": {
+    "aliases": [
+      "PRIMARY AIR FAN 2#2",
+      "MOTOR PRIMARY AIR FAN 2 #2",
+      "MOTOR PRIMARY AIR FAN 2 Unit 2"
+    ],
+    "asset_id": "AST-022",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ20HLB10AN002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Primary Air Fan 2#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20HLB10AN002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6224",
+      "c1_power": "280 kW",
+      "c1_speed": "1480 r/min",
+      "c1_type_mfg": "YKK 4001-4",
+      "c2_flow_rate": "50000 m2/h",
+      "c2_pressure": "13500 Pa",
+      "c2_speed": "1450 r/min",
+      "c2_type_mfg": "QALG-217D"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-023": {
+    "aliases": [
+      "SECONDARY AIR FAN 1#2",
+      "MOTOR SECONDARY AIR FAN 1 #2",
+      "MOTOR SECONDARY AIR FAN 1 Unit 2"
+    ],
+    "asset_id": "AST-023",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ20HLB10AN003-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Secondary Air Fan 1#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20HLB10AN003-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6224",
+      "c1_power": "280 kW",
+      "c1_speed": "1480 r/min",
+      "c1_type_mfg": "YKK 4001-4",
+      "c2_flow_rate": "50000 m2/h",
+      "c2_pressure": "13500 Pa",
+      "c2_speed": "1450 r/min",
+      "c2_type_mfg": "QALG-217D"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-024": {
+    "aliases": [
+      "SECONDARY AIR FAN 2#2",
+      "MOTOR SECONDARY AIR FAN 2 #2",
+      "MOTOR SECONDARY AIR FAN 2 Unit 2"
+    ],
+    "asset_id": "AST-024",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ20HLB10AN004-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Secondary Air Fan 2#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20HLB10AN004-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU324",
+      "c1_outboard_bearing": "6224",
+      "c1_power": "280 kW",
+      "c1_speed": "1480 r/min",
+      "c1_type_mfg": "YKK 4001-4",
+      "c2_flow_rate": "50000 m2/h",
+      "c2_pressure": "13500 Pa",
+      "c2_speed": "1450 r/min",
+      "c2_type_mfg": "QALG-217D"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-025": {
+    "aliases": [
+      "TURBIN-GENERATOR #2",
+      "TURBIN-GENERATOR Unit 2"
+    ],
+    "asset_id": "AST-025",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Turbine-Generator",
+    "kks": "LJ20MAA10HB010-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "PD",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Turbin-Generator#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20MAA10HB010-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_type_mfg": "China Changjiang Energy Corp.",
+      "c2_speed": "3000 r/min"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.3 kV Phase 3 Wire"
+  },
+  "AST-026": {
+    "aliases": [
+      "CONDENSAT PUMP 1#2",
+      "MOTOR CONDENSAT PUMP 1 #2",
+      "MOTOR CONDENSAT PUMP 1 Unit 2"
+    ],
+    "asset_id": "AST-026",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ20LCB10AP010-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Condensat Pump 1#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20LCB10AP010-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "75 kW",
+      "c1_speed": "1430 rpm",
+      "c1_type_mfg": "YLB 250-2-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-027": {
+    "aliases": [
+      "VACUUM PUMP 1#2",
+      "MOTOR VACUUM PUMP 1 #2",
+      "MOTOR VACUUM PUMP 1 Unit 2"
+    ],
+    "asset_id": "AST-027",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ20MAG10AP011-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Vacuum Pump 1#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20MAG10AP011-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "37 kW",
+      "c1_speed": "980 rpm",
+      "c1_type_mfg": "Y2 - 250-6"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-028": {
+    "aliases": [
+      "VACUUM PUMP 2#2",
+      "MOTOR VACUUM PUMP 2 #2",
+      "MOTOR VACUUM PUMP 2 Unit 2"
+    ],
+    "asset_id": "AST-028",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ20MAG10AP012-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Vacuum Pump 2#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20MAG10AP012-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "37 kW",
+      "c1_speed": "980 rpm",
+      "c1_type_mfg": "Y2 - 250-6"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-029": {
+    "aliases": [
+      "BOILER FEED PUMP 2#2",
+      "MOTOR BOILER FEED PUMP 2 #2",
+      "MOTOR BOILER FEED PUMP 2 Unit 2"
+    ],
+    "asset_id": "AST-029",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ20LAC10AP002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Boiler Feed Pump 2#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20LAC10AP002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU 224EC",
+      "c1_outboard_bearing": "6224/C3",
+      "c1_power": "1000",
+      "c1_speed": "2980 rpm",
+      "c1_type_mfg": "SY23372-1028, QINGJIANG",
+      "c2_capacity": "140",
+      "c2_speed": "2980 rpm",
+      "c2_type_mfg": "SHENYANG AST PUMP MANUFACTURING CO.,LTD"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-030": {
+    "aliases": [
+      "CCCWP 1#2",
+      "MOTOR CCCWP 1 #2",
+      "MOTOR CCCWP 1 Unit 2"
+    ],
+    "asset_id": "AST-030",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ20PGB10AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CCCWP 1#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20PGB10AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "75 kW",
+      "c1_speed": "980 rpm",
+      "c1_type_mfg": "Y2 - 280-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-031": {
+    "aliases": [
+      "CCCWP 2#2",
+      "MOTOR CCCWP 2 #2",
+      "MOTOR CCCWP 2 Unit 2"
+    ],
+    "asset_id": "AST-031",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ20PGB10AP002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CCCWP 2#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20PGB10AP002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "75 kW",
+      "c1_speed": "980 rpm",
+      "c1_type_mfg": "Y2 - 280-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-032": {
+    "aliases": [
+      "CWP 355 KW 1#2",
+      "MOTOR CWP 355 KW 1 #2",
+      "MOTOR CWP 355 KW 1 Unit 2"
+    ],
+    "asset_id": "AST-032",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ20PAC10AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CWP 355 Kw 1#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20PAC10AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "315",
+      "c1_speed": "991",
+      "c1_type_mfg": "YLKK400-6"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-033": {
+    "aliases": [
+      "CWP 355 KW 2#2",
+      "MOTOR CWP 355 KW 2 #2",
+      "MOTOR CWP 355 KW 2 Unit 2"
+    ],
+    "asset_id": "AST-033",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ20PAC10AP002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CWP 355 Kw 2#2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ20PAC10AP002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "315",
+      "c1_speed": "991",
+      "c1_type_mfg": "YLKK400-6"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-034": {
+    "aliases": [],
+    "asset_id": "AST-034",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "ACA OIL PUMP UNIT 2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: -)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_power": "37 kW",
+      "c1_speed": "980 rpm",
+      "c1_type_mfg": "Y2 - 250-6"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-035": {
+    "aliases": [
+      "ID FAN 1#3",
+      "MOTOR ID FAN 1 #3",
+      "MOTOR ID FAN 1 Unit 3"
+    ],
+    "asset_id": "AST-035",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ03HNC10AN001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor ID Fan 1#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ03HNC10AN001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU228E/C3",
+      "c1_outboard_bearing": "6226/C3",
+      "c1_power": "450",
+      "c1_speed": "990",
+      "c1_type_mfg": "YKK 4504-6",
+      "c2_capacity": "165 m3/h",
+      "c2_speed": "2980 r/min",
+      "c2_type_mfg": "25 SB-P"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-036": {
+    "aliases": [
+      "ID FAN 2#3",
+      "MOTOR ID FAN 2 #3",
+      "MOTOR ID FAN 2 Unit 3"
+    ],
+    "asset_id": "AST-036",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ03HNC20AN001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor ID Fan 2#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ03HNC20AN001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU228E/C3",
+      "c1_outboard_bearing": "6226/C3",
+      "c1_power": "450",
+      "c1_speed": "990",
+      "c1_type_mfg": "YKK 4504-6",
+      "c2_capacity": "165 m3/h",
+      "c2_speed": "2980 r/min",
+      "c2_type_mfg": "25 SB-P"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-037": {
+    "aliases": [
+      "PRIMARY AIR FAN#3",
+      "MOTOR PRIMARY AIR FAN #3",
+      "MOTOR PRIMARY AIR FAN Unit 3"
+    ],
+    "asset_id": "AST-037",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ03HLB10AN001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Primary Air Fan#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ03HLB10AN001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU226E/C3",
+      "c1_outboard_bearing": "6228/C3",
+      "c1_power": "630",
+      "c1_speed": "1490",
+      "c1_type_mfg": "YKK 4504-4",
+      "c2_flow_rate": "400871 m2/h",
+      "c2_power": "630 Kw",
+      "c2_speed": "1485 r/min",
+      "c2_type_mfg": "G6-30 19.50"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-038": {
+    "aliases": [
+      "SECONDARY AIR FAN#3",
+      "MOTOR SECONDARY AIR FAN #3",
+      "MOTOR SECONDARY AIR FAN Unit 3"
+    ],
+    "asset_id": "AST-038",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ03HLB20AN001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Secondary Air Fan#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ03HLB20AN001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU224EC",
+      "c1_outboard_bearing": "6224/C3",
+      "c1_power": "400",
+      "c1_speed": "1485",
+      "c1_type_mfg": "YKK 4504-4",
+      "c2_flow_rate": "87120 m2/h",
+      "c2_power": "400 Kw",
+      "c2_speed": "1485 r/min",
+      "c2_type_mfg": "G6-40 16.20"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-039": {
+    "aliases": [
+      "RECIRCULATING AIR FAN 2#3",
+      "MOTOR RECIRCULATING AIR FAN 2 #3",
+      "MOTOR RECIRCULATING AIR FAN 2 Unit 3"
+    ],
+    "asset_id": "AST-039",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "LJ03PAD11AN001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Recirculating Air Fan 2#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ03PAD11AN001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Ball Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "6314/CM",
+      "c1_outboard_bearing": "6313/CM",
+      "c1_power": "55",
+      "c1_speed": "1480",
+      "c1_type_mfg": "Y2-250M-4-B3"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-040": {
+    "aliases": [
+      "TURBIN-GENERATOR #3",
+      "TURBIN-GENERATOR Unit 3"
+    ],
+    "asset_id": "AST-040",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Turbine-Generator",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "PD",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Turbin-Generator#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: -)",
+    "replacement_of": "",
+    "specs": {
+      "c1_type_mfg": "Luoyang Generating Equipment Co., Ltd",
+      "c2_speed": "3000 r/min"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.3 kV"
+  },
+  "AST-041": {
+    "aliases": [
+      "CONDENSAT PUMP 1#3",
+      "MOTOR CONDENSAT PUMP 1 #3",
+      "MOTOR CONDENSAT PUMP 1 Unit 3"
+    ],
+    "asset_id": "AST-041",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ03LCB10AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Condensat Pump 1#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ03LCB10AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "6313-2z",
+      "c1_outboard_bearing": "6313-2z",
+      "c1_power": "45 Kw",
+      "c1_speed": "2970 r/min",
+      "c1_type_mfg": "HN2-225",
+      "c2_capacity": "52.5 m2/h",
+      "c2_power": "45 Kw",
+      "c2_speed": "2950 r/min",
+      "c2_type_mfg": "Shandong Shuanglun Group Co.,Ltd"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-042": {
+    "aliases": [
+      "CONDENSAT PUMP 2#3",
+      "MOTOR CONDENSAT PUMP 2 #3",
+      "MOTOR CONDENSAT PUMP 2 Unit 3"
+    ],
+    "asset_id": "AST-042",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ03LCB10AP002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Condensat Pump 2#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ03LCB10AP002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "6313-2z",
+      "c1_outboard_bearing": "6313-2z",
+      "c1_power": "45 Kw",
+      "c1_speed": "2970 r/min",
+      "c1_type_mfg": "HN2-225",
+      "c2_capacity": "52.5 m2/h",
+      "c2_power": "45 Kw",
+      "c2_speed": "2950 r/min",
+      "c2_type_mfg": "Shandong Shuanglun Group Co.,Ltd"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-043": {
+    "aliases": [
+      "WATER JET PUMP 2#3",
+      "MOTOR WATER JET PUMP 2 #3",
+      "MOTOR WATER JET PUMP 2 Unit 3"
+    ],
+    "asset_id": "AST-043",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ03MAJ10AP002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Water jet Pump 2#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ03MAJ10AP002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "6313",
+      "c1_outboard_bearing": "6313",
+      "c1_power": "37 Kw",
+      "c1_speed": "2950 r/min",
+      "c1_type_mfg": "HM2-20012-2",
+      "c2_capacity": "160 m2/h",
+      "c2_power": "37 Kw",
+      "c2_speed": "2900 r/min",
+      "c2_type_mfg": "S125.100-200A"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-044": {
+    "aliases": [
+      "BOILER FEED PUMP 1#3",
+      "MOTOR BOILER FEED PUMP 1 #3",
+      "MOTOR BOILER FEED PUMP 1 Unit 3"
+    ],
+    "asset_id": "AST-044",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ03LAB11AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Boiler Feed Pump 1#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ03LAB11AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "NU1022M/C3 6022/c3",
+      "c1_outboard_bearing": "NU1022M/C3 6022/c3",
+      "c1_power": "1000 Kw",
+      "c1_speed": "2979 r/min",
+      "c1_type_mfg": "YKS450-2",
+      "c2_capacity": "165 m2/h",
+      "c2_power": "822 Kw",
+      "c2_speed": "2980 r/min",
+      "c2_type_mfg": "25SB-P"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-045": {
+    "aliases": [
+      "CCWP 1#3",
+      "MOTOR CCWP 1 #3",
+      "MOTOR CCWP 1 Unit 3"
+    ],
+    "asset_id": "AST-045",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ00PGB11AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CCWP 1#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00PGB11AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "55 Kw",
+      "c1_speed": "1480 r/min",
+      "c1_type_mfg": "EN60034 IEC 60034/60072",
+      "c2_capacity": "500 m2/h",
+      "c2_power": "55 Kw",
+      "c2_speed": "1480 r/min",
+      "c2_type_mfg": "200SS35"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-046": {
+    "aliases": [
+      "CCWP 2#3",
+      "MOTOR CCWP 2 #3",
+      "MOTOR CCWP 2 Unit 3"
+    ],
+    "asset_id": "AST-046",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ00PGB21AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CCWP 2#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00PGB21AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "55 Kw",
+      "c1_speed": "1480 r/min",
+      "c1_type_mfg": "EN60034 IEC 60034/60072",
+      "c2_capacity": "500 m2/h",
+      "c2_power": "55 Kw",
+      "c2_speed": "1480 r/min",
+      "c2_type_mfg": "200SS35"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-047": {
+    "aliases": [
+      "CWP 355 KW 1#3",
+      "MOTOR CWP 355 KW 1 #3",
+      "MOTOR CWP 355 KW 1 Unit 3"
+    ],
+    "asset_id": "AST-047",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ00PAB11AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor CWP 355 Kw 1#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00PAB11AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "6226",
+      "c1_outboard_bearing": "7330B",
+      "c1_power": "355",
+      "c1_speed": "989",
+      "c1_type_mfg": "YKKL-450-6TH"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-048": {
+    "aliases": [
+      "BWRO 1#3",
+      "MOTOR BWRO 1 #3",
+      "MOTOR BWRO 1 Unit 3"
+    ],
+    "asset_id": "AST-048",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ00GCK21AP001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor BWRO 1#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00GCK21AP001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "11",
+      "c1_speed": "2924",
+      "c1_type_mfg": "DPVSF18-120"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-049": {
+    "aliases": [
+      "SWRO 1#3",
+      "MOTOR SWRO 1 #3",
+      "MOTOR SWRO 1 Unit 3"
+    ],
+    "asset_id": "AST-049",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "LJ00GCF11AT002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor SWRO 1#3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00GCF11AT002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-050": {
+    "aliases": [],
+    "asset_id": "AST-050",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "FIRE FIGHTING JOCKEY PUMP 3B",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: -)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "6310 C3",
+      "c1_outboard_bearing": "6308 C3",
+      "c1_power": "11 kW",
+      "c1_speed": "2930",
+      "c1_type_mfg": "FSV2H15A0T65B"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-051": {
+    "aliases": [
+      "FIRE FIGHTING PUMP WITH UNIT 3"
+    ],
+    "asset_id": "AST-051",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "FIRE FIGHTING PUMP WITH MOTOR UNIT 3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: -)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "6314 C3",
+      "c1_outboard_bearing": "6314 C3",
+      "c1_power": "132 kW",
+      "c1_speed": "2955",
+      "c1_type_mfg": "AEEBKB020175FM"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-052": {
+    "aliases": [],
+    "asset_id": "AST-052",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "FIRE FIGHTING PUMP WITH DIESEL UNIT 3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: -)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_speed": "3000 r/min",
+      "c1_type_mfg": "JU6HUE3A"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-053": {
+    "aliases": [],
+    "asset_id": "AST-053",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "AC OIL PUMP UNIT 3",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: -)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "6314 C3",
+      "c1_outboard_bearing": "6314 C3",
+      "c1_power": "132 kW",
+      "c1_speed": "2955",
+      "c1_type_mfg": "AEEBKB020175FM"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-054": {
+    "aliases": [],
+    "asset_id": "AST-054",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "JACKING OIL PUMP 3A",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: -)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Rigid",
+      "c1_inboard_bearing": "6314 C3",
+      "c1_outboard_bearing": "6314 C3",
+      "c1_power": "132 kW",
+      "c1_speed": "2955",
+      "c1_type_mfg": "AEEBKB020175FM"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-055": {
+    "aliases": [],
+    "asset_id": "AST-055",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "LJ00EBA11AF004-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 4.1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA11AF004-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "30 Kw",
+      "c1_speed": "1470 r/min",
+      "c1_type_mfg": "Y2-200L-4",
+      "c2_capacity": "300 t/h",
+      "c2_power": "30 Kw",
+      "c2_type_mfg": "290820"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-056": {
+    "aliases": [],
+    "asset_id": "AST-056",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "LJ00EBA21AF004-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 4.2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA21AF004-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "30 Kw",
+      "c1_speed": "1470 r/min",
+      "c1_type_mfg": "Y2-200L-4",
+      "c2_capacity": "300 t/h",
+      "c2_power": "30 Kw",
+      "c2_type_mfg": "290820"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-057": {
+    "aliases": [],
+    "asset_id": "AST-057",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "LJ00EBA11AF005-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 5.1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA11AF005-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "45 Kw",
+      "c1_speed": "980 r/min",
+      "c1_type_mfg": "Y2-2805-6",
+      "c2_capacity": "300 t/h",
+      "c2_power": "45 Kw",
+      "c2_type_mfg": "290822"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-058": {
+    "aliases": [],
+    "asset_id": "AST-058",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "LJ00EBA21AF005-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 5.2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA21AF005-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "45 Kw",
+      "c1_speed": "980 r/min",
+      "c1_type_mfg": "Y2-2805-6",
+      "c2_capacity": "300 t/h",
+      "c2_power": "45 Kw",
+      "c2_type_mfg": "290822"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-059": {
+    "aliases": [],
+    "asset_id": "AST-059",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "LJ00EBA11AF006-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 7.1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA11AF006-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "75 Kw",
+      "c1_speed": "990 r/min",
+      "c1_type_mfg": "Y2-315S-6",
+      "c2_capacity": "300 t/h",
+      "c2_power": "30 Kw",
+      "c2_type_mfg": "290821"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-060": {
+    "aliases": [],
+    "asset_id": "AST-060",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "LJ00EBA21AF006-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 7. 2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA21AF006-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "75 Kw",
+      "c1_speed": "990 r/min",
+      "c1_type_mfg": "Y2-315S-6",
+      "c2_capacity": "300 t/h",
+      "c2_power": "30 Kw",
+      "c2_type_mfg": "290821"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-061": {
+    "aliases": [],
+    "asset_id": "AST-061",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "LJ00EBA11AF007-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 8.1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA11AF007-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "15 Kw",
+      "c1_speed": "1460 r/min"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-062": {
+    "aliases": [],
+    "asset_id": "AST-062",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "LJ00EBA21AF007-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 8.2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA21AF007-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "15 Kw",
+      "c1_speed": "1460 r/min"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-063": {
+    "aliases": [],
+    "asset_id": "AST-063",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "LJ00EBA11AF008-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 10.1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA11AF008-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "18.5 Kw",
+      "c1_speed": "1470 r/min"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-064": {
+    "aliases": [],
+    "asset_id": "AST-064",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "LJ00EBA21AF008-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 10.2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA21AF008-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "18.5 Kw",
+      "c1_speed": "1470 r/min"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-065": {
+    "aliases": [],
+    "asset_id": "AST-065",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Mechanical Screen",
+    "kks": "LJ00EBA21AF008-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "ROLLER SCREEN 1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBA21AF008-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Flexible",
+      "c1_power": "15 Kw",
+      "c1_speed": "1460 r/min",
+      "c1_type_mfg": "Y160L-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-066": {
+    "aliases": [],
+    "asset_id": "AST-066",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Mechanical Screen",
+    "kks": "LJ00EBC20AT002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "ROLLER SCREEN 2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBC20AT002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_foundation": "Flexible",
+      "c1_power": "15 Kw",
+      "c1_speed": "1460 r/min",
+      "c1_type_mfg": "Y160L-4"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "380 V"
+  },
+  "AST-067": {
+    "aliases": [
+      "CRUSSER 185KW 1"
+    ],
+    "asset_id": "AST-067",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Coal Crusher",
+    "kks": "LJ00EBC10AT001-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Crusser 185kW 1",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBC10AT001-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "185Kw",
+      "c1_speed": "740 r/min",
+      "c1_type_mfg": "Y2-355L2-8"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-068": {
+    "aliases": [
+      "CRUSSER 185KW 2"
+    ],
+    "asset_id": "AST-068",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Coal Crusher",
+    "kks": "LJ00EBC10AT002-001",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Motor Crusser 185kW 2",
+    "notes": "Diimpor dari database_aset PLTU Jeranjang (KKS: LJ00EBC10AT002-001)",
+    "replacement_of": "",
+    "specs": {
+      "c1_bearing_type": "Roller Bearing",
+      "c1_foundation": "Rigid",
+      "c1_power": "185Kw",
+      "c1_speed": "740 r/min",
+      "c1_type_mfg": "Y2-355L2-8"
+    },
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.6 kV"
+  },
+  "AST-BC722": {
+    "aliases": [
+      "BC722"
+    ],
+    "asset_id": "AST-BC722",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Belt Conveyor Drive",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BC 7.2-2",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (BC722)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-BFP1A": {
+    "aliases": [
+      "BFP1A"
+    ],
+    "asset_id": "AST-BFP1A",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BFP 1A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (BFP1A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-BFP1B": {
+    "aliases": [
+      "BFP1B"
+    ],
+    "asset_id": "AST-BFP1B",
+    "created_at": "2026-09-13T07:37:03",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BFP 1B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (BFP1B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:03",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-BFP3A": {
+    "aliases": [
+      "BFP3A"
+    ],
+    "asset_id": "AST-BFP3A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BFP 3A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (BFP3A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-BFP3B": {
+    "aliases": [
+      "BFP3B"
+    ],
+    "asset_id": "AST-BFP3B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "BFP 3B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (BFP3B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-C3WP1A": {
+    "aliases": [
+      "C3WP1A"
+    ],
+    "asset_id": "AST-C3WP1A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "C3WP 1A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (C3WP1A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-C3WP1B": {
+    "aliases": [
+      "C3WP1B"
+    ],
+    "asset_id": "AST-C3WP1B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "C3WP 1B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (C3WP1B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-C3WP2A": {
+    "aliases": [
+      "C3WP2A"
+    ],
+    "asset_id": "AST-C3WP2A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "C3WP 2A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (C3WP2A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-C3WP2B": {
+    "aliases": [
+      "C3WP2B"
+    ],
+    "asset_id": "AST-C3WP2B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "C3WP 2B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (C3WP2B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-C3WP2C": {
+    "aliases": [
+      "C3WP2C"
+    ],
+    "asset_id": "AST-C3WP2C",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "C3WP 2C",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (C3WP2C)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-C3WP3A": {
+    "aliases": [
+      "C3WP3A"
+    ],
+    "asset_id": "AST-C3WP3A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "C3WP 3A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (C3WP3A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-C3WP3B": {
+    "aliases": [
+      "C3WP3B"
+    ],
+    "asset_id": "AST-C3WP3B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "C3WP 3B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (C3WP3B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CCWP1A": {
+    "aliases": [
+      "CCWP1A"
+    ],
+    "asset_id": "AST-CCWP1A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CCWP 1A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CCWP1A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CCWP1B": {
+    "aliases": [
+      "CCWP1B"
+    ],
+    "asset_id": "AST-CCWP1B",
+    "created_at": "2026-09-13T07:37:05",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CCWP 1B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CCWP1B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:05",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CEP1A": {
+    "aliases": [
+      "CEP1A"
+    ],
+    "asset_id": "AST-CEP1A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CEP 1A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CEP1A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CEP1B": {
+    "aliases": [
+      "CEP1B"
+    ],
+    "asset_id": "AST-CEP1B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CEP 1B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CEP1B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CEP2A": {
+    "aliases": [
+      "CEP2A"
+    ],
+    "asset_id": "AST-CEP2A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CEP 2A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CEP2A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CEP2B": {
+    "aliases": [
+      "CEP2B"
+    ],
+    "asset_id": "AST-CEP2B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CEP 2B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CEP2B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CEP3A": {
+    "aliases": [
+      "CEP3A"
+    ],
+    "asset_id": "AST-CEP3A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CEP 3A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CEP3A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CEP3B": {
+    "aliases": [
+      "CEP3B"
+    ],
+    "asset_id": "AST-CEP3B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CEP 3B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CEP3B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-COOLINGFAN": {
+    "aliases": [
+      "COOLINGFAN"
+    ],
+    "asset_id": "AST-COOLINGFAN",
+    "created_at": "2026-09-13T07:37:05",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Cooling Fan",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (COOLINGFAN)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:05",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CRUSHER1": {
+    "aliases": [
+      "CRUSHER1"
+    ],
+    "asset_id": "AST-CRUSHER1",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Mechanical Screen / Crusher",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CRUSHER 1",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CRUSHER1)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CRUSHER2": {
+    "aliases": [
+      "CRUSHER2"
+    ],
+    "asset_id": "AST-CRUSHER2",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Mechanical Screen / Crusher",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CRUSHER 2",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CRUSHER2)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CTF3A": {
+    "aliases": [
+      "CTF3A"
+    ],
+    "asset_id": "AST-CTF3A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CTF 3A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CTF3A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CTF3B": {
+    "aliases": [
+      "CTF3B"
+    ],
+    "asset_id": "AST-CTF3B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CTF 3B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CTF3B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-CWP1A": {
+    "aliases": [
+      "CWP1A"
+    ],
+    "asset_id": "AST-CWP1A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CWP 1A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CWP1A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-CWP1B": {
+    "aliases": [
+      "CWP1B"
+    ],
+    "asset_id": "AST-CWP1B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CWP 1B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CWP1B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-CWP3A": {
+    "aliases": [
+      "CWP3A"
+    ],
+    "asset_id": "AST-CWP3A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CWP 3A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CWP3A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-CWP3B": {
+    "aliases": [
+      "CWP3B"
+    ],
+    "asset_id": "AST-CWP3B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "CWP 3B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (CWP3B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-IDF1A": {
+    "aliases": [
+      "IDF1A"
+    ],
+    "asset_id": "AST-IDF1A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "IDF 1A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (IDF1A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-IDF1B": {
+    "aliases": [
+      "IDF1B"
+    ],
+    "asset_id": "AST-IDF1B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "IDF 1B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (IDF1B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-IDF3A": {
+    "aliases": [
+      "IDF3A"
+    ],
+    "asset_id": "AST-IDF3A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "IDF 3A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (IDF3A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-IDF3B": {
+    "aliases": [
+      "IDF3B"
+    ],
+    "asset_id": "AST-IDF3B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "IDF 3B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (IDF3B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-PAF1A": {
+    "aliases": [
+      "PAF1A"
+    ],
+    "asset_id": "AST-PAF1A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "PAF 1A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (PAF1A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-PAF1B": {
+    "aliases": [
+      "PAF1B"
+    ],
+    "asset_id": "AST-PAF1B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "PAF 1B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (PAF1B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-PAF3": {
+    "aliases": [
+      "PAF3"
+    ],
+    "asset_id": "AST-PAF3",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "PAF 3",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (PAF3)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-RAF3A": {
+    "aliases": [
+      "RAF3A"
+    ],
+    "asset_id": "AST-RAF3A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Electric Drive",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "RAF 3A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (RAF3A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-RAF3B": {
+    "aliases": [
+      "RAF3B"
+    ],
+    "asset_id": "AST-RAF3B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Electric Drive",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "RAF 3B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (RAF3B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-ROLLINGSCREEN2": {
+    "aliases": [
+      "ROLLINGSCREEN2"
+    ],
+    "asset_id": "AST-ROLLINGSCREEN2",
+    "created_at": "2026-09-13T07:37:05",
+    "equipment_type": "Mechanical Screen / Crusher",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "Rolling Screen 2",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (ROLLINGSCREEN2)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:05",
+    "voltage_level": "380/400 V"
+  },
+  "AST-RS1": {
+    "aliases": [
+      "RS1"
+    ],
+    "asset_id": "AST-RS1",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Mechanical Screen / Crusher",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "RS 1",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (RS1)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-RS2": {
+    "aliases": [
+      "RS2"
+    ],
+    "asset_id": "AST-RS2",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Mechanical Screen / Crusher",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "RS 2",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (RS2)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT COMMON",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-SAF1A": {
+    "aliases": [
+      "SAF1A"
+    ],
+    "asset_id": "AST-SAF1A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "SAF 1A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (SAF1A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-SAF1B": {
+    "aliases": [
+      "SAF1B"
+    ],
+    "asset_id": "AST-SAF1B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "SAF 1B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (SAF1B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
+  "AST-SAF3": {
+    "aliases": [
+      "SAF3"
+    ],
+    "asset_id": "AST-SAF3",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Fan / Blower",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "SAF 3",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (SAF3)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "6.3 KV"
+  },
   "AST-TRF-ASH-1": {
     "aliases": [
       "ASH HANDLING-1",
@@ -724,5 +3986,149 @@
     "unit": "UNIT 3",
     "updated_at": "2026-09-13T21:24:47",
     "voltage_level": "6.3 kV / 6.3 kV"
+  },
+  "AST-VCP1A": {
+    "aliases": [
+      "VCP1A"
+    ],
+    "asset_id": "AST-VCP1A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "VCP 1A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (VCP1A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-VCP1B": {
+    "aliases": [
+      "VCP1B"
+    ],
+    "asset_id": "AST-VCP1B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "VCP 1B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (VCP1B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-VCP2A": {
+    "aliases": [
+      "VCP2A"
+    ],
+    "asset_id": "AST-VCP2A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "VCP 2A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (VCP2A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-VCP2B": {
+    "aliases": [
+      "VCP2B"
+    ],
+    "asset_id": "AST-VCP2B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Motor Pump",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "VCP 2B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (VCP2B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-WJP3A": {
+    "aliases": [
+      "WJP3A"
+    ],
+    "asset_id": "AST-WJP3A",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Electric Drive",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "WJP 3A",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (WJP3A)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
+  },
+  "AST-WJP3B": {
+    "aliases": [
+      "WJP3B"
+    ],
+    "asset_id": "AST-WJP3B",
+    "created_at": "2026-09-13T07:37:04",
+    "equipment_type": "Electric Drive",
+    "kks": "-",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "MCSA",
+      "THERMAL",
+      "TRIBOLOGY",
+      "VIBRASI"
+    ],
+    "name": "WJP 3B",
+    "notes": "Sinkronisasi otomatis dari Master Equipment Pembangkit (WJP3B)",
+    "replacement_of": "",
+    "specs": {},
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T07:37:04",
+    "voltage_level": "380/400 V"
   }
 }
