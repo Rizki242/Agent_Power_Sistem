@@ -127,10 +127,12 @@ def create_work_order(
     equipment: str,
     title: str,
     priority: str = "P3 - Medium",
+    domain: str = "General",
     reason: str = "",
     required_tools: Optional[List[str]] = None,
     required_parts: Optional[List[str]] = None,
     required_manpower: str = "1 Technician",
+    safety_checklist: Optional[List[str]] = None,
     target_completion_date: str = "",
     created_by: str = "Maintenance Engineer",
 ) -> Dict[str, Any]:
@@ -142,12 +144,19 @@ def create_work_order(
     new_wo = {
         "wo_number": wo_number,
         "equipment": equipment.strip(),
+        "domain": domain.strip(),
         "title": title.strip(),
         "priority": priority,
         "reason": reason.strip(),
         "required_tools": required_tools or [],
         "required_parts": required_parts or [],
         "required_manpower": required_manpower,
+        "safety_checklist": safety_checklist or [
+            "Surat Izin Kerja Aman (PTW)",
+            "Lockout / Tagout (LOTO) Breaker/Switchgear",
+            "Verifikasi Tegangan Nol & Grounding",
+            "Penggunaan APD Standar (Helm, Kacamata, Sepatu Safety)",
+        ],
         "target_completion_date": target_completion_date or (now.strftime("%Y-%m-%d")),
         "status": "Draft - Awaiting Approval",
         "created_at": now.strftime("%Y-%m-%d %H:%M"),
@@ -157,6 +166,143 @@ def create_work_order(
     orders.insert(0, new_wo)
     save_work_orders(orders)
     return new_wo
+
+
+def generate_cbm_work_order(
+    equipment: str,
+    domain: str = "Multi-Domain CBM",
+    severity: str = "WARNING",
+    anomaly_desc: str = "",
+    recommendations: Optional[List[str]] = None,
+    created_by: str = "CBM Prescriptive Engine",
+) -> Dict[str, Any]:
+    """Generate a prescriptive Work Order automatically from CBM anomaly findings."""
+    from datetime import timedelta
+    orders = load_work_orders()
+    eq_clean = equipment.strip()
+    sev_upper = severity.strip().upper()
+    dom_upper = domain.strip().upper()
+    now = datetime.now()
+
+    # 1. Determine priority and target SLA
+    if any(k in sev_upper for k in ("CRITICAL", "HIGH", "BAD", "TRIP", "DANGER")):
+        priority = "P1 - Critical"
+        target_days = 3
+    elif any(k in sev_upper for k in ("WARNING", "ALARM", "ALERT")):
+        priority = "P2 - High"
+        target_days = 7
+    elif any(k in sev_upper for k in ("PREWARNING", "WATCH", "MEDIUM")):
+        priority = "P3 - Medium"
+        target_days = 14
+    else:
+        priority = "P4 - Low"
+        target_days = 30
+
+    target_date = (now + timedelta(days=target_days)).strftime("%Y-%m-%d")
+
+    # 2. Check for existing open duplicate WO for this equipment and domain
+    for existing in orders:
+        if (
+            existing.get("equipment", "").upper() == eq_clean.upper()
+            and existing.get("domain", "").upper() == dom_upper
+            and any(st in str(existing.get("status", "")).lower() for st in ("draft", "approved", "progress"))
+        ):
+            # Return existing open work order instead of creating redundant spam
+            return existing
+
+    # 3. Formulate Title
+    action_type = "Investigasi Segera & Overhaul" if "P1" in priority else ("Inspeksi & Perbaikan" if "P2" in priority else "Pemeriksaan Rutin")
+    title = f"{action_type} {dom_upper} — {eq_clean}"
+
+    # 4. Formulate Domain-specific tools, parts, manpower, and safety
+    tools_map = {
+        "VIBRASI": ["Vibration Spectrum Analyzer (FFT)", "Laser Alignment Kit", "Dial Indicator", "Torque Wrench", "Stroboscope"],
+        "MCSA": ["MCSA Current DAQ & Rogowski Coils", "Insulation Tester (Megger 1-5kV)", "Digital Multimeter Fluke", "Infrared Thermometer"],
+        "THERMAL": ["FLIR Infrared Thermography Camera", "Contact Pyrometer", "PPE Arc Flash Helmet & Insulated Gloves"],
+        "TRIBOLOGY": ["Vacuum Oil Sampling Kit", "Portable Laser Particle Counter", "Clean Sample Bottles (ISO 3722)", "Hydraulic Filter Cart"],
+        "DGA": ["Syringe Kaca 50ml Gas-Tight", "Portable Gas Extraction System", "Moisture-in-Oil Meter"],
+    }
+    parts_map = {
+        "VIBRASI": ["Bearing Set (DE & NDE)", "Stainless Steel Shims 0.05-1.0mm", "Vibration Isolator Damper", "Coupling Element / Spider"],
+        "MCSA": ["Stator Terminal Lug Set", "Shrink Tube & High-Voltage Tape", "Rotor Bar Brazing Kit", "Cooling Fan Cowling"],
+        "THERMAL": ["Cable Lug Bimetal", "High-Conductivity Copper Washer", "Silicone Thermal Compound", "Ventilation Fan Air Filter"],
+        "TRIBOLOGY": ["Lube Oil Replacement (ISO VG drum)", "Oil Filter Element 10 Micron", "Dessicant Breather", "Seals & Gasket Kit"],
+        "DGA": ["Transformer Gasket Seal Kit", "Silica Gel Breather Replacement", "Dehydration Filter"],
+    }
+    manpower_map = {
+        "VIBRASI": "2 Teknisi Mekanik & 1 Certified Vibration Specialist",
+        "MCSA": "2 Teknisi Listrik & 1 Instrument Engineer",
+        "THERMAL": "1 Thermographer Level I & 1 Teknisi Listrik",
+        "TRIBOLOGY": "1 Lubrication Specialist & 1 Maintenance Mechanic",
+        "DGA": "2 Electrical Engineers & 1 Transformer Specialist",
+    }
+
+    key_dom = "VIBRASI"
+    for k in tools_map:
+        if k in dom_upper:
+            key_dom = k
+            break
+    if "MULTI" in dom_upper:
+        req_tools = ["Vibration Analyzer", "Thermal Camera", "Digital Multimeter", "Oil Sampling Kit"]
+        req_parts = ["Bearing Set", "Grease Shell Gadus", "Shims", "Gasket Kit"]
+        req_manpower = "2 Teknisi Mekanik & 1 Teknisi Listrik"
+    else:
+        req_tools = tools_map.get(key_dom, ["Tool Set Pemeliharaan Standar"])
+        req_parts = parts_map.get(key_dom, ["Spare part standar sesuai manual"])
+        req_manpower = manpower_map.get(key_dom, "2 Teknisi Pemeliharaan")
+
+    safety_checklist = [
+        "Surat Izin Kerja Aman (Permit to Work / PTW)",
+        "Lockout / Tagout (LOTO) pada Circuit Breaker / MCC",
+        "Verifikasi Zero Voltage & Grounding Pentanahan",
+        "Alat Pelindung Diri (APD Lengkap: Helm, Kacamata, Sepatu Safety, Sarung Tangan Isolasi)",
+    ]
+
+    # Combine reason and recommendations
+    full_reason = anomaly_desc.strip() if anomaly_desc else f"Anomali terdeteksi pada pemantauan kondisi {dom_upper} dengan tingkat keparahan {sev_upper}."
+    if recommendations:
+        rec_text = "\n".join(f"- {r}" for r in recommendations)
+        full_reason += f"\n\nRekomendasi CBM AI:\n{rec_text}"
+
+    wo_number = f"WO-{now.strftime('%Y%m')}-{uuid.uuid4().hex[:4].upper()}"
+    new_wo = {
+        "wo_number": wo_number,
+        "equipment": eq_clean,
+        "domain": domain,
+        "title": title,
+        "priority": priority,
+        "reason": full_reason,
+        "required_tools": req_tools,
+        "required_parts": req_parts,
+        "required_manpower": req_manpower,
+        "safety_checklist": safety_checklist,
+        "target_completion_date": target_date,
+        "status": "Draft - Awaiting Approval",
+        "created_at": now.strftime("%Y-%m-%d %H:%M"),
+        "created_by": created_by,
+    }
+
+    orders.insert(0, new_wo)
+    save_work_orders(orders)
+    return new_wo
+
+
+def get_work_order_by_number(wo_number: str) -> Optional[Dict[str, Any]]:
+    """Retrieve a single work order by its unique WO number."""
+    for wo in load_work_orders():
+        if wo.get("wo_number") == wo_number:
+            return wo
+    return None
+
+
+def delete_work_order(wo_number: str) -> bool:
+    """Delete a work order by WO number."""
+    orders = load_work_orders()
+    new_orders = [w for w in orders if w.get("wo_number") != wo_number]
+    if len(new_orders) < len(orders):
+        save_work_orders(new_orders)
+        return True
+    return False
 
 
 def update_work_order_status(

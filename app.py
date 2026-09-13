@@ -330,6 +330,13 @@ def _reliability_entry():
     render_reliability_page(st)
 
 
+def _outage_planning_entry():
+    render_outage_planning_page = _load_page_symbol(
+        "src.pages.outage_planning_page", "render_outage_planning_page"
+    )
+    context = _require_base_context()
+    render_outage_planning_page(st, df_latest_all=context.df_latest_all)
+
 
 def _work_orders_entry():
     render_work_orders_page = _load_page_symbol(
@@ -363,12 +370,14 @@ PAGE_SPECS = {
     "partial_discharge": (_pd_entry, "Partial Discharge", ":material/bolt:", False),
     "condition_control": (_condition_control_entry, "Control condition", ":material/tune:", False),
     "reliability": (_reliability_entry, "Reliability", ":material/insights:", False),
+    "outage_planning": (_outage_planning_entry, "Outage & PdM Planning", ":material/event_upcoming:", False),
     "chatbot": (_chatbot_entry, "Chatbot", ":material/smart_toy:", False),
     "materi": (_materi_entry, "Materi Training", ":material/menu_book:", False),
     "ppt": (_ppt_entry, "Laporan PPT", ":material/slideshow:", False),
     "word": (_word_entry, "Laporan Word", ":material/description:", False),
-    "work_orders": (_work_orders_entry, "Work Orders", ":material/assignment:", False),
+    "work_orders": (_work_orders_entry, "Technology Examination (TE)", ":material/description:", False),
     "settings": (_settings_entry, "Settings", ":material/settings:", False),
+
     "help": (_help_entry, "Help & Support", ":material/help:", False),
 }
 
@@ -392,8 +401,10 @@ active_page = st.navigation(
             PAGES["asset_registry"],
             PAGES["asset_reports"],
             PAGES["reliability"],
+            PAGES["outage_planning"],
             PAGES["work_orders"],
         ],
+
         "Condition Monitoring (PdM)": [
             PAGES["mcsa"],
             PAGES["vibrasi"],

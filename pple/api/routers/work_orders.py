@@ -17,9 +17,10 @@ from src.work_orders import (
     load_work_orders as _load_work_orders,
     save_work_orders as _save_work_orders,
     seed_work_orders as _seed_work_orders,
+    create_work_order,
+    generate_cbm_work_order,
     update_work_order_status,
 )
-
 
 
 class ApproveWORequest(BaseModel):
@@ -28,10 +29,75 @@ class ApproveWORequest(BaseModel):
     action: Optional[str] = "Approve"
 
 
+class CreateWORequest(BaseModel):
+    equipment: str
+    title: str
+    priority: Optional[str] = "P3 - Medium"
+    domain: Optional[str] = "General"
+    reason: Optional[str] = ""
+    required_tools: Optional[List[str]] = None
+    required_parts: Optional[List[str]] = None
+    required_manpower: Optional[str] = "1 Technician"
+    target_completion_date: Optional[str] = ""
+    created_by: Optional[str] = "API Client"
+
+
+class GenerateCBMWORequest(BaseModel):
+    equipment: str
+    domain: Optional[str] = "Multi-Domain CBM"
+    severity: Optional[str] = "WARNING"
+    anomaly_desc: Optional[str] = ""
+    recommendations: Optional[List[str]] = None
+    created_by: Optional[str] = "CBM Diagnostic Engine"
+
+
 @router.get("/workorders")
-def get_work_orders():
+def get_work_orders(
+    equipment: Optional[str] = None,
+    domain: Optional[str] = None,
+    status: Optional[str] = None,
+):
     work_orders = _load_work_orders()
-    return {"work_orders": work_orders, "count": len(work_orders)}
+    results = []
+    for wo in work_orders:
+        if equipment and equipment.upper() not in str(wo.get("equipment", "")).upper():
+            continue
+        if domain and domain.upper() not in str(wo.get("domain", "")).upper():
+            continue
+        if status and status.lower() not in str(wo.get("status", "")).lower():
+            continue
+        results.append(wo)
+    return {"work_orders": results, "count": len(results)}
+
+
+@router.post("/workorders")
+def create_new_work_order(req: CreateWORequest):
+    new_wo = create_work_order(
+        equipment=req.equipment,
+        title=req.title,
+        priority=req.priority or "P3 - Medium",
+        domain=req.domain or "General",
+        reason=req.reason or "",
+        required_tools=req.required_tools,
+        required_parts=req.required_parts,
+        required_manpower=req.required_manpower or "1 Technician",
+        target_completion_date=req.target_completion_date or "",
+        created_by=req.created_by or "API Client",
+    )
+    return {"status": "success", "work_order": new_wo}
+
+
+@router.post("/workorders/generate-cbm")
+def generate_from_cbm(req: GenerateCBMWORequest):
+    new_wo = generate_cbm_work_order(
+        equipment=req.equipment,
+        domain=req.domain or "Multi-Domain CBM",
+        severity=req.severity or "WARNING",
+        anomaly_desc=req.anomaly_desc or "",
+        recommendations=req.recommendations,
+        created_by=req.created_by or "CBM Diagnostic Engine",
+    )
+    return {"status": "success", "work_order": new_wo}
 
 
 @router.post("/workorders/approve")

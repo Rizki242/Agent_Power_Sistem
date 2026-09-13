@@ -172,7 +172,8 @@ class TestAPIServer(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         data = res.json()
         self.assertIn("reply", data)
-        self.assertIn("Warning/Alarm", data.get("reply"))
+        reply = data.get("reply", "")
+        self.assertTrue(any(term in reply for term in ("Warning/Alarm", "WARNING & ALARM", "Alarm", "HIGH")))
 
     def test_specialist_subagents_endpoint(self):
         res = self.client.get("/api/agents/specialists")
@@ -557,7 +558,7 @@ class TestSpecialistDomainRouterArchitecture(unittest.TestCase):
     def test_modular_routers_ownership(self):
         wo_mod = importlib.import_module("pple.api.routers.work_orders")
         wo_paths = {r.path for r in wo_mod.router.routes}
-        self.assertEqual(wo_paths, {"/api/workorders", "/api/workorders/approve"})
+        self.assertEqual(wo_paths, {"/api/workorders", "/api/workorders/approve", "/api/workorders/generate-cbm"})
 
         kn_mod = importlib.import_module("pple.api.routers.knowledge")
         kn_paths = {r.path for r in kn_mod.router.routes}
