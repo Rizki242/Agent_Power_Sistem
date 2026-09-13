@@ -1,0 +1,728 @@
+{
+  "AST-TRF-ASH-1": {
+    "aliases": [
+      "ASH HANDLING-1",
+      "ASH HANDLING 1",
+      "TRAFO ASH HANDLING 1",
+      "TR-ASH-1"
+    ],
+    "asset_id": "AST-TRF-ASH-1",
+    "created_at": "2026-09-13T21:24:48",
+    "equipment_type": "Auxiliary Transformer",
+    "kks": "TRF-1",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Ash Handling Transformer 1",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 10820108)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2011",
+      "impedance": "5.56%",
+      "manufacturer": "WOLONG",
+      "oil_litres": "1023",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "6300 V",
+      "rated_capacity_kva": "1600",
+      "secondary_voltage": "400 V",
+      "serial_number": "10820108",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "4505"
+    },
+    "status": "Prewarning",
+    "unit": "COMMON",
+    "updated_at": "2026-09-13T21:24:48",
+    "voltage_level": "6.3 kV / 400 V"
+  },
+  "AST-TRF-ASH-2": {
+    "aliases": [
+      "ASH HANDLING-2",
+      "ASH HANDLING 2",
+      "TRAFO ASH HANDLING 2",
+      "TR-ASH-2"
+    ],
+    "asset_id": "AST-TRF-ASH-2",
+    "created_at": "2026-09-13T21:24:48",
+    "equipment_type": "Auxiliary Transformer",
+    "kks": "TRF-2",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Ash Handling Transformer 2",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 10820107)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2011",
+      "impedance": "5.6%",
+      "manufacturer": "WOLONG",
+      "oil_litres": "1023",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "6300 V",
+      "rated_capacity_kva": "1600",
+      "secondary_voltage": "400 V",
+      "serial_number": "10820107",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "4505"
+    },
+    "status": "Normal",
+    "unit": "COMMON",
+    "updated_at": "2026-09-13T21:24:48",
+    "voltage_level": "6.3 kV / 400 V"
+  },
+  "AST-TRF-ESP1-1": {
+    "aliases": [
+      "TRAFO 1 ESP UNIT 1",
+      "TRAFO ESP 1 UNIT 1",
+      "ESP 1 UNIT 1",
+      "TR-ESP-1-1"
+    ],
+    "asset_id": "AST-TRF-ESP1-1",
+    "created_at": "2026-09-13T21:24:47",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-1",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 1 Unit 1",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 10937)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "FUJIAN",
+      "oil_litres": "630",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "380 V",
+      "serial_number": "10937",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T21:24:47",
+    "voltage_level": "72 kV / 380 V"
+  },
+  "AST-TRF-ESP1-2": {
+    "aliases": [
+      "TRAFO 1 ESP UNIT 2",
+      "TRAFO ESP 1 UNIT 2",
+      "ESP 1 UNIT 2",
+      "TR-ESP-1-2"
+    ],
+    "asset_id": "AST-TRF-ESP1-2",
+    "created_at": "2026-09-13T21:24:48",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-2",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 1 Unit 2",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 10037)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "FUJIAN",
+      "oil_litres": "630",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "380 V",
+      "serial_number": "10037",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T21:24:48",
+    "voltage_level": "72 kV / 380 V"
+  },
+  "AST-TRF-ESP1-3": {
+    "aliases": [
+      "TRAFO 1 ESP UNIT 3",
+      "TRAFO ESP 1 UNIT 3",
+      "ESP 1 UNIT 3",
+      "TR-ESP-1-3"
+    ],
+    "asset_id": "AST-TRF-ESP1-3",
+    "created_at": "2026-09-13T21:24:47",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-3",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 1 Unit 3",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 0073084208)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "ZHEJIAN",
+      "oil_litres": "731",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "416 V",
+      "serial_number": "0073084208",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1350"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T21:24:47",
+    "voltage_level": "72 kV / 415 V"
+  },
+  "AST-TRF-ESP2-1": {
+    "aliases": [
+      "TRAFO 2 ESP UNIT 1",
+      "TRAFO ESP 2 UNIT 1",
+      "ESP 2 UNIT 1",
+      "TR-ESP-2-1"
+    ],
+    "asset_id": "AST-TRF-ESP2-1",
+    "created_at": "2026-09-13T21:24:47",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-1",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 2 Unit 1",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 10035)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "FUJIAN",
+      "oil_litres": "630",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "380 V",
+      "serial_number": "10035",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T21:24:47",
+    "voltage_level": "72 kV / 380 V"
+  },
+  "AST-TRF-ESP2-2": {
+    "aliases": [
+      "TRAFO 2 ESP UNIT 2",
+      "TRAFO ESP 2 UNIT 2",
+      "ESP 2 UNIT 2",
+      "TR-ESP-2-2"
+    ],
+    "asset_id": "AST-TRF-ESP2-2",
+    "created_at": "2026-09-13T21:24:48",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-2",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 2 Unit 2",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 10036)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "FUJIAN",
+      "oil_litres": "630",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "380 V",
+      "serial_number": "10036",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T21:24:48",
+    "voltage_level": "72 kV / 380 V"
+  },
+  "AST-TRF-ESP2-3": {
+    "aliases": [
+      "TRAFO 2 ESP UNIT 3",
+      "TRAFO ESP 2 UNIT 3",
+      "ESP 2 UNIT 3",
+      "TR-ESP-2-3"
+    ],
+    "asset_id": "AST-TRF-ESP2-3",
+    "created_at": "2026-09-13T21:24:47",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-3",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 2 Unit 3",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 0070084208)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "ZHEJIAN",
+      "oil_litres": "731",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "415 V",
+      "serial_number": "0070084208",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1350"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T21:24:47",
+    "voltage_level": "72 kV / 415 V"
+  },
+  "AST-TRF-ESP3-1": {
+    "aliases": [
+      "TRAFO 3 ESP UNIT 1",
+      "TRAFO ESP 3 UNIT 1",
+      "ESP 3 UNIT 1",
+      "TR-ESP-3-1"
+    ],
+    "asset_id": "AST-TRF-ESP3-1",
+    "created_at": "2026-09-13T21:24:47",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-1",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 3 Unit 1",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 10031)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "FUJIAN",
+      "oil_litres": "630",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "380 V",
+      "serial_number": "10031",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T21:24:47",
+    "voltage_level": "72 kV / 380 V"
+  },
+  "AST-TRF-ESP3-2": {
+    "aliases": [
+      "TRAFO 3 ESP UNIT 2",
+      "TRAFO ESP 3 UNIT 2",
+      "ESP 3 UNIT 2",
+      "TR-ESP-3-2"
+    ],
+    "asset_id": "AST-TRF-ESP3-2",
+    "created_at": "2026-09-13T21:24:48",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-2",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 3 Unit 2",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 10033)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "FUJIAN",
+      "oil_litres": "630",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "380 V",
+      "serial_number": "10033",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T21:24:48",
+    "voltage_level": "72 kV / 380 V"
+  },
+  "AST-TRF-ESP3-3": {
+    "aliases": [
+      "TRAFO 3 ESP UNIT 3",
+      "TRAFO ESP 3 UNIT 3",
+      "ESP 3 UNIT 3",
+      "TR-ESP-3-3"
+    ],
+    "asset_id": "AST-TRF-ESP3-3",
+    "created_at": "2026-09-13T21:24:47",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-3",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 3 Unit 3",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 0072084208)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "ZHEJIAN",
+      "oil_litres": "731",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "415 V",
+      "serial_number": "0072084208",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1350"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T21:24:47",
+    "voltage_level": "72 kV / 415 V"
+  },
+  "AST-TRF-ESP4-1": {
+    "aliases": [
+      "TRAFO 4 ESP UNIT 1",
+      "TRAFO ESP 4 UNIT 1",
+      "ESP 4 UNIT 1",
+      "TR-ESP-4-1"
+    ],
+    "asset_id": "AST-TRF-ESP4-1",
+    "created_at": "2026-09-13T21:24:47",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-1",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 4 Unit 1",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 10034)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "FUJIAN",
+      "oil_litres": "630",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "380 V",
+      "serial_number": "10034",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T21:24:47",
+    "voltage_level": "72 kV / 380 V"
+  },
+  "AST-TRF-ESP4-2": {
+    "aliases": [
+      "TRAFO 4 ESP UNIT 2",
+      "TRAFO ESP 4 UNIT 2",
+      "ESP 4 UNIT 2",
+      "TR-ESP-4-2"
+    ],
+    "asset_id": "AST-TRF-ESP4-2",
+    "created_at": "2026-09-13T21:24:48",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-2",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 4 Unit 2",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 10032)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "FUJIAN",
+      "oil_litres": "630",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "380 V",
+      "serial_number": "10032",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T21:24:48",
+    "voltage_level": "72 kV / 380 V"
+  },
+  "AST-TRF-ESP4-3": {
+    "aliases": [
+      "TRAFO 4 UNIT 3",
+      "TRAFO 4 ESP UNIT 3",
+      "TRAFO ESP 4 UNIT 3",
+      "ESP 4 UNIT 3",
+      "TR-ESP-4-3"
+    ],
+    "asset_id": "AST-TRF-ESP4-3",
+    "created_at": "2026-09-13T21:24:48",
+    "equipment_type": "ESP Transformer Rectifier",
+    "kks": "TRF-3",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Transformer ESP 4 Unit 3",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 0071084208)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2010",
+      "impedance": "PHASE/CYCLE - 3/50 Hz",
+      "manufacturer": "ZHEJIAN",
+      "oil_litres": "731",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "72000 V",
+      "rated_capacity_kva": "-",
+      "secondary_voltage": "415 V",
+      "serial_number": "0071084208",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "1350"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T21:24:48",
+    "voltage_level": "72 kV / 415 V"
+  },
+  "AST-TRF-MAIN-1": {
+    "aliases": [
+      "MAIN TRAFO UNIT 1",
+      "MAIN TRANSFORMER 1",
+      "GT 1",
+      "GENERATOR TRANSFORMER 1",
+      "TRAFO UTAMA 1"
+    ],
+    "asset_id": "AST-TRF-MAIN-1",
+    "created_at": "2026-09-13T21:24:47",
+    "equipment_type": "Power Transformer (Step-Up)",
+    "kks": "TRF-1",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Main Transformer Unit 1",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 100691)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2011",
+      "impedance": "13.1%",
+      "manufacturer": "WOLONG",
+      "oil_litres": "30857",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "165000 V",
+      "rated_capacity_kva": "40000",
+      "secondary_voltage": "6300 V",
+      "serial_number": "100691",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "OFAF",
+      "weight_kg": "81000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 1",
+    "updated_at": "2026-09-13T21:24:47",
+    "voltage_level": "165 kV / 6.3 kV"
+  },
+  "AST-TRF-MAIN-2": {
+    "aliases": [
+      "MAIN TRAFO UNIT 2",
+      "MAIN TRANSFORMER 2",
+      "GT 2",
+      "GENERATOR TRANSFORMER 2",
+      "TRAFO UTAMA 2"
+    ],
+    "asset_id": "AST-TRF-MAIN-2",
+    "created_at": "2026-09-13T21:24:48",
+    "equipment_type": "Power Transformer (Step-Up)",
+    "kks": "TRF-2",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Main Transformer Unit 2",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 1006902)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2011",
+      "impedance": "13.03%",
+      "manufacturer": "WOLONG",
+      "oil_litres": "30857",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "170000 V",
+      "rated_capacity_kva": "33000",
+      "secondary_voltage": "6300 V",
+      "serial_number": "1006902",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "OFAF",
+      "weight_kg": "81000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 2",
+    "updated_at": "2026-09-13T21:24:48",
+    "voltage_level": "170 kV / 6.3 kV"
+  },
+  "AST-TRF-MAIN-3": {
+    "aliases": [
+      "MAIN TRAFO UNIT 3",
+      "MAIN TRANSFORMER 3",
+      "GT 3",
+      "GENERATOR TRANSFORMER 3",
+      "TRAFO UTAMA 3"
+    ],
+    "asset_id": "AST-TRF-MAIN-3",
+    "created_at": "2026-09-13T21:24:47",
+    "equipment_type": "Power Transformer (Step-Up)",
+    "kks": "TRF-3",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Main Transformer Unit 3",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: 3011160192)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2018",
+      "impedance": "13.171%",
+      "manufacturer": "PAUWES TRAFO",
+      "oil_litres": "30183",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "157000 V",
+      "rated_capacity_kva": "60000",
+      "secondary_voltage": "6300 V",
+      "serial_number": "3011160192",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAF",
+      "weight_kg": "103500"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T21:24:47",
+    "voltage_level": "150 kV / 6.3 kV"
+  },
+  "AST-TRF-UAT-3": {
+    "aliases": [
+      "UAT 3",
+      "UAT #3",
+      "UNIT AUXILIARY TRANSFORMER 3",
+      "UAT-3",
+      "TRAFO UAT 3",
+      "TRF-UAT-3"
+    ],
+    "asset_id": "AST-TRF-UAT-3",
+    "created_at": "2026-09-13T21:24:47",
+    "equipment_type": "Unit Auxiliary Transformer (UAT)",
+    "kks": "TRF-3",
+    "lifecycle_status": "Aktif",
+    "monitoring_modules": [
+      "DGA",
+      "PD",
+      "THERMAL"
+    ],
+    "name": "Unit Auxiliary Transformer 3 (UAT 3)",
+    "notes": "Aset Transformer diimpor dari Laporan Oil Analisis CI19048 CENNIX/TxM Services (S/N: PX18-0082)",
+    "replacement_of": "",
+    "specs": {
+      "date_mfg": "2018",
+      "impedance": "5.78%",
+      "manufacturer": "B & D",
+      "oil_litres": "12000",
+      "oil_type": "Mineral Oil",
+      "phase": "3/50 Hz",
+      "primary_voltage": "6300 V",
+      "rated_capacity_kva": "6300",
+      "secondary_voltage": "6300 V",
+      "serial_number": "PX18-0082",
+      "source_report": "CI19048 (PT IP UJP PLTU Jeranjang - Desember 2019)",
+      "transformer_class": "ONAN",
+      "weight_kg": "52000"
+    },
+    "status": "Normal",
+    "unit": "UNIT 3",
+    "updated_at": "2026-09-13T21:24:47",
+    "voltage_level": "6.3 kV / 6.3 kV"
+  }
+}
