@@ -13,5 +13,5 @@ if not exist ".venv\Scripts\python.exe" (
     exit /b 1
 )
 
-".venv\Scripts\python.exe" run_server.py
+".venv\Scripts\python.exe" scripts\run_server.py
 pause

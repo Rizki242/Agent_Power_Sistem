@@ -40,7 +40,6 @@ AI opsional          Google Gemini (src/llm_assistant.py) — selalu fallback ke
 MCSA-main/
 ├── app.py                     # Entry point Streamlit dashboard
 ├── api_server.py              # Entry point FastAPI backend (42 endpoint REST)
-├── run_server.py              # Helper menjalankan server
 ├── build_rag_index.py         # Build index semantik RAG (opsional, FAISS)
 ├── verify_app.py              # Verifikasi fungsional cepat (data, chatbot, PPT, Materi)
 │
@@ -88,6 +87,11 @@ MCSA-main/
 ├── tests/                      # Unit test (unittest, bukan pytest)
 ├── docs/                       # Dokumentasi tambahan (agents/, plan_step_by_step.md)
 ├── skills/                     # Skill packages agent (opsional)
+├── scripts/                    # Skrip pembantu, bukan bagian aplikasi (lihat CLAUDE.md)
+│   ├── run_server.py           # Launcher FastAPI (dipakai run_api.bat & `pple serve api`)
+│   ├── debug/                  # Skrip debug sekali pakai
+│   ├── ingestion/              # Skrip ingest data ke registry
+│   └── scratch/                # Output antara/throwaway (gitignored)
 │
 ├── build.bat / run.bat / run_api.bat / run_frontend.bat / run_all.bat  # Skrip Windows
 ├── requirements.txt            # Dependency Python

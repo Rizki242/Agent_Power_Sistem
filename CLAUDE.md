@@ -59,7 +59,7 @@ An incremental migration toward a dynamic, plugin-based module architecture is u
 - `pple ask "<text>"` and `pple shell` (REPL) route free-text through `pple/cli/nl.py` into that tier system. `pple chat "<text>"` always answers from `src.chatbot.MCSAChatbot` (rule-based) first; an LLM, if configured, only enriches the narrative — never the source of truth for thresholds/status.
 - `pple config llm|set|test` reads/writes `data/MCSA/config/ai_settings.json` — the same file and provider/model preference the Streamlit Settings page uses; API keys are never written to it.
 - `pple --offline` (global flag) guarantees no cloud LLM call happens: `chat`/`ask` fall back to rule-based only, and `config test`/cloud providers (gemini/groq/opencode) are refused — local `ollama` is still permitted.
-- `pple serve api|frontend|all` are CLI-native alternatives to `run_api.bat`/`run_frontend.bat`/`run_all.bat` (they call the same `run_server.py` launcher) — not a replacement for the `.bat` scripts, which still work.
+- `pple serve api|frontend|all` are CLI-native alternatives to `run_api.bat`/`run_frontend.bat`/`run_all.bat` (they call the same `scripts/run_server.py` launcher) — not a replacement for the `.bat` scripts, which still work.
 
 ## Knowledge Base (Materi/)
 
@@ -105,6 +105,7 @@ Rule-based thresholds used across the codebase (keep these consistent when touch
 - Use ASCII by default unless the file already uses non-ASCII text. UI text and docstrings are mostly Bahasa Indonesia — keep new user-facing strings in Indonesian.
 - Do not add new frameworks or abstractions unless they clearly remove real complexity.
 - Keep UI and business logic aligned with the current Streamlit app structure.
+- One-off/debug/data-ingestion helper scripts belong under `scripts/` (`scripts/debug/`, `scripts/ingestion/`; `scripts/scratch/` is gitignored for throwaway intermediate output) — not loose in the repo root.
 
 ## AI / LLM Rules
 

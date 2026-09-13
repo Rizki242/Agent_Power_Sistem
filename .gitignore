@@ -78,3 +78,4 @@ data/learning/improvement_state.json
 # Artefak sisa scratch/testing lokal, bukan bagian repo.
 .tmp-test-runtime/
 .venv-linux-backup/
+scripts/scratch/
