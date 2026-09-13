@@ -9,12 +9,14 @@
     "lint": "oxlint src"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "latest",
     "lucide-react": "latest",
-    "vite": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "react-router-dom": "latest"
+    "react-router-dom": "latest",
+    "tailwindcss": "^4.3.3",
+    "vite": "latest"
   },
   "devDependencies": {
     "oxlint": "latest"
