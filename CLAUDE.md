@@ -11,6 +11,7 @@ Windows-first repo; `.bat` scripts create/use `.venv` with Python 3.11 (`py -3.1
 - Unit tests (must run from repo root; tests import `from src...` and `from api_server import app`):
   `python -m unittest discover -s . -p "test_*.py"`
 - Single test: `python -m unittest tests.test_chatbot` or `python -m unittest tests.test_chatbot.ChatbotTests.test_fuzzy_match_equipment`
+- A few tests make real outbound calls (LLM providers in `tests/test_api_server.py::test_agent_chat`, `tests/test_llm_assistant.py`; HuggingFace embedding download in `tests/test_knowledge_retriever.py`, `tests/test_streamlit_app.py` via `rag_engine`). On a network-restricted machine these can hang indefinitely rather than fail fast — run suspect files individually with a hard timeout (e.g. `timeout -k 5 60 python -m unittest tests.test_llm_assistant`) instead of `discover`-ing the whole suite in one shot.
 - Functional verification (data loading, chatbot, PPT generation, Materi schema): `python verify_app.py` (requires `Report MCSA.xls` or `mcsa_updated.csv` to be present)
 - RAG index (optional deps): `python build_rag_index.py [--force] [--test "<query>"]`
 - Frontend lint uses **oxlint** (not eslint): `npm --prefix frontend run lint`; build: `npm --prefix frontend run build`
@@ -105,6 +106,7 @@ Rule-based thresholds used across the codebase (keep these consistent when touch
 - Use ASCII by default unless the file already uses non-ASCII text. UI text and docstrings are mostly Bahasa Indonesia — keep new user-facing strings in Indonesian.
 - Do not add new frameworks or abstractions unless they clearly remove real complexity.
 - Keep UI and business logic aligned with the current Streamlit app structure.
+- One-off/debug/data-ingestion helper scripts belong under `scripts/` (`scripts/debug/`, `scripts/ingestion/`; `scripts/scratch/` is gitignored for throwaway intermediate output) — not loose in the repo root.
 
 ## AI / LLM Rules
 

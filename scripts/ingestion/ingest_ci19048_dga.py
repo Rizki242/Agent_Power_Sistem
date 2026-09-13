@@ -15,7 +15,9 @@ from src.asset_registry import upsert_asset, add_condition_record, list_assets
 from src.dga_data import calculate_dga_diagnosis, _dga_history_path
 
 # Load the extracted data from CI19048
-with open("extracted_trafo_ci19048.json", "r", encoding="utf-8") as f:
+# Intermediate extraction output lives in scripts/scratch/ (gitignored), see CLAUDE.md.
+_EXTRACT_JSON = Path(__file__).resolve().parents[1] / "scratch" / "extracted_trafo_ci19048.json"
+with open(_EXTRACT_JSON, "r", encoding="utf-8") as f:
     trafo_list = json.load(f)
 
 print(f"Loaded {len(trafo_list)} transformers from extracted_trafo_ci19048.json")
