@@ -1,0 +1,40 @@
+{
+  "batch_id": "batch-111627-c6e549",
+  "domain": "DGA",
+  "uploaded_at": "2026-09-13T11:16:27",
+  "file": "template_dga.csv",
+  "status": "committed",
+  "source_rows": 56,
+  "valid_rows": 392,
+  "rejected_rows": 0,
+  "mapping": {
+    "equipment": "equipment",
+    "asset_id": "asset_id",
+    "unit_name": "unit_name",
+    "test_date": "test_date",
+    "h2": "h2",
+    "ch4": "ch4",
+    "c2h2": "c2h2",
+    "c2h4": "c2h4",
+    "c2h6": "c2h6",
+    "co": "co",
+    "co2": "co2",
+    "condition": "condition",
+    "notes": "notes"
+  },
+  "unmapped_columns": [],
+  "duplicate_columns": [],
+  "rejected": [],
+  "audit_events": [
+    {
+      "action": "preview",
+      "at": "2026-09-13T11:16:27"
+    },
+    {
+      "action": "commit",
+      "at": "2026-09-13T11:16:27",
+      "written": 392
+    }
+  ],
+  "written_rows": 392
+}

@@ -1,0 +1,194 @@
+{
+  "id": "laporan-dga-juli-2026",
+  "title": "Laporan Dga Juli 2026",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 1 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \n \nTANGGAL : 30 Juli 2026 \nPERALATAN : TRAFO UAT UNIT 3 KKS : LJ30BAT10GT001-001 \nALARM LIMIT \nLEVELS \n(µL/L): \n \nCURRENT STATUS NORMAL LOW ALARM HIGH \nDATA PERALATAN \n Specification \nUnit ID Auxiliary Transformer Unit 3 \nSerial Number PX-026-FFGA \nManufacturer B&D \nManufacturing Year 2018 \nTransformer Age 3 Years \nRated Capacity 6.3 MVA \nRated Voltage 6.3 kV \nInsulating Oil Brand Nynas Nitro Libra \nOil Volume 10,500 kg \nSampling Point BMT"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. Dokumen FORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 1 dari 11 \n \n \n \n \nTANGGAL PENGUKURAN :13-06-2026 \nPERALATAN : GT#3 KKS : KKS : LJ30BAT10GT001-001 \nALARM LIMIT \nTDCG LEVELS (µL/L): \n < 720 720 1920 4630 CURRENT STATUS NORMAL LOW ALARM HIGH \n \nDATA PERALATAN \nDATA PERALATAN DATA OPERASI \nLocation : PLTU JERANJANG Load : 21 MW \nDestination : GT#3 Current : - \nManufacturer : Pauwels Trafo Wending Temp : 55 OC \nStandard : IEC 60076 Oil Temp : 55 OC \nRated Voltage : 32/40 MVA \nPhase : 3 \nCooling : ONAN/ONAF \n \nFOTO PERALATAN SAMPLING PORT POINT \n \n \n \n \n \n \n \n \nANALISA REKOMENDASI \nBerdasarkan analisis DGA yang \nkomprehensif, Main Trafo Unit 3 (GT UNIT \n1. Tingkatkan Frekuensi Sampling DGA: \nLakukan sampling DGA ulang dalam 1 -3"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal 20 Juli 2026 \nRevisi 00 \nHalaman 1 dari 11 \n \n \n \n \n \n \n \n \nDATA PERALATAN DATA OPERASI \nLocation : PLTU JERANJANG Load \n: \n MW \nDestination : GT #1 Current : - \nManufacturer : WOLONG ELECTRIC Wending Temp : 55 OC \nModel : SFZ10-34500/168 Oil Temp : 55 OC \nRated Voltage : - kV \nRated Capacity : 345000Kva \nCooling : ONAF"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal 20 Juli 2026 \nRevisi 00 \nHalaman 2 dari 11 \n \n1. Ringkasan Eksekutif \nSampel terbaru 20 Juli 2026 menunjukkan TDCG sebesar 175,5 ppm, berstatus Kondisi 1 – Normal menurut batas \nevaluasi IEEE C57.104-2019 sebesar 720 ppm. Dibandingkan sampel sebelumnya (1 Juli 2026; 204,5 ppm), TDCG turun \n29 ppm. \nParameter Hasil terbaru Status / keterangan \nTanggal sampling 20 Juli 2026 PM runtin 52 week \nTDCG 175,5 ppm Kondisi 1 – Normal \nGas dominan CO = 135 ppm Indikasi pemanasan/aging selulosa; perlu korelasi \nBDV 60 kV Konfirmasi hasil uji laboratorium \nWater content Belum tersedia Konfirmasi hasil uji laboratorium \n2. Identitas dan Kondisi Peralatan \nItem Informasi \nPeralatan Main Trafo Unit 1 \nNama sumber CBMAI GT UNIT 1 \nUnit UNIT_1 \nStatus operasi ON \nBeban / temperatur Beban 18,5 MW; oil 60 °C; winding 55 °C"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 1 dari 11 \n \n \n \nTANGGAL PENGUKURAN :07-Juli-2026 \n KKS : LJ10BAT10GT001-001 \nALARM LIMIT \nTDCG LEVELS \n(µL/L): \n \nCURRENT STATUS \nNORMAL LOW ALARM HIGH \n \n \n \n \n \n \n \n \nDATA PERALATAN DATA OPERASI \nLocation : PLTU JERANJANG Load \n: \n 21 MW \nDestination : GT #2 Current : - \nManufacturer : WOLONG ELECTRIC Wending Temp : 55 OC \nModel : SFZ10-34500/168 Oil Temp : 55 OC \nRated Voltage : - kV \nRated Capacity : 345000Kva \nCooling : ONAF"
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 2 dari 11 \n \n1. Ringkasan Eksekutif \nSampel terbaru 7 Juli 2026 menunjukkan TDCG sebesar 243,5 ppm, berstatus Kondisi 1 – Normal menurut batas evaluasi \nIEEE C57.104-2019 sebesar 720 ppm. Dibandingkan sampel sebelumnya (6 Juli 2026; 282,5 ppm), TDCG turun 39 ppm. \nParameter Hasil terbaru Status / keterangan \nTanggal sampling 7 Juli 2026 Data CBMAI \nTDCG 243,5 ppm Kondisi 1 – Normal \nGas dominan CO = 215 ppm Indikasi pemanasan/aging selulosa; perlu korelasi \nBDV 58 kV Konfirmasi hasil uji laboratorium \nWater content Belum tersedia Konfirmasi hasil uji laboratorium \n2. Identitas dan Kondisi Peralatan \nItem Informasi \nPeralatan Main Trafo Unit 2 \nNama sumber CBMAI GT UNIT 2 \nUnit UNIT_2 \nStatus operasi ON \nTipe / pabrik / KKS Tidak tersedia di CBMAI – verifikasi manual \nBeban / temperatur Beban 0 MW; oil 0 °C; winding 0 °C"
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 1 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \n \nTANGGAL : 30 Juli 2026 \nPERALATAN : TRAFO UAT UNIT 3 KKS : LJ30BAT10GT001-001 \nALARM LIMIT \nLEVELS \n(µL/L): \n \nCURRENT STATUS NORMAL LOW ALARM HIGH \nDATA PERALATAN \n Specification \nUnit ID Auxiliary Transformer Unit 3 \nSerial Number PX-026-FFGA \nManufacturer B&D \nManufacturing Year 2018 \nTransformer Age 3 Years \nRated Capacity 6.3 MVA \nRated Voltage 6.3 kV \nInsulating Oil Brand Nynas Nitro Libra \nOil Volume 10,500 kg \nSampling Point BMT"
+    },
+    {
+      "id": "page-8",
+      "heading": "Halaman 8: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 2 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \nWORKFLOW DIAGNOSIS DGA \nAlur kerja berikut digunakan untuk menelusuri data DGA sampai menjadi diagnosis dan rekomendasi teknis. \n1 Data Sampling DGA Nilai gas terlarut dan TDCG \n2 Validasi Data Tanggal, satuan ppm, dan konsistensi nilai \n3 Evaluasi IEEE C57.104-2019 Kondisi 1–4 tiap gas dan TDCG \n4 Key Gas Method Identifikasi gas dominan/fault utama \n5 Rogers Ratio / IEC 60599 Konfirmasi pola thermal/discharge \n6 Duval Triangle Penentuan zona fault \n7 Analisis Trending Perkembangan gas historis dan prediksi \nrisiko \n8 Diagnosis & Rekomendasi Tindakan monitoring, inspeksi, purifikasi \nCatatan: apabila terdapat perbedaan nilai antar tabel, data final laboratorium harus dikonfirmasi sebelum penetapan diagnosis akhir. \n \n \nData Monitoring dga \n \n \n \n \n \n \n \n \nMethode Diagnosis Gas \nTanggal CO2 CO H2 CH4 C2H6 C2H4 C2H2 TDCG Status \n19-Oct-25 690 214 5 105 270 33 0,5 627,5 Kondisi 1\n29-Dec-25 699 217 5 108 277 37 0,0 644,0 Kondisi 1\n19-Jan-26 706 225 5 110 281 38 0,5 659,5 Kondisi 1\n2-Feb-26 700 221 5 37 283 38 0,5 584,5 Kondisi 1\n1-Apr-26 672 233 5 112 285 39 0,5 674,5 Kondisi 1\n16-May-26 712 206 5 114 296 35 0,5 656,5 Kondisi 1\n2-Jun-26 718 213 5 112 303 36 0,5 669,5 Kondisi 1\n29-Jul-26 683 222 5 110 339 21 0,5 697,5 Kondisi 1"
+    },
+    {
+      "id": "page-9",
+      "heading": "Halaman 9: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 3 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \n \n1. Key Gas \n \n2. Duval Triangle \n \n \n \n3. Duval Pentagon"
+    },
+    {
+      "id": "page-10",
+      "heading": "Halaman 10: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 4 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \n \nTRENDING dan PREDIKSI"
+    },
+    {
+      "id": "page-11",
+      "heading": "Halaman 11: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 5 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \n \n \n \nAnalisa & Rekomendasi"
+    },
+    {
+      "id": "page-12",
+      "heading": "Halaman 12: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 6 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \nBerikut adalah tabel batas standart untuk setiap gas kunci menurut IEEE C57.104-2019: \nGas Kondisi 1 \n(Normal) \nKondisi 2 \n(Low) \nKondisi 3 \n(Warning) \nKondisi 4 \n(Alarm) \nH2 ≤ 100 ppm ≤ 700 ppm ≤ 1800 ppm > 1800 ppm \nCH4 ≤ 120 ppm ≤ 400 ppm ≤ 1000 ppm > 1000 ppm \nC2H6 ≤ 65 ppm ≤ 100 ppm ≤ 300 ppm > 300 ppm \nC2H4 ≤ 50 ppm ≤ 100 ppm ≤ 200 ppm > 200 ppm \nC2H2 ≤ 1 ppm ≤ 9 ppm ≤ 35 ppm > 35 ppm \nCO ≤ 350 ppm ≤ 570 ppm ≤ 1400 ppm > 1400 ppm \nTDCG ≤ 720 ppm ≤ 1920 ppm ≤ 4630 ppm > 4630 ppm \n \n \n \n1. Analisis Kondisi \n• Evaluasi Sample Terbaru (19 Jan 2026) \nGas Nilai (ppm) Batas C3 Kondisi Status IEEE \nH2 5 1800 1 Normal \nCH4 110 1000 1 Normal \nC2H6 339 300 4 ALARM \nC2H4 21 200 1 Normal \nC2H2 0.5 35 1 Normal \nCO 222 1400 1 Normal \nTDCG 697.5 4630 1 Normal \n \n• Untuk C2H6, sample terbaru 339 ppm , menempatkan trafo pada area High. Meskipun TDCG \n659,5 ppm masih di Kondisi 1 (720 ppm). \n• Key Gas Method (IEEE C57.104-2019) \n• Gas Dominan: C2H6 — Thermal Fault 300°C (Oil Overheating) \nC2H6 adalah gas kunci yang menunjukkan overheating minyak. Nilai 339 ppm menunjukkan minyak trafo \nberada pada area suhu tinggi di bawah permukaan, namun belum menunjukkan arcing atau fault energi \ntinggi (C2H2 masih sangat rendah)."
+    },
+    {
+      "id": "page-13",
+      "heading": "Halaman 13: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 7 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n• Rogers Ratio Method (IEC 60599) \nRasio Nilai / Interpretasi \nR1 = CH4/H2 22,0 (> 1: Thermal fault suspected) \nR2 = C2H2/C2H4 0,013 (< 0,1: Thermal 300-700°C) \nR5 = C2H4/C2H6 0,135 (< 1: Thermal < 300°C) \n \n• Diagnosis: T2 - Thermal Fault 300-700°C \nMeskipun R5 < 1 mengarah ke T1 (<300°C), kombinasi R1 >> 1 dan R2 << 0,1 dengan C2H6 yang sangat \ntinggi lebih konsisten dengan T2: Thermal Fault 300-700°C. \n \n• Duval Triangle 1 \nGas ppm Persentase \nH2 5 0,76% \nCH4 110 16,67% \nC2H6 281 42,61% \nC2H4 38 5,76% \nC2H2 0,5 0,08% \n \n• Zona Duval: T2 (Thermal Fault 300-700°C) \n2. Analisis Tren Gas \n• TDCG Trend \n TDCG menunjukkan peningkatan eksponensial dari periode 2021 ke 2026: \n• 2021: 178 – 198 ppm (Kondisi 1 Normal) \n• 2022: 211 – 303 ppm (Kondisi 1 Normal) \n• 2023: 307 – 350 ppm (Kondisi 1 Normal) \n• 2024: 399 – 469 ppm (Kondisi 1 Normal, mendekati batas) \n• 2025: 486 – 627 ppm (Kondisi 1 Normal) \n• 2026: 659,5 ppm (Kondisi 1 Normal, mendekati batas 720 ppm) \n Rekomendasi: TDCG berisiko mencapai Kondisi 2 Low dalam 2-3 sampling berikutnya jika tren berlanjut."
+    },
+    {
+      "id": "page-14",
+      "heading": "Halaman 14: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 8 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n• C2H6 (Etana) Trend \n• 2021: 85 – 103 ppm \n• 2022: 108 – 190 ppm \n• 2023: 191 – 201 ppm \n• 2024: 221 – 228 ppm \n• 2025: 236 – 281 ppm \n• 2026: 281 ppm \nPeningkatan total: ~+200% dari baseline 2021 ke 2026 \nStatus: Sudah berada di Kondisi 3 High \n• Gas Lainnya \n• C2H4 (Etilena): Peningkatan ~+250% dari 9-14 ppm (2021) ke 38 ppm (2026) \n• CH4 (Metana): Peningkatan ~+300% dari 21-38 ppm (2021) ke 110 ppm (2026) \n• CO (Karbon Monoksida): Peningkatan ~+400% dari 47-56 ppm (2021) ke 225 ppm (2026) \n• C2H2 (Asetilin): Tetap rendah < 0,5 ppm — belum ada arcing \n• H2 (Hidrogen): Tetap stabil di 5 ppm — tidak ada partial discharge \n \n3. Analisis Sistem Pendingin & Pola Fault \n• Berdasarkan pola gas yang teramati: \n• C2H6 meningkat 3-4x dari baseline → overheating minyak yang konsisten \n• CO meningkat 3-4x → kemungkinan degradasi kertas isolasi yang dimulai \n• C2H4 meningkat 2-3x → thermal fault berkembang dari <300°C ke 300-700°C \n• C2H2 tetap rendah (< 0,5 ppm) → belum ada arcing/discharge energi tinggi \n• H2 tetap stabil di 5 ppm → tidak ada partial discharge \n Indikasi: Ada hotspot atau overload termal yang konsisten di dalam transformator. Pendingin mungkin tidak \noptimal, atau ada panas lokal di bagian aktif (belitan, joint, atau core)."
+    },
+    {
+      "id": "page-15",
+      "heading": "Halaman 15: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 9 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \nRekomendasi Purifikasi & Teknis \nBerdasarkan diagnosis Thermal Fault 300-700°C dengan peningkatan gas termal yang konsisten, berikut adalah \nrekomendasi purifikasi dan tindakan teknis yang dapat dilakukan jika ada kesempatan (opportunity-based \nmaintenance): \n• Lakukan oil purification agar gas terlarut dan mengembalikan kualitas minyak lebih mendekati \nbaseline \n• Ganti silica gel breather jika sudah jenuh (warna perubahan ke merah/oranye). Breather yang \nlewat adalah jalur masuk moisture ke dalam minyak. \n• Periksa conservator tank dan oil level. Pastikan tidak ada kebocoran atau ingress udara yang \nberlebih. \n• Inspeksi dan test Buchholz relay. Cek apakah ada gas yang terakumulasi — amati warna dan \nsifat gas (apakah flammable). \n \n \n JERANJANG, 30 Juli 2026 \nMENGETAHUI \n(ASMAN RCBM) \n \n \n \nSLAMET SUPRIANTO \nDISUSUN OLEH \n(PS PDM) \n \nRIZKI FIRMANSYAH"
+    },
+    {
+      "id": "page-16",
+      "heading": "Halaman 16: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 3 dari 11 \n \n3. Data DGA Terbaru \nGas Hasil (ppm) Batas rujukan (ppm) Interpretasi \nH2 5 — Data tercatat \nCH4 7 — Data tercatat \nC2H6 7 — Data tercatat \nC2H4 9 — Data tercatat \nC2H2 0,5 — Data tercatat \nCO 215 — Data tercatat \nCO2 2239 — Data tercatat \nTDCG 243,5 720 Kondisi 1 \nCatatan: batas individual gas dan diagnosis final perlu mempertimbangkan standar perusahaan, histori, laju kenaikan, \nserta konfirmasi metode key gas/Rogers/Duval. TDCG tidak boleh menjadi satu-satunya dasar keputusan operasi. \n4. Histori DGA Terakhir \nTanggal H2 CH4 C2H6 C2H4 C2H2 CO CO2 TDCG \n19 Desember 2025 5 29 31 46 0,5 221 556 332,5 \n18 Januari 2026 5 24 33 43 0,5 229 574 334,5 \n25 Februari 2026 5 23 35 42 0,5 237 592 342,5 \n22 Maret 2026 5 22 36 41 0,5 244 608 348,5 \n1 April 2026 5 22 36 40 0,5 251 623 354,5 \n12 Mei 2026 8 31 34 48 0,5 254 682 375,5"
+    },
+    {
+      "id": "page-17",
+      "heading": "Halaman 17: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 4 dari 11 \n \n19 Juni 2026 5 4 10 14 0,5 556 3746 589,5 \n20 Juni 2026 5 3 9 14 0,5 596 4177 627,5 \n24 Juni 2026 5 2 10 12 0,5 634 3886 663,5 \n29 Juni 2026 5 2 11 14 0,5 663 4194 695,5 \n6 Juli 2026 5 2 9 10 0,5 256 2140 282,5 \n7 Juli 2026 5 7 7 9 0,5 215 2239 243,5"
+    },
+    {
+      "id": "page-18",
+      "heading": "Halaman 18: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 5 dari 11 \n \n5. Analisis Trending \n \n \n6. Analisis Diagnostik \n• TDCG terbaru 243,5 ppm masih berada di bawah 720 ppm, sehingga secara TDCG masuk Kondisi 1. \n• Gas dengan nilai tertinggi pada sampel terbaru adalah CO sebesar 215 ppm. Hasil ini merupakan indikasi awal dan \nharus dikorelasikan dengan histori, temperatur, beban, serta inspeksi. \n• C2H2 sebesar 0,5 ppm relatif rendah; tidak cukup untuk menyimpulkan adanya arcing tanpa metode diagnosis \ntambahan. \n• CO2 digunakan sebagai informasi pendukung kondisi isolasi kertas. Rasio CO2/CO dan tren CO perlu dibandingkan \ndengan sampel berikutnya. \n• Unit 2 menunjukkan penurunan TDCG dibanding sampel sebelumnya; tetap lanjutkan pemantauan karena CO masih \nmenjadi gas dominan."
+    },
+    {
+      "id": "page-19",
+      "heading": "Halaman 19: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 6 dari 11 \n \n7. Rekomendasi \n• Lakukan sampling DGA ulang sesuai interval monitoring; untuk Unit 3 disarankan interval dipercepat karena kenaikan \nTDCG. \n• Verifikasi hasil BDV dan water content terbaru karena nilai 0 pada CBMAI belum dapat dianggap hasil uji nol. \n• Pantau CO, C2H4, CH4, temperatur minyak/winding, beban, dan sistem pendingin secara berkala. \n• Periksa breather, silica gel, potensi ingress moisture, kebocoran, dan kondisi sealing konservator. \n• Lakukan konfirmasi diagnosis menggunakan IEC 60599/Rogers Ratio dan Duval Triangle berdasarkan data \nlaboratorium yang tervalidasi."
+    },
+    {
+      "id": "page-20",
+      "heading": "Halaman 20: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 7 dari 11"
+    },
+    {
+      "id": "page-21",
+      "heading": "Halaman 21: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal 20 Juli 2026 \nRevisi 00 \nHalaman 3 dari 11 \n \n3. Data DGA Terbaru \nGas Hasil (ppm) Batas rujukan (ppm) Interpretasi \nH2 5 — Data tercatat \nCH4 13 — Data tercatat \nC2H6 2 — Data tercatat \nC2H4 20 — Data tercatat \nC2H2 0,5 — Data tercatat \nCO 135 — Data tercatat \nCO2 734 — Data tercatat \nTDCG 175,5 720 Kondisi 1 \nCatatan: batas individual gas dan diagnosis final perlu mempertimbangkan standar perusahaan, histori, laju kenaikan, \nserta konfirmasi metode key gas/Rogers/Duval. TDCG tidak boleh menjadi satu-satunya dasar keputusan operasi. \n4. Histori DGA Terakhir \nTanggal H2 CH4 C2H6 C2H4 C2H2 CO CO2 TDCG \n4 Agustus 2025 5 5 6 6 0,5 26 311 48,5 \n5 September 2025 7 4 9 5 0,5 50 329 75,5 \n17 Oktober 2025 7 8 5 23 0,5 51 381 94,5 \n21 November 2025 7 9 8 27 0,5 72 411 123,5 \n22 Desember 2025 7 14 13 31 0,5 79 417 144,5 \n29 Desember 2025 7 14 13 31 0,5 79 417 144,5 \n22 Januari 2026 7 17 12 31 0,5 82 419 149,5"
+    },
+    {
+      "id": "page-22",
+      "heading": "Halaman 22: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal 20 Juli 2026 \nRevisi 00 \nHalaman 4 dari 11 \n \n27 Februari 2026 7 19 16 33 0,5 85 423 160,5 \n4 April 2026 7 21 20 35 0,5 88 427 171,5 \n27 Mei 2026 8 23 19 43 0,5 106 457 199,5 \n1 Juli 2026 5 24 21 45 0,5 109 462 204,5 \n20 Juli 2026 5 13 2 20 0,5 135 734 175,5"
+    },
+    {
+      "id": "page-23",
+      "heading": "Halaman 23: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal 20 Juli 2026 \nRevisi 00 \nHalaman 5 dari 11 \n \n5. Analisis Trending \n \n \n6. Analisis Diagnostik \n• TDCG terbaru 175,5 ppm masih berada di bawah 720 ppm, sehingga secara TDCG masuk Kondisi 1. \n• Gas dengan nilai tertinggi pada sampel terbaru adalah CO sebesar 135 ppm. Hasil ini merupakan indikasi awal dan \nharus dikorelasikan dengan histori, temperatur, beban, serta inspeksi. \n• C2H2 sebesar 0,5 ppm relatif rendah; tidak cukup untuk menyimpulkan adanya arcing tanpa metode diagnosis \ntambahan. \n• CO2 digunakan sebagai informasi pendukung kondisi isolasi kertas. Rasio CO2/CO dan tren CO perlu dibandingkan \ndengan sampel berikutnya. \n• Unit 1 menunjukkan penurunan TDCG dibanding sampel sebelumnya; tetap lanjutkan pemantauan karena CO masih \nmenjadi gas dominan."
+    },
+    {
+      "id": "page-24",
+      "heading": "Halaman 24: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal 20 Juli 2026 \nRevisi 00 \nHalaman 6 dari 11 \n \n7. Rekomendasi \n• Lakukan sampling DGA ulang sesuai interval monitoring; untuk Unit 3 disarankan interval dipercepat karena kenaikan \nTDCG. \n• Verifikasi hasil BDV dan water content terbaru karena nilai 0 pada CBMAI belum dapat dianggap hasil uji nol. \n• Pantau CO, C2H4, CH4, temperatur minyak/winding, beban, dan sistem pendingin secara berkala. \n• Periksa breather, silica gel, potensi ingress moisture, kebocoran, dan kondisi sealing konservator. \n• Lakukan konfirmasi diagnosis menggunakan IEC 60599/Rogers Ratio dan Duval Triangle berdasarkan data \nlaboratorium yang tervalidasi."
+    },
+    {
+      "id": "page-25",
+      "heading": "Halaman 25: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. \nDokumen \nFORM.JRG.F.05.004 \nTanggal 20 Juli 2026 \nRevisi 00 \nHalaman 7 dari 11 \n \n8. Catatan Verifikasi Data \nNo. Item Status Tindakan verifikasi \n1 KKS, tipe, pabrik, serial number Tidak tersedia di CBMAI Lengkapi dari nameplate/aset \n2 Water content BDV tercatat; water content \nbelum tersedia Lampirkan hasil uji laboratorium \n3 Diagnosis final Belum final Konfirmasi dengan tren dan metode diagnosis standar \n9. Kesimpulan dan Pengesahan \nBerdasarkan data DGA terbaru dari CBMAI, Main Trafo Unit 1 berada pada Kondisi 1 – Normal berdasarkan TDCG. \nKesimpulan ini bersifat evaluasi data monitoring dan harus dikonfirmasi menggunakan hasil laboratorium, histori lengkap, \nserta pemeriksaan kondisi peralatan. \n \nDisiapkan oleh Diperiksa oleh Disetujui oleh \n____________________ ____________________ ____________________ \nPengambil Sample Penguji Mengetahui"
+    },
+    {
+      "id": "page-26",
+      "heading": "Halaman 26: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. Dokumen FORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 2 dari 11 \n \n3) menunjukkan kondisi WASPADA terkait \nadanya gangguan termal. Temuan utama \nadalah: \n \nKonsentrasi C2H6 (62 ppm) dan C2H4 (41 \nppm) yang tinggi dan mendekati batas \nnormal, secara jelas mengindikasikan \noverheating pada minyak isolasi. \nMetode Rasio Rogers dan Segitiga Duval \nsecara konsisten mengkonfirmasi adanya \nThermal Fault T2 (300°C-700°C), yang \nberarti terdapat titik panas yang aktif di \ndalam trafo. \nMeskipun TDCG masih di Kondisi 1 dan \nrasio CO2/CO belum kritis, profil gas yang \nspesifik menunjukkan adanya masalah yang \nsedang berkembang dan memerlukan \nperhatian segera untuk mencegah eskalasi. \nbulan (atau lebih cepat jika \nmemungkinkan) untuk memantau tren \nperkembangan gas, terutama C2H6 dan \nC2H4. Perhatikan laju peningkatan gas. \n2. Inspeksi Termal (Infrared): Lakukan \ninspeksi termal pada semua bagian \neksternal trafo yang dapat diakses \n(bushings, sambungan, tangki, radiator, \ndll.) untuk mengidentifikasi potensi hot \nspot eksternal. Periksa juga kekencangan \nsambungan pada busbar atau terminal. \n3. Tinjau Data Operasi: Periksa dan analisis \nsecara menyeluruh log data operasional \ntrafo, termasuk suhu minyak, suhu belitan, \nbeban, arus, dan riwayat alarm selama \nbeberapa bulan terakhir untuk mencari \nanomali atau tren kenaikan suhu yang \nmungkin berkaitan dengan overheating. \n4. Kaji Ulang Sistem Pendingin: Pastikan \nsistem pendingin trafo (kipas, pompa) \nberfungsi optimal dan tidak ada \npenyumbatan pada radiator yang dapat \nmenyebabkan overheating. \n5. Perencanaan Investigasi Internal: Jika gas \nterus meningkat atau tren \nmengkhawatirkan, pertimbangkan untuk \nmerencanakan investigasi internal lebih \nlanjut selama outage terjadwal berikutnya. \n \nEVALUATION OF TRANSFORMER CONDITION USING INDIVIDUAL AND TDCG CONCENTRATIONS"
+    },
+    {
+      "id": "page-27",
+      "heading": "Halaman 27: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. Dokumen FORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 3 dari 11 \n \n \nTanggal H2 CH4 C2H6 C2H4 C2H2 CO CO2 TDCG \n18 Oktober 2025 5 40 62 41 0,5 268 1659 416,5 \n12 November 2025 5 45 61 44 0,5 281 1682 436,5 \n12 November 2025 5 45 61 44 0,5 281 1682 436,5 \n13 Desember 2025 5 45 62 48 0,5 298 1705 458,5 \n13 Desember 2025 5 45 62 48 0,5 298 1705 458,5 \n15 Januari 2026 5 45 62 48 0,5 296 1702 456,5 \n17 Februari 2026 5 46 63 49 0,5 305 1720 468,5 \n22 Maret 2026 5 46 63 49 0,5 305 1720 468,5 \n24 April 2026 5 46 63 49 0,5 305 1720 468,5 \n25 Mei 2026 11 50 62 57 0,7 317 1807 497,7 \n24 Juni 2026 5 33 81 7 0,5 97 1116 223,5 \n23 Juli 2026 5 50 59 50 0,5 310 1836 474,5"
+    },
+    {
+      "id": "page-28",
+      "heading": "Halaman 28: DETAIL REPORT",
+      "content": "DISSOLVED GAS \nANALYSIS \nNo. Dokumen FORM.JRG.F.05.004 \nTanggal \nRevisi 00 \nHalaman 4 dari 11 \n \n \n \n \n \nAnalisis : \n \n• TDCG terbaru 474,5 ppm masih berada di bawah 720 ppm, sehingga secara TDCG masuk Kondisi 1. \n• Gas dengan nilai tertinggi pada sampel terbaru adalah CO sebesar 310 ppm. Hasil ini merupakan indikasi \nawal dan harus dikorelasikan dengan histori, temperatur, beban, serta inspeksi. \n• C2H2 sebesar 0,5 ppm relatif rendah; tidak cukup untuk menyimpulkan adanya arcing tanpa metode diagnosis \ntambahan. \n• CO2 digunakan sebagai informasi pendukung kondisi isolasi kertas. Rasio CO2/CO dan tren CO perlu \ndibandingkan dengan sampel berikutnya. \n \n \nRecommendation : \nTren stabil/menurun. Lanjutkan monitoring sesuai jadwal 52 Weeks."
+    },
+    {
+      "id": "page-29",
+      "heading": "Halaman 29: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 2 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \nWORKFLOW DIAGNOSIS DGA \nAlur kerja berikut digunakan untuk menelusuri data DGA sampai menjadi diagnosis dan rekomendasi teknis. \n1 Data Sampling DGA Nilai gas terlarut dan TDCG \n2 Validasi Data Tanggal, satuan ppm, dan konsistensi nilai \n3 Evaluasi IEEE C57.104-2019 Kondisi 1–4 tiap gas dan TDCG \n4 Key Gas Method Identifikasi gas dominan/fault utama \n5 Rogers Ratio / IEC 60599 Konfirmasi pola thermal/discharge \n6 Duval Triangle Penentuan zona fault \n7 Analisis Trending Perkembangan gas historis dan prediksi \nrisiko \n8 Diagnosis & Rekomendasi Tindakan monitoring, inspeksi, purifikasi \nCatatan: apabila terdapat perbedaan nilai antar tabel, data final laboratorium harus dikonfirmasi sebelum penetapan diagnosis akhir. \n \n \nData Monitoring dga \n \n \n \n \n \n \n \n \nMethode Diagnosis Gas \nTanggal CO2 CO H2 CH4 C2H6 C2H4 C2H2 TDCG Status \n19-Oct-25 690 214 5 105 270 33 0,5 627,5 Kondisi 1\n29-Dec-25 699 217 5 108 277 37 0,0 644,0 Kondisi 1\n19-Jan-26 706 225 5 110 281 38 0,5 659,5 Kondisi 1\n2-Feb-26 700 221 5 37 283 38 0,5 584,5 Kondisi 1\n1-Apr-26 672 233 5 112 285 39 0,5 674,5 Kondisi 1\n16-May-26 712 206 5 114 296 35 0,5 656,5 Kondisi 1\n2-Jun-26 718 213 5 112 303 36 0,5 669,5 Kondisi 1\n29-Jul-26 683 222 5 110 339 21 0,5 697,5 Kondisi 1"
+    },
+    {
+      "id": "page-30",
+      "heading": "Halaman 30: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 3 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \n \n1. Key Gas \n \n2. Duval Triangle \n \n \n \n3. Duval Pentagon"
+    },
+    {
+      "id": "page-31",
+      "heading": "Halaman 31: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 4 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \n \nTRENDING dan PREDIKSI"
+    },
+    {
+      "id": "page-32",
+      "heading": "Halaman 32: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 5 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \n \n \n \nAnalisa & Rekomendasi"
+    },
+    {
+      "id": "page-33",
+      "heading": "Halaman 33: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 6 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \nBerikut adalah tabel batas standart untuk setiap gas kunci menurut IEEE C57.104-2019: \nGas Kondisi 1 \n(Normal) \nKondisi 2 \n(Low) \nKondisi 3 \n(Warning) \nKondisi 4 \n(Alarm) \nH2 ≤ 100 ppm ≤ 700 ppm ≤ 1800 ppm > 1800 ppm \nCH4 ≤ 120 ppm ≤ 400 ppm ≤ 1000 ppm > 1000 ppm \nC2H6 ≤ 65 ppm ≤ 100 ppm ≤ 300 ppm > 300 ppm \nC2H4 ≤ 50 ppm ≤ 100 ppm ≤ 200 ppm > 200 ppm \nC2H2 ≤ 1 ppm ≤ 9 ppm ≤ 35 ppm > 35 ppm \nCO ≤ 350 ppm ≤ 570 ppm ≤ 1400 ppm > 1400 ppm \nTDCG ≤ 720 ppm ≤ 1920 ppm ≤ 4630 ppm > 4630 ppm \n \n \n \n1. Analisis Kondisi \n• Evaluasi Sample Terbaru (19 Jan 2026) \nGas Nilai (ppm) Batas C3 Kondisi Status IEEE \nH2 5 1800 1 Normal \nCH4 110 1000 1 Normal \nC2H6 339 300 4 ALARM \nC2H4 21 200 1 Normal \nC2H2 0.5 35 1 Normal \nCO 222 1400 1 Normal \nTDCG 697.5 4630 1 Normal \n \n• Untuk C2H6, sample terbaru 339 ppm , menempatkan trafo pada area High. Meskipun TDCG \n659,5 ppm masih di Kondisi 1 (720 ppm). \n• Key Gas Method (IEEE C57.104-2019) \n• Gas Dominan: C2H6 — Thermal Fault 300°C (Oil Overheating) \nC2H6 adalah gas kunci yang menunjukkan overheating minyak. Nilai 339 ppm menunjukkan minyak trafo \nberada pada area suhu tinggi di bawah permukaan, namun belum menunjukkan arcing atau fault energi \ntinggi (C2H2 masih sangat rendah)."
+    },
+    {
+      "id": "page-34",
+      "heading": "Halaman 34: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 7 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n• Rogers Ratio Method (IEC 60599) \nRasio Nilai / Interpretasi \nR1 = CH4/H2 22,0 (> 1: Thermal fault suspected) \nR2 = C2H2/C2H4 0,013 (< 0,1: Thermal 300-700°C) \nR5 = C2H4/C2H6 0,135 (< 1: Thermal < 300°C) \n \n• Diagnosis: T2 - Thermal Fault 300-700°C \nMeskipun R5 < 1 mengarah ke T1 (<300°C), kombinasi R1 >> 1 dan R2 << 0,1 dengan C2H6 yang sangat \ntinggi lebih konsisten dengan T2: Thermal Fault 300-700°C. \n \n• Duval Triangle 1 \nGas ppm Persentase \nH2 5 0,76% \nCH4 110 16,67% \nC2H6 281 42,61% \nC2H4 38 5,76% \nC2H2 0,5 0,08% \n \n• Zona Duval: T2 (Thermal Fault 300-700°C) \n2. Analisis Tren Gas \n• TDCG Trend \n TDCG menunjukkan peningkatan eksponensial dari periode 2021 ke 2026: \n• 2021: 178 – 198 ppm (Kondisi 1 Normal) \n• 2022: 211 – 303 ppm (Kondisi 1 Normal) \n• 2023: 307 – 350 ppm (Kondisi 1 Normal) \n• 2024: 399 – 469 ppm (Kondisi 1 Normal, mendekati batas) \n• 2025: 486 – 627 ppm (Kondisi 1 Normal) \n• 2026: 659,5 ppm (Kondisi 1 Normal, mendekati batas 720 ppm) \n Rekomendasi: TDCG berisiko mencapai Kondisi 2 Low dalam 2-3 sampling berikutnya jika tren berlanjut."
+    },
+    {
+      "id": "page-35",
+      "heading": "Halaman 35: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 8 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n• C2H6 (Etana) Trend \n• 2021: 85 – 103 ppm \n• 2022: 108 – 190 ppm \n• 2023: 191 – 201 ppm \n• 2024: 221 – 228 ppm \n• 2025: 236 – 281 ppm \n• 2026: 281 ppm \nPeningkatan total: ~+200% dari baseline 2021 ke 2026 \nStatus: Sudah berada di Kondisi 3 High \n• Gas Lainnya \n• C2H4 (Etilena): Peningkatan ~+250% dari 9-14 ppm (2021) ke 38 ppm (2026) \n• CH4 (Metana): Peningkatan ~+300% dari 21-38 ppm (2021) ke 110 ppm (2026) \n• CO (Karbon Monoksida): Peningkatan ~+400% dari 47-56 ppm (2021) ke 225 ppm (2026) \n• C2H2 (Asetilin): Tetap rendah < 0,5 ppm — belum ada arcing \n• H2 (Hidrogen): Tetap stabil di 5 ppm — tidak ada partial discharge \n \n3. Analisis Sistem Pendingin & Pola Fault \n• Berdasarkan pola gas yang teramati: \n• C2H6 meningkat 3-4x dari baseline → overheating minyak yang konsisten \n• CO meningkat 3-4x → kemungkinan degradasi kertas isolasi yang dimulai \n• C2H4 meningkat 2-3x → thermal fault berkembang dari <300°C ke 300-700°C \n• C2H2 tetap rendah (< 0,5 ppm) → belum ada arcing/discharge energi tinggi \n• H2 tetap stabil di 5 ppm → tidak ada partial discharge \n Indikasi: Ada hotspot atau overload termal yang konsisten di dalam transformator. Pendingin mungkin tidak \noptimal, atau ada panas lokal di bagian aktif (belitan, joint, atau core)."
+    },
+    {
+      "id": "page-36",
+      "heading": "Halaman 36: PT. INDONESIA POWER",
+      "content": "PLTU JERANJANG OMU \nINTEGRATED MANAGEMENT SYSTEM \nTgl Berlaku No. Dokumen : Revisi Hal \n07/02/2017 FORM.JRG.F.05.006 01 9 dari 4 \n \nJln.Raya PLTU Jeranjang, Desa Taman Ayu. \nKec. Gerung - Lombok Barat, NTB \n \nRekomendasi Purifikasi & Teknis \nBerdasarkan diagnosis Thermal Fault 300-700°C dengan peningkatan gas termal yang konsisten, berikut adalah \nrekomendasi purifikasi dan tindakan teknis yang dapat dilakukan jika ada kesempatan (opportunity-based \nmaintenance): \n• Lakukan oil purification agar gas terlarut dan mengembalikan kualitas minyak lebih mendekati \nbaseline \n• Ganti silica gel breather jika sudah jenuh (warna perubahan ke merah/oranye). Breather yang \nlewat adalah jalur masuk moisture ke dalam minyak. \n• Periksa conservator tank dan oil level. Pastikan tidak ada kebocoran atau ingress udara yang \nberlebih. \n• Inspeksi dan test Buchholz relay. Cek apakah ada gas yang terakumulasi — amati warna dan \nsifat gas (apakah flammable). \n \n \n JERANJANG, 30 Juli 2026 \nMENGETAHUI \n(ASMAN RCBM) \n \n \n \nSLAMET SUPRIANTO \nDISUSUN OLEH \n(PS PDM) \n \nRIZKI FIRMANSYAH"
+    }
+  ]
+}

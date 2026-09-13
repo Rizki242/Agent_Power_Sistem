@@ -1,0 +1,8 @@
+record_id,asset_id,equipment,unit_name,test_date,parameter,value,raw_value,uom,condition,notes,source_file,batch_id,created_at
+DGA-20260913110923-0000,,GT,1,2026-09-13,h2,5.0,5,ppm,Normal,,input-manual,manual,2026-09-13T11:09:23
+DGA-20260913110923-0001,,GT,1,2026-09-13,ch4,20.0,20,ppm,Normal,,input-manual,manual,2026-09-13T11:09:23
+DGA-20260913110923-0002,,GT,1,2026-09-13,c2h2,0.0,0,ppm,Normal,,input-manual,manual,2026-09-13T11:09:23
+DGA-20260913110923-0003,,GT,1,2026-09-13,c2h4,33.0,33,ppm,Normal,,input-manual,manual,2026-09-13T11:09:23
+DGA-20260913110923-0004,,GT,1,2026-09-13,c2h6,21.0,21,ppm,Normal,,input-manual,manual,2026-09-13T11:09:23
+DGA-20260913110923-0005,,GT,1,2026-09-13,co,100.0,100,ppm,Normal,,input-manual,manual,2026-09-13T11:09:23
+DGA-20260913110923-0006,,GT,1,2026-09-13,co2,209.0,209,ppm,Normal,,input-manual,manual,2026-09-13T11:09:23
