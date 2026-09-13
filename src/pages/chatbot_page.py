@@ -75,7 +75,12 @@ def _basic_file_answer(filename: str, file_context: str) -> str:
 
 
 def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFrame):
-    render_page_header(st, "Chatbot", "MCSA Virtual Assistant.")
+    render_page_header(
+        st,
+        "Chatbot CBM AI",
+        "Virtual Assistant Terpadu CBM & Keandalan Aset (MCSA, Vibrasi, Suhu, Oli, DGA).",
+        badge="Multi-Domain Assistant",
+    )
 
     if "messages" not in st.session_state:
         st.session_state["messages"] = []
@@ -135,7 +140,7 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
     with col_btn_save:
         messages = st.session_state.get("messages", [])
         if messages:
-            chat_md = "# Riwayat Percakapan MCSA Virtual Assistant\n"
+            chat_md = "# Riwayat Percakapan CBM AI Virtual Assistant\n"
             chat_md += f"Waktu Export: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n---\n\n"
             for m in messages:
                 role_name = "User" if m["role"] == "user" else f"Assistant ({provider_name})"
@@ -149,7 +154,7 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
             st.download_button(
                 "Simpan Chat (.md)",
                 data=chat_md.encode("utf-8"),
-                file_name=f"mcsa_chat_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
+                file_name=f"cbm_chat_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
                 mime="text/markdown",
                 icon=":material/download:",
                 width="stretch",
@@ -163,8 +168,41 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
             st.session_state["_chat_attached_files_raw"] = []
             st.rerun()
 
-    # Attached file banner + actions (file itself is attached via the paperclip
-    # icon next to the chat input below, not a separate uploader widget)
+    # Quick Action Chips
+    st.markdown(
+        """
+        <div style="margin: 6px 0 4px 0; font-size: 0.82rem; font-weight: 600; color: #64748b;">
+            ⚡ Pertanyaan Cepat (Quick Action):
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    col_c1, col_c2, col_c3, col_c4, col_c5 = st.columns(5)
+    chip_clicked = None
+    with col_c1:
+        if st.button("🚨 Aset Alarm", key="_qa_alarm", help="Tampilkan daftar peralatan yang mengalami alarm/warning", width="stretch"):
+            chip_clicked = "List Alarm"
+    with col_c2:
+        if st.button("🔍 Korelasi CBM", key="_qa_corr", help="Panduan dan analisis korelasi vibrasi & arus", width="stretch"):
+            chip_clicked = "Korelasi vibrasi dan arus"
+    with col_c3:
+        if st.button("🛢️ Analisis Oli", key="_qa_oil", help="Status pelumasan dan partikel keausan oli", width="stretch"):
+            chip_clicked = "Status pelumas dan oli"
+    with col_c4:
+        if st.button("🌡️ Hotspot IRT", key="_qa_therm", help="Pemeriksaan kondisi suhu dan delta-T termal", width="stretch"):
+            chip_clicked = "Status suhu dan hotspot"
+    with col_c5:
+        if st.button("⚡ Trafo DGA", key="_qa_dga", help="Standar IEEE C57.104 & Duval Triangle DGA", width="stretch"):
+            chip_clicked = "Standar DGA trafo"
+
+    # Handle pending prompt from Quick Action or previous navigation
+    pending_prompt = None
+    if chip_clicked:
+        pending_prompt = chip_clicked
+    elif st.session_state.get("_chatbot_quick_query"):
+        pending_prompt = st.session_state.pop("_chatbot_quick_query")
+
+    # Attached file banner + actions
     attached_fn = st.session_state.get("_chat_attached_filename")
     if attached_fn:
         c_info, c_save, c_clear = st.columns([5, 2, 1])
@@ -195,18 +233,23 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
                         st.markdown(f"**{cit['title']} — {cit['heading']}** ({cit['source']})")
                         st.caption(cit.get("preview", ""))
 
-    # Chat Input & Response Loop - paperclip icon next to the text box lets
-    # the user attach a file in the same action as sending a message.
+    # Chat Input & Response Loop
     chat_val = st.chat_input(
-        "Tanya kondisi motor, SOP, atau lampirkan file untuk dianalisis...",
+        "Tanya kondisi motor/pompa, getaran, suhu, pelumas, DGA, atau lampirkan file...",
         accept_file="multiple",
         file_type=["pdf", "md", "docx", "csv", "xlsx", "xls", "txt", "json"],
     )
 
+    prompt = None
+    uploaded_files = []
     if chat_val:
         prompt = (chat_val.text or "").strip()
         uploaded_files = list(chat_val.files or [])
+    elif pending_prompt:
+        prompt = str(pending_prompt).strip()
+        uploaded_files = []
 
+    if prompt:
         if uploaded_files:
             names = [uf.name for uf in uploaded_files]
             st.session_state["_chat_file_context"] = "\n\n---\n\n".join(

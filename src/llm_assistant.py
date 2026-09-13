@@ -9,24 +9,32 @@ import pandas as pd
 from src.knowledge_retriever import build_knowledge_context
 
 
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
 AVAILABLE_GEMINI_MODELS = [
-    "gemini-2.5-flash",
+    "gemini-3.8-flash"
+    "gemini-3.6-flash"
+    "gemini-3-flash",
+    "gemini-2.5-flash"
     "gemini-2.0-flash",
     "gemini-1.5-flash",
     "gemini-2.5-pro",
 ]
 
-DEFAULT_GEMINI_ENTERPRISE_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_ENTERPRISE_MODEL = "gemini-3.6-flash"
 AVAILABLE_GEMINI_ENTERPRISE_MODELS = [
+    "gemini-3.8-flash"
+    "gemini-3.6-flash"
+    "gemini-3-flash",
     "gemini-2.5-flash",
     "gemini-2.5-pro",
     "gemini-1.5-pro",
     "gemini-1.5-flash",
 ]
 
-DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b"
 AVAILABLE_GROQ_MODELS = [
+    "qwen/qwen3.8-27b"
+    "qwen/qwen3.6-27b"
     "llama-3.3-70b-versatile",
     "deepseek-r1-distill-llama-70b",
     "mixtral-8x7b-32768",
@@ -422,37 +430,115 @@ def build_history_summary_context(df_history: pd.DataFrame, max_params: int = 10
 
 
 def build_equipment_spec_context(query: str) -> str:
+    spec_lines = []
+    q_norm = str(query).upper().replace(" ", "").replace(".", "").replace("-", "").replace("(", "").replace(")", "")
+    
+    # 1. Search asset_registry (Transformers, Motors, Mechanical)
+    try:
+        from src.asset_registry import list_assets
+        import re
+        q_tokens = set(re.findall(r'[A-Za-z0-9]+', str(query).upper()))
+        for a in list_assets():
+            names_to_check = [a.get("asset_id", ""), a.get("name", "")] + [str(al) for al in a.get("aliases", [])]
+            matched = False
+            for n in names_to_check:
+                n_norm = n.upper().replace(" ", "").replace(".", "").replace("-", "").replace("(", "").replace(")", "")
+                if n_norm and (n_norm in q_norm or (len(q_norm) >= 3 and q_norm in n_norm)):
+                    matched = True
+                    break
+                n_tokens = set(re.findall(r'[A-Za-z0-9]+', n.upper()))
+                if n_tokens and (n_tokens == q_tokens or (len(n_tokens) >= 2 and n_tokens.issubset(q_tokens))):
+                    matched = True
+                    break
+            if matched:
+                specs = a.get("specs", {})
+                lines = [
+                    f"• Equipment: {a.get('name')} (Asset ID: {a.get('asset_id')}, Unit: {a.get('unit')})",
+                    f"  - System / Subsystem: {a.get('system', '-')} / {a.get('subsystem', '-')} | Criticality: {a.get('criticality', '-')}",
+                    f"  - Asset Type: {a.get('asset_type', '-')}",
+                ]
+                if a.get("asset_type") == "power_transformer" or "voltage_level" in a:
+                    lines.extend([
+                        f"  - Voltage Level: {a.get('voltage_level', '-')} | Rated Capacity: {specs.get('rated_capacity_kva', '-')} kVA",
+                        f"  - Oil: {specs.get('oil_type', '-')} ({specs.get('oil_litres', '-')} L) | Weight: {specs.get('total_weight_kg', '-')} kg",
+                        f"  - Manufacturer: {specs.get('manufacturer', '-')} | S/N: {specs.get('serial_number', '-')} | Cooling: {specs.get('cooling_type', '-')}"
+                    ])
+                spec_lines.append("\n".join(lines))
+    except Exception:
+        pass
+
+    # 2. Search legacy nameplate CSV
     try:
         from src.data_loader import load_nameplate_csv
         df_spec = load_nameplate_csv()
-        if df_spec.empty:
-            return ""
+        if not df_spec.empty:
+            for _, row in df_spec.iterrows():
+                eq_name = str(row.get("Equipment", ""))
+                eq_norm = eq_name.upper().replace(" ", "").replace(".", "").replace("-", "").replace("(", "").replace(")", "")
+                if eq_norm and (eq_norm in q_norm or (len(q_norm) >= 3 and q_norm in eq_norm)):
+                    spec_lines.append(
+                        f"• Equipment: {row.get('Equipment')} ({row.get('Full_Name', '')})\n"
+                        f"  - Unit & Voltage: {row.get('Unit_Name', '')} | {row.get('Voltage_Nominal', '')}\n"
+                        f"  - Rated Power: {row.get('Rated_Power_kW', '')} kW | FLA: {row.get('FLA', '')} A | PF: {row.get('PF_Nominal', '')}\n"
+                        f"  - Speed: {row.get('RPM', '')} RPM ({row.get('Poles', '')} Poles)\n"
+                        f"  - Manufacturer: {row.get('Manufacturer', '')} | Insulation: {row.get('Insulation_Class', '')}\n"
+                        f"  - Bearing Type: DE={row.get('Bearing_DE', '')}, NDE={row.get('Bearing_NDE', '')}\n"
+                        f"  - VFD Control: {row.get('VFD_Flag', 'No')}"
+                    )
+    except Exception:
+        pass
+
+    if not spec_lines:
+        return ""
         
-        q_norm = str(query).upper().replace(" ", "").replace(".", "").replace("-", "")
-        matches = []
-        for _, row in df_spec.iterrows():
-            eq_name = str(row.get("Equipment", ""))
-            full_name = str(row.get("Full_Name", ""))
-            eq_norm = eq_name.upper().replace(" ", "").replace(".", "").replace("-", "")
-            
-            if eq_norm and (eq_norm in q_norm or (len(q_norm) >= 3 and q_norm in eq_norm)):
-                matches.append(row)
-                
-        if not matches:
+    return "--- SPESIFIKASI & NAMEPLATE PERALATAN TERKAIT ---\n" + "\n\n".join(spec_lines[:3])
+
+
+def build_dga_context(query: str) -> str:
+    """Build detailed DGA lab analysis context if query references any transformer."""
+    try:
+        from src.dga_data import get_dga_transformer_detail
+        trf = get_dga_transformer_detail(query)
+        if not trf:
             return ""
-            
-        spec_lines = ["--- SPESIFIKASI & NAMEPLATE MOTOR / EQUIPMENT TERKAIT ---"]
-        for row in matches[:3]:
-            spec_lines.append(
-                f"• Equipment: {row.get('Equipment')} ({row.get('Full_Name', '')})\n"
-                f"  - Unit & Voltage: {row.get('Unit_Name', '')} | {row.get('Voltage_Nominal', '')}\n"
-                f"  - Rated Power: {row.get('Rated_Power_kW', '')} kW | FLA: {row.get('FLA', '')} A | PF: {row.get('PF_Nominal', '')}\n"
-                f"  - Speed: {row.get('RPM', '')} RPM ({row.get('Poles', '')} Poles)\n"
-                f"  - Manufacturer: {row.get('Manufacturer', '')} | Insulation: {row.get('Insulation_Class', '')}\n"
-                f"  - Bearing Type: DE={row.get('Bearing_DE', '')}, NDE={row.get('Bearing_NDE', '')}\n"
-                f"  - VFD Control: {row.get('VFD_Flag', 'No')}"
-            )
-        return "\n".join(spec_lines)
+
+        g = trf.get("gases", {})
+        diag = trf.get("diagnosis", {})
+        duval = diag.get("duval_diagnosis", "Normal")
+        ieee = diag.get("ieee_condition", "Condition 1 (Normal)")
+        tdcg = diag.get("tdcg", 0)
+        wc = trf.get("water_content", 0)
+        bdv = trf.get("bdv", 0)
+
+        lines = [
+            "--- DATA PENGUKURAN DGA & ANALISIS MINYAK TRANSFORMATOR TERKINI ---",
+            f"• Equipment: {trf.get('name')} (ID: {trf.get('transformer_id')}, Unit: {trf.get('unit')})",
+            f"  - Tanggal Uji / Sampling: {trf.get('sampling_date', '-')} | Status Operasi: {diag.get('status', 'NORMAL')}",
+            f"  - Nameplate: Tegangan {trf.get('voltage_ratio', '-')}, Daya {trf.get('rated_capacity', '-')}, Minyak {trf.get('oil_volume', '-')}",
+            f"  - Konsentrasi Gas Terlarut (ppm):",
+            f"    * H2 (Hidrogen): {g.get('H2', 0)} ppm",
+            f"    * CH4 (Metana): {g.get('CH4', 0)} ppm",
+            f"    * C2H6 (Etana): {g.get('C2H6', 0)} ppm",
+            f"    * C2H4 (Etilena): {g.get('C2H4', 0)} ppm",
+            f"    * C2H2 (Asetilena): {g.get('C2H2', 0)} ppm",
+            f"    * CO (Karbon Monoksida): {g.get('CO', 0)} ppm",
+            f"    * CO2 (Karbon Dioksida): {g.get('CO2', 0)} ppm",
+            f"  - Parameter Diagnostik Standar:",
+            f"    * Total Dissolved Combustible Gas (TDCG): {tdcg:.1f} ppm ({ieee})",
+            f"    * Duval Triangle 1: {duval} (%CH4: {diag.get('duval_pct_ch4', 0):.1f}%, %C2H4: {diag.get('duval_pct_c2h4', 0):.1f}%, %C2H2: {diag.get('duval_pct_c2h2', 0):.1f}%)",
+            f"    * Rogers Ratios: {diag.get('rogers_diagnosis', 'Normal')} (CH4/H2: {diag.get('rogers_r2', 0):.2f}, C2H2/C2H4: {diag.get('rogers_r1', 0):.2f}, C2H4/C2H6: {diag.get('rogers_r5', 0):.2f})",
+            f"    * Kadar Air (Water Content): {wc} ppm (Batas IEC 60422: < 20 ppm)",
+            f"    * Tegangan Tembus (BDV): {bdv} kV (Batas IEC 60422: > 50 kV)",
+            f"  - Rekomendasi Engineer: {trf.get('recommendation', 'Kondisi normal, pertahankan sampling berkala.')}",
+        ]
+
+        history = trf.get("history", [])
+        if len(history) > 1:
+            lines.append("  - Riwayat Tren Sampling DGA:")
+            for h in history[-4:]:
+                lines.append(f"    * [{h.get('date')}]: TDCG={h.get('tdcg', 0)} ppm, H2={h.get('H2', 0)}, C2H4={h.get('C2H4', 0)}, CO={h.get('CO', 0)}, Status={h.get('status', 'NORMAL')}")
+
+        return "\n".join(lines)
     except Exception:
         return ""
 
@@ -720,6 +806,10 @@ class MCSALLMAssistant:
         spec_context = build_equipment_spec_context(question)
         if spec_context:
             parts.extend(["\n" + spec_context])
+
+        dga_context = build_dga_context(question)
+        if dga_context:
+            parts.extend(["\n" + dga_context])
 
         if rule_answer:
             parts.extend(["\n--- JAWABAN RULE-BASED SISTEM ---", rule_answer])

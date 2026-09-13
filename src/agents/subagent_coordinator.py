@@ -212,7 +212,7 @@ class SubAgentCoordinator:
             active_agents.add("vibration")
         if any(w in q_lower for w in ["mcsa", "arus", "current", "tegangan", "voltage", "rotor", "rotorbar", "sideband", "thd", "power factor", "motor", "stator"]):
             active_agents.add("mcsa")
-        if any(w in q_lower for w in ["dga", "trafo", "transformer", "gas", "h2", "ch4", "c2h2", "c2h4", "tdcg", "duval", "rogers"]):
+        if any(w in q_lower for w in ["dga", "trafo", "transformer", "gas", "h2", "ch4", "c2h2", "c2h4", "tdcg", "duval", "rogers", "uat", "sst"]):
             active_agents.add("dga")
         if any(w in q_lower for w in ["pd", "partial discharge", "peluahan", "insulasi", "insulation", "corona", "prpd", "tan delta"]):
             active_agents.add("pd")
@@ -220,6 +220,9 @@ class SubAgentCoordinator:
             active_agents.add("tribology")
         if any(w in q_lower for w in ["thermal", "suhu", "temperature", "panas", "hotspot", "inframerah", "infrared", "delta t", "rtd"]):
             active_agents.add("thermal")
+
+        if asset_type and ("transformer" in asset_type.lower() or "trafo" in asset_type.lower()):
+            active_agents.add("dga")
 
         # Context-based defaults if general reliability question
         if any(w in q_lower for w in ["kondisi", "status", "kesehatan", "health", "rusak", "anomali", "diagnosa", "evaluasi", "rekomendasi", "work order", "wo", "risk", "rul", "fusion", "semua"]):
@@ -277,6 +280,24 @@ class SubAgentCoordinator:
         oil_data = data.get("oil")
         thermal_data = data.get("thermal")
 
+        if not dga_data:
+            try:
+                from src.dga_data import get_dga_transformer_detail
+                trf_rec = get_dga_transformer_detail(equipment)
+                if trf_rec:
+                    dga_data = dict(trf_rec.get("gases", {}))
+                    dga_data["tdcg"] = trf_rec.get("tdcg", trf_rec.get("diagnosis", {}).get("tdcg", 0))
+                    dga_data["water_content"] = trf_rec.get("water_content", 0)
+                    dga_data["bdv"] = trf_rec.get("bdv", 0)
+                    dga_data["sampling_date"] = trf_rec.get("sampling_date", "")
+                    dga_data["duval_diag"] = trf_rec.get("duval_diag", trf_rec.get("diagnosis", {}).get("duval_diagnosis", "Normal"))
+                    if "transformer_id" in trf_rec:
+                        dga_data["transformer_id"] = trf_rec["transformer_id"]
+                    if asset_type == "Electric Motor-Driven Rotating Equipment":
+                        asset_type = "Power Transformer"
+            except Exception:
+                pass
+
         # 1. Run Specialist Sub-Agents - a module disabled for this equipment
         # (EquipmentModuleStore, Phase 8) is left out of the trace entirely,
         # the same way ReliabilityFusionAgent excludes it from health weighting.
@@ -327,15 +348,16 @@ class SubAgentCoordinator:
                 "key_finding": f"Bearing Temp: {thermal_data.get('bearing_temp', 58.0)}°C | Delta-T: {thermal_data.get('delta_t_phase', 2.5)}°C"
             })
 
-        # DGA Sub-Agent (for Transformers) or PD Sub-Agent
-        if dga_data and ("transformer" in equipment.lower() or "trafo" in equipment.lower()) and store.is_enabled(equipment, "dga"):
+        # DGA Sub-Agent (for Transformers)
+        is_trf = any(w in equipment.lower() for w in ["transformer", "trafo", "uat", "sst", "gt", "ash"]) or bool(dga_data)
+        if dga_data and is_trf and store.is_enabled(equipment, "dga"):
             dga_eval = self._analyze("dga", equipment, dga_data)
             traces.append({
                 "subagent": self._registry["dga"].to_dict(),
                 "evaluation": dga_eval,
                 "status": dga_eval.get("condition", "HEALTHY"),
                 "health_score": dga_eval.get("health_score", 90.0),
-                "key_finding": f"TDCG: {dga_data.get('tdcg', 180.0)} ppm | Duval: {dga_eval.get('failure_mode')}"
+                "key_finding": f"TDCG: {dga_data.get('tdcg', 0)} ppm | Duval: {dga_eval.get('failure_mode')} | Gas: H2={dga_data.get('H2', 0)}, CH4={dga_data.get('CH4', 0)}, C2H6={dga_data.get('C2H6', 0)}, C2H4={dga_data.get('C2H4', 0)}, C2H2={dga_data.get('C2H2', 0)}, CO={dga_data.get('CO', 0)}, CO2={dga_data.get('CO2', 0)} ppm, H2O={dga_data.get('water_content', 0)} ppm, BDV={dga_data.get('bdv', 0)} kV"
             })
 
         # 2. Run Reliability Fusion Sub-Agent

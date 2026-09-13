@@ -18,7 +18,7 @@ from src.agents.self_improvement import RecursiveSelfImprover
 from src.agents.subagent_coordinator import SubAgentCoordinator
 from src.chatbot import MCSAChatbot
 from src.data_loader import get_data_path, get_latest_data, load_mcsa_data
-from src.llm_assistant import MCSALLMAssistant, resolve_provider_key
+from src.llm_assistant import DEFAULT_GEMINI_MODEL, MCSALLMAssistant, resolve_provider_key
 
 router = APIRouter(prefix="/api", tags=["agents"])
 
@@ -249,7 +249,7 @@ async def agent_chat(
     request: Request,
     message: Optional[str] = Form(None),
     provider: Optional[str] = Form("gemini"),
-    model: Optional[str] = Form("gemini-2.5-flash"),
+    model: Optional[str] = Form(DEFAULT_GEMINI_MODEL),
     api_key: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
 ):
@@ -264,12 +264,12 @@ async def agent_chat(
         body = await request.json()
         msg_text = body.get("message", "")
         prov = body.get("provider", "gemini")
-        mdl = body.get("model", "gemini-2.5-flash")
+        mdl = body.get("model", DEFAULT_GEMINI_MODEL)
         k = body.get("api_key")
     else:
         msg_text = message or ""
         prov = provider or "gemini"
-        mdl = model or "gemini-2.5-flash"
+        mdl = model or DEFAULT_GEMINI_MODEL
         k = api_key
         if file and file.filename:
             file_name = file.filename
@@ -335,7 +335,7 @@ async def agent_chat(
             assistant = MCSALLMAssistant(
                 enabled=True,
                 provider=prov or "gemini",
-                model=mdl or "gemini-2.5-flash",
+                model=mdl or DEFAULT_GEMINI_MODEL,
                 api_key=resolved_key,
             )
             if assistant.available:

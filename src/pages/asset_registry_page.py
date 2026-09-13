@@ -72,9 +72,12 @@ def render_asset_registry_page(st, edit_mode: bool) -> None:
                     {
                         "Asset ID": a["asset_id"],
                         "Nama": a["name"],
+                        "KKS": a.get("kks") or "-",
                         "Unit": a.get("unit", "-"),
                         "Tipe": a.get("equipment_type", "-"),
                         "Tegangan": a.get("voltage_level", "-"),
+                        "Bearing (DE / NDE)": f"{a.get('specs', {}).get('c1_inboard_bearing', '-')} / {a.get('specs', {}).get('c1_outboard_bearing', '-')}" if a.get("specs", {}).get("c1_inboard_bearing") else "-",
+                        "Power / Speed": f"{a.get('specs', {}).get('c1_power', '-')} / {a.get('specs', {}).get('c1_speed', '-')}" if a.get("specs", {}).get("c1_power") else "-",
                         "Status": a.get("lifecycle_status", "-"),
                         "Modul Monitoring": ", ".join(a.get("monitoring_modules", [])) or "-",
                     }
@@ -93,8 +96,30 @@ def render_asset_registry_page(st, edit_mode: bool) -> None:
         )
         prior = next((a for a in assets if a["asset_id"] == selected), {}) if selected != "(Aset Baru)" else {}
 
+        if prior.get("specs"):
+            sp = prior["specs"]
+            with st.expander("📋 Spesifikasi Nameplate & Komponen Mekanikal / Elektrikal", expanded=True):
+                s1, s2, s3 = st.columns(3)
+                with s1:
+                    st.markdown(f"**Tipe/Mfg Motor:** `{sp.get('c1_type_mfg', '-')}`")
+                    st.markdown(f"**Speed Motor:** `{sp.get('c1_speed', '-')}`")
+                    st.markdown(f"**Power Motor:** `{sp.get('c1_power', '-')}`")
+                with s2:
+                    st.markdown(f"**Inboard Bearing (DE):** `{sp.get('c1_inboard_bearing', '-')}`")
+                    st.markdown(f"**Outboard Bearing (NDE):** `{sp.get('c1_outboard_bearing', '-')}`")
+                    st.markdown(f"**Tipe Bearing:** `{sp.get('c1_bearing_type', '-')}`")
+                with s3:
+                    st.markdown(f"**Driven Type/Mfg:** `{sp.get('c2_type_mfg', '-')}`")
+                    st.markdown(f"**Pondasi:** `{sp.get('c1_foundation', '-')}`")
+                    st.markdown(f"**Kapasitas/Flow:** `{sp.get('c2_capacity') or sp.get('c2_flow_rate') or '-'}`")
+
         with st.form("asset_registry_form"):
-            name = st.text_input("Nama Aset", value=prior.get("name", ""))
+            c_n1, c_n2 = st.columns([3, 2])
+            with c_n1:
+                name = st.text_input("Nama Aset", value=prior.get("name", ""))
+            with c_n2:
+                kks_code = st.text_input("Kode KKS", value=prior.get("kks", "-"))
+
             c1, c2 = st.columns(2)
             with c1:
                 unit_idx = _UNIT_OPTIONS.index(prior["unit"]) if prior.get("unit") in _UNIT_OPTIONS else len(_UNIT_OPTIONS) - 1
@@ -118,11 +143,14 @@ def render_asset_registry_page(st, edit_mode: bool) -> None:
                     saved = upsert_asset({
                         "asset_id": prior.get("asset_id"),
                         "name": name,
+                        "kks": kks_code,
                         "unit": unit,
                         "equipment_type": equipment_type,
                         "voltage_level": voltage_level,
                         "lifecycle_status": lifecycle_status,
                         "monitoring_modules": monitoring_modules,
+                        "specs": prior.get("specs", {}),
+                        "aliases": prior.get("aliases", []),
                         "notes": notes,
                     })
                     st.success(f"Aset '{saved['name']}' ({saved['asset_id']}) tersimpan.")

@@ -521,12 +521,63 @@ def render_asset_360_page(
     for item in rec_items:
         st_ctx.write(f"• {item}")
 
-    c_btn1, c_btn2, _ = st_ctx.columns([1, 1, 2])
+    last_wo = st_ctx.session_state.get("_last_created_wo")
+    if last_wo:
+        st_ctx.info(f"✅ Work Order aktif untuk peralatan ini: **{last_wo}** (Tersimpan di sistem Work Orders).")
+
+    c_btn1, c_btn2, c_btn3 = st_ctx.columns([1.5, 1.2, 1.3])
     with c_btn1:
-        if st_ctx.button("📋 Buka Work Orders", icon=":material/assignment:", width="stretch"):
+        if st_ctx.button("📄 Terbitkan Laporan Khusus TE", icon=":material/description:", type="primary", width="stretch", help="Terbitkan dokumen resmi Technology Examination (FORM.JRG.F.05.006) dari temuan multi-domain"):
+            from src.work_orders import generate_cbm_work_order
+            worst_dom = "Multi-Domain CBM"
+            worst_sev = overall_badge
+            if mcsa_status in ("ALARM", "HIGH"):
+                worst_dom = "MCSA"
+                worst_sev = mcsa_status
+            elif vib_status in ("ALARM", "HIGH", "WARNING"):
+                worst_dom = "Vibrasi"
+                worst_sev = vib_status
+            elif therm_status in ("ALARM", "HIGH", "WARNING"):
+                worst_dom = "Thermal"
+                worst_sev = therm_status
+            elif tribo_status in ("ALARM", "HIGH", "WARNING"):
+                worst_dom = "Tribology"
+                worst_sev = tribo_status
+
+            desc = f"Health Score: {health_index:.1f}/100 ({overall_badge}). Temuan: MCSA={mcsa_status}, Vibrasi={vib_status}, Thermal={therm_status}, Pelumas={tribo_status}."
+            new_wo = generate_cbm_work_order(
+                equipment=selected_equipment,
+                domain=worst_dom,
+                severity=worst_sev,
+                anomaly_desc=desc,
+                recommendations=rec_items,
+                created_by="Asset 360° AI Engine",
+            )
+            st_ctx.session_state["_nav_to_te_asset"] = selected_equipment
             st_ctx.session_state["_nav_to_wo_asset"] = selected_equipment
-            st_ctx.toast(f"Peralatan {selected_equipment} siap ditindaklanjuti di Work Orders.", icon="📋")
+            st_ctx.session_state["_last_created_wo"] = new_wo.get("wo_number")
+            st_ctx.success(f"Laporan Khusus TE & Disposisi untuk {selected_equipment} berhasil diterbitkan!")
+            try:
+                st_ctx.switch_page("src/pages/work_orders_page.py")
+            except Exception:
+                st_ctx.rerun()
+
     with c_btn2:
+        if st_ctx.button("📄 Buka Dokumen TE", icon=":material/description:", width="stretch"):
+            st_ctx.session_state["_nav_to_te_asset"] = selected_equipment
+            st_ctx.session_state["_nav_to_wo_asset"] = selected_equipment
+            st_ctx.toast(f"Peralatan {selected_equipment} siap dibuka di modul Technology Examination (TE).", icon="📄")
+            try:
+                st_ctx.switch_page("src/pages/work_orders_page.py")
+            except Exception:
+                pass
+
+
+    with c_btn3:
         if st_ctx.button("🤖 Konsultasikan ke Chatbot AI", icon=":material/smart_toy:", width="stretch"):
             st_ctx.session_state["_chatbot_quick_query"] = f"Analisa status CBM dan korelasi data untuk peralatan {selected_equipment}"
             st_ctx.toast("Pertanyaan telah disiapkan untuk Chatbot AI.", icon="🤖")
+            try:
+                st_ctx.switch_page("src/pages/chatbot_page.py")
+            except Exception:
+                pass

@@ -131,6 +131,10 @@ def upsert_asset(asset: dict[str, Any]) -> dict[str, Any]:
             "lifecycle_status": lifecycle,
             "monitoring_modules": _normalise_modules(asset.get("monitoring_modules")),
             "replacement_of": str(asset.get("replacement_of") or "").strip().upper(),
+            "kks": str(asset.get("kks") or prior.get("kks", "-")).strip(),
+            "specs": asset.get("specs") if asset.get("specs") is not None else prior.get("specs", {}),
+            "aliases": asset.get("aliases") if asset.get("aliases") is not None else prior.get("aliases", []),
+            "status": str(asset.get("status") or prior.get("status", "Normal")).strip(),
             "notes": str(asset.get("notes") or "").strip(),
             "updated_at": now,
             "created_at": prior.get("created_at", now),
@@ -248,23 +252,161 @@ def save_evidence(asset_id: str, module: str, filename: str, content: bytes, tes
     return str(target)
 
 
+def sync_assets_from_database_aset(excel_path: str | None = None) -> int:
+    """Sync equipment from database_aset.xlsx into central Asset Registry.
+    Extracts plant assets from PLTU Jeranjang with KKS, specifications,
+    bearings, speeds, and powers.
+    Returns the count of newly added or updated assets.
+    """
+    if excel_path:
+        target = Path(excel_path)
+    else:
+        candidates = [
+            Path(get_data_path("vibrasi", "asset", "database_aset.xlsx")),
+            Path("data/vibrasi/asset/database_aset.xlsx"),
+            Path(get_data_path("vibrasi", "asset", "database_aset_vibrasi_PLTU_Jeranjang_dengan_unit.xlsx")),
+        ]
+        target = None
+        for c in candidates:
+            if c.exists():
+                target = c
+                break
+
+    if not target or not target.exists():
+        return 0
+
+    try:
+        xls = pd.ExcelFile(str(target))
+        if "Asset_Master" in xls.sheet_names:
+            df = pd.read_excel(xls, sheet_name="Asset_Master")
+        else:
+            return 0
+    except Exception:
+        return 0
+
+    if df.empty:
+        return 0
+
+    def clean_val(v):
+        if pd.isna(v):
+            return None
+        s = str(v).strip()
+        return None if s in ("", "-", "nan", "NaN") else s
+
+    def infer_eq_type(eq_name: str, cat: Any, comp2: Any) -> str:
+        nu = str(eq_name).upper()
+        cl = str(cat).lower() if cat else ""
+        c2l = str(comp2).lower() if comp2 else ""
+        if nu.startswith("BC ") or "conveyor" in cl:
+            return "Belt Conveyor Drive"
+        if "fan" in cl or any(k in nu for k in ["FAN", "IDF", "PAF", "SAF", "RAF"]):
+            return "Motor Fan / Blower"
+        if "turbine" in cl or "turbin" in nu or "generator" in cl:
+            return "Turbine-Generator"
+        if "screen" in cl or "screen" in nu:
+            return "Mechanical Screen"
+        if "crusher" in cl or "crusser" in nu or "crusher" in nu:
+            return "Coal Crusher"
+        if "pump" in cl or "pompa" in c2l or "pump" in nu:
+            return "Motor Pump"
+        return "Electric Drive"
+
+    added_or_updated = 0
+    for _, row in df.iterrows():
+        aid = clean_val(row.get("Asset ID"))
+        eq_name = clean_val(row.get("Equipment"))
+        if not eq_name:
+            continue
+        if not aid:
+            aid = make_asset_id(eq_name)
+
+        kks = clean_val(row.get("KKS")) or "-"
+        raw_unit = clean_val(row.get("Unit Group (Derived)") or row.get("unit_group")) or "Unknown"
+        unit = "UNIT COMMON" if raw_unit.upper() == "COMMON" else raw_unit
+
+        eq_type = infer_eq_type(
+            eq_name,
+            row.get("Asset Category (Derived)"),
+            row.get("Component 2"),
+        )
+
+        c1_power = clean_val(row.get("C1 Power")) or ""
+        volt = clean_val(row.get("C1 Rated Stator Voltage"))
+        if not volt:
+            if any(w in c1_power.upper() for w in ["355", "280", "185"]) or eq_type in ("Motor Fan / Blower", "Turbine-Generator"):
+                volt = "6.6 kV"
+            else:
+                volt = "380 V"
+
+        if eq_type == "Turbine-Generator":
+            modules = ["VIBRASI", "TRIBOLOGY", "THERMAL", "PD"]
+        else:
+            modules = ["MCSA", "VIBRASI", "TRIBOLOGY", "THERMAL"]
+
+        specs = {
+            "c1_type_mfg": clean_val(row.get("C1 Type/Mfg")),
+            "c1_speed": clean_val(row.get("C1 Speed")),
+            "c1_power": clean_val(row.get("C1 Power")),
+            "c1_bearing_type": clean_val(row.get("C1 Bearing Type")),
+            "c1_inboard_bearing": clean_val(row.get("C1 Inboard Bearing")),
+            "c1_outboard_bearing": clean_val(row.get("C1 Outboard Bearing")),
+            "c1_rotor_bar": clean_val(row.get("C1 Rotor Bar")),
+            "c1_foundation": clean_val(row.get("C1 Foundation")),
+            "c2_type_mfg": clean_val(row.get("C2 Type/Mfg")),
+            "c2_speed": clean_val(row.get("C2 Speed")),
+            "c2_power": clean_val(row.get("C2 Power")),
+            "c2_capacity": clean_val(row.get("C2 Capacity")),
+            "c2_pressure": clean_val(row.get("C2 Pressure")),
+            "c2_flow_rate": clean_val(row.get("C2 Flow Rate")),
+            "c2_total_blade": clean_val(row.get("C2 Total Blade")),
+        }
+        specs = {k: v for k, v in specs.items() if v is not None}
+
+        aliases = []
+        name_clean = eq_name.upper()
+        if "MOTOR " in name_clean:
+            aliases.append(name_clean.replace("MOTOR ", "").strip())
+        if "#" in name_clean:
+            aliases.append(name_clean.replace("#", " #"))
+            aliases.append(name_clean.replace("#", " Unit "))
+
+        upsert_asset({
+            "asset_id": aid,
+            "name": eq_name,
+            "kks": kks,
+            "unit": unit,
+            "equipment_type": eq_type,
+            "voltage_level": volt,
+            "lifecycle_status": "Aktif",
+            "monitoring_modules": modules,
+            "specs": specs,
+            "aliases": aliases,
+            "notes": f"Diimpor dari database_aset PLTU Jeranjang (KKS: {kks})",
+        })
+        added_or_updated += 1
+
+    return added_or_updated
+
+
 def sync_assets_from_equipment_master() -> int:
-    """Sync equipment from equipment_master.json into the central Asset Registry.
-    Ensures all plant equipment tracked in MCSA is available across all CBM disciplines.
+    """Sync equipment from database_aset.xlsx and equipment_master.json into the central Asset Registry.
+    Ensures all plant equipment tracked across MCSA and CBM disciplines is available.
     Returns the count of newly added assets.
     """
+    db_added = sync_assets_from_database_aset()
+
     master_path = Path(get_data_path("config", "equipment_master.json"))
     if not master_path.exists():
-        return 0
+        return db_added
 
     try:
         with master_path.open("r", encoding="utf-8") as handle:
             master_items = json.load(handle)
     except (OSError, json.JSONDecodeError):
-        return 0
+        return db_added
 
     if not isinstance(master_items, list):
-        return 0
+        return db_added
 
     records = _read_registry()
     existing_names = {
@@ -273,6 +415,10 @@ def sync_assets_from_equipment_master() -> int:
     existing_eq_codes = {
         re.sub(r"[^A-Z0-9]", "", str(r.get("name", "")).upper()) for r in records.values()
     }
+    for r in records.values():
+        for al in r.get("aliases", []):
+            existing_names.add(str(al).strip().upper())
+            existing_eq_codes.add(re.sub(r"[^A-Z0-9]", "", str(al).upper()))
 
     added_count = 0
     for item in master_items:
@@ -282,7 +428,12 @@ def sync_assets_from_equipment_master() -> int:
             continue
 
         norm_code = re.sub(r"[^A-Z0-9]", "", full_name.upper())
-        if full_name.upper() in existing_names or norm_code in existing_eq_codes:
+        norm_eq_code = re.sub(r"[^A-Z0-9]", "", eq_code.upper())
+        if (
+            full_name.upper() in existing_names
+            or norm_code in existing_eq_codes
+            or norm_eq_code in existing_eq_codes
+        ):
             continue
 
         unit = str(item.get("Unit_Name") or "Unknown").strip()
@@ -320,10 +471,13 @@ def sync_assets_from_equipment_master() -> int:
             "voltage_level": volt,
             "lifecycle_status": "Aktif",
             "monitoring_modules": modules,
+            "aliases": [eq_code] if eq_code and eq_code != full_name else [],
             "notes": f"Sinkronisasi otomatis dari Master Equipment Pembangkit ({eq_code})",
         })
         existing_names.add(full_name.upper())
         existing_eq_codes.add(norm_code)
+        if norm_eq_code:
+            existing_eq_codes.add(norm_eq_code)
         added_count += 1
 
-    return added_count
+    return db_added + added_count

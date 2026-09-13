@@ -26,7 +26,9 @@ from src.data_loader import get_data_path
 
 _VIBRASI_DIR = Path(get_data_path('vibrasi', 'asset'))
 _SQLITE_PATH = _VIBRASI_DIR / 'database_aset_vibrasi_PLTU_Jeranjang_dengan_unit.sqlite'
-_EXCEL_PATH = _VIBRASI_DIR / 'database_aset_vibrasi_PLTU_Jeranjang_dengan_unit.xlsx'
+_EXCEL_FALLBACK = _VIBRASI_DIR / 'database_aset_vibrasi_PLTU_Jeranjang_dengan_unit.xlsx'
+_EXCEL_PRIMARY = _VIBRASI_DIR / 'database_aset.xlsx'
+_EXCEL_PATH = _EXCEL_PRIMARY if _EXCEL_PRIMARY.exists() else _EXCEL_FALLBACK
 _CBMAI_VIBRATION_PATH = Path(get_data_path('vibrasi', 'vibration_dataset_cbmai.csv'))
 
 
@@ -146,19 +148,57 @@ def rebuild_database_from_excel(
                 frames.append(tmp)
         df_master = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
 
-    # --- Report_Records ---------------------------------------------------
-    df_records = (
-        pd.read_excel(xls, sheet_name='Report_Records')
-        if 'Report_Records' in xls.sheet_names
-        else pd.DataFrame()
-    )
+    # --- Report_Records (with fallback to _EXCEL_FALLBACK) ----------------
+    if 'Report_Records' in xls.sheet_names:
+        df_records = pd.read_excel(xls, sheet_name='Report_Records')
+    elif _EXCEL_FALLBACK.exists() and _EXCEL_FALLBACK != src:
+        try:
+            df_records = pd.read_excel(str(_EXCEL_FALLBACK), sheet_name='Report_Records')
+        except Exception:
+            df_records = pd.DataFrame()
+    else:
+        df_records = pd.DataFrame()
+
+    # Ensure unit_group, status_vibrasi, pm_week, and measurement_date in df_master
+    if 'Unit Group (Derived)' in df_master.columns and 'unit_group' not in df_master.columns:
+        df_master['unit_group'] = df_master['Unit Group (Derived)']
+    elif 'Unit Group' in df_master.columns and 'unit_group' not in df_master.columns:
+        df_master['unit_group'] = df_master['Unit Group']
+
+    if not df_records.empty:
+        id_col = 'Asset ID' if 'Asset ID' in df_records.columns else ('asset_id' if 'asset_id' in df_records.columns else None)
+        if id_col:
+            rec_unique = df_records.drop_duplicates(id_col).set_index(id_col)
+            master_id_col = 'Asset ID' if 'Asset ID' in df_master.columns else ('asset_id' if 'asset_id' in df_master.columns else None)
+            if master_id_col:
+                if 'status_vibrasi' not in df_master.columns and 'Status Vibrasi' not in df_master.columns:
+                    st_col = 'Status Vibrasi' if 'Status Vibrasi' in rec_unique.columns else ('status_vibrasi' if 'status_vibrasi' in rec_unique.columns else None)
+                    if st_col:
+                        df_master['status_vibrasi'] = df_master[master_id_col].map(rec_unique[st_col]).fillna('NORMAL')
+                if 'pm_week' not in df_master.columns and 'PM Week' not in df_master.columns:
+                    pw_col = 'PM Week' if 'PM Week' in rec_unique.columns else ('pm_week' if 'pm_week' in rec_unique.columns else None)
+                    if pw_col:
+                        df_master['pm_week'] = df_master[master_id_col].map(rec_unique[pw_col]).fillna('-')
+                if 'measurement_date' not in df_master.columns and 'Measurement Date' not in df_master.columns:
+                    md_col = 'Measurement Date' if 'Measurement Date' in rec_unique.columns else ('measurement_date' if 'measurement_date' in rec_unique.columns else None)
+                    if md_col:
+                        df_master['measurement_date'] = df_master[master_id_col].map(rec_unique[md_col]).fillna('-')
+
+    if 'status_vibrasi' not in df_master.columns and 'Status Vibrasi' in df_master.columns:
+        df_master['status_vibrasi'] = df_master['Status Vibrasi']
+    if 'status_vibrasi' not in df_master.columns:
+        df_master['status_vibrasi'] = 'NORMAL'
 
     # --- Data_Quality -----------------------------------------------------
-    df_quality = (
-        pd.read_excel(xls, sheet_name='Data_Quality')
-        if 'Data_Quality' in xls.sheet_names
-        else pd.DataFrame()
-    )
+    if 'Data_Quality' in xls.sheet_names:
+        df_quality = pd.read_excel(xls, sheet_name='Data_Quality')
+    elif _EXCEL_FALLBACK.exists() and _EXCEL_FALLBACK != src:
+        try:
+            df_quality = pd.read_excel(str(_EXCEL_FALLBACK), sheet_name='Data_Quality')
+        except Exception:
+            df_quality = pd.DataFrame()
+    else:
+        df_quality = pd.DataFrame()
 
     # --- Field_Dictionary -------------------------------------------------
     df_fields = (
@@ -174,7 +214,43 @@ def rebuild_database_from_excel(
             tmp = pd.read_excel(xls, sheet_name=sheet)
             tmp['unit_group'] = sheet.replace('_', ' ')
             unit_frames.append(tmp)
+    if not unit_frames and _EXCEL_FALLBACK.exists() and _EXCEL_FALLBACK != src:
+        try:
+            xls_fb = pd.ExcelFile(str(_EXCEL_FALLBACK))
+            for sheet in ('UNIT_1', 'UNIT_2', 'UNIT_3', 'COMMON'):
+                if sheet in xls_fb.sheet_names:
+                    tmp = pd.read_excel(xls_fb, sheet_name=sheet)
+                    tmp['unit_group'] = sheet.replace('_', ' ')
+                    unit_frames.append(tmp)
+        except Exception:
+            pass
     df_units = pd.concat(unit_frames, ignore_index=True) if unit_frames else pd.DataFrame()
+
+    def _clean_cols(df_target: pd.DataFrame) -> pd.DataFrame:
+        if df_target.empty:
+            return df_target
+        seen = {}
+        new_cols = []
+        for c in df_target.columns:
+            cleaned = (
+                str(c)
+                .strip()
+                .replace(' ', '_')
+                .replace('/', '_')
+                .replace('(', '')
+                .replace(')', '')
+                .replace('-', '_')
+                .lower()
+            )
+            if cleaned in seen:
+                seen[cleaned] += 1
+                new_cols.append(f"{cleaned}_{seen[cleaned]}")
+            else:
+                seen[cleaned] = 0
+                new_cols.append(cleaned)
+        df_res = df_target.copy()
+        df_res.columns = new_cols
+        return df_res
 
     # --- Write to SQLite --------------------------------------------------
     conn = sqlite3.connect(str(dst))
@@ -185,40 +261,24 @@ def rebuild_database_from_excel(
             conn.execute(f'DROP TABLE IF EXISTS [{table}]')
 
         if not df_master.empty:
-            # Normalise column names to snake_case for SQL friendliness
-            df_master.columns = [
-                c.strip().replace(' ', '_').replace('/', '_').lower()
-                for c in df_master.columns
-            ]
-            df_master.to_sql('assets', conn, index=False, if_exists='replace')
+            df_master_clean = _clean_cols(df_master)
+            df_master_clean.to_sql('assets', conn, index=False, if_exists='replace')
 
         if not df_records.empty:
-            df_records.columns = [
-                c.strip().replace(' ', '_').replace('/', '_').lower()
-                for c in df_records.columns
-            ]
-            df_records.to_sql('report_records', conn, index=False, if_exists='replace')
+            df_records_clean = _clean_cols(df_records)
+            df_records_clean.to_sql('report_records', conn, index=False, if_exists='replace')
 
         if not df_quality.empty:
-            df_quality.columns = [
-                c.strip().replace(' ', '_').replace('/', '_').lower()
-                for c in df_quality.columns
-            ]
-            df_quality.to_sql('data_quality', conn, index=False, if_exists='replace')
+            df_quality_clean = _clean_cols(df_quality)
+            df_quality_clean.to_sql('data_quality', conn, index=False, if_exists='replace')
 
         if not df_fields.empty:
-            df_fields.columns = [
-                c.strip().replace(' ', '_').replace('/', '_').lower()
-                for c in df_fields.columns
-            ]
-            df_fields.to_sql('field_dictionary', conn, index=False, if_exists='replace')
+            df_fields_clean = _clean_cols(df_fields)
+            df_fields_clean.to_sql('field_dictionary', conn, index=False, if_exists='replace')
 
         if not df_units.empty:
-            df_units.columns = [
-                c.strip().replace(' ', '_').replace('/', '_').lower()
-                for c in df_units.columns
-            ]
-            df_units.to_sql('unit_assets', conn, index=False, if_exists='replace')
+            df_units_clean = _clean_cols(df_units)
+            df_units_clean.to_sql('unit_assets', conn, index=False, if_exists='replace')
 
         # Source metadata
         conn.execute('''

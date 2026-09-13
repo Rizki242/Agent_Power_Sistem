@@ -228,3 +228,84 @@ def vibrasi_detail_report(equipment: str):
         media_type=_REPORT_MEDIA_TYPES["docx"],
         headers={"Content-Disposition": f"attachment; filename=detail_report_vibrasi_{equipment}.docx"},
     )
+
+
+from pydantic import BaseModel, Field
+from typing import Dict, Any
+
+
+class TelemetryStreamPayload(BaseModel):
+    equipment: str
+    domain: str = "VIBRASI"
+    timestamp: Optional[str] = None
+    parameters: Dict[str, Any] = Field(default_factory=dict)
+
+
+@router.get("/template/{domain}")
+def download_domain_template(domain: str):
+    """Download standard CSV template for a monitoring domain."""
+    from src.template_generator import get_template_csv
+
+    csv_data = get_template_csv(domain)
+    filename = f"template_{domain.lower()}.csv"
+    return StreamingResponse(
+        BytesIO(csv_data.encode("utf-8")),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@router.post("/telemetry/stream")
+def ingest_telemetry_stream(payload: TelemetryStreamPayload):
+    """Real-time streaming telemetry ingest endpoint for IoT / Modbus / continuous sensors."""
+    domain_upper = payload.domain.upper()
+    equipment = payload.equipment.strip()
+    params = payload.parameters or {}
+    ts = payload.timestamp or datetime.now().isoformat()
+
+    eval_result: Dict[str, Any] = {"Overall": "Normal"}
+    if domain_upper in ("VIBRASI", "VIBRATION"):
+        from src.standards import evaluate_vibration
+        eval_result = evaluate_vibration(params)
+    elif domain_upper in ("THERMAL", "TEMPERATURE"):
+        from src.standards import evaluate_thermal
+        eval_result = evaluate_thermal(params)
+    elif domain_upper in ("TRIBOLOGY", "OIL"):
+        from src.standards import evaluate_tribology
+        eval_result = evaluate_tribology(params)
+    elif domain_upper == "DGA":
+        from src.standards import evaluate_dga
+        eval_result = evaluate_dga(params)
+    elif domain_upper == "MCSA":
+        from src.standards import calculate_condition
+        eval_result = calculate_condition(params)
+
+    status = eval_result.get("Overall", "Normal")
+    return {
+        "status": "success",
+        "equipment": equipment,
+        "domain": domain_upper,
+        "timestamp": ts,
+        "parameters": params,
+        "evaluation": eval_result,
+        "condition_status": status,
+        "message": f"Telemetry for '{equipment}' received and evaluated as '{status}'.",
+    }
+
+
+@router.get("/telemetry/oscillogram/{equipment_id}")
+def get_live_oscillogram_stream(
+    equipment_id: str,
+    domain: str = "VIBRASI",
+    fault_profile: str = "NORMAL_BASELINE",
+):
+    """Returns high-fidelity live oscillogram (waveform) and FFT spectrum frame."""
+    from src.telemetry_streamer import generate_live_frame
+    frame = generate_live_frame(
+        equipment=equipment_id,
+        domain=domain,
+        fault_profile=fault_profile,
+    )
+    return frame
+
+

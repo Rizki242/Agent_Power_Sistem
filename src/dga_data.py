@@ -53,12 +53,12 @@ DEFAULT_TRANSFORMERS = [
         "transformer_id": "TRF-004",
         "name": "Unit Auxiliary Transformer 3 (UAT 3)",
         "unit": "UNIT 3",
-        "voltage_ratio": "10.5 / 6.3 kV",
-        "rated_capacity": "4.0 MVA",
+        "voltage_ratio": "6.3 / 6.3 kV",
+        "rated_capacity": "6,300 kVA",
         "oil_type": "Mineral Oil (IEC 60296)",
-        "oil_volume": "4,200 L",
-        "sampling_date": "2026-07-21",
-        "gases": {"H2": 15.0, "CH4": 12.0, "C2H6": 6.0, "C2H4": 18.0, "C2H2": 0.1, "CO": 120.0, "CO2": 1100.0, "H2O": 14.0},
+        "oil_volume": "12,000 L",
+        "sampling_date": "2019-11-14",
+        "gases": {"H2": 5.0, "CH4": 16.0, "C2H6": 28.0, "C2H4": 2.0, "C2H2": 0.0, "CO": 59.0, "CO2": 338.0, "H2O": 6.0},
         "status": "NORMAL"
     },
     {
@@ -119,8 +119,8 @@ def load_dga_history(csv_path: Optional[str] = None) -> pd.DataFrame:
     if not required.issubset(df.columns):
         return pd.DataFrame()
     df = df.copy()
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-    for col in ('H2', 'CH4', 'C2H6', 'C2H4', 'C2H2', 'CO', 'CO2', 'WaterContent'):
+    df['Date'] = pd.to_datetime(df['Date'], format='mixed', errors='coerce')
+    for col in ('H2', 'CH4', 'C2H6', 'C2H4', 'C2H2', 'CO', 'CO2', 'WaterContent', 'BDV'):
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
     df = df.dropna(subset=['Date', 'Equipment'])
@@ -136,6 +136,17 @@ def _transformers_from_history() -> List[Dict[str, Any]]:
     history = load_dga_history()
     if history.empty:
         return []
+
+    asset_lookup: Dict[str, Dict[str, Any]] = {}
+    try:
+        from src.asset_registry import list_assets
+        for a in list_assets():
+            asset_lookup[a.get('name', '').strip().upper()] = a
+            for alias in a.get('aliases', []):
+                asset_lookup[str(alias).strip().upper()] = a
+    except Exception:
+        asset_lookup = {}
+
     records: List[Dict[str, Any]] = []
     for idx, (equipment, group) in enumerate(history.groupby('Equipment', sort=True)):
         latest = group.sort_values('Date').iloc[-1]
@@ -150,16 +161,42 @@ def _transformers_from_history() -> List[Dict[str, Any]]:
             'H2O': float(latest.get('WaterContent', 0.0)),
         }
         diag = calculate_dga_diagnosis(gases)
+
+        eq_key = str(equipment).strip().upper()
+        asset = asset_lookup.get(eq_key)
+
+        trf_id = asset.get('asset_id') if asset else _csv_transformer_id(str(equipment), idx)
+        unit_val = asset.get('unit') if (asset and asset.get('unit')) else _clean_unit(latest.get('Unit'))
+        v_ratio = asset.get('voltage_level', '-') if asset else '-'
+
+        specs = asset.get('specs', {}) if asset else {}
+        cap_val = specs.get('rated_capacity_kva', '-')
+        if cap_val and cap_val != '-':
+            rated_capacity = f"{cap_val} kVA" if "VA" not in str(cap_val).upper() else str(cap_val)
+        else:
+            rated_capacity = '-'
+
+        oil_vol_val = specs.get('oil_litres', '-')
+        oil_vol = f"{oil_vol_val} L" if (oil_vol_val and oil_vol_val != '-') else '-'
+        oil_type = specs.get('oil_type', 'Mineral Oil')
+        mfg = specs.get('manufacturer', '-')
+        sn = specs.get('serial_number', '-')
+
         records.append({
-            'transformer_id': _csv_transformer_id(str(equipment), idx),
+            'transformer_id': trf_id,
+            'asset_id': asset.get('asset_id', '') if asset else '',
             'name': str(equipment).strip(),
-            'unit': _clean_unit(latest.get('Unit')),
-            'voltage_ratio': '-',
-            'rated_capacity': '-',
-            'oil_type': 'Mineral Oil',
-            'oil_volume': '-',
+            'unit': _clean_unit(unit_val),
+            'voltage_ratio': v_ratio,
+            'rated_capacity': rated_capacity,
+            'oil_type': oil_type,
+            'oil_volume': oil_vol,
+            'manufacturer': mfg,
+            'serial_number': sn,
             'sampling_date': latest['Date'].strftime('%Y-%m-%d'),
             'gases': gases,
+            'water_content': float(latest.get('WaterContent', 0.0)),
+            'bdv': float(latest.get('BDV', 0.0)),
             'status': diag['status'],
             'source': 'CBMAI DGA CSV',
         })
@@ -187,21 +224,36 @@ def _history_for_equipment(equipment: str) -> List[Dict[str, Any]]:
             'date': row['Date'].strftime('%Y-%m-%d'),
             'tdcg': diag['tdcg'],
             'H2': gases['H2'],
+            'CH4': gases['CH4'],
+            'C2H6': gases['C2H6'],
             'C2H4': gases['C2H4'],
+            'C2H2': gases['C2H2'],
             'CO': gases['CO'],
+            'CO2': gases['CO2'],
+            'water_content': float(row.get('WaterContent', 0.0)),
+            'bdv': float(row.get('BDV', 0.0)),
             'status': diag['status'],
         })
     return records
 
 
 def _merged_transformers() -> List[Dict[str, Any]]:
-    """DEFAULT_TRANSFORMERS + CBMAI CSV records with manual overrides applied.
+    """Transformers from CBMAI CSV history + DEFAULT_TRANSFORMERS (deduplicated) + overrides.
 
-    Manual override wins by transformer_id. CSV records are additive so the old
-    built-in assets are preserved while CBMAI DGA data appears in the UI.
+    Real history records take precedence over default mock assets.
+    Manual override wins by transformer_id.
     """
     overrides = _override_store().all()
-    base = DEFAULT_TRANSFORMERS + _transformers_from_history()
+    history_records = _transformers_from_history()
+    history_names = {t['name'].strip().upper() for t in history_records}
+    history_ids = {t['transformer_id'].strip().upper() for t in history_records}
+
+    filtered_defaults = [
+        t for t in DEFAULT_TRANSFORMERS
+        if t['name'].strip().upper() not in history_names
+        and t['transformer_id'].strip().upper() not in history_ids
+    ]
+    base = history_records + filtered_defaults
     merged = [dict(overrides.get(t['transformer_id'], t)) for t in base]
     known_ids = {t['transformer_id'] for t in base}
     merged.extend(dict(record) for tid, record in overrides.items() if tid not in known_ids)
@@ -354,11 +406,64 @@ def search_dga_transformers(unit: Optional[str] = None, status: Optional[str] = 
 def get_dga_transformer_detail(transformer_id: str) -> Optional[Dict[str, Any]]:
     """Returns detailed transformer record including gas parameters and historical trend."""
     target = None
-    for t in _merged_transformers():
-        if t["transformer_id"].upper() == transformer_id.upper():
+    query = transformer_id.strip().upper()
+    merged = _merged_transformers()
+    for t in merged:
+        if (
+            t["transformer_id"].upper() == query
+            or t.get("asset_id", "").upper() == query
+            or t["name"].upper() == query
+        ):
             target = dict(t)
             break
             
+    if not target:
+        try:
+            from src.asset_registry import list_assets
+            for a in list_assets():
+                aliases = [a.get("name", "").upper()] + [str(al).upper() for al in a.get("aliases", [])]
+                if query == a.get("asset_id", "").upper() or query in aliases:
+                    for t in merged:
+                        if (
+                            t.get("asset_id", "").upper() == a.get("asset_id", "").upper()
+                            or t["name"].upper() == a.get("name", "").upper()
+                        ):
+                            target = dict(t)
+                            break
+                    if target:
+                        break
+        except Exception:
+            pass
+
+    if not target:
+        for t in merged:
+            t_name = t["name"].upper()
+            t_id = t["transformer_id"].upper()
+            if query in t_name or t_name in query or query in t_id:
+                target = dict(t)
+                break
+
+    if not target:
+        import re
+        q_tokens = set(re.findall(r'[A-Za-z0-9]+', query))
+        if q_tokens:
+            best_match = None
+            best_score = 0.0
+            for t in merged:
+                t_tokens = set(re.findall(r'[A-Za-z0-9]+', t["name"].upper()))
+                if not t_tokens:
+                    continue
+                if t_tokens == q_tokens:
+                    target = dict(t)
+                    break
+                if q_tokens.issubset(t_tokens) or t_tokens.issubset(q_tokens):
+                    score = len(q_tokens & t_tokens) / max(len(q_tokens), len(t_tokens))
+                    if score > best_score:
+                        best_score = score
+                        best_match = t
+            if not target and best_match and best_score >= 0.5:
+                target = dict(best_match)
+
     if not target:
         return None
         
