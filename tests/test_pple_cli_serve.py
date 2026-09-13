@@ -10,7 +10,8 @@ runner = CliRunner()
 
 class ServeApiTests(unittest.TestCase):
     def test_serve_api_prints_banner_and_calls_run_server_main(self):
-        with mock.patch("run_server.main") as mocked_main:
+        with mock.patch("pple.cli.main._load_run_server") as mocked_loader:
+            mocked_main = mocked_loader.return_value.main
             result = runner.invoke(app, ["serve", "api", "--port", "9001"])
         self.assertEqual(result.exit_code, 0)
         self.assertIn("PPLE READY", result.stdout)
@@ -19,15 +20,17 @@ class ServeApiTests(unittest.TestCase):
         mocked_main.assert_called_once_with(host="0.0.0.0", port=9001)
 
     def test_serve_api_defaults_when_no_flags_given(self):
-        with mock.patch("run_server.main") as mocked_main, \
+        with mock.patch("pple.cli.main._load_run_server") as mocked_loader, \
              mock.patch.dict("os.environ", {}, clear=False):
+            mocked_main = mocked_loader.return_value.main
             result = runner.invoke(app, ["serve", "api"])
         self.assertEqual(result.exit_code, 0)
         mocked_main.assert_called_once_with(host="0.0.0.0", port=8000)
 
     def test_serve_api_respects_host_env_var(self):
-        with mock.patch("run_server.main") as mocked_main, \
+        with mock.patch("pple.cli.main._load_run_server") as mocked_loader, \
              mock.patch.dict("os.environ", {"HOST": "127.0.0.1", "PORT": "8123"}):
+            mocked_main = mocked_loader.return_value.main
             result = runner.invoke(app, ["serve", "api"])
         self.assertEqual(result.exit_code, 0)
         mocked_main.assert_called_once_with(host="127.0.0.1", port=8123)

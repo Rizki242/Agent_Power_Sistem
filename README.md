@@ -145,7 +145,7 @@ Klasifikasi risiko (`pple/cli/safety.py`) memisahkan command menjadi **READ** (s
 
 Flag global `--offline` (docs/final.md Phase 22) memastikan PPLE tetap bisa dipakai tanpa internet: jawaban `pple chat` selalu dari `src.chatbot.MCSAChatbot` (rule-based) lebih dulu, LLM (cloud maupun Ollama lokal) hanya memperkaya narasinya dan tidak pernah menjadi sumber kebenaran untuk threshold/status engineering.
 
-`pple serve` (docs/final.md Phase 23) tidak menggantikan `run_api.bat`/`run_frontend.bat`/`run_all.bat` — ketiganya tetap berfungsi seperti biasa — hanya menyediakan jalur yang sama lewat CLI, memanggil launcher Python yang sama persis (`run_server.py`). Lihat `docs/final.md` untuk roadmap migrasi `pple` V2 selengkapnya.
+`pple serve` (docs/final.md Phase 23) tidak menggantikan `run_api.bat`/`run_frontend.bat`/`run_all.bat` — ketiganya tetap berfungsi seperti biasa — hanya menyediakan jalur yang sama lewat CLI, memanggil launcher Python yang sama persis (`scripts/run_server.py`). Lihat `docs/final.md` untuk roadmap migrasi `pple` V2 selengkapnya.
 
 ## Prasyarat
 

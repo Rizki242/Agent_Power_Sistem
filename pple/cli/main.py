@@ -24,17 +24,19 @@ LLM, controlled by the root --offline flag which blocks any cloud provider
 call and falls back to a pure rule-based answer), and serve api/frontend/all
 (Phase 23 - a pple-native alternative to run_api.bat/run_frontend.bat/
 run_all.bat; those .bat scripts are untouched and keep working - serve api
-literally calls run_server.main()).
+literally calls scripts/run_server.py's main()).
 Asset/plant/unit CRUD (creating or editing equipment through the CLI, not
 just viewing it) is still out of scope until the database layer (final.md
 Phase 2-4) exists - there is nowhere durable to write new records to yet.
 """
 
+import importlib.util
 import json
 import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 import typer
 from rich.console import Console
@@ -963,6 +965,23 @@ def _print_serve_banner(*, api: bool, frontend: bool, host: str = "0.0.0.0", por
     console.print("\n[bold green]PPLE READY[/bold green]\n")
 
 
+_RUN_SERVER_PATH = Path(__file__).resolve().parents[2] / "scripts" / "run_server.py"
+
+
+def _load_run_server():
+    """Load ``scripts/run_server.py`` as a module.
+
+    The launcher lives under scripts/ (repo convention for helper scripts,
+    see CLAUDE.md), which is not a package, so it is loaded by file path
+    instead of ``import run_server``. Same module run_api.bat executes."""
+    spec = importlib.util.spec_from_file_location("pple_run_server", _RUN_SERVER_PATH)
+    if spec is None or spec.loader is None:
+        raise typer.BadParameter(f"Launcher tidak ditemukan: {_RUN_SERVER_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _resolve_npm_command() -> str:
     """Resolve npm's executable, including the ``npm.cmd`` Windows shim."""
     candidates = ("npm.cmd", "npm") if os.name == "nt" else ("npm",)
@@ -980,16 +999,14 @@ def serve_api(
     host: str = typer.Option(None, "--host", help="Default: env HOST or 0.0.0.0"),
     port: int = typer.Option(None, "--port", help="Default: env PORT or 8000"),
 ):
-    """Start the FastAPI server - calls the exact same run_server.main()
-    run_api.bat already uses (port-in-use cleanup, 0.0.0.0->127.0.0.1
+    """Start the FastAPI server - calls the exact same scripts/run_server.py
+    main() run_api.bat already uses (port-in-use cleanup, 0.0.0.0->127.0.0.1
     fallback), just reachable as `pple serve api` too. Blocks until Ctrl+C."""
     resolved_port = port if port is not None else int(os.environ.get("PORT", "8000"))
     resolved_host = host or os.environ.get("HOST", "0.0.0.0")
     _print_serve_banner(api=True, frontend=False, host=resolved_host, port=resolved_port)
 
-    import run_server
-
-    run_server.main(host=resolved_host, port=resolved_port)
+    _load_run_server().main(host=resolved_host, port=resolved_port)
 
 
 @serve_app.command("frontend")

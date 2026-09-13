@@ -11,7 +11,7 @@ class SettingsAPITests(unittest.TestCase):
         self.client = TestClient(app)
 
     @patch("src.ai_settings.load", return_value={"ai_enabled": True, "ai_provider": "gemini", "gemini_model": "gemini-test"})
-    @patch("src.llm_assistant.resolve_provider_key", side_effect=lambda provider: "secret-value" if provider == "gemini" else None)
+    @patch("pple.api.routers.settings.resolve_provider_key", side_effect=lambda provider: "secret-value" if provider == "gemini" else None)
     def test_overview_never_exposes_provider_keys(self, _resolve, _load):
         response = self.client.get("/api/settings/overview")
 
