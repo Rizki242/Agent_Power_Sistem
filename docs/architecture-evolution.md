@@ -15,8 +15,8 @@ Temuan utama dari source saat audit:
 | Dashboard Streamlit | `src/pages/dashboard_page.py` sekitar 1.027 baris | UI, orkestrasi, AI, dan analitik mudah tercampur | P0 |
 | Bootstrap Streamlit | `app.py` sekitar 522 baris; memuat data/filter MCSA sebelum halaman aktif dijalankan | Halaman non-MCSA ikut menanggung state dan biaya MCSA | P0 |
 | Dua UI | Streamlit dan React menyediakan kapabilitas yang tumpang tindih | Feature drift dan hasil diagnosis tidak konsisten | P0 |
-| Kontrak frontend | React memakai JavaScript dan memanggil sekitar 51 `apiFetch`, tanpa test frontend yang terdeteksi | Bentuk response dapat berubah tanpa alarm awal | P1 |
-| Design system | Token ada di `.streamlit/config.toml`, `src/components/theme.py`, dan `frontend/src/index.css`; masih ada raw color di komponen | Status/kontras dapat berbeda antarhalaman | P1 |
+| Kontrak frontend | React memakai JavaScript dan memanggil backend lewat helper `getJson`/`sendJson` di `frontend/src/api.js`, tanpa test frontend yang terdeteksi. (Catatan: baris ini ditulis saat audit terhadap frontend lama yang memakai helper bernama `apiFetch`; frontend itu dihapus di `22be836` dan diganti frontend baru di `d7d1484` — lihat `docs/feature-parity.md`.) | Bentuk response dapat berubah tanpa alarm awal | P1 |
+| Design system | Token ada di `.streamlit/config.toml`, `src/components/theme.py`, dan `frontend/src/styles.css` (sebelumnya `index.css` di frontend lama); masih ada raw color di komponen | Status/kontras dapat berbeda antarhalaman | P1 |
 | Streamlit styling | Masih ada 9 penggunaan `unsafe_allow_html`; CSS mengandalkan selector internal Streamlit | Upgrade Streamlit dapat merusak tampilan | P1 |
 | Loading halaman | Sejumlah `tabs`/`expander` berisi pekerjaan domain; konten tersembunyi berpotensi tetap dihitung | Rerun lambat dan UI terasa stale | P1 |
 | Migrasi V2 | `pple/` dan `src/` hidup bersamaan melalui legacy adapter | Batas kepemilikan logic perlu dibuat eksplisit | P1 |
