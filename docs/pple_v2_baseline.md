@@ -267,6 +267,16 @@ Tidak ada event bus internal                 KECIL        Phase 28
 Tidak ada audit log terstruktur              SEDANG       Phase 29
   (baru ada di level upload-batch manifest.json,
   bukan generik per-perubahan data)
+```
+
+Update pasca-baseline (2026-09-16): baris "Frontend route/menu statis di App.jsx" (Phase 25)
+sudah tidak berlaku - frontend React ditulis ulang (lihat docs/feature-parity.md "Riwayat") dan
+frontend baru membaca daftar modul dari GET /api/v2/module-load-report secara generik, tanpa
+hardcoded module list. Lihat catatan status di docs/final.md Phase 25. Baris gap lain di tabel
+di atas belum diverifikasi ulang terhadap kode saat ini - jangan anggap statusnya masih akurat
+tanpa mengecek langsung.
+
+```text
 
 SUDAH SESUAI ARAH final.md (tidak perlu dirombak):
   - BaseSpecialistAgent polymorphic per domain (§6)
