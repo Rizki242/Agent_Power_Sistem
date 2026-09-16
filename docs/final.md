@@ -1529,6 +1529,16 @@ knowledge_namespace:
 
 # PHASE 28 — EVENT BUS
 
+> **Status: sebagian besar terpenuhi.** `pple/core/events.py` menyediakan `publish()`/`subscribe()`
+> in-process dengan 10 nama event persis seperti spesifikasi di bawah (validasi menolak nama yang
+> tidak terdaftar), plus log terstruktur otomatis dan isolasi error per-subscriber (satu subscriber
+> gagal tidak mematikan publisher/subscriber lain). Sudah dipanggil dari titik nyata:
+> `pple/application/diagnostics.py` (`analysis.*`, `diagnostic.created`), `src/domain_ingest.py`
+> (`measurement.uploaded`), `src/work_orders.py` (`workorder.requested`), `src/asset_registry.py`
+> (`equipment.created`/`equipment.updated`). `severity.changed` dan `recommendation.created` baru
+> terdaftar di `Events`, belum ada pemanggil - keduanya butuh nilai sebelumnya untuk dibandingkan,
+> yang belum dilacak di caller manapun saat ini. Lihat `tests/test_pple_events.py`.
+
 Tambahkan internal events:
 
 ```text

@@ -39,6 +39,7 @@ from typing import Any, Iterable, Optional
 
 import pandas as pd
 
+from pple.core.events import Events, publish
 from src.domain_measurements import (
     append_measurements,
     canon_domain,
@@ -403,6 +404,7 @@ def commit_batch(domain: str, batch_path, preview: dict[str, Any]) -> dict[str, 
         "written": result["written"],
     })
     _write_manifest(batch_path, manifest)
+    publish(Events.MEASUREMENT_UPLOADED, domain=domain, batch_id=batch_id, written=result["written"])
     return {**result, "batch_id": batch_id, "manifest": manifest}
 
 
