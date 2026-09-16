@@ -13,6 +13,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from pple.core.events import Events, publish
 from src.data_loader import get_data_path
 
 _work_orders_db: List[Dict[str, Any]] = []
@@ -284,6 +285,7 @@ def generate_cbm_work_order(
 
     orders.insert(0, new_wo)
     save_work_orders(orders)
+    publish(Events.WORKORDER_REQUESTED, equipment=eq_clean, domain=domain, wo_number=wo_number, priority=priority)
     return new_wo
 
 

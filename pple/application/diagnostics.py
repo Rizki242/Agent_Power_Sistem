@@ -6,6 +6,7 @@ import time
 from typing import Any, Dict, Optional
 import pandas as pd
 
+from pple.core.events import Events, publish
 from pple.core.logging import log_diagnosis
 from src.agents.asset_graph import AssetKnowledgeGraph
 from src.agents.fusion_engine import ReliabilityFusionAgent
@@ -36,18 +37,23 @@ class DiagnoseEquipmentUseCase:
         thermal: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Run fusion diagnosis from explicit multi-domain telemetry inputs."""
+        publish(Events.ANALYSIS_STARTED, equipment=equipment, asset_type=asset_type, criticality=criticality)
         t0 = time.perf_counter()
-        result = self.fusion_agent.run_full_fusion(
-            equipment=equipment,
-            asset_type=asset_type or "Motor-Pump",
-            criticality=criticality or "A",
-            vibration_data=vibration,
-            mcsa_data=mcsa,
-            dga_data=dga,
-            pd_data=pd,
-            oil_data=tribology,
-            thermal_data=thermal,
-        )
+        try:
+            result = self.fusion_agent.run_full_fusion(
+                equipment=equipment,
+                asset_type=asset_type or "Motor-Pump",
+                criticality=criticality or "A",
+                vibration_data=vibration,
+                mcsa_data=mcsa,
+                dga_data=dga,
+                pd_data=pd,
+                oil_data=tribology,
+                thermal_data=thermal,
+            )
+        except Exception as exc:
+            publish(Events.ANALYSIS_FAILED, equipment=equipment, error=str(exc))
+            raise
         duration_ms = (time.perf_counter() - t0) * 1000
         raw_health_index = result.get("health_index")
         health_index = float(raw_health_index) if raw_health_index is not None else None
@@ -60,6 +66,14 @@ class DiagnoseEquipmentUseCase:
             asset_type=asset_type,
             criticality=criticality,
         )
+        publish(
+            Events.ANALYSIS_COMPLETED,
+            equipment=equipment,
+            health_index=health_index,
+            health_status=health_status,
+            duration_ms=duration_ms,
+        )
+        publish(Events.DIAGNOSTIC_CREATED, equipment=equipment, health_status=health_status)
         return result
 
     def diagnose_from_mcsa_dataset(
@@ -77,13 +91,18 @@ class DiagnoseEquipmentUseCase:
 
         fusion_inputs = extract_mcsa_fusion_inputs(eq_data)
 
+        publish(Events.ANALYSIS_STARTED, equipment=equipment, asset_type=node.get("asset_type"), criticality=node.get("criticality"))
         t0 = time.perf_counter()
-        fusion_res = self.fusion_agent.run_full_fusion(
-            equipment=equipment,
-            asset_type=node.get("asset_type", "Electric Motor-Pump"),
-            criticality=node.get("criticality", "A"),
-            **fusion_inputs,
-        )
+        try:
+            fusion_res = self.fusion_agent.run_full_fusion(
+                equipment=equipment,
+                asset_type=node.get("asset_type", "Electric Motor-Pump"),
+                criticality=node.get("criticality", "A"),
+                **fusion_inputs,
+            )
+        except Exception as exc:
+            publish(Events.ANALYSIS_FAILED, equipment=equipment, error=str(exc))
+            raise
         duration_ms = (time.perf_counter() - t0) * 1000
 
         fusion_res["asset_node"] = node
@@ -101,4 +120,12 @@ class DiagnoseEquipmentUseCase:
             asset_type=node.get("asset_type"),
             criticality=node.get("criticality"),
         )
+        publish(
+            Events.ANALYSIS_COMPLETED,
+            equipment=equipment,
+            health_index=health_index,
+            health_status=health_status,
+            duration_ms=duration_ms,
+        )
+        publish(Events.DIAGNOSTIC_CREATED, equipment=equipment, health_status=health_status)
         return fusion_res

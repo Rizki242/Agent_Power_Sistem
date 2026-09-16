@@ -272,9 +272,10 @@ Tidak ada audit log terstruktur              SEDANG       Phase 29
 Update pasca-baseline (2026-09-16): baris "Frontend route/menu statis di App.jsx" (Phase 25)
 sudah tidak berlaku - frontend React ditulis ulang (lihat docs/feature-parity.md "Riwayat") dan
 frontend baru membaca daftar modul dari GET /api/v2/module-load-report secara generik, tanpa
-hardcoded module list. Lihat catatan status di docs/final.md Phase 25. Baris gap lain di tabel
-di atas belum diverifikasi ulang terhadap kode saat ini - jangan anggap statusnya masih akurat
-tanpa mengecek langsung.
+hardcoded module list. Lihat catatan status di docs/final.md Phase 25. Baris "Tidak ada event bus
+internal" (Phase 28) juga sudah tidak berlaku - lihat pple/core/events.py dan catatan di
+docs/final.md Phase 28. Baris gap lain di tabel di atas belum diverifikasi ulang terhadap kode
+saat ini - jangan anggap statusnya masih akurat tanpa mengecek langsung.
 
 ```text
 

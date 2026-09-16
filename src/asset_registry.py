@@ -18,6 +18,7 @@ from typing import Any, Iterable
 
 import pandas as pd
 
+from pple.core.events import Events, publish
 from src.data_loader import get_data_path
 
 
@@ -121,6 +122,7 @@ def upsert_asset(asset: dict[str, Any]) -> dict[str, Any]:
     with _LOCK:
         records = _read_registry()
         prior = records.get(asset_id, {})
+        is_new = not prior
         record = {
             **prior,
             "asset_id": asset_id,
@@ -141,6 +143,7 @@ def upsert_asset(asset: dict[str, Any]) -> dict[str, Any]:
         }
         records[asset_id] = record
         _write_registry(records)
+    publish(Events.EQUIPMENT_CREATED if is_new else Events.EQUIPMENT_UPDATED, asset_id=asset_id, name=name)
     return record
 
 
