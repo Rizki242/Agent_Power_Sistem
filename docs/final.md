@@ -1427,6 +1427,15 @@ new architecture.
 
 # PHASE 25 — FRONTEND DYNAMIC
 
+> **Status: sudah terpenuhi.** Frontend React saat ini (`frontend/src/App.jsx`, `DataWorkspace.jsx`)
+> tidak punya `const modules = [...]` hardcoded sama sekali — `Overview` dan `DataWorkspace` sudah
+> me-render daftar modul dengan `modules.map(...)` dari `GET /api/v2/module-load-report`, yang
+> sendirinya dibangun dari scan `pple/engineering/manifests/*.yaml` (Phase 6-7) saat startup.
+> Menambah manifest baru (mis. BDV) langsung muncul di kedua tempat itu tanpa mengubah `App.jsx`.
+> Yang belum ada adalah menu "Engineering" dengan halaman per-modul seperti contoh di bawah — itu
+> scope terpisah (frontend saat ini tidak punya workspace per-domain sejak commit `22be836`, lihat
+> `docs/feature-parity.md`), bukan bagian dari masalah hardcoding yang fase ini targetkan.
+
 React jangan lagi:
 
 ```javascript
