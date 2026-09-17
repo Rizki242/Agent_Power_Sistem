@@ -7,9 +7,13 @@ the equipment upload wizard, kept free of Streamlit so they can be tested
 directly.
 """
 
+import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
 
 import pandas as pd
+from streamlit.testing.v1 import AppTest
 
 from src.components.equipment_upload_wizard import (
     _bulk_sample_csv,
@@ -112,6 +116,75 @@ class TestBulkSampleCsv(unittest.TestCase):
             payload = _row_to_asset_payload(row.to_dict())
             self.assertTrue(payload["name"])
             self.assertTrue(payload["monitoring_modules"])
+
+
+def _run_wizard():
+    def script():
+        import streamlit as st
+
+        from src.components.equipment_upload_wizard import render_equipment_upload_wizard
+
+        render_equipment_upload_wizard(st, edit_mode=True)
+
+    return AppTest.from_function(script, default_timeout=30).run()
+
+
+class TestSingleAssetFormPersistsToRegistry(unittest.TestCase):
+    """The single-asset form used to be a UI mock (its Submit button only
+    showed a success message without calling upsert_asset). Verifies it now
+    actually registers the asset, same as the bulk-upload path.
+
+    src.data_loader.get_data_path() resolves its data root once at import
+    time, so MCSA_DATA_DIR set after that has no effect - patch
+    asset_registry.get_data_path directly instead (same approach
+    tests/test_streamlit_app.py's _isolated_registry() uses)."""
+
+    def setUp(self):
+        import src.asset_registry as asset_registry
+
+        self._temp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._temp_dir.cleanup)
+        root = Path(self._temp_dir.name)
+        patcher = mock.patch.object(asset_registry, "get_data_path", side_effect=lambda *p: str(root.joinpath(*p)))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_submit_creates_the_asset(self):
+        from src.asset_registry import list_assets
+
+        at = _run_wizard()
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+        for widget in at.text_input:
+            if widget.label == "EQUIPMENT NAME":
+                widget.set_value("Single Form Test Motor")
+        for widget in at.selectbox:
+            if widget.label == "UNIT":
+                widget.set_value("UNIT 2")
+        for button in at.button:
+            if button.label == "Submit & Register":
+                button.click()
+        at.run(timeout=30)
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+
+        assets = list_assets()
+        self.assertEqual(len(assets), 1)
+        self.assertEqual(assets[0]["name"], "Single Form Test Motor")
+        self.assertEqual(assets[0]["unit"], "UNIT 2")
+        self.assertIn("VIBRASI", assets[0]["monitoring_modules"])
+        self.assertIn("MCSA", assets[0]["monitoring_modules"])
+
+    def test_blank_equipment_name_is_rejected(self):
+        from src.asset_registry import list_assets
+
+        at = _run_wizard()
+        for button in at.button:
+            if button.label == "Submit & Register":
+                button.click()
+        at.run(timeout=30)
+        self.assertFalse(list(at.exception), msg=[str(e) for e in at.exception])
+        self.assertTrue(list(at.error), "expected a validation error for the blank name")
+        self.assertEqual(len(list_assets()), 0)
 
 
 if __name__ == "__main__":

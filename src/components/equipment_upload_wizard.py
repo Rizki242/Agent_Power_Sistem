@@ -220,20 +220,21 @@ def render_equipment_upload_wizard(st, edit_mode: bool) -> None:
         st.markdown("##### Equipment Specifications")
         with st.form("wizard_spec_form"):
             r1c1, r1c2, r1c3 = st.columns(3)
-            asset_id = r1c1.text_input("ASSET ID", value="M-206")
-            eq_name = r1c2.text_input("EQUIPMENT NAME", value="ID Fan Motor")
+            asset_id = r1c1.text_input("ASSET ID", placeholder="Kosongkan untuk dibuat otomatis")
+            eq_name = r1c2.text_input("EQUIPMENT NAME", placeholder="mis. ID Fan Motor 2A")
             category = r1c3.selectbox("CATEGORY", ["Transformer", "Motor", "Pump", "Fan", "Compressor"])
 
             r2c1, r2c2, r2c3 = st.columns(3)
-            manufacturer = r2c1.text_input("MANUFACTURER", value="ABB")
-            model = r2c2.text_input("MODEL / TYPE", value="M3BP 315 SMB")
-            rated_power = r2c3.text_input("RATED POWER (KW)", value="750")
+            manufacturer = r2c1.text_input("MANUFACTURER", placeholder="mis. ABB")
+            model = r2c2.text_input("MODEL / TYPE", placeholder="mis. M3BP 315 SMB")
+            rated_power = r2c3.text_input("RATED POWER (KW)")
 
             r3c1, r3c2, r3c3 = st.columns(3)
-            voltage = r3c1.text_input("VOLTAGE (V)", value="6600")
-            rpm = r3c2.text_input("RPM", value="1485")
-            location = r3c3.text_input("LOCATION / AREA", value="Unit 2 - ID Fan Area")
+            voltage = r3c1.text_input("VOLTAGE (V)")
+            rpm = r3c2.text_input("RPM")
+            location = r3c3.text_input("LOCATION / AREA", placeholder="mis. Unit 2 - ID Fan Area")
 
+            unit = st.selectbox("UNIT", ["UNIT 1", "UNIT 2", "UNIT 3", "UNIT COMMON", "Unknown"], index=4)
             install_date = st.date_input("INSTALL DATE")
 
             st.markdown("---")
@@ -253,7 +254,23 @@ def render_equipment_upload_wizard(st, edit_mode: bool) -> None:
             drafted = b2.form_submit_button("Save Draft", disabled=not edit_mode)
 
             if submitted:
-                st.success("Equipment data submitted and registered successfully.")
+                if not eq_name.strip():
+                    st.error("Equipment Name wajib diisi.")
+                else:
+                    payload = _row_to_asset_payload({
+                        "asset_id": asset_id, "name": eq_name, "equipment_type": category,
+                        "manufacturer": manufacturer, "model": model, "rated_power_kw": rated_power,
+                        "rpm": rpm, "voltage_level": voltage, "unit": unit, "location": location,
+                        "install_date": install_date.isoformat() if install_date else "",
+                        "monitoring_modules": ",".join(
+                            m for m, checked in (
+                                ("VIBRASI", vibration), ("MCSA", mcsa), ("THERMAL", thermal),
+                                ("TRIBOLOGY", tribology), ("DGA", dga), ("PD", pd_online),
+                            ) if checked
+                        ),
+                    })
+                    saved = upsert_asset(payload)
+                    st.success(f"Aset '{saved['name']}' ({saved['asset_id']}) berhasil didaftarkan.")
             elif drafted:
                 st.info("Draft saved.")
 
