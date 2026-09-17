@@ -38,6 +38,13 @@ _INDONESIAN_MONTHS = {
 _POINT_KEYS = [f"{point}{axis}" for point in range(1, 7) for axis in ("V", "H", "A")]
 
 
+def _norm_name(name: str) -> str:
+    """Uppercase + collapse whitespace, including non-breaking spaces (\\xa0) -
+    some report exports use them between words where a plain space is
+    expected, which would otherwise silently defeat an exact-match lookup."""
+    return re.sub(r"\s+", " ", str(name).replace("\xa0", " ")).strip().upper()
+
+
 def _extract_report_month(path: Path) -> str:
     """Read the report title ("... BULAN MEI 2026") off the SUMMARY sheet and
     return the first day of that month as YYYY-MM-01. Raises if not found -
@@ -56,9 +63,9 @@ def _extract_report_month(path: Path) -> str:
 def _build_asset_lookup() -> dict[str, str]:
     lookup: dict[str, str] = {}
     for asset in list_assets():
-        lookup.setdefault(asset["name"].strip().upper(), asset["asset_id"])
+        lookup.setdefault(_norm_name(asset["name"]), asset["asset_id"])
         for alias in asset.get("aliases", []):
-            lookup.setdefault(str(alias).strip().upper(), asset["asset_id"])
+            lookup.setdefault(_norm_name(alias), asset["asset_id"])
     return lookup
 
 
@@ -107,7 +114,7 @@ def ingest_file(path_str: str) -> None:
             else:
                 identity = {
                     "equipment": equipment,
-                    "asset_id": asset_lookup.get(equipment.upper(), ""),
+                    "asset_id": asset_lookup.get(_norm_name(equipment), ""),
                     "unit_name": record["unit"],
                     "test_date": test_date,
                     "condition": record["status"].title(),
@@ -125,7 +132,7 @@ def ingest_file(path_str: str) -> None:
                     rows.append({**identity, "parameter": canonical_key, "value": value,
                                  "raw_value": value, "uom": "mm/s"})
 
-        asset_id = asset_lookup.get(equipment.upper())
+        asset_id = asset_lookup.get(_norm_name(equipment))
         if not asset_id:
             cond_skipped_no_asset += 1
             continue
