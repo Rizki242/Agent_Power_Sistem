@@ -1,0 +1,19 @@
+{
+  "id": "dga-2026",
+  "title": "Dga 2026",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: No. Dokumen :",
+      "content": "Revisi : 0\nTanggal terbit :\nHalaman : 1 dari 1\nNo. WO\nTanggal\nLokasi\nName TRAFO ESP UNIT 2 \nKKS -\nManufacture Ninas\nType -\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\nAnalisa :\nTanggal : Tanggal : Tanggal :\nBudiawan Rizki Firmansyah Slamet Suprianto N\nPengambil Sample Penguji Mengetahui\n08 Juli 2026 08 Juli 2026 08 Juli 2026\nCONDITION IEEE STD.\nC57.104-2019 COND 1 COND 1 COND 1 COND 1\nTDCG 720 42 60 55 61\nC2H2 1 <0,5 <0,5 <0,5 <0,5\nC2H4 50 7 8 8 9\nC2H6 90 4 7 6 9\nCH4 120 3 6 3 6\nH2 100 <5 <5 <5 <5\nCO 350 23 33 33 32\nCO2 2500 703 852 838 754\nH2O 30 23 24 25 25\nN2 - - -\nO2 - - -\nNo Properties\nStandart Hasil pengujian Keterangan\n(ppm) ESP 1 ESP 2 ESP 3 ESP 4\n7/8/2026 7/8/2026 7/8/2026 7/8/2026\nPT.PLN INDONESIA POWER - PLTU JERANJANG 3 x 25 MW\nINTEGRATED MANAGEMENT SYSTEM\nFORMULIR\nPENGUJIAN DGA\n7/8/2026\nUnit 2 PLTU Jeranjang\n1. Spesifikasi\n2. Hasil Pengukuran"
+    }
+  ]
+}

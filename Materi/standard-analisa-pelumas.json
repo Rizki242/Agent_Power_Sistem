@@ -1,0 +1,29 @@
+{
+  "id": "standard-analisa-pelumas",
+  "title": "STANDARD ANALISA PELUMAS",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: STANDARD ANALISA PELUMAS",
+      "content": "FYRQUEL OIL EHC UNIT 5,6 DAN 7 \n \n \nSTANDARD REFFERENCE \nNO TEST COMPONENT \nMitsubishi Certificate Of Analysis \n(COA) \nKETERANGAN \n1 Water content, ppm Vol 1500 - \n2 Total Chloride, ppm Wt 50 19 \n3 Total Acid Number, mg KOH/g 0.3 0.01 \n4 Kinematic Viscosity 100oF, cSt 43 ± 10% 43.0 \n5 Kinematic Viscosity 210oF, cSt 5 ± 10% 5.0 \n6 Phosporic Acid, ppm Wt 3.0 \n7 Color ASTM 0.3 0.4 \n8 Contamination (per ml sample) : \n > 5 µm 9700 6123 \n > 10 µm 2680 901 \n > 25 µm 380 65 \n > 50 µm 56 9 \n9 NAS CLASS 1638 \n10 ISO CODE 4406 \n \n \nSTANDARD ANALISA MINYAK SECARA UMUM \n \nNO TEST COMPONENT SATUAN TEST METHODE REMARK \n1 SPECIFIC GRAVITY D-1298 \n2 POUR POINT oF \n3 FLASH POINT OPEN CUP (CLV) oC D-93 \n4 FIRE POINT oC \n5 NEUTRALIZATION NUMBER mgr KOH/gr D-974 \n6 SAPONIFICATION NUMBER mgr KOH/gr \n7 SEDIMENT CONTENT %Wt D-473 \n8 Water content, ppm Vol ppm D-4928 \n9 Kinematic Viscosity 100oF, cSt cSt. D-445 \n10 Kinematic Viscosity 210oF, cSt cSt. D-445"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: STANDARD ANALISA PELUMAS",
+      "content": "PRODUKSI PERTAMINA \n \n \n BATASAN \nNO JENIS PELUMAS VISCOSITAS 40 oC \n SPEC. MIN MAX \nREMARK \n1 Meditran S 10 34.85 31.37 38.34 \n2 Meditran S 30 92.88 83.59 102.17 \n3 Meditran S 50 236.14 212.53 259.75 \n4 Mesran - SAE 40 140.74 126.67 154.81 \n5 Turalik 41 \n6 Turalik 43 \n7 Turalik 48 \n8 Turalik 52 68.2 61.38 75.02 \n \n \n \n \n \nSTANDARD ANALISA PELUMAS \nPRODUKSI MOBIL OIL \n \n \n BATASAN REMARK \nNO JENIS PELUMAS VISCOSITAS 40 oC \n SPEC. MIN MAX \n1 Mobil DTE Light \n2 Mobil DTE 26 68 61.20 74.80 \n3 Mobil DTE BB-220 230 207.00 253.00 \n4 Mobil Gear 630 220 198.00 242.00 \n5 Mobil Gear 634 460 414.00 506.00 \n6 Mobil Gear 636 680 612.00 748.00 Gear box mill"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: STANDARD ANALISA PELUMAS",
+      "content": "PRODUKSI SHELL \n \n BATASAN \nNO JENIS PELUMAS VISCOSITAS 40 oC \n SPEC. MIN MAX \nREMARK \n1 Diala Oil B 8.89 \n2 Morlina 10 \n3 Morlina C 10 \n4 Morlina C 100 \n5 Omala 150 \n6 Omala 320 320 \n7 Omala 460 460 414 506 \n8 Omala 468 \n9 Omala 680 680 \n10 Omala Oil 220 \n11 Omala Oil 320 320 \n12 Rimula D 40 140 \n13 Rored EP 90 182.21 \n14 Rored HD-A 140 373.74 \n15 Shell Omala Oil 460 460 ± 10 % \n16 Spirax HD 140 559 \n17 Spirax EP 90 184 \n18 Tellus C-10 10 \n19 Tellus Oil 22 \n20 Tellus Oil 46 46 \n21 Tellus Oil 68 68 \n22 Tellus 100 \n23 Turbo Oil T-32 \n24 Turbo Oil T-46 \n25 Turbo Oil T-68 \n26 Vitrea 220 220"
+    }
+  ]
+}

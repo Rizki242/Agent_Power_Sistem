@@ -1,0 +1,144 @@
+{
+  "id": "microsoft-powerpoint---3-oil-analysis",
+  "title": "Microsoft PowerPoint - 3. Oil analysis",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1",
+      "content": "OIL ANALYSIS"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: Tujuan analisa minyak :",
+      "content": "Tujuan analisa minyak :\n¾ Untuk mengetahui kondisi minyak\npelumas.\np\n¾ Memprediksi kondisi mesin\n¾ Data yang dihasilkan untuk\nmensupport keputusan pemeliharaan\nmensupport keputusan pemeliharaan\n¾ Mencegahc atastrofic failure pada\nga aa o au pada\nmesin"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: Tigak a t agori analisa minyak :",
+      "content": "g g y\nFTIR : Fourir Transform Infrared \nSpectroscopic"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: Particle count :",
+      "content": "Particle count :\n¾ Pi l Md jl h\n¾ Particle count : Metode penentuan jumlah\npartikel dengan batasan ukuran tertentu per \nvolume sample (ml atau 100 ml) \np( )\n¾ Jumlah partikel di dalam minyak menunjukkan\ntingkat kebersihan (cleanliness) dari minyak\ntersebut\ntersebut\n¾ Element logam dalam particle count. Dapat\nmemprediksi terjadinya kerusakan komponen\ni kib t ki dll\nmesina kibat aus, korosi, dll.\n¾ Beberapa standard untuk mengukur cleanliness \n: ISO 4406, NAS 1638, SAE 749\n,,"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5",
+      "content": "Kriteria cleanliness ISO 4406"
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6: Diagram alir prosedure diagnosa",
+      "content": "particle count"
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7: Viscosity :",
+      "content": "y\n¾ Kinematic viscosity ialah kemampuan minyak\ny p y\nmengalir di dalam suatu pipa capiler dengan\nmenggunakan gaya gravitasi yang dinyatakan\ndalam satuan volume per satuan waktu (detik) \ndalam satuan volume per satuan waktu (detik) \npada temperatur tertentu (40 oC).\n¾ Semakin kental minyak maka akan semakin sulit\nk l h k kl\nuntuk mengalir, sehingga untuk pipa kapiler yang \nsama dibutuhkan waktu yang lebih lama untuk\nmengalirkan sejumlah volume yang sama per \ng j yg p\nsatuan waktu dan pada temperature tertentu.\n¾ Satuan viscosity ialah : Centistoke (cST), Saybolt\nUniversal Second (SUS)\nUniversal Second (SUS)"
+    },
+    {
+      "id": "page-8",
+      "heading": "Halaman 8: ¾ Perubahan Viscosity pada mesin akan mempengaruhi fungsi",
+      "content": "minyak pelumas, sangat mungkin akan terjadi keausan dan\nminyak pelumas, sangat mungkin akan terjadi keausan dan\npeningkatan temperatur operasi mesin.\n¾ Laju perubahan viscosity sangat dipengaruhi oleh :\n• Panas yang berlebihan dan terjadinyao k s i d a s ipada minyak\nyg jy p y\n• Kontaminasi berlebihan seperti : water, glycol, solven dan\npartikel yang sangat kecil."
+    },
+    {
+      "id": "page-9",
+      "heading": "Halaman 9",
+      "content": "Diagram alir prosedure diagnosa Viscosity"
+    },
+    {
+      "id": "page-10",
+      "heading": "Halaman 10: Neutralization Number.",
+      "content": "¾ Total acid number (TAN) : menyatakan total \nkonsentrasi acid di dalam minyak. Dinyatakan dengan\nangka penetralan, yaitu jumlah KOH yang dipergunakan\nuntuk titrasi 1 ml minyak.\n¾ TAN di k d d li i \n¾ TAN diukur dengan metodec olorimetric atau\npotentiometric untuk minyak yang berwarna gelap dimana\ntitrasi sulit dilakukan.\n¾ TAN dengan konsentrasi > 4 akan sangat korosif terhadap\n¾ TAN dengan konsentrasi > 4 akan sangat korosif terhadap\nbearing dan permukaan logam lainnya, akan lebih agressif\nlagi dengan kehadiran air di dalam minyak.\n¾ Beberapa penyebab tingginya TAN :\n¾ Beberapa penyebab tingginya TAN :\n• Terjadinya oksidasi pada minyak\n• Rusaknya beberapa oil additive"
+    },
+    {
+      "id": "page-11",
+      "heading": "Halaman 11: Diagram alir prosedure diagnosa TAN",
+      "content": "g p g"
+    },
+    {
+      "id": "page-12",
+      "heading": "Halaman 12: Neutralization Number.",
+      "content": "Neutralization Number.\n¾ Total base number (TBN) : menyatakan total \nlk li i di dl ik \nalkalinity di dalam minyak. \n¾ TBN berasal dari additives yang dipergunakan\nyg pg\nuntuk mencegah terjadinya TAN sebagai hasil\ndari minyak yang terbakar."
+    },
+    {
+      "id": "page-13",
+      "heading": "Halaman 13: Diagram alir prosedure diagnosa TBN",
+      "content": "Diagram alir prosedure diagnosa TBN"
+    },
+    {
+      "id": "page-14",
+      "heading": "Halaman 14: Fourir transforn infrared (FTIR)",
+      "content": "spectroscopy. \nspect oscopy\n¾ FTIR ialah metode pengujian untuk monitoring berbagai\nparameter minyak secara cepat dalam waktu bersamaan\nparameter minyak secara cepat dalam waktu bersamaan\ndengan memanfaatkan infrared energy.\nPanjang gelombang\nBerbagai Contaminant\nyang bisa Dimonitor\nyang bisa Dimonitor\noleh FTIR"
+    },
+    {
+      "id": "page-15",
+      "heading": "Halaman 15: Ferrography.",
+      "content": "gp y\n¾ Metode pengujian endapan (pengotor) minyak\nyang mampu menganalisa : morphology (bentuk), \nwarna, ukuran, jumlah element, sehingga dapat\ndiprediksi asal dari endapan tersebut.\nDiagram alir\nprosedure\ndiagnosa\ng\nFerrography"
+    },
+    {
+      "id": "page-16",
+      "heading": "Halaman 16: Rotating Bomb Oxidation Test (RBOT).",
+      "content": "¾ RBOT bertujuan untuk mengetahui Oxidation \nstability dari minyak pada temperatur tinggi dan\ni i f l lif (RUL)\nremaining useful life (RUL).\n¾ Indikasi minyak teroksidasi : Viscosity meningkat, \nTAN meningkat (berasal dari asam organic)\ng ( g)\nm alir\nure\nsa\nDiagram\nprosedu\ndiagnos\nRBOT\nD\np\nd\nR"
+    },
+    {
+      "id": "page-17",
+      "heading": "Halaman 17: ¾ Kondisi yang dapat mempercepat laju oksidasi :",
+      "content": "9 Additive Anti oxidant rusak atau tidak sesuai\n9 Meningkatnya temperatur minyak atau logam\n9 Kontaminasi dari partikel logam\nKontaminasi dari partikel logam\n9 Tingginya kandungan air\n9 Tingginya tekanan kerja minyak\n¾ Apabila Oxidation stability dari minyak dan\nRemaining useful life (RUL) abnormal, maka\nlakukan corective action :\n9 Kurangi Oxidative stress (Panas, udara, air dan\nlogam-logam reaktive)\nlogam logam reaktive)\n9 Perbaiki kualitas base oil\n9 Perbaiki anti oxidant additive\n9 Ganti minyak\n9 Ganti minyak"
+    },
+    {
+      "id": "page-18",
+      "heading": "Halaman 18: Water content (Karl Fisher).",
+      "content": "Water content (Karl Fisher). \n¾ Karl fisher dipergunakan untuk pengujian Total Water \nContent (kandungan air) di dalam minyak dengan\nContent (kandungan air) di dalam minyak dengan\nkandungan yang rendah (terbatas)\n¾ Metode pengukuran ialah Electrometric titration. Minyak\ndititrasi menggunakan Iodine yang mengandung Fisher \ndititrasi menggunakan Iodine yang mengandung Fisher \nreagent.\n¾ Kehadiran air di dalam minyak menyebabkan kerusakan\npermukaan logam karena dapat mempercepat laju korosi, \np g p pp j ,\nmerusak additives minyak, memicu terjadinya oksidasi\nminyak dan menurunkan efektifitas minyak pelumas.\n¾ Darimana air berasal ?? :\n¾ Darimana air berasal ?? :\n- Penambahan minyak dengan kandungan air tinggi\n- Vapor extraction system yang tidak efektif\n- Kebocoran oil cooler\n- Kebocoran turbine gland steam seal\n- Kondensasi di dalam reservoir"
+    },
+    {
+      "id": "page-19",
+      "heading": "Halaman 19: Diagram alir prosedure diagnosa Water Content",
+      "content": "g p g"
+    },
+    {
+      "id": "page-20",
+      "heading": "Halaman 20: Elemental Spectroscopy (AAS)",
+      "content": "Elemental Spectroscopy (AAS)\n¾ AAS dipergunakan untuk menganalisa element logam dalam\nminyak pelumas Bekerja pada temperatur sangat tinggi\nminyak pelumas. Bekerja pada temperatur sangat tinggi\nsehingga element logam menguap dan memancarkan\nfrekwensi yang spesifik. Spectrometer menangkap frekwensi\ntersebut dan mengkonversi menjadi konsentrasi masing-\ntersebut dan mengkonversi menjadi konsentrasi masing\nmasing element logam.\n¾ Hasil identifikasi terhadap element logam dapat membantu\nanalisa kerusakan peralatan mesin atau kerusakan dari\np\nadditives minyak itu sendiri.\n¾ Darimana air berasal ?? :\n¾ Darimana air berasal ?? :\n- Penambahan minyak dengan kandungan air tinggi\n- Vapor extraction system yang tidak efektif\n- Kebocoran oil cooler\n- Kebocoran turbine gland steam seal\n- Kondensasi di dalam reservoir"
+    },
+    {
+      "id": "page-21",
+      "heading": "Halaman 21",
+      "content": "Katagori sumber element (Wear, Contaminant, Additives)"
+    },
+    {
+      "id": "page-22",
+      "heading": "Halaman 22: Diagram alir prosedure diagnosa Wear.",
+      "content": "g p g\nProsedur ini dipergunakan\nuntuk diagnosa ketidak\nl W ( ) \nnormalan Wear (aus), yang\nditunjukkan dengan kenaikkan\n: Fe, Cu, Cr, Sn, Al dan Pb"
+    },
+    {
+      "id": "page-23",
+      "heading": "Halaman 23: Prosedur ini dipergunakan",
+      "content": "untuk diagnosa ketidak\nNl Ct it i \nNormalan Contamination, yang\nditunjukkan dengan kenaikkan\n: Si, Na, B, Ca, Mg dan Pb\nSumber contaminant : \nSumber contaminant : \nAntifoam additives,\nGlycol, Kebocoran\ncooling system\ngy"
+    },
+    {
+      "id": "page-24",
+      "heading": "Halaman 24: Prosedur ini dipergunakan untuk diagnosa ketidak",
+      "content": "Normalan Additives, yang ditunjukkan dengan kenaikkan :\nZn, P, S, Mo, Ca dan Mg"
+    },
+    {
+      "id": "page-25",
+      "heading": "Halaman 25: Flash Point Test",
+      "content": "Flash Point Test\n¾ Flash point test bertujuan untuk mengetahui adanya zat\nvolatile dari minyak, atau titik nyala minyak.\nvolatile dari minyak, atau titik nyala minyak.\n¾ Kehadiran kontaminan\nminyak bakar di dalam\nminyak bakar di dalam\nminyak pelumas\nberpotensi\nmenyebabkan\ny\nterbakarnya minyak\npelumas bahkan\nterjadi ledakan ketika\nmesin beroperasi."
+    },
+    {
+      "id": "page-28",
+      "heading": "Halaman 28: REFERENSI",
+      "content": "REFERENSI\n1. Drew Trojer & Jim fitch : “Oil Analysis Basic”, Noria\n1. Drew Trojer & Jim fitch :  Oil Analysis Basic ,  Noria\nCorporation, USA‐1999\n2. Engineering  Tribology : “Gweedon W . Stachowiak &  \nAndrew W Batchelor Butterworth\nAndrew W. Batchelor, Butterworth\n3. NTS  Application Notes : “Lubricant Cleanliness”, \nwww.natrib.com\n4. “Oil  Analysis technology For PDM” , PT.TVP\n5. “Lubricant and  Lubrication” , www.sainz.com"
+    }
+  ]
+}

@@ -25,6 +25,7 @@ from src.asset_registry import (
     update_condition_record,
     upsert_asset,
 )
+from src.components.equipment_upload_wizard import render_equipment_upload_wizard
 from src.components.theme import render_page_header
 
 _UNIT_OPTIONS = ["UNIT 1", "UNIT 2", "UNIT 3", "UNIT COMMON", "Unknown"]
@@ -45,7 +46,10 @@ def render_asset_registry_page(st, edit_mode: bool) -> None:
 
     assets = list_assets()
 
-    tab_list, tab_new, tab_condition = st.tabs(["Daftar Aset", "Tambah / Ubah Aset", "Catat Riwayat Kondisi"])
+    tab_list, tab_upload, tab_new, tab_condition = st.tabs(["Daftar Aset", "Upload & Registrasi", "Edit Manual Aset", "Catat Riwayat Kondisi"])
+
+    with tab_upload:
+        render_equipment_upload_wizard(st, edit_mode)
 
     with tab_list:
         c_act1, c_act2 = st.columns([3, 1])

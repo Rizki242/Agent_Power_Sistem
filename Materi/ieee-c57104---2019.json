@@ -1,0 +1,324 @@
+{
+  "id": "ieee-c57104---2019",
+  "title": "IEEE C57.104 - 2019",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: TRANSFORMER OIL ANALYSIS",
+      "content": "Fikri Khoirur Rizal \nPT TRANSFORMATOR SERVIS INDONESIA"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: TRANSFORMER OIL ANALYSIS",
+      "content": "Pengujian minyak pada trafo bertujuan untuk \nmengetahui kondisi trafo, kondisi isolator kertas dan \nkualitas minyak trafo sendiri. Dari hasil pengujian \nminyak trafo dapat dilakukan tindakan lanjutan\nuntuk menjaga kehandalan dari trafo dan \nmemperpanjang lifetime trafo."
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: REASON & BENEFIT",
+      "content": "Menjaga kehandalan trafo\nMemperpanjang masa pakai trafo\nMenjadi acuan rencana dan skala prioritas\ndalam maintenance"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: FUNGSI MINYAK TRAFO",
+      "content": " Melindungi isolator kertas\n Isolator elektrik\n Penghantar panas\n Indikator kondisi trafo"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5: TRANSFORMER OIL ANALYSIS",
+      "content": "Kondisi Transformator Dissolved Gas Analysis\nKondisi Isolator Kertas Furan Analysis\nKualitas Minyak\nTransformator\nOil Quality Analysis\n- Breakdown Voltage\n- Water Content\n- Acidity\n- Color & Appearance\n- Interfacial Tension\n- Dielectric Dissipation Factor\n- Corrosive Sulphur\n- Inhibitor Content"
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6: DISSOLVED GAS ANALYSIS",
+      "content": "IEEE C57.104-2019\nPengujian untuk mengetahui kondisi\ntransformator"
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7: DGA is one of the most widely used",
+      "content": "diagnostic tools for transformer condition \nassessment because experience has proven it \nto be an effective tools.\nIEEE C57.104 - 2019"
+    },
+    {
+      "id": "page-8",
+      "heading": "Halaman 8: Perubahan isi Standar",
+      "content": " Tabel 4 kondisi, diganti dengan table 1 dan table 2.\n Dihapuskan interpretasi TCG dan TDCG.\n Penambahan rate kenaikan gas pada table 3 dan table 4.\n Flowchart baru untuk interpretasi.\n Penambahan jenis gangguan.\n Duval Triangle 1, 4 dan 5 dan Duval Pentagon 1 dan 2.\n Interpretasi CO & CO2."
+    },
+    {
+      "id": "page-9",
+      "heading": "Halaman 9: IEEE C57.104-1991",
+      "content": "IEEE C57.104-2008"
+    },
+    {
+      "id": "page-10",
+      "heading": "Halaman 10: Batasan Konsentrasi Gas",
+      "content": "IEEE C57.104-2019\n Table 1 dan Table 2 standard IEEE C57.104-2019 merupakan batasan untuk \nkonsentrasi gas sebagai batasan konsentrasi gas pada table 1 standard IEEE \nC57.104-2008.\n Table 3 standard IEEE C57.104-2019 merupakan batasan dari Delta Gas, \ndimana Delta Gas sendiri merupakan kenaikan konsetrasi gas dari 2 pengujian \nterakhir.\n Table 4 standard IEEE C57.104-2019 merupakan batasan dari Rate Gas, dimana\nRate Gas merupakan laju kenaikan dari gas dalam 1 tahun (ppm/tahun). \nPerhitungan dari Rate Gas memerlukan 3-6 data DGA dengan rentang waktu 4-\n24 bulan."
+    },
+    {
+      "id": "page-18",
+      "heading": "Halaman 18: Contoh 1: Hasil tanpa perlu tabel",
+      "content": "Action: Konsultasi pada expert DGA dan investigasi"
+    },
+    {
+      "id": "page-19",
+      "heading": "Halaman 19: Contoh 2",
+      "content": "Transformator dengan usia 12 tahun"
+    },
+    {
+      "id": "page-20",
+      "heading": "Halaman 20: Grafik Contoh Data",
+      "content": "Dari grafik tidak ada indikasi masalah, selanjutkan cek dengan table"
+    },
+    {
+      "id": "page-22",
+      "heading": "Halaman 22",
+      "content": "Contoh 2: Menghitung Delta Gas"
+    },
+    {
+      "id": "page-23",
+      "heading": "Halaman 23",
+      "content": "Contoh 2: Menghitung Delta Gas"
+    },
+    {
+      "id": "page-24",
+      "heading": "Halaman 24: Contoh 2: Menghitung rate ppm/tahun",
+      "content": "Rate diambil dari 3-6 data dengan batas waktu 4–24 Bulan"
+    },
+    {
+      "id": "page-25",
+      "heading": "Halaman 25: Contoh 2: Rate bisa dihitung dengan",
+      "content": "grafik excel (mX+b)"
+    },
+    {
+      "id": "page-26",
+      "heading": "Halaman 26",
+      "content": "Contoh 2"
+    },
+    {
+      "id": "page-27",
+      "heading": "Halaman 27",
+      "content": "Contoh 2: Menghitung Rasio O2/N2"
+    },
+    {
+      "id": "page-29",
+      "heading": "Halaman 29",
+      "content": "Contoh 2: Perbandingan Table 1"
+    },
+    {
+      "id": "page-30",
+      "heading": "Halaman 30",
+      "content": "Contoh 2: Perbandingan Table 3"
+    },
+    {
+      "id": "page-31",
+      "heading": "Halaman 31",
+      "content": "Contoh 2: Perbandingan Table 4"
+    },
+    {
+      "id": "page-32",
+      "heading": "Halaman 32",
+      "content": "Contoh 2: Hasil Perbandingan"
+    },
+    {
+      "id": "page-33",
+      "heading": "Halaman 33",
+      "content": "Contoh 2: Continue Pengujian Rutin"
+    },
+    {
+      "id": "page-35",
+      "heading": "Halaman 35",
+      "content": "Contoh 3: Ada perubahan signifikan"
+    },
+    {
+      "id": "page-36",
+      "heading": "Halaman 36: Contoh 3: Perbandingan tabel",
+      "content": "DGA Status = Tidak pada Status 1"
+    },
+    {
+      "id": "page-38",
+      "heading": "Halaman 38",
+      "content": "Contoh 3: Perbandingan Table 2"
+    },
+    {
+      "id": "page-39",
+      "heading": "Halaman 39",
+      "content": "Contoh 3: Perbandingan Tabel"
+    },
+    {
+      "id": "page-41",
+      "heading": "Halaman 41",
+      "content": "Six Basic Types of Faults"
+    },
+    {
+      "id": "page-42",
+      "heading": "Halaman 42: Additional sub-types of faults",
+      "content": "• Stray Gassing – terjadi di suhu <200C pada mineral oil, terjadi karena ketidakstabilan dari\nmineral oil yang dibuat dengan beberapa metode refining baru. Stray gassing juga bisa\nterjadi karena incompatibility antar material (bisa karena aditif).\n• Catalytic reactions – reaksi antara air dan baja pada valve sampling atau air dengan baja\npada tangki trafo."
+    },
+    {
+      "id": "page-43",
+      "heading": "Halaman 43: Metode Interpretasi",
+      "content": " Six basic types of Faults\n Duval Pentagon 1\n Duval Triangle 1\n Additional sub-types of Faults\n Duval Pentagon 2\n Duval Triangle 4\n Duval Triangle 5\n Mixtures of Faults\n Compare Duval Pentagon, Duval Triangle, Keys Gas Ratios & Doenenburg Ratios."
+    },
+    {
+      "id": "page-44",
+      "heading": "Halaman 44",
+      "content": "Duval Pentagon 1"
+    },
+    {
+      "id": "page-45",
+      "heading": "Halaman 45",
+      "content": "Duval Pentagon 2"
+    },
+    {
+      "id": "page-46",
+      "heading": "Halaman 46",
+      "content": "Duval Triangle 1"
+    },
+    {
+      "id": "page-47",
+      "heading": "Halaman 47: Duval Triangle 4",
+      "content": "Syarat:\nGangguan yang ditunjukkan\npada Duval Triangle 1 adalah \nPartial Discharge (PD), Thermal \nDibawah 300 C (T1), dan Thermal\nAntara 300 – 700 C (T2)."
+    },
+    {
+      "id": "page-48",
+      "heading": "Halaman 48: Duval Triangle 5",
+      "content": "Syarat:\nGangguan yang ditunjukkan\npada Duval Triangle 1 adalah \nThermal Antara 300 – 700 C (T2) \ndan Thermal diatas 700 C (T3)."
+    },
+    {
+      "id": "page-49",
+      "heading": "Halaman 49: Interpretasi CO dan CO2",
+      "content": " CO>1000 ppm dan CO2/CO<3, tanpa disertai gas hidrokarbon bukan merupakan\nindikasi gangguan pada kertas, tetapi lebih disebabkan oleh oksidasi pada minyak\ndengan kondisi O2 rendah.\n CO>1000 ppm dan CO2/CO<3, disertai gas hidrokarbon dalam jumlah cukup\nsignifikan, mengindikasikan adanya fault pada kertas. Hal ini perlu dikonfirmasi\ndengan Pentagon 2 dan Triangle 4, 5 dan observasi lain (CO2 dan Furan)\n CO2>10000 ppm, CO2/CO>20, dan nilai furan yang tinggi mengindikasikan\ndegradasi kertas pada suhu relative rendah (<140C)\n Konsentrasi CO dan CO2 dibawah table 1 menunjukkan normal gassing tanpa fault.\n Pertumbuhan gas CO dan CO2 yang rendah tidak selalu menunjukkan tidak adanya\ngangguan pada kertas. Fault local pada bagian kecil kertas terkadang tidak\nmenghasilkan gas CO dan CO2 yang terdeteksi. Akan tetapi fault tersebut tetap\nmenghasilkan gas hidrokarbon yang lain dan perlu dilakukan deteksi fault pada \nkertas dengan Pentagon 2 dan Triangles 4 atau 5."
+    },
+    {
+      "id": "page-50",
+      "heading": "Halaman 50: DGA FOR OLTC",
+      "content": "“Discharges and unwanted arcs cant be detected \nbecause the OLTCs work with arcs in oil as their \nnormal operation.”\n“Thermal Faults are possible to detect. The arcs \nduring normal switching generate both acetylene \nand hydrogen but also the three gases indicating \nthermal faults, methane, ethane and etyhelene.”"
+    },
+    {
+      "id": "page-51",
+      "heading": "Halaman 51: FURAN ANALYSIS",
+      "content": "IEC 61198\nPengujian untuk mengetahui kondisi isolator \nkertas"
+    },
+    {
+      "id": "page-52",
+      "heading": "Halaman 52: PERAN ISOLATOR KERTAS",
+      "content": "Isolator kertas pada trafo merupakan isolator utama\npada trafo, usia dari trafo sama dengan usia dari\nisolator kertas tersebut. Kenaikan kandungan air \npada kertas trafo sebesar 2 kali akan menurunkan\nusia isolator kertas menjadi setengahnya. \nSeiring usia dari trafo, isolator kertas akan\nmengalami degradasi, kandungan air pada kertas\nbisa mempercepat proses degradasi tersebut."
+    },
+    {
+      "id": "page-53",
+      "heading": "Halaman 53: FURAN ANALYSIS",
+      "content": "Degradasi kertas pada trafo akan\nterlarut pada minyak trafo. \nFuran analysis digunakan untuk \nmenghitung seberapa banyak\nkandungan degradasi kertas yang \nterlarut pada minyak trafo.\nUsia kertas = 100% - kertas\nterlarut"
+    },
+    {
+      "id": "page-55",
+      "heading": "Halaman 55: OIL QUALITY ANALYSIS",
+      "content": "Pengujian untuk mengetahui kualitas minyak\ntransformator"
+    },
+    {
+      "id": "page-56",
+      "heading": "Halaman 56: OIL QUALITY ANALYSIS",
+      "content": " Breakdown Voltage (Tegangan \nTembus)\n Water Content (Kandungan\nAir)\n Total Acid Number (Keasaman)\n Color & Appearance (Warna\ndan Tampilan) \n Interfacial Tension (Tegangan \nAntarmuka)\n Dielectric Dissipation Factor & \nResistivity\n Metal Content\n Corrosive Sulphur\n Flash Point (Titik Nyala)\n OQIN (Oil Quality Index \nNumber)"
+    },
+    {
+      "id": "page-57",
+      "heading": "Halaman 57: BREAKDOWN VOLTAGE / TEGANGAN",
+      "content": "TEMBUS (IEC 60156)\nPengujian untuk mengetahui\nkemampuan dielektrik dari\nminyak trafo, berapa besar\ntegangan yang bisa ditahan oleh \nminyk trafo. \nBDV sendiri dipengaruhi oleh \nkandungan air dan kontaminan\npada minyak."
+    },
+    {
+      "id": "page-58",
+      "heading": "Halaman 58: BATASAN NILAI BREAKDOWN VOLTAGE",
+      "content": "(IEC 60296 & IEC 60422) \nNEW OIL\nSebelum Purifikasi Setelah Purifikasi\nMin. 30 kV Min 70 kV\nNEW OIL SETELAH DIMASUKAN DALAM TRAFO BARU\n< 72.5 kV 72.5 – 170 kV > 170 kV\nMin. 55 kV Min. 60 kV Min. 60 kV\nUSED OIL\n< 72.5 kV 72.5 – 170 kV > 170 kV\nGood > 40 kV > 50 kV > 60 kV\nFair 30 – 40 kV 40 – 50 kV 50 – 60 kV\nPoor < 30 kV < 40 kV < 50 kV"
+    },
+    {
+      "id": "page-59",
+      "heading": "Halaman 59: WATER CONTENT / KANDUNGAN AIR",
+      "content": "(IEC 60814)\nAir merupakan hal yang paling \ndihindari ada di dalam trafo. \nKandungan air pada minyak trafo\nsecara langsung akan\nmempengaruhi nilai BDV dan \ndalam jangka panjang akan\nmemicu reaksi kimia pada \nminyak sehingga menurunkan\nkualitas minyak untuk parameter \nyang lain."
+    },
+    {
+      "id": "page-60",
+      "heading": "Halaman 60: BATASAN NILAI WATER CONTENT",
+      "content": "(IEC 60296 & IEC 60422) \nNEW OIL\nPengiriman dalam jumlah besar Pengiriman dengan drum / IBC\nMax. 30 ppm Max. 40 ppm\nNEW OIL SETELAH DIMASUKAN DALAM TRAFO BARU\n< 72.5 kV 72.5 – 170 kV > 170 kV\nMax. 20 ppm Max. 10 ppm Max. 10 ppm\nUSED OIL\n< 72.5 kV 72.5 – 170 kV > 170 kV\nGood < 30 ppm < 20 ppm < 15 ppm\nFair 30 – 40 ppm 20 – 30 ppm 15 – 20 ppm\nPoor > 40 ppm > 30 ppm > 20 ppm"
+    },
+    {
+      "id": "page-61",
+      "heading": "Halaman 61: TOTAL ACID NUMBER / KEASAMAN",
+      "content": "(IEC 62021-2)\nKeasaman adalah salah satu\nproduk dari reaksi kimia\n(oksidasi) pada minyak\ntrafo. Oksidasi pada minyak\ntrafo dipicu oleh adanya air , \noksigen dan panas yang \nterjadi di dalam trafo."
+    },
+    {
+      "id": "page-62",
+      "heading": "Halaman 62: BATASAN NILAI TOTAL ACIDITY",
+      "content": "(IEC 60296 & IEC 60422) \nNEW OIL\nMax. 0.01 mg KOH/g\nNEW OIL SETELAH DIMASUKAN DALAM TRAFO BARU\nMax. 0.03 mg KOH/g\nUSED OIL\n< 72.5 kV 72.5 – 170 kV > 170 kV\nGood < 0.15 < 0.10 < 0.10\nFair 0.15 – 0.30 0.10 – 0.20 0.10 – 0.15\nPoor > 0.30 > 0.20 > 0.15"
+    },
+    {
+      "id": "page-63",
+      "heading": "Halaman 63: COLOR & APPEARANCE / WARNA &",
+      "content": "TAMPILAN (ASTM D1500)\nWarna minyak trafo akan\nmenjadi gelap seiring\nterjadinya reaksi kimia. \nHasil oksidasi pada minyak\ntrafo akan menghasilkan\nsenyawa-senyawa kimia\nlain yang menjadikan\nwarna minyak menjadi\ngelap."
+    },
+    {
+      "id": "page-64",
+      "heading": "Halaman 64: BATASAN NILAI TOTAL ACIDITY",
+      "content": "(IEC 60296 & IEC 60422) \nNEW OIL\nClear , free from sediment and suspended matter\nNEW OIL SETELAH DIMASUKAN DALAM TRAFO BARU\nClear , free from sediment and suspended matter\nUSED OIL\n< 72.5 kV 72.5 – 170 kV > 170 kV\nGood Clear and without visible contamination\nFair -\nPoor Dark and/or turbid"
+    },
+    {
+      "id": "page-65",
+      "heading": "Halaman 65: INTERFACIAL TENSION / TEGANGAN",
+      "content": "ANTARMUKA (ASTM D971)\nIFT merupakan kemampuan minyak\nuntuk menolak air , sehingga ketika\nIFT minyak tinggi, makan air akan\nsusah tercampur dengan minyak. \nKualitas IFT sendiri akan turun\ndengan adanya oksidasi pada \nminyak serta kandungan air pada \nminyak juga dapat menurunkan\nkualitas IFT ."
+    },
+    {
+      "id": "page-66",
+      "heading": "Halaman 66: BATASAN NILAI TOTAL ACIDITY",
+      "content": "(IEC 60296 & IEC 60422) \nNEW OIL\nNo general requirement\nNEW OIL SETELAH DIMASUKAN DALAM TRAFO BARU\nMin. 35 mN/m\nUSED OIL\nInhibit Oil Un-Inhibit Oil\nGood > 28 > 25 \nFair 22 – 28 20 – 25\nPoor < 22 < 20"
+    },
+    {
+      "id": "page-67",
+      "heading": "Halaman 67: DIELECTRIC DISSIPATION FACTOR &",
+      "content": "RESISTIVITY at 90°C (IEC 60247)\nDielectric Dissipation Factor & Resistivity \nmerupakan pengujian untuk mengetahui tingkat\ndisipasi dan resistivitas minyak trafo.\nParameter ini sensitive terhadap kontaminan polar \nyang bisa larut atau penuaan dari minyak.\nKualitas parameter ini dapat mempengaruhi\ndielectric losses dan/atau kemampuan isolator dari\nperalatan listrik."
+    },
+    {
+      "id": "page-68",
+      "heading": "Halaman 68: BATASAN NILAI DIELECTRIC DISSIPATION FACTOR",
+      "content": "(IEC 60296 & IEC 60422) \nNEW OIL SETELAH DIMASUKAN DALAM TRAFO BARU\n< 72.5 kV 72.5 – 170 kV > 170 kV\nMax. 0.015 Max. 0.015 Max. 0.010\nUSED OIL\n< 72.5 kV 72.5 – 170 kV > 170 kV\nGood < 0.10 < 0.10 < 0.10\nFair 0.10 – 0.50 0.10 – 0.50 0.10 – 0.20\nPoor > 0.50 > 0.50 > 0.20\nNEW OIL\nMax. 0,005"
+    },
+    {
+      "id": "page-69",
+      "heading": "Halaman 69: BATASAN NILAI RESISTIVITY",
+      "content": "(IEC 60296 & IEC 60422) \nNEW OIL SETELAH DIMASUKAN DALAM TRAFO BARU\nMin. 60 GΩm\nUSED OIL\n< 72.5 kV 72.5 – 170 kV > 170 kV\nGood > 3 > 3 > 10 \nFair 0.2 – 3 0.2 – 3 3 – 10\nPoor < 0.2 < 0.2 < 3\nNEW OIL\nTidak dijelaskan"
+    },
+    {
+      "id": "page-70",
+      "heading": "Halaman 70: CORROSIVE SULPHUR (ASTM D1275-B)",
+      "content": "Minyak trafo merupakan salah satu\nhasil dari pengolahan minyak bumi, \ndimana minyak bumi sendiri memiliki\nkandungan sulfur. Dengan adanya\nkandungan sulfur pada minyak trafo, \nkemampuan korosif dari minyak trafo\nharus dikendalikan. Efek korosif pada \nminyak trafo akan merusak bagian-\nbagian pada trafo terutama\nkonduktor-konduktor yang ada di \ndalam trafo."
+    },
+    {
+      "id": "page-71",
+      "heading": "Halaman 71: BATASAN NILAI CORROSIVE SULPHUR",
+      "content": "(IEC 60296 & IEC 60422) \nNEW OIL\nNon Corrosive\nNEW OIL SETELAH DIMASUKAN DALAM TRAFO BARU\nNon Corrosive\nUSED OIL\n< 72.5 kV 72.5 – 170 kV > 170 kV\nGood Non Corrosive\nFair -\nPoor Corrosive"
+    },
+    {
+      "id": "page-72",
+      "heading": "Halaman 72",
+      "content": "INHIBITOR CONTENT (IEC 61125)"
+    },
+    {
+      "id": "page-73",
+      "heading": "Halaman 73: Jenis Minyak Dari Kandung Inhibitor",
+      "content": " Un-inhibited Oil : Tidak mengadung zat aditif\n Trace Inhibit : <0.08%\n Inhibit Oil : 0.1% - 0.4%"
+    },
+    {
+      "id": "page-74",
+      "heading": "Halaman 74: FILTRASI / PURIFIKASI",
+      "content": "Filtrasi atau Purifikasi dilakukan untuk mengurangi\nkontaminasi fisik, kandungan air dan gas. Dalam proses \nfiltrasi dilakukan 3 tahapan, yaitu:\n Filtrasi (penyaringan minyak) untuk menghilangkan\nkontaminasi fisik.\n De-humidifikasi untuk menghilangkan kandungan air\n De-gasifikasi untuk menghilangkan kandungan gas terlarut\nProses de-humidifikasi dan de-gasifikasi menggunakan\nmetode vakum sehingga tidak akan terkontaminasi dari luar."
+    },
+    {
+      "id": "page-75",
+      "heading": "Halaman 75: TERIMA KASIH",
+      "content": "FIKRI KHOIRUR RIZAL ABDUL QOHAR\nPT TRANSFORMATOR SERVIS INDONESIA"
+    }
+  ]
+}

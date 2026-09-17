@@ -12,6 +12,7 @@ import plotly.express as px
 
 from src.agents.specialist_agents import PDAgent
 from src.components.agent_result import render_agent_result
+from src.components.domain_input_forms import render_pd_input_form
 from src.components.domain_workspace import DomainWorkspaceConfig, render_domain_workspace
 from src.components.status_colors import (
     STATUS_PIE_COLORS,
@@ -37,6 +38,7 @@ def render_pd_page(st) -> None:
         agent_factory=PDAgent,
         metric_labels=_PD_METRIC_LABELS,
         summary_renderer=_render_pd_summary,
+        input_form_renderer=render_pd_input_form,
         disclaimer="Data Contoh - Belum Terverifikasi dari Sumber Asli",
     ))
 

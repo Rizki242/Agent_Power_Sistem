@@ -1,0 +1,104 @@
+{
+  "id": "microsoft-powerpoint---4-data-interpretation",
+  "title": "Microsoft PowerPoint - 4. Data interpretation",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "PDF Upload",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: INTERPRETASI",
+      "content": "DATA"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: Tujuan Interpretasi Data:",
+      "content": "Tujuan Interpretasi Data:\n¾ Untuk menjabarkan data hasil uji.\n¾ Menelusuri penyebab ketidak normalan\n¾ Mendukung ketepatan action plant"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: Interpretasi data particle count.",
+      "content": "Penulisan dalam laporan cukup : YY/ZZ, karena partikel dengan\nukuran 4-5 um tidak mempengaruhi kinerja filter"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: Kriteria cleanliness ISO 4406",
+      "content": "Mi k d kd i i 19/14 Minyak pada kondisi 10/17 \nMinyak pada kondisi 19/14 \nISO 4406 \nMinyak pada kondisi 10/17 \nISO 4406"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5: Contoh :",
+      "content": "Analisa minyak pelumas turbin\nAnalisa minyak pelumas turbin.\nDalam laporan tertulis : Cleanliness ISO 4406 : 21/16\nArtinya :\nMinyak pelumas tersebut mengandung :\n10.000-20.000 partikel /ml dengan ukuran 6-13 um dan\n10.000 20.000 partikel /ml dengan ukuran 6 13 um dan\n320-640 partikel / ml dengan ukuran 15-55 um\nStandard ISO 4406 untuk minyak turbin : 17/15/12\nStandard ISO 4406 untuk minyak turbin : 17/15/12\n160-320 partikel /ml dengan ukuran 6-13 um dan\n20-40 partikel / ml dengan ukuran 15-55 um\nKesimpulan : Cleamliness hasil analisa Out of range\nRekomendasi : Lakukan filtrasi, cek kondisi filter, lihat\nprosedur diagnosa\nprosedur diagnosa."
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6",
+      "content": "Efek Tidak Tepatnya Menentukan ISO Baseline"
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7",
+      "content": "Contoh : Pada system hydraulic oil"
+    },
+    {
+      "id": "page-8",
+      "heading": "Halaman 8: Water content.",
+      "content": "Water content."
+    },
+    {
+      "id": "page-11",
+      "heading": "Halaman 11: Elemental Spectroscopy (AAS)",
+      "content": "Elemental Spectroscopy (AAS)\nKatagori sumber element (Wear, Contaminant, Additives)"
+    },
+    {
+      "id": "page-12",
+      "heading": "Halaman 12: Beta Rating",
+      "content": "Contoh"
+    },
+    {
+      "id": "page-13",
+      "heading": "Halaman 13",
+      "content": "Contoh"
+    },
+    {
+      "id": "page-14",
+      "heading": "Halaman 14",
+      "content": "STUDY KASUS"
+    },
+    {
+      "id": "page-15",
+      "heading": "Halaman 15: CONTOH KASUS KERUSAKAN AKIBAT MINYAK PELUMAS",
+      "content": "( KASUS SEBELUM DILAKUKAN PDM )\nPinion gear rusak karena pitting"
+    },
+    {
+      "id": "page-16",
+      "heading": "Halaman 16: CONTOH KASUS KERUSAKAN AKIBAT MINYAK",
+      "content": "PELUMAS\nPELUMAS"
+    },
+    {
+      "id": "page-17",
+      "heading": "Halaman 17",
+      "content": "CONTOH KASUS KERUSAKAN AKIBAT MINYAK PELUMAS"
+    },
+    {
+      "id": "page-18",
+      "heading": "Halaman 18",
+      "content": "Gambar Gear Box Mill Pulverizer"
+    },
+    {
+      "id": "page-19",
+      "heading": "Halaman 19: CONTOH KASUS SHAFT MOTOR PATAH",
+      "content": "CONTOH KASUS SHAFT MOTOR PATAH\nAKIBAT MINYAK PELUMAS"
+    },
+    {
+      "id": "page-25",
+      "heading": "Halaman 25: REFERENSI",
+      "content": "REFERENSI\n1. Drew Trojer & Jim fitch : “Oil Analysis Basic”, Noria\n1. Drew Trojer & Jim fitch :  Oil Analysis Basic ,  Noria\nCorporation, USA‐1999\n2. Engineering  Tribology : “Gweedon W . Stachowiak &  \nAndrew W Batchelor Butterworth\nAndrew W. Batchelor, Butterworth\n3. NTS  Application Notes : “Lubricant Cleanliness”, \nwww.natrib.com\n4. “Oil  Analysis technology For PDM” , PT.TVP\n5. “Lubricant and  Lubrication” , www.sainz.com"
+    }
+  ]
+}

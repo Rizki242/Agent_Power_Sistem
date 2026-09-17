@@ -146,8 +146,110 @@ def _run_equipment_diagnosis(coordinator: SubAgentCoordinator, df_latest_all: pd
     }
 
 
+def _render_mission_control_overview(st, fleet: dict, specialists: list) -> None:
+    import plotly.graph_objects as go
+    
+    st.markdown("""
+    <style>
+    .kpi-card {
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        border: 1px solid #334155;
+    }
+    .kpi-value { font-size: 28px; font-weight: bold; color: #f8fafc; }
+    .kpi-label { font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+    .alert-item {
+        background: rgba(239, 68, 68, 0.1);
+        border-left: 4px solid #ef4444;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .warning-item {
+        background: rgba(245, 158, 11, 0.1);
+        border-left: 4px solid #f59e0b;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Top KPI Row
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.markdown(f'<div class="kpi-card"><div class="kpi-value">{fleet.get("total_assets", 0)}</div><div class="kpi-label">Total Aset Aktif</div></div>', unsafe_allow_html=True)
+    with c2:
+        st.markdown(f'<div class="kpi-card"><div class="kpi-value">{fleet.get("fleet_health_average", 0):.1f}/100</div><div class="kpi-label">Rata-rata Fleet Health</div></div>', unsafe_allow_html=True)
+    with c3:
+        st.markdown(f'<div class="kpi-card"><div class="kpi-value" style="color: #ef4444;">{len(fleet.get("critical_watchlist", []))}</div><div class="kpi-label">Aset Masuk Watchlist</div></div>', unsafe_allow_html=True)
+    with c4:
+        st.markdown(f'<div class="kpi-card"><div class="kpi-value" style="color: #10b981;">{len(specialists)}</div><div class="kpi-label">Agen CBM Online</div></div>', unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Main Visualizations
+    col_chart, col_alerts = st.columns([1.5, 1], gap="large")
+
+    with col_chart:
+        st.markdown("##### Distribusi Kondisi Aset")
+        summary = fleet.get("health_summary", {})
+        labels = ["HEALTHY", "WATCH", "WARNING", "ALERT", "CRITICAL"]
+        values = [summary.get(l, 0) for l in labels]
+        colors = [HEALTH_CHIP_COLORS[l] for l in labels]
+
+        fig = go.Figure(data=[go.Pie(
+            labels=labels, 
+            values=values, 
+            hole=.6,
+            marker_colors=colors,
+            textinfo='value+label',
+            textposition='inside',
+            insidetextorientation='horizontal',
+        )])
+        fig.update_layout(
+            height=320, 
+            margin=dict(t=10, b=10, l=10, r=10),
+            showlegend=False,
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)"
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col_alerts:
+        st.markdown("##### Live Alert Feed")
+        alerts_shown = 0
+        watchlist = fleet.get("critical_watchlist", [])
+        
+        if not watchlist:
+            st.info("Tidak ada aset berstatus kritis atau alert saat ini.")
+        else:
+            # Sort to show CRITICAL first
+            watchlist_sorted = sorted(watchlist, key=lambda x: 0 if x.get("health_status") == "CRITICAL" else 1)
+            for asset in watchlist_sorted[:6]:
+                status = asset.get("health_status", "WARNING")
+                css_class = "alert-item" if status == "CRITICAL" else "warning-item"
+                eq_name = asset.get("equipment", "-")
+                unit = asset.get("unit", "-")
+                fm = asset.get("primary_failure_mode", "-")
+                st.markdown(
+                    f'<div class="{css_class}">'
+                    f'<b>{eq_name}</b> ({unit})<br>'
+                    f'<span style="color: #94a3b8; font-size: 12px;">Mode Kegagalan: {fm}</span>'
+                    f'</div>', 
+                    unsafe_allow_html=True
+                )
+                alerts_shown += 1
+            
+            if len(watchlist) > 6:
+                st.caption(f"... dan {len(watchlist) - 6} peringatan lainnya.")
+
 def render_agent_dashboard_page(st, df_latest_all: pd.DataFrame, mcsa_page=None) -> None:
-    render_page_header(st, "Agent Dashboard", "Diagnosis engine multi-agen - overview sistem secara keseluruhan.")
+    render_page_header(st, "Command Center", "Mission Control Dashboard - Pantau kesehatan dan reliabilitas seluruh armada pembangkit secara terpusat.")
     coordinator = _get_coordinator()
     data_key = st.session_state.get("_mcsa_data_key")
 
@@ -163,20 +265,15 @@ def render_agent_dashboard_page(st, df_latest_all: pd.DataFrame, mcsa_page=None)
 
     specialists = coordinator.list_specialists()
 
-    st.subheader("Overview Sistem", anchor=False)
-    st.caption("Basis data: snapshot MCSA terbaru per equipment. Seluruh diagnosis bersifat rule-based.")
-    metric_cols = st.columns(4)
-    metric_cols[0].metric("Total Aset", fleet.get("total_assets", 0))
-    metric_cols[1].metric("Fleet Health", f"{fleet.get('fleet_health_average', 0):.0f}/100")
-    metric_cols[2].metric("Watchlist", len(fleet.get("critical_watchlist", [])))
-    metric_cols[3].metric("Agen Online", len(specialists))
-    _render_health_chips(st, fleet.get("health_summary") or {})
+    # Render Modern Overview
+    _render_mission_control_overview(st, fleet, specialists)
 
-    st.subheader("Sub-Agent Specialist", anchor=False)
+    st.markdown("---")
+    st.subheader("Sub-Agent Roster", anchor=False)
     _render_roster(st, specialists)
 
     st.subheader("Fleet Health Matrix", anchor=False)
-    st.caption("Diurutkan dari health index terendah. Klik equipment untuk melihat diagnosis pada bagian bawah.")
+    st.caption("Daftar seluruh aset, diurutkan dari health index terendah.")
     _render_fleet_table(st, fleet.get("asset_matrix", []))
 
     st.subheader("Critical Watchlist", anchor=False)

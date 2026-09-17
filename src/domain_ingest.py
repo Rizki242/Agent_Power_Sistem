@@ -133,6 +133,12 @@ PROFILES: dict[str, dict[str, Any]] = {
             ParameterSpec("c2h6", "C2H6", "ppm", ("etana", "ethane")),
             ParameterSpec("co", "CO", "ppm", ("karbon monoksida",)),
             ParameterSpec("co2", "CO2", "ppm", ("karbon dioksida",)),
+            # Expanded parameters for rich form and TE integration
+            ParameterSpec("bdv_kv", "Breakdown Voltage", "kV", ("bdv", "dielectric strength", "breakdown voltage")),
+            ParameterSpec("water_content_ppm", "Water Content", "ppm", ("water content", "kadar air", "water ppm")),
+            ParameterSpec("beban_mw", "Beban Operasi", "MW", ("load", "beban", "load mw")),
+            ParameterSpec("temp_oil", "Suhu Minyak", "degC", ("oil temp", "suhu minyak", "oil temperature")),
+            ParameterSpec("temp_winding", "Suhu Winding", "degC", ("winding temp", "suhu winding")),
         ],
     },
     "TRIBOLOGY": {
@@ -142,10 +148,15 @@ PROFILES: dict[str, dict[str, Any]] = {
             ParameterSpec("nominal_viscosity", "Viskositas nominal", "cSt", ("iso vg", "iso_vg")),
             ParameterSpec("tan", "TAN", "mg KOH/g", ("total acid number",)),
             ParameterSpec("water_ppm", "Kandungan air", "ppm", ("water", "air", "moisture")),
-            ParameterSpec("fe_ppm", "Wear Fe", "ppm", ("fe", "wear_fe", "besi")),
-            ParameterSpec("cu_ppm", "Wear Cu", "ppm", ("cu", "wear_cu", "tembaga")),
+            ParameterSpec("total_water_ppm", "Total Water", "ppm", ("total water", "total_water")),
+            ParameterSpec("oxidation", "Oksidasi", "", ("oxidation",)),
+            ParameterSpec("fe_ppm", "Wear Fe", "ppm", ("fe", "wear_fe", "besi", "iron")),
+            ParameterSpec("cu_ppm", "Wear Cu", "ppm", ("cu", "wear_cu", "tembaga", "copper")),
+            ParameterSpec("pb_ppm", "Wear Pb", "ppm", ("pb", "wear_pb", "timbal", "lead")),
+            ParameterSpec("si_ppm", "Wear Si", "ppm", ("si", "wear_si", "silikon", "silicon")),
             ParameterSpec("flash_point", "Flash point", "degC", ("titik nyala",)),
-            ParameterSpec("iso_cleanliness", "ISO cleanliness", "", ("iso 4406", "kebersihan"), numeric=False),
+            ParameterSpec("iso_cleanliness", "ISO cleanliness", "", ("iso 4406", "kebersihan", "iso_code"), numeric=False),
+            ParameterSpec("nas_class", "NAS Class", "", ("nas", "nas_class")),
         ],
     },
     "THERMAL": {
@@ -161,10 +172,21 @@ PROFILES: dict[str, dict[str, Any]] = {
     "PD": {
         "label": "Partial Discharge",
         "parameters": [
+            ParameterSpec("pulse_magnitude_r", "Pulse Magnitude Fasa R", "pC", ("magnitude r", "fasa r", "phase r")),
+            ParameterSpec("pulse_magnitude_s", "Pulse Magnitude Fasa S", "pC", ("magnitude s", "fasa s", "phase s")),
+            ParameterSpec("pulse_magnitude_t", "Pulse Magnitude Fasa T", "pC", ("magnitude t", "fasa t", "phase t")),
+            ParameterSpec("nqn_r", "NQN Fasa R", "", ("nqn r", "nqn_r")),
+            ParameterSpec("nqn_s", "NQN Fasa S", "", ("nqn s", "nqn_s")),
+            ParameterSpec("nqn_t", "NQN Fasa T", "", ("nqn t", "nqn_t")),
+            ParameterSpec("phase_angle_r", "Phase Angle Fasa R", "deg", ("phase angle r",)),
+            ParameterSpec("phase_angle_s", "Phase Angle Fasa S", "deg", ("phase angle s",)),
+            ParameterSpec("phase_angle_t", "Phase Angle Fasa T", "deg", ("phase angle t",)),
+            # Legacy single-phase columns kept for backward compat
             ParameterSpec("pulse_magnitude_pc", "Pulse magnitude", "pC", ("magnitude", "magnitudo", "pulse")),
             ParameterSpec("nqn", "NQN", "", ("normalized quantity number",)),
             ParameterSpec("phase_clustering_deg", "Phase clustering", "deg", ("phase clustering", "clustering")),
             ParameterSpec("pd_type", "Tipe discharge", "", ("tipe", "discharge type", "type"), numeric=False),
+            ParameterSpec("prpd_severity", "PRPD Severity", "", ("prpd", "severity"), numeric=False),
         ],
     },
 }

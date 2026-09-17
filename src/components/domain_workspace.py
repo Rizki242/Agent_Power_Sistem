@@ -67,6 +67,10 @@ class DomainWorkspaceConfig:
     # domain that has a report form of its own beyond the generic
     # Word/PPT/CSV export (Vibrasi's DETAIL REPORT VIBRASI, for one).
     report_renderer: Optional[Callable[[Any], None]] = None
+    # Optional rich manual-entry form that replaces the generic text-field
+    # grid in render_data_tab().  If None, the generic grid is rendered.
+    # Signature: (st) -> None
+    input_form_renderer: Optional[Callable[[Any], None]] = None
 
 
 def render_domain_workspace(st, config: DomainWorkspaceConfig) -> None:
@@ -206,42 +210,46 @@ def render_data_tab(st, config: DomainWorkspaceConfig) -> None:
     st.markdown("#### Input manual")
     st.caption("Input manual dan unggahan file melewati validasi dan tersimpan di store yang sama.")
 
-    with st.form(f"{domain}_manual_form", border=True):
-        cols = st.columns(4)
-        equipment = cols[0].text_input("Equipment *", key=f"{domain}_m_eq")
-        unit_name = cols[1].text_input("Unit", key=f"{domain}_m_unit")
-        test_date = cols[2].date_input("Tanggal uji *", value=date.today(), key=f"{domain}_m_date")
-        condition = cols[3].text_input("Kondisi", key=f"{domain}_m_cond")
+    if config.input_form_renderer is not None:
+        # Per-domain rich form replaces the generic text-field grid.
+        config.input_form_renderer(st)
+    else:
+        with st.form(f"{domain}_manual_form", border=True):
+            cols = st.columns(4)
+            equipment = cols[0].text_input("Equipment *", key=f"{domain}_m_eq")
+            unit_name = cols[1].text_input("Unit", key=f"{domain}_m_unit")
+            test_date = cols[2].date_input("Tanggal uji *", value=date.today(), key=f"{domain}_m_date")
+            condition = cols[3].text_input("Kondisi", key=f"{domain}_m_cond")
 
-        values: dict[str, Any] = {}
-        value_cols = st.columns(3)
-        for index, spec in enumerate(specs):
-            label = f"{spec.label} ({spec.uom})" if spec.uom else spec.label
-            values[spec.key] = value_cols[index % 3].text_input(label, key=f"{domain}_m_{spec.key}")
+            values: dict[str, Any] = {}
+            value_cols = st.columns(3)
+            for index, spec in enumerate(specs):
+                label = f"{spec.label} ({spec.uom})" if spec.uom else spec.label
+                values[spec.key] = value_cols[index % 3].text_input(label, key=f"{domain}_m_{spec.key}")
 
-        notes = st.text_area("Catatan", key=f"{domain}_m_notes")
-        submitted = st.form_submit_button("Simpan pengukuran", type="primary", icon=":material/add:")
+            notes = st.text_area("Catatan", key=f"{domain}_m_notes")
+            submitted = st.form_submit_button("Simpan pengukuran", type="primary", icon=":material/add:")
 
-    if submitted:
-        rows = ingest.manual_entry_rows(
-            domain,
-            {
-                "equipment": equipment,
-                "unit_name": unit_name,
-                "test_date": test_date,
-                "condition": condition,
-                "notes": notes,
-            },
-            values,
-        )
-        if not rows:
-            st.warning("Tidak ada nilai parameter yang diisi.")
-        else:
-            result = dm.append_measurements(domain, rows, batch_id="manual")
-            if result["written"]:
-                st.success(f"{result['written']} pengukuran tersimpan.")
-            for rejected in result["rejected"]:
-                st.error(rejected.get("_reason", "Baris ditolak."))
+        if submitted:
+            rows = ingest.manual_entry_rows(
+                domain,
+                {
+                    "equipment": equipment,
+                    "unit_name": unit_name,
+                    "test_date": test_date,
+                    "condition": condition,
+                    "notes": notes,
+                },
+                values,
+            )
+            if not rows:
+                st.warning("Tidak ada nilai parameter yang diisi.")
+            else:
+                result = dm.append_measurements(domain, rows, batch_id="manual")
+                if result["written"]:
+                    st.success(f"{result['written']} pengukuran tersimpan.")
+                for rejected in result["rejected"]:
+                    st.error(rejected.get("_reason", "Baris ditolak."))
 
     st.divider()
     st.markdown("#### Riwayat batch unggahan")

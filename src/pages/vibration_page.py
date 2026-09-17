@@ -10,6 +10,7 @@ until their data is ingested into the canonical store.
 
 from src.agents.specialist_agents import VibrationAgent
 from src.components.agent_result import render_agent_result
+from src.components.domain_input_forms import render_vibration_input_form
 from src.components.domain_workspace import DomainWorkspaceConfig, render_domain_workspace
 from src.components.status_colors import (
     STATUS_PIE_COLORS,
@@ -48,6 +49,7 @@ def render_vibration_page(st) -> None:
         metric_labels=_VIBRATION_METRIC_LABELS,
         summary_renderer=_render_vibration_summary,
         report_renderer=_render_detail_report_section,
+        input_form_renderer=render_vibration_input_form,
     ))
 
 
