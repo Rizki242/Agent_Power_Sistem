@@ -1,6 +1,120 @@
 """Component for the Equipment Upload & Registration wizard."""
 
+import re
+
+import pandas as pd
 import streamlit as st
+
+from src.asset_registry import upsert_asset
+from src.domain_ingest import read_upload
+
+# Canonical bulk-import field -> accepted header spellings (normalised to
+# lowercase/underscore before matching, so "Rated Power (kW)" -> "rated_power_kw").
+_BULK_COLUMN_ALIASES = {
+    "asset_id": ("asset_id", "assetid", "id"),
+    "name": ("equipment_name", "name", "nama", "nama_aset", "asset_name"),
+    "equipment_type": ("category", "equipment_type", "tipe", "kategori"),
+    "manufacturer": ("manufacturer", "pabrikan", "merk"),
+    "model": ("model", "model_type", "model_type_", "type"),
+    "rated_power_kw": ("rated_power_kw", "rated_power", "power_kw", "power"),
+    "voltage_level": ("voltage", "voltage_v", "voltage_level", "tegangan"),
+    "rpm": ("rpm", "speed"),
+    "unit": ("unit", "unit_pembangkit"),
+    "location": ("location", "location_area", "area", "lokasi"),
+    "install_date": ("install_date", "installed_at", "tanggal_pasang"),
+    "monitoring_modules": ("monitoring_modules", "pdm_tools", "modul_monitoring", "modules"),
+    "kks": ("kks", "kode_kks"),
+    "notes": ("notes", "catatan"),
+}
+
+# Tokens accepted inside a monitoring_modules cell -> src.asset_registry.MONITORING_MODULES value.
+_MODULE_ALIASES = {
+    "VIBRATION": "VIBRASI", "VIBRASI": "VIBRASI",
+    "MCSA": "MCSA", "THERMAL": "THERMAL",
+    "TRIBOLOGY": "TRIBOLOGY", "DGA": "DGA",
+    "PD": "PD", "PD ONLINE": "PD", "PD_ONLINE": "PD", "PDONLINE": "PD",
+}
+
+
+def _normalise_header(col: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", str(col).strip().lower()).strip("_")
+
+
+def _bulk_template_csv() -> bytes:
+    columns = [
+        "asset_id", "name", "category", "manufacturer", "model",
+        "rated_power_kw", "voltage", "rpm", "unit", "location",
+        "install_date", "monitoring_modules", "kks", "notes",
+    ]
+    example = {
+        "asset_id": "", "name": "ID Fan Motor 2A", "category": "Motor",
+        "manufacturer": "ABB", "model": "M3BP 315 SMB", "rated_power_kw": "750",
+        "voltage": "6600", "rpm": "1485", "unit": "UNIT 2",
+        "location": "Unit 2 - ID Fan Area", "install_date": "2026-09-17",
+        "monitoring_modules": "VIBRASI,MCSA,THERMAL", "kks": "-", "notes": "",
+    }
+    frame = pd.DataFrame([example], columns=columns)
+    return frame.to_csv(index=False).encode("utf-8-sig")
+
+
+def parse_bulk_asset_file(file_name: str, content: bytes) -> pd.DataFrame:
+    """Parse an uploaded CSV/XLSX of many assets into the canonical column set.
+
+    Reuses `src.domain_ingest.read_upload` for delimiter-tolerant CSV/XLSX
+    parsing (raises ValueError with a readable message on a bad file), then
+    maps flexible header spellings (English/Indonesian, several aliases per
+    field) onto the columns `_row_to_asset_payload` expects. Unrecognised
+    columns are dropped; missing ones come back as an empty column so the
+    preview table always has a stable shape.
+    """
+    raw = read_upload(file_name, content)
+    raw.columns = [_normalise_header(c) for c in raw.columns]
+
+    canonical = pd.DataFrame(index=raw.index)
+    for canonical_name, aliases in _BULK_COLUMN_ALIASES.items():
+        found = next((alias for alias in aliases if alias in raw.columns), None)
+        canonical[canonical_name] = raw[found].fillna("") if found is not None else ""
+    return canonical
+
+
+def _parse_monitoring_modules(raw) -> list[str]:
+    if raw is None or (isinstance(raw, float) and pd.isna(raw)):
+        return []
+    modules: list[str] = []
+    for token in re.split(r"[,;|/]+", str(raw)):
+        mapped = _MODULE_ALIASES.get(token.strip().upper())
+        if mapped and mapped not in modules:
+            modules.append(mapped)
+    return modules
+
+
+def _row_to_asset_payload(row: dict) -> dict:
+    """Map one canonical bulk-import row onto the dict `upsert_asset` expects."""
+    specs = {}
+    manufacturer, model = row.get("manufacturer"), row.get("model")
+    if manufacturer or model:
+        specs["c1_type_mfg"] = " / ".join(str(v).strip() for v in (manufacturer, model) if v and str(v).strip())
+    if row.get("rated_power_kw") not in (None, ""):
+        specs["c1_power"] = str(row["rated_power_kw"]).strip()
+    if row.get("rpm") not in (None, ""):
+        specs["c1_speed"] = str(row["rpm"]).strip()
+    if row.get("location") not in (None, ""):
+        specs["location"] = str(row["location"]).strip()
+    if row.get("install_date") not in (None, ""):
+        specs["install_date"] = str(row["install_date"]).strip()
+
+    return {
+        "asset_id": str(row.get("asset_id") or "").strip() or None,
+        "name": str(row.get("name") or "").strip(),
+        "kks": str(row.get("kks") or "-").strip(),
+        "unit": str(row.get("unit") or "Unknown").strip(),
+        "equipment_type": str(row.get("equipment_type") or "-").strip(),
+        "voltage_level": str(row.get("voltage_level") or "-").strip(),
+        "monitoring_modules": _parse_monitoring_modules(row.get("monitoring_modules")),
+        "specs": specs,
+        "notes": str(row.get("notes") or "").strip(),
+    }
+
 
 def render_equipment_upload_wizard(st, edit_mode: bool) -> None:
     # 1. Stepper UI
@@ -12,8 +126,8 @@ def render_equipment_upload_wizard(st, edit_mode: bool) -> None:
             height: 2px; background: #334155; z-index: 0;
         }
         .wizard-step { text-align: center; z-index: 1; flex: 1; font-size: 0.85rem; color: #94a3b8; font-weight: 500; }
-        .wizard-icon { 
-            width: 32px; height: 32px; border-radius: 50%; background: #1e293b; 
+        .wizard-icon {
+            width: 32px; height: 32px; border-radius: 50%; background: #1e293b;
             color: #94a3b8; line-height: 32px; margin: 0 auto 8px; border: 2px solid #334155;
             font-size: 14px;
         }
@@ -37,8 +151,8 @@ def render_equipment_upload_wizard(st, edit_mode: bool) -> None:
         st.markdown("##### Upload Equipment Data")
         st.caption("Drag & drop files here or click to browse. Supported: CSV, Excel, PDF, Image (.jpg, .png)")
         uploaded_files = st.file_uploader("Pilih Dokumen", accept_multiple_files=True, label_visibility="collapsed")
-        
-        # Display mock uploaded files if empty just to mimic the design slightly, 
+
+        # Display mock uploaded files if empty just to mimic the design slightly,
         # but in real usage we show actual uploaded files.
         if uploaded_files:
             for f in uploaded_files:
@@ -76,7 +190,7 @@ def render_equipment_upload_wizard(st, edit_mode: bool) -> None:
 
             st.markdown("---")
             st.markdown("##### PDM TOOLS ASSIGNMENT (AUTO-DETECTED)")
-            
+
             p1, p2, p3, p4, p5, p6 = st.columns(6)
             vibration = p1.checkbox("VIBRATION", value=True)
             mcsa = p2.checkbox("MCSA", value=True)
@@ -95,3 +209,60 @@ def render_equipment_upload_wizard(st, edit_mode: bool) -> None:
             elif drafted:
                 st.info("Draft saved.")
 
+    # 2. Bulk registration - many assets at once via CSV/XLSX, for engineers
+    # who already keep an equipment list in a spreadsheet instead of typing
+    # one asset at a time in the form above.
+    st.divider()
+    st.markdown("##### 📥 Registrasi Massal Banyak Aset (CSV / Excel)")
+    st.caption(
+        "Unduh templat, isi satu baris per aset, lalu unggah kembali. Kolom yang dikenali: "
+        "asset_id, name, category, manufacturer, model, rated_power_kw, voltage, rpm, unit, "
+        "location, install_date, monitoring_modules (pisahkan dengan koma, contoh: "
+        "VIBRASI,MCSA,THERMAL), kks, notes."
+    )
+    st.download_button(
+        "⬇️ Unduh Templat CSV",
+        data=_bulk_template_csv(),
+        file_name="templat_registrasi_aset.csv",
+        mime="text/csv",
+        disabled=not edit_mode,
+    )
+    bulk_file = st.file_uploader(
+        "Unggah Daftar Aset (CSV/XLSX)", type=["csv", "xlsx", "xls"],
+        key="_bulk_asset_uploader", disabled=not edit_mode,
+    )
+    if bulk_file is not None:
+        try:
+            parsed = parse_bulk_asset_file(bulk_file.name, bulk_file.getvalue())
+        except ValueError as exc:
+            st.error(str(exc))
+        else:
+            if parsed.empty or parsed["name"].astype(str).str.strip().eq("").all():
+                st.warning(
+                    "Tidak ada baris dengan kolom 'name'/'equipment_name' yang terbaca. "
+                    "Periksa header kolom pada file yang diunggah."
+                )
+            else:
+                st.caption(f"{len(parsed)} baris terbaca. Periksa/koreksi di tabel sebelum mendaftarkan.")
+                edited = st.data_editor(
+                    parsed, hide_index=True, width="stretch", num_rows="dynamic",
+                    key="_bulk_asset_editor", disabled=not edit_mode,
+                )
+                if st.button(
+                    "Daftarkan Semua Aset", type="primary",
+                    disabled=not edit_mode, key="_bulk_register_btn",
+                ):
+                    registered, skipped = 0, []
+                    for _, row in edited.iterrows():
+                        payload = _row_to_asset_payload(row.to_dict())
+                        if not payload["name"]:
+                            skipped.append(str(row.get("asset_id") or "(baris tanpa nama)"))
+                            continue
+                        upsert_asset(payload)
+                        registered += 1
+                    if registered:
+                        st.success(f"{registered} aset berhasil didaftarkan.")
+                    if skipped:
+                        st.warning(f"{len(skipped)} baris dilewati karena tidak punya nama aset: {', '.join(skipped)}")
+                    if registered:
+                        st.rerun()
