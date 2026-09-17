@@ -40,12 +40,15 @@ def _normalise_header(col: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", str(col).strip().lower()).strip("_")
 
 
+_BULK_TEMPLATE_COLUMNS = [
+    "asset_id", "name", "category", "manufacturer", "model",
+    "rated_power_kw", "voltage", "rpm", "unit", "location",
+    "install_date", "monitoring_modules", "kks", "notes",
+]
+
+
 def _bulk_template_csv() -> bytes:
-    columns = [
-        "asset_id", "name", "category", "manufacturer", "model",
-        "rated_power_kw", "voltage", "rpm", "unit", "location",
-        "install_date", "monitoring_modules", "kks", "notes",
-    ]
+    """One blank-ish example row - a starting point for the user's own data."""
     example = {
         "asset_id": "", "name": "ID Fan Motor 2A", "category": "Motor",
         "manufacturer": "ABB", "model": "M3BP 315 SMB", "rated_power_kw": "750",
@@ -53,7 +56,52 @@ def _bulk_template_csv() -> bytes:
         "location": "Unit 2 - ID Fan Area", "install_date": "2026-09-17",
         "monitoring_modules": "VIBRASI,MCSA,THERMAL", "kks": "-", "notes": "",
     }
-    frame = pd.DataFrame([example], columns=columns)
+    frame = pd.DataFrame([example], columns=_BULK_TEMPLATE_COLUMNS)
+    return frame.to_csv(index=False).encode("utf-8-sig")
+
+
+def _bulk_sample_csv() -> bytes:
+    """Several filled-in rows across equipment types/units/monitoring
+    modules, so a user can see a working bulk upload before building their
+    own file - upload this as-is to try the feature end to end."""
+    rows = [
+        {
+            "asset_id": "", "name": "ID Fan Motor 2A", "category": "Motor",
+            "manufacturer": "ABB", "model": "M3BP 315 SMB", "rated_power_kw": "750",
+            "voltage": "6600", "rpm": "1485", "unit": "UNIT 2",
+            "location": "Unit 2 - ID Fan Area", "install_date": "2018-03-12",
+            "monitoring_modules": "VIBRASI,MCSA,THERMAL", "kks": "-", "notes": "",
+        },
+        {
+            "asset_id": "", "name": "Main Transformer Unit 1", "category": "Transformer",
+            "manufacturer": "Siemens", "model": "TR-25MVA", "rated_power_kw": "25000",
+            "voltage": "150000", "rpm": "", "unit": "UNIT 1",
+            "location": "Switchyard Unit 1", "install_date": "2012-06-01",
+            "monitoring_modules": "DGA,PD", "kks": "-", "notes": "Trafo utama step-up",
+        },
+        {
+            "asset_id": "", "name": "Boiler Feed Pump 1A", "category": "Pump",
+            "manufacturer": "Sulzer", "model": "HPT-4", "rated_power_kw": "1200",
+            "voltage": "6600", "rpm": "2980", "unit": "UNIT 1",
+            "location": "Turbine Hall Unit 1", "install_date": "2012-08-15",
+            "monitoring_modules": "VIBRASI,TRIBOLOGY", "kks": "-", "notes": "",
+        },
+        {
+            "asset_id": "", "name": "Circulating Water Pump 3B", "category": "Pump",
+            "manufacturer": "KSB", "model": "CWP-V500", "rated_power_kw": "900",
+            "voltage": "6600", "rpm": "990", "unit": "UNIT 3",
+            "location": "Water Intake Unit 3", "install_date": "2019-11-20",
+            "monitoring_modules": "VIBRASI,MCSA", "kks": "-", "notes": "",
+        },
+        {
+            "asset_id": "", "name": "Instrument Air Compressor 2", "category": "Compressor",
+            "manufacturer": "Atlas Copco", "model": "GA-90", "rated_power_kw": "90",
+            "voltage": "400", "rpm": "2960", "unit": "UNIT 2",
+            "location": "Compressor House", "install_date": "2018-05-02",
+            "monitoring_modules": "VIBRASI,THERMAL", "kks": "-", "notes": "",
+        },
+    ]
+    frame = pd.DataFrame(rows, columns=_BULK_TEMPLATE_COLUMNS)
     return frame.to_csv(index=False).encode("utf-8-sig")
 
 
@@ -220,12 +268,22 @@ def render_equipment_upload_wizard(st, edit_mode: bool) -> None:
         "location, install_date, monitoring_modules (pisahkan dengan koma, contoh: "
         "VIBRASI,MCSA,THERMAL), kks, notes."
     )
-    st.download_button(
+    dl1, dl2 = st.columns(2)
+    dl1.download_button(
         "⬇️ Unduh Templat CSV",
         data=_bulk_template_csv(),
         file_name="templat_registrasi_aset.csv",
         mime="text/csv",
         disabled=not edit_mode,
+        help="Satu baris contoh kosong - titik awal untuk mengisi data aset Anda sendiri.",
+    )
+    dl2.download_button(
+        "📄 Unduh Contoh Data (Sample)",
+        data=_bulk_sample_csv(),
+        file_name="contoh_registrasi_aset.csv",
+        mime="text/csv",
+        disabled=not edit_mode,
+        help="Beberapa baris contoh terisi (motor, transformator, pompa, kompresor) - unggah langsung untuk mencoba fitur ini.",
     )
     bulk_file = st.file_uploader(
         "Unggah Daftar Aset (CSV/XLSX)", type=["csv", "xlsx", "xls"],

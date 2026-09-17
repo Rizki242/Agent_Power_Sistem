@@ -12,6 +12,7 @@ import unittest
 import pandas as pd
 
 from src.components.equipment_upload_wizard import (
+    _bulk_sample_csv,
     _bulk_template_csv,
     _parse_monitoring_modules,
     _row_to_asset_payload,
@@ -95,6 +96,22 @@ class TestBulkTemplateCsv(unittest.TestCase):
         self.assertEqual(len(df), 1)
         self.assertEqual(df.iloc[0]["name"], "ID Fan Motor 2A")
         self.assertEqual(_parse_monitoring_modules(df.iloc[0]["monitoring_modules"]), ["VIBRASI", "MCSA", "THERMAL"])
+
+
+class TestBulkSampleCsv(unittest.TestCase):
+    def test_sample_has_multiple_rows_across_equipment_types(self):
+        sample = _bulk_sample_csv()
+        df = parse_bulk_asset_file("contoh_registrasi_aset.csv", sample)
+        self.assertGreaterEqual(len(df), 3)
+        self.assertGreaterEqual(df["equipment_type"].nunique(), 3)
+
+    def test_sample_rows_all_convert_to_valid_payloads(self):
+        sample = _bulk_sample_csv()
+        df = parse_bulk_asset_file("contoh_registrasi_aset.csv", sample)
+        for _, row in df.iterrows():
+            payload = _row_to_asset_payload(row.to_dict())
+            self.assertTrue(payload["name"])
+            self.assertTrue(payload["monitoring_modules"])
 
 
 if __name__ == "__main__":
