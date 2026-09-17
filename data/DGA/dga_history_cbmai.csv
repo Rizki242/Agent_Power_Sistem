@@ -98,3 +98,223 @@ Date,Unit,UnitStatus,MonitoringType,MonitoringNote,Equipment,H2,CH4,C2H6,C2H4,C2
 2018-06-28,UNIT_2,ONLINE,ROUTINE,Uji Lab CI19048 CENNIX (S/N: 1006902),Main Transformer Unit 2,19.0,10.0,0.0,2.0,0.0,193.0,2448.0,0.0,0.0,0.0,0.0,0.0
 2019-06-20,UNIT_2,ONLINE,ROUTINE,Uji Lab CI19048 CENNIX (S/N: 1006902),Main Transformer Unit 2,10.0,8.0,0.0,2.0,0.0,107.0,712.0,11.0,58.0,0.0,35.0,0.0
 2019-11-14,UNIT_2,ONLINE,ROUTINE,Uji Lab CI19048 CENNIX (S/N: 1006902),Main Transformer Unit 2,10.0,7.0,0.0,2.0,0.0,72.0,736.0,11.0,57.0,0.0,38.0,0.0
+2015-06-05,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,67.0,11.0,10.0,7.0,0.0,404.0,0.0,0.0,0.0,18.9,0.0,0.0
+2016-03-05,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,125.0,22.0,10.0,12.0,0.0,621.0,0.0,0.0,0.0,15.3,0.0,0.0
+2016-09-19,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,119.0,27.0,18.0,35.0,2.0,778.0,4271.0,19.0,0.0,25.2,0.0,0.0
+2016-10-17,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,121.0,29.0,20.0,19.0,2.0,800.0,4215.0,21.0,0.0,25.2,0.0,0.0
+2016-11-17,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,118.0,30.0,14.0,31.0,1.0,830.0,4027.0,14.0,0.0,8.1,0.0,0.0
+2016-12-19,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,30.0,16.0,11.0,26.0,0.5,416.0,2652.0,36.0,0.0,2.7,0.0,0.0
+2017-01-17,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,118.0,21.0,23.0,35.0,0.5,827.0,4061.0,20.0,0.0,15.0,0.0,0.0
+2017-02-21,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,119.0,37.0,16.0,21.0,0.0,816.0,4246.0,19.0,0.0,16.0,0.0,0.0
+2017-03-20,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,119.0,37.0,17.0,26.0,2.0,848.0,4335.0,16.0,0.0,13.5,0.0,0.0
+2017-04-26,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,83.0,24.0,37.0,30.0,1.5,493.0,3207.0,45.0,0.0,0.0,0.0,0.0
+2017-09-20,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,104.0,37.0,18.0,26.0,2.5,847.0,3919.0,17.0,0.0,14.4,0.0,0.0
+2017-10-31,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,110.0,37.0,18.0,38.0,2.5,908.0,4623.0,16.0,0.0,21.6,0.0,0.0
+2018-01-30,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,110.0,40.0,15.0,44.0,3.5,922.0,4614.0,22.0,0.0,14.4,0.0,0.0
+2018-02-13,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,109.0,47.0,16.0,24.0,2.0,906.0,4464.0,18.0,0.0,18.0,0.0,0.0
+2018-02-28,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,103.0,48.0,15.0,22.0,1.5,922.0,4555.0,16.0,0.0,11.7,0.0,0.0
+2018-07-25,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,100.0,55.0,16.0,20.0,1.5,984.0,5024.0,13.0,0.0,0.0,0.0,0.0
+2018-09-13,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,4.0,9.0,2.0,0.0,1.0,642.0,21.0,0.0,14.4,0.0,0.0
+2018-10-11,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,5.0,5.0,4.0,0.0,1.0,745.0,22.0,0.0,21.6,0.0,0.0
+2018-10-26,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,42.0,15.0,15.0,4.0,0.0,234.0,2348.0,27.0,0.0,0.0,0.0,0.0
+2019-02-12,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,16.0,11.0,13.0,16.0,0.5,461.0,3493.0,19.0,0.0,0.0,0.0,0.0
+2019-02-26,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,16.0,8.0,14.0,19.0,1.0,470.0,3490.0,20.0,0.0,22.5,0.0,0.0
+2019-02-27,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,16.0,9.0,13.0,16.0,0.5,482.0,3467.0,18.0,0.0,22.5,0.0,0.0
+2019-03-04,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,15.0,9.0,16.0,17.0,0.5,457.0,3228.0,19.0,0.0,22.5,0.0,0.0
+2019-04-22,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,18.0,14.0,7.0,8.0,0.5,588.0,4068.0,19.0,0.0,21.6,0.0,0.0
+2019-05-12,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,14.0,16.0,10.0,11.0,3.0,480.0,3643.0,14.0,0.0,21.8,0.0,0.0
+2019-07-22,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,15.0,13.0,7.0,9.0,1.0,480.0,3431.0,14.0,0.0,22.5,0.0,0.0
+2019-08-19,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,13.0,12.0,11.0,14.0,0.5,651.0,4501.0,16.0,0.0,23.4,0.0,0.0
+2019-09-16,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,17.0,15.0,11.0,16.0,0.5,599.0,4481.0,16.0,0.0,0.0,0.0,0.0
+2019-10-14,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,16.0,14.0,12.0,17.0,0.5,621.0,4512.0,16.0,0.0,23.0,0.0,0.0
+2019-11-11,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,11.0,8.0,10.0,14.0,0.5,552.0,3970.0,19.0,0.0,0.0,0.0,0.0
+2019-12-12,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,2.0,5.0,1.0,0.0,4.0,1035.0,15.0,0.0,0.0,0.0,0.0
+2020-01-23,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,8.0,5.0,8.0,2.0,0.0,7.0,1041.0,14.0,0.0,15.0,0.0,0.0
+2020-02-24,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,9.0,10.0,8.0,14.0,0.0,529.0,4004.0,20.0,0.0,23.0,0.0,0.0
+2020-03-23,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,1.0,12.0,3.0,0.0,7.0,1374.0,19.0,0.0,0.0,0.0,0.0
+2020-04-20,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,2.0,43.0,6.0,0.0,7.0,856.0,17.0,0.0,26.0,0.0,0.0
+2020-05-18,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,3.0,51.0,8.0,0.0,9.0,931.0,18.0,0.0,0.0,0.0,0.0
+2020-06-15,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,1.0,12.0,3.0,0.0,9.0,641.0,16.0,0.0,0.0,0.0,0.0
+2020-07-13,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,1.0,20.0,4.0,0.0,7.0,566.0,18.0,0.0,0.0,0.0,0.0
+2020-08-17,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,5.0,50.0,3.0,0.0,18.0,663.0,16.0,0.0,0.0,0.0,0.0
+2020-09-21,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,11.0,50.0,9.0,0.0,59.0,1428.0,16.0,0.0,0.0,0.0,0.0
+2020-10-05,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,13.0,52.0,7.0,0.0,74.0,1517.0,16.0,0.0,0.0,0.0,0.0
+2021-03-05,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,14.0,8.0,10.0,15.0,0.5,506.0,4365.0,16.0,0.0,26.0,0.0,0.0
+2021-04-26,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,10.0,9.0,13.0,12.0,0.5,502.0,4349.0,18.0,0.0,26.0,0.0,0.0
+2021-05-24,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,12.0,10.0,11.0,14.0,0.5,507.0,4361.0,18.0,0.0,26.0,0.0,0.0
+2021-06-28,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,14.0,9.0,10.0,13.0,0.5,521.0,4393.0,18.0,0.0,26.0,0.0,0.0
+2021-07-27,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,12.0,9.0,9.0,12.0,0.5,546.0,4660.0,18.0,0.0,27.0,0.0,0.0
+2021-08-09,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,14.0,11.0,8.0,12.0,0.5,565.0,4620.0,14.0,0.0,12.5,0.0,0.0
+2021-09-20,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,5.0,3.0,4.0,0.5,24.0,279.0,15.0,0.0,0.0,0.0,0.0
+2021-10-11,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,5.0,25.0,12.0,0.5,46.0,1080.0,15.0,0.0,23.5,0.0,0.0
+2021-11-08,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,5.0,28.0,14.0,0.5,83.0,1485.0,40.0,0.0,23.5,0.0,0.0
+2021-12-06,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,5.0,3.0,34.0,17.0,0.5,92.0,1409.0,42.0,0.0,22.5,0.0,0.0
+2022-03-02,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,9.0,4.0,29.0,18.0,0.5,205.0,2208.0,44.0,0.0,22.5,0.0,0.0
+2022-03-28,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,10.0,5.0,32.0,18.0,0.5,215.0,2386.0,39.0,0.0,22.5,0.0,0.0
+2022-04-25,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,9.0,5.0,30.0,16.0,0.5,253.0,2423.0,46.0,0.0,22.5,0.0,0.0
+2022-06-20,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,10.0,6.0,31.0,18.0,0.5,297.0,2708.0,50.0,0.0,22.6,0.0,0.0
+2022-07-25,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,9.0,8.0,28.0,17.0,0.5,305.0,2721.0,44.0,0.0,22.5,0.0,0.0
+2022-08-15,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,9.0,6.0,33.0,16.0,0.5,305.0,2727.0,44.0,0.0,22.6,0.0,0.0
+2022-09-12,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,11.0,9.0,31.0,18.0,0.5,311.0,2743.0,44.0,0.0,22.7,0.0,0.0
+2022-10-20,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,14.0,7.0,35.0,15.0,0.5,319.0,2729.0,41.0,0.0,22.4,0.0,0.0
+2022-11-07,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,9.0,8.0,32.0,18.0,0.5,394.0,3320.0,46.0,0.0,23.0,0.0,0.0
+2022-12-07,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,11.0,7.0,33.0,20.0,0.5,454.0,3639.0,8.0,0.0,0.0,0.0,0.0
+2023-01-04,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,12.0,7.0,29.0,18.0,0.5,462.0,3682.0,8.0,0.0,0.0,0.0,0.0
+2023-01-25,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,10.0,11.0,25.0,16.0,0.5,443.0,3541.0,42.0,0.0,22.5,0.0,0.0
+2023-02-15,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,11.0,7.0,33.0,20.0,0.5,454.0,3639.0,48.0,0.0,23.5,0.0,0.0
+2023-03-28,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,12.0,8.0,33.0,21.0,0.5,461.0,3678.0,45.0,0.0,22.8,0.0,0.0
+2023-04-26,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,15.0,10.0,32.0,24.0,0.5,468.0,3666.0,45.0,0.0,22.0,0.0,0.0
+2023-05-10,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,17.0,9.0,30.0,27.0,0.5,471.0,3687.0,41.0,0.0,23.0,0.0,0.0
+2023-06-14,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,11.0,16.0,36.0,30.0,0.5,477.0,3715.0,41.0,0.0,23.0,0.0,0.0
+2023-11-14,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,15.0,4.0,17.0,20.0,0.5,855.0,5458.0,21.0,0.0,24.0,0.0,0.0
+2024-02-17,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,8.0,3.0,50.0,32.0,0.5,524.0,4458.0,55.0,0.0,25.0,0.0,0.0
+2024-03-21,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,8.0,3.0,62.0,32.0,0.5,783.0,4458.0,55.0,0.0,25.0,0.0,0.0
+2024-04-24,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,16.0,7.0,64.0,41.0,0.5,793.0,4489.0,55.0,0.0,25.0,0.0,0.0
+2024-05-09,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,18.0,9.0,61.0,38.0,0.5,799.0,4478.0,54.0,0.0,25.0,0.0,0.0
+2024-06-19,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,18.0,9.0,62.0,40.0,0.5,816.0,4660.0,54.0,0.0,22.5,0.0,0.0
+2024-08-29,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,6.0,16.0,6.0,24.0,0.5,936.0,5122.0,25.0,0.0,22.6,0.0,0.0
+2024-10-12,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,12.0,13.0,43.0,22.0,0.5,947.0,4988.0,25.0,0.0,25.0,0.0,0.0
+2024-11-15,UNIT_1,ON,ROUTINE,Data historis DGA dari sheet GT#1,Main Transformer Unit 1,19.0,15.0,57.0,21.0,0.5,951.0,5082.0,34.0,0.0,3.8,0.0,0.0
+2017-05-03,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,5.0,10.0,6.0,23.0,3.0,7.0,85.0,17.0,0.0,0.0,0.0,0.0
+2017-05-10,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,5.0,11.0,9.0,29.0,1.5,5.0,122.0,23.0,0.0,0.0,0.0,0.0
+2019-02-18,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,11.0,2.0,11.0,19.0,0.0,246.0,3620.0,23.0,0.0,0.0,0.0,0.0
+2019-08-12,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,5.0,4.0,5.0,14.0,0.5,4.0,139.0,19.0,0.0,0.0,0.0,0.0
+2021-12-01,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,21.0,10.0,15.0,16.0,0.5,537.0,3716.0,48.0,0.0,0.0,0.0,0.0
+2021-12-23,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,26.0,13.0,17.0,13.0,1.0,568.0,3999.0,41.0,0.0,0.0,0.0,0.0
+2022-01-11,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,24.0,11.0,18.0,13.0,0.5,559.0,3697.0,43.0,0.0,0.0,0.0,0.0
+2022-01-20,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,5.0,9.0,14.0,16.0,4.0,132.0,1134.0,43.0,0.0,0.0,0.0,0.0
+2022-02-09,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,5.0,8.0,7.0,7.0,0.5,152.0,1234.0,45.0,0.0,0.0,0.0,0.0
+2022-03-09,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,7.0,2.0,9.0,10.0,0.5,163.0,1531.0,45.0,0.0,0.0,0.0,0.0
+2022-04-06,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,9.0,4.0,22.0,14.0,0.5,228.0,2413.0,44.0,0.0,0.0,0.0,0.0
+2022-06-02,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,12.0,6.0,18.0,13.0,0.5,231.0,2819.0,45.0,0.0,0.0,0.0,0.0
+2022-12-17,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,11.0,8.0,18.0,14.0,0.5,256.0,3115.0,41.0,0.0,0.0,0.0,0.0
+2023-01-11,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,15.0,11.0,22.0,11.0,0.5,262.0,3141.0,43.0,0.0,0.0,0.0,0.0
+2023-02-08,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,17.0,9.0,24.0,13.0,0.5,267.0,3256.0,43.0,0.0,0.0,0.0,0.0
+2023-03-24,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,15.0,6.0,22.0,19.0,0.5,312.0,3277.0,46.0,0.0,0.0,0.0,0.0
+2023-04-06,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,13.0,10.0,20.0,17.0,0.5,299.0,3291.0,46.0,0.0,0.0,0.0,0.0
+2023-05-17,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,16.0,7.0,23.0,17.0,0.5,367.0,3578.0,46.0,0.0,0.0,0.0,0.0
+2023-11-14,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,14.0,5.0,16.0,17.0,0.5,873.0,5843.0,14.0,0.0,0.0,0.0,0.0
+2023-12-14,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,12.0,2.0,41.0,22.0,0.5,626.0,5436.0,57.0,0.0,0.0,0.0,0.0
+2024-01-11,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,12.0,5.0,45.0,20.0,0.5,639.0,5427.0,52.0,0.0,0.0,0.0,0.0
+2024-02-12,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,11.0,5.0,38.0,16.0,0.5,685.0,5932.0,52.0,0.0,0.0,0.0,0.0
+2024-03-06,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,9.0,9.0,20.0,17.0,0.5,999.0,7316.0,52.0,0.0,0.0,0.0,0.0
+2024-05-29,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,11.0,5.0,31.0,21.0,0.5,978.0,7153.0,52.0,0.0,0.0,0.0,0.0
+2024-06-28,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,5.0,7.0,14.0,19.0,0.5,788.0,7335.0,26.0,0.0,0.0,0.0,0.0
+2024-11-17,UNIT_2,ON,ROUTINE,Data historis DGA dari sheet GT#2,Main Transformer Unit 2,5.0,5.0,17.0,18.0,0.5,218.0,928.0,23.0,0.0,0.0,0.0,0.0
+2019-04-14,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,2.0,3.0,5.0,0.5,76.0,194.0,16.0,0.0,0.0,0.0,0.0
+2019-06-26,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,1.0,2.0,4.0,0.0,73.0,189.0,16.0,0.0,0.0,0.0,0.0
+2019-07-29,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,2.0,3.0,4.0,0.0,74.0,191.0,16.0,0.0,0.0,0.0,0.0
+2019-08-26,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,2.0,2.0,3.0,0.0,74.0,192.0,16.0,0.0,0.0,0.0,0.0
+2019-09-23,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,1.0,2.0,3.0,0.0,71.0,189.0,16.0,0.0,0.0,0.0,0.0
+2019-10-23,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,1.0,6.0,11.0,0.0,178.0,539.0,17.0,0.0,0.0,0.0,0.0
+2019-11-18,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,1.0,3.0,5.0,0.0,117.0,539.0,17.0,0.0,0.0,0.0,0.0
+2019-12-16,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,2.0,0.0,6.0,0.0,109.0,431.0,16.0,0.0,0.0,0.0,0.0
+2020-01-28,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,2.0,0.0,8.0,0.0,121.0,455.0,16.0,0.0,0.0,0.0,0.0
+2020-02-06,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,5.0,5.0,7.0,0.0,179.0,595.0,16.0,0.0,0.0,0.0,0.0
+2020-03-30,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,4.0,7.0,2.0,0.0,183.0,710.0,16.0,0.0,0.0,0.0,0.0
+2020-04-27,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,1.0,13.0,2.0,0.0,175.0,606.0,15.0,0.0,0.0,0.0,0.0
+2020-05-26,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,8.0,5.0,3.0,0.0,190.0,598.0,15.0,0.0,0.0,0.0,0.0
+2020-06-22,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,5.0,4.0,3.0,0.0,190.0,598.0,15.0,0.0,0.0,0.0,0.0
+2020-07-20,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,4.0,4.0,8.0,0.0,199.0,582.0,15.0,0.0,0.0,0.0,0.0
+2020-08-10,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,4.0,4.0,4.0,0.0,185.0,591.0,15.0,0.0,0.0,0.0,0.0
+2020-09-14,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,5.0,3.0,4.0,0.0,191.0,587.0,16.0,0.0,0.0,0.0,0.0
+2020-10-12,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,8.0,5.0,6.0,0.0,197.0,593.0,16.0,0.0,0.0,0.0,0.0
+2021-02-19,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,18.0,9.0,5.0,0.5,248.0,892.0,18.0,0.0,0.0,0.0,0.0
+2021-03-08,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,18.0,9.0,7.0,0.5,259.0,956.0,16.0,0.0,0.0,0.0,0.0
+2021-04-05,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,20.0,7.0,6.0,0.5,248.0,956.0,16.0,0.0,0.0,0.0,0.0
+2021-06-07,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,19.0,7.0,8.0,0.5,260.0,963.0,18.0,0.0,0.0,0.0,0.0
+2021-07-05,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,17.0,9.0,7.0,0.5,262.0,969.0,18.0,0.0,0.0,0.0,0.0
+2021-08-04,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,27.0,9.0,8.0,0.5,243.0,1019.0,17.0,0.0,0.0,0.0,0.0
+2021-09-20,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,29.0,11.0,8.0,0.5,261.0,1144.0,17.0,0.0,0.0,0.0,0.0
+2021-10-18,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,27.0,12.0,7.0,0.5,259.0,1140.0,17.0,0.0,0.0,0.0,0.0
+2021-11-16,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,17.0,14.0,8.0,0.5,149.0,909.0,39.0,0.0,0.0,0.0,0.0
+2021-12-13,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,22.0,16.0,10.0,0.5,192.0,1090.0,39.0,0.0,0.0,0.0,0.0
+2022-01-26,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,25.0,12.0,9.0,0.5,201.0,1098.0,27.0,0.0,0.0,0.0,0.0
+2022-02-21,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,23.0,14.0,9.0,0.5,204.0,1099.0,30.0,0.0,0.0,0.0,0.0
+2022-03-21,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,28.0,19.0,10.0,0.5,180.0,1063.0,41.0,0.0,0.0,0.0,0.0
+2022-04-18,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,26.0,29.0,8.0,0.5,176.0,1111.0,50.0,0.0,0.0,0.0,0.0
+2022-05-17,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,31.0,28.0,10.0,0.5,178.0,1037.0,46.0,0.0,0.0,0.0,0.0
+2022-06-15,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,27.0,32.0,7.0,0.5,152.0,891.0,35.0,0.0,0.0,0.0,0.0
+2022-07-11,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,29.0,36.0,10.0,0.5,163.0,1002.0,43.0,0.0,0.0,0.0,0.0
+2022-08-08,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,34.0,38.0,7.0,0.5,171.0,1020.0,40.0,0.0,0.0,0.0,0.0
+2022-09-12,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,36.0,33.0,9.0,0.5,175.0,1027.0,39.0,0.0,0.0,0.0,0.0
+2022-10-24,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,39.0,40.0,11.0,0.5,170.0,1042.0,37.0,0.0,0.0,0.0,0.0
+2022-11-28,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,41.0,35.0,14.0,0.5,178.0,1049.0,35.0,0.0,0.0,0.0,0.0
+2022-12-26,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,46.0,42.0,19.0,0.5,184.0,1056.0,33.0,0.0,0.0,0.0,0.0
+2023-01-26,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,44.0,42.0,14.0,0.5,179.0,1087.0,31.0,0.0,0.0,0.0,0.0
+2023-02-22,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,32.0,57.0,9.0,0.5,144.0,1097.0,29.0,0.0,0.0,0.0,0.0
+2023-03-23,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,37.0,55.0,14.0,0.5,149.0,1089.0,32.0,0.0,0.0,0.0,0.0
+2023-04-18,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,39.0,55.0,12.0,0.5,161.0,1993.0,32.0,0.0,0.0,0.0,0.0
+2023-05-24,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,41.0,59.0,15.0,0.5,183.0,2167.0,30.0,0.0,0.0,0.0,0.0
+2023-06-22,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,47.0,61.0,22.0,0.5,186.0,2212.0,30.0,0.0,0.0,0.0,0.0
+2023-11-30,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,49.0,62.0,26.0,0.5,179.0,2234.0,30.0,0.0,0.0,0.0,0.0
+2023-12-27,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,49.0,61.0,31.0,0.5,188.0,2239.0,29.0,0.0,0.0,0.0,0.0
+2024-02-19,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,51.0,84.0,13.0,0.5,199.0,1222.0,19.0,0.0,0.0,0.0,0.0
+2024-03-15,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,56.0,83.0,15.0,0.5,180.0,1210.0,19.0,0.0,0.0,0.0,0.0
+2024-05-16,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,61.0,86.0,19.0,0.5,184.0,1228.0,19.0,0.0,0.0,0.0,0.0
+2024-06-28,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,11.0,29.0,3.0,0.5,94.0,849.0,18.0,0.0,0.0,0.0,0.0
+2024-07-15,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,18.0,40.0,7.0,0.5,117.0,858.0,18.0,0.0,0.0,0.0,0.0
+2024-08-06,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,17.0,47.0,10.0,0.5,130.0,1006.0,21.0,0.0,0.0,0.0,0.0
+2024-09-07,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,21.0,53.0,10.0,0.5,141.0,1014.0,21.0,0.0,0.0,0.0,0.0
+2024-10-16,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,29.0,71.0,10.0,0.5,158.0,1207.0,17.0,0.0,0.0,0.0,0.0
+2024-10-17,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet GT#3,Main Transformer Unit 3,5.0,24.0,91.0,12.0,0.5,126.0,1089.0,2.0,0.0,0.0,0.0,0.0
+2019-04-14,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,11.0,31.0,5.0,0.5,36.0,199.0,17.0,0.0,0.0,0.0,0.0
+2019-06-27,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,10.0,32.0,3.0,0.5,37.0,196.0,18.0,0.0,0.0,0.0,0.0
+2019-07-08,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,7.0,29.0,5.0,0.0,35.0,193.0,17.0,0.0,0.0,0.0,0.0
+2019-08-05,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,8.0,30.0,5.0,0.0,36.0,189.0,17.0,0.0,0.0,0.0,0.0
+2019-09-30,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,8.0,30.0,5.0,0.0,36.0,189.0,17.0,0.0,0.0,0.0,0.0
+2019-10-31,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,12.0,34.0,12.0,0.5,43.0,195.0,16.0,0.0,0.0,0.0,0.0
+2019-11-25,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,14.0,28.0,6.0,0.5,40.0,237.0,17.0,0.0,0.0,0.0,0.0
+2019-12-23,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,15.0,29.0,10.0,0.0,46.0,211.0,17.0,0.0,0.0,0.0,0.0
+2020-01-28,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,19.0,34.0,16.0,0.0,52.0,228.0,16.0,0.0,0.0,0.0,0.0
+2020-03-18,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,11.0,27.0,9.0,0.0,39.0,211.0,42.0,0.0,0.0,0.0,0.0
+2020-04-08,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,10.0,21.0,4.0,0.0,45.0,728.0,29.0,0.0,0.0,0.0,0.0
+2020-05-06,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,11.0,27.0,7.0,0.0,36.0,258.0,23.0,0.0,0.0,0.0,0.0
+2020-06-02,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,12.0,24.0,7.0,0.0,39.0,305.0,20.0,0.0,0.0,0.0,0.0
+2020-07-27,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,11.0,32.0,5.0,0.0,36.0,297.0,20.0,0.0,0.0,0.0,0.0
+2020-08-12,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,11.0,32.0,5.0,0.0,36.0,297.0,20.0,0.0,0.0,0.0,0.0
+2020-09-21,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,14.0,36.0,5.0,0.0,35.0,302.0,20.0,0.0,0.0,0.0,0.0
+2020-10-20,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,12.0,38.0,4.0,0.0,46.0,309.0,23.0,0.0,0.0,0.0,0.0
+2021-02-04,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,23.0,59.0,10.0,0.0,46.0,412.0,23.0,0.0,0.0,0.0,0.0
+2021-03-02,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,24.0,54.0,10.0,0.5,49.0,384.0,23.0,0.0,0.0,0.0,0.0
+2021-04-01,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,24.0,64.0,12.0,0.5,48.0,387.0,20.0,0.0,0.0,0.0,0.0
+2021-04-30,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,23.0,91.0,11.0,0.5,49.0,401.0,20.0,0.0,0.0,0.0,0.0
+2021-05-31,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,25.0,88.0,11.0,0.5,52.0,406.0,24.0,0.0,0.0,0.0,0.0
+2021-06-28,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,21.0,88.0,10.0,0.5,54.0,403.0,22.0,0.0,0.0,0.0,0.0
+2021-07-26,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,24.0,85.0,12.0,0.5,57.0,411.0,20.0,0.0,0.0,0.0,0.0
+2021-08-23,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,34.0,89.0,9.0,0.5,56.0,393.0,16.0,0.0,0.0,0.0,0.0
+2021-09-27,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,38.0,90.0,11.0,0.5,54.0,407.0,19.0,0.0,0.0,0.0,0.0
+2021-10-25,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,36.0,90.0,11.0,0.5,51.0,409.0,18.0,0.0,0.0,0.0,0.0
+2021-11-22,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,37.0,88.0,12.0,0.5,53.0,405.0,17.0,0.0,0.0,0.0,0.0
+2021-12-20,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,28.0,99.0,14.0,0.5,47.0,490.0,23.0,0.0,0.0,0.0,0.0
+2022-01-20,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,33.0,103.0,12.0,0.5,54.0,462.0,30.0,0.0,0.0,0.0,0.0
+2022-03-17,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,37.0,108.0,11.0,0.5,58.0,474.0,27.0,0.0,0.0,0.0,0.0
+2022-04-14,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,30.0,116.0,13.0,1.0,46.0,534.0,27.0,0.0,0.0,0.0,0.0
+2022-05-12,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,30.0,121.0,17.0,0.5,51.0,479.0,44.0,0.0,0.0,0.0,0.0
+2022-06-09,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,33.0,118.0,16.0,0.5,54.0,472.0,41.0,0.0,0.0,0.0,0.0
+2022-07-07,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,30.0,120.0,19.0,0.5,57.0,476.0,43.0,0.0,0.0,0.0,0.0
+2022-08-04,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,26.0,147.0,15.0,0.5,45.0,459.0,40.0,0.0,0.0,0.0,0.0
+2022-08-05,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,30.0,190.0,16.0,0.5,48.0,407.0,43.0,0.0,0.0,0.0,0.0
+2022-08-11,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,27.0,186.0,13.0,0.5,41.0,439.0,42.0,0.0,0.0,0.0,0.0
+2022-09-29,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,36.0,193.0,15.0,0.5,51.0,426.0,42.0,0.0,0.0,0.0,0.0
+2022-10-31,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,36.0,193.0,15.0,0.5,54.0,482.0,46.0,0.0,0.0,0.0,0.0
+2022-11-24,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,34.0,188.0,17.0,0.5,58.0,467.0,46.0,0.0,0.0,0.0,0.0
+2023-01-18,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,34.0,191.0,15.0,0.5,62.0,473.0,43.0,0.0,0.0,0.0,0.0
+2023-02-15,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,37.0,195.0,13.0,0.5,59.0,476.0,45.0,0.0,0.0,0.0,0.0
+2023-03-15,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,44.0,201.0,11.0,0.5,64.0,481.0,41.0,0.0,0.0,0.0,0.0
+2023-04-12,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,40.0,197.0,14.0,0.5,61.0,493.0,42.0,0.0,0.0,0.0,0.0
+2023-06-05,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,42.0,198.0,14.0,0.5,66.0,490.0,44.0,0.0,0.0,0.0,0.0
+2023-11-22,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,48.0,207.0,19.0,0.5,71.0,501.0,47.0,0.0,0.0,0.0,0.0
+2023-12-19,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),8.0,71.0,231.0,16.0,0.5,83.0,387.0,15.0,0.0,0.0,0.0,0.0
+2024-01-22,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),8.0,71.0,225.0,12.0,0.5,83.0,387.0,15.0,0.0,0.0,0.0,0.0
+2024-02-21,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,75.0,228.0,18.0,0.5,84.0,583.0,19.0,0.0,0.0,0.0,0.0
+2024-03-25,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,69.0,221.0,15.0,0.5,89.0,578.0,19.0,0.0,0.0,0.0,0.0
+2024-05-08,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,72.0,224.0,17.0,0.5,93.0,584.0,20.0,0.0,0.0,0.0,0.0
+2024-04-26,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,72.0,224.0,17.0,0.5,93.0,584.0,20.0,0.0,0.0,0.0,0.0
+2024-07-03,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,76.0,231.0,18.0,0.5,111.0,611.0,16.0,0.0,0.0,0.0,0.0
+2024-08-27,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,81.0,240.0,21.0,0.5,122.0,623.0,18.0,0.0,0.0,0.0,0.0
+2024-12-18,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,87.0,236.0,29.0,0.5,129.0,631.0,21.0,0.0,0.0,0.0,0.0
+2026-03-25,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,69.0,221.0,15.0,0.5,89.0,578.0,19.0,0.0,0.0,0.0,0.0
+2026-05-08,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,72.0,224.0,17.0,0.5,93.0,584.0,20.0,0.0,0.0,0.0,0.0
+2026-04-26,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,72.0,224.0,17.0,0.5,93.0,584.0,20.0,0.0,0.0,0.0,0.0
+2026-06-03,UNIT_3,ON,ROUTINE,Data historis DGA dari sheet UAT,Unit Auxiliary Transformer 3 (UAT 3),5.0,76.0,231.0,18.0,0.5,111.0,611.0,16.0,0.0,0.0,0.0,0.0
