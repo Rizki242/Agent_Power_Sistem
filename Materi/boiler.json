@@ -1,0 +1,99 @@
+{
+  "id": "boiler",
+  "title": "Boiler",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "Operasi",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: BOILER PLTU JERANJANG",
+      "content": "1. STEAM GENERATOR \n \nSua tu peralatan yang memproses air jadi uap, biasa kita sebut boilers atau \nkete l. Peralatan pada Steam Generator bukan hanya ketel, tapi terdiri dari beberapa peralatan yang \nprinsip kerjanya sama dengan peralatan yang ada di dapur untuk menghasilkan uap air. \nSistem dan Peralatan pada Dapur Uap terdiri dari: Sistem Aliran Bahan Bakar, Sistem Aliran \nUdara Pembakaran, Sistem Aliran Air dan Uap. Terdapat pula Tungku -Bakar (Ruang -Bakar), dan \nDandag. \nDengan persamaan itu, Steam Generator lebih senang saya menyamakanya \ndan menyebutnya dengan DAPUR UAP. Jadi , Dapur pembangkit uap; DAPUR UAP; \nSTEAM GENERATOR; Boilers; ketel. \nKini, dapur uap dengan pembakaran dirancang semakin efisien dan dilengkapi sistem kontrol \nteknologi tinggi. Meskipun teknologi dapur uap maju, tapi prinsip dasar dapur uap tidak berubah , yaitu \nmerubah AIR menjadi UAP (Tenaga Uap). \nYang membuat efisien suatu Dapur -Uap ini adalah semakin canggih sistim yang dipakai pada \nperalatan-peralatan. \n Dasar proses pada Dapur -Uap yang memakai pembakaran ini berlaku selamanya, Tiga Dasar \nAliran Yaitu; Aliran Bahan-Bakar, Aliran Udara-Bakar, Aliran Air & Uap. \nUntuk mendapatkan uap, air dipanaskan dengan mencampurkan bahan bakar dan udara \n(pembakaran). Panas yang dihasilkan dari pembakaran dipindahkan ke air sehingga menjadi uap. \n Dari prinsip dasar dapur uap ini, kita mulai mengurai peralat an-peralatan dan fungsi yang \nmelekat pada sistim tersebut terlebih dulu. dan dimulai dari alirannya yaitu : \n1. Aliran AIR dan Uap (Water and Steam Flow) \n2. Aliran Udara Bakar dan Gas Buang (Air And Gas Flow) \n3. Aliran Bahan bakar dan sisa pembakaran (Fuel, Ash and Dust ) \nBA TUBARA BOILER\nUDARA\nAIR DEMIN\nUAP SH\nTURBIN GENERA TOR\nCOND.SEA WATER\nLISTRIK\n \n2. Aliran AIR dan UAP (Water and Steam Flow) \n \n2.1 Siklus Air dan Uap"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2",
+      "content": "Aliran dan perjalanan air ini dimulai dari Hot -Well bergerak ke ketel dan berubah dari air jadi uap. \nKemudian, uap bergerak ke turbin dan berakhir di Condensor. \nMulanya, air dipompa da ri Hot -Well ke ketel Main -Drum melalui dua tahap (dua tingkat) \npemompaan. \nTahap pertama, Air bertekanan rendah \nAir dari hottwel dipompa ke Dearator oleh pompa condensat dan dilewatkan 3 pemanas yang \nbertekanan rendah . Dearator merupakan tempat pembuang gas-gas yang terdapat dalam air. \nTahap Kedua, air bertekanan tinggi \nProses pemompaan berlanjut. Dari Deaerator pada ketinggian air diturunkan/dijatuhkan dan dipompa \noleh pompa pasokan untuk ketel BFP. Selanjutnya, air dilewatkan 2 pemanas bertekanan tingg i, \npemanas economizer dan masuk ke main drum ketel. \nAir direbus dalam ketel (pipa-pipa) menjadi air panas dan selanjutnya menjadi uap. Uap tersebut, \nyang merupakan uap basah, di lewatkan dalam pipa -pipa tingkat pertama lo w temp superheater dan \ndipanaskan kembali ke high temp superheater sehingga menjadi uap kering. Uap kering ini disalurkan ke \nTurbin tekanan tinggi (High Pressure Turbine). \nSetelah uap tersebut digunakan untuk memutar HP -Turbin, akan langsung disalurkan ke Turbin \ntekanan rendah (Low Pressur e Turbine). Uap bekas dari LP Turbin akan langsung masuk ke kondensor \nuntuk didinginkan dan diubah menjadi air kembali. Air hasil kondensasi uap tersebut ditampung di Hot -\nwell. \nAir kondensasi dipakai lagi dengan dipompakakan ke ketel untuk dijadikan uap la gi. Siklus air dan \nuap ini adalah siklus tertutup selama unit beroperasi normal. Siklus tersebut merupakan penerapan dari \nkaidah Rankine, sehingga disebut siklus Rankine. \n \n2.2 Peralatan pada Siklus Air dan Uap \nPeralatan –peralatan yang di gunakan untuk mendukung siklus Rankine pada \ndapur uap, sebagai berikut: \n1. Penampungan Air Dibawah Condensor HOT WELL \n2. Pompa Air condensat C E P \n(Condensate Extrac Pump) \n3. Pemanas air pada tekanan rendah LP -HEATER \n(# 1,2,3, ) \n4. Pembuang gas -gas yang ada pada air DEARATOR \n(LP heater # 4) \n5. Pompa pasokan ke ketel BFP \n(Pemanas air pada tekanan tinggi HP -HEATER \n(# 1,2 ) \n6. Pemanas air dengan pengiritan / hitungan economis. \nECONOMIZER \n7. Pemanas air pada Pipa -pipa dinding tungku WALL TUBE \n8. Pem isah air dan uap basah pada KETEL Main Drum \n9. Pemanas lanjut uap kering pertama \nLO TEMP SUPER HEATER \n10. Pemanas lanjut uap kering kedua \nHI TEMP SUPER HEATER \n11. Pengatur panas uap (SPRAY) \n12. Pemakaian uap pada HP -TURBIN"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: 13. Pemakaian uap pada LP -TURBIN",
+      "content": "14. Pengembunan uap bekas dari lp -turnin di \nCONDENSOR \n15. Penampungan air hang at hasil pengembunan pada \nHOT WELL. \nSemua peralatan di atas membentuk sirkulasi tertutup, untuk menerapkan siklus rankine. \nPeralatan-peralatan tersebut bekerja dengan parameter -parameter yang mengacu pada nilai tekanan, \ntemperature, jumlah aliran. \nTelah diuraikan aliran air dan uap pada dapur uap PLTU. Dengan mengamati gambar aliran air dan \nuap di dalam ketel dapat, tahapan proses aliran uap dan air disimpulkan sebagai berikut: \n Tahap Aliran Air, terjadi pada: \n - Economizer \n - Drum \n - Downcomer \n Tahap Aliran air dan uap (uap basah), terjadi pada: \n- Wall Tube \n - Drum \n Tahap Aliran uap, terjadi pada: \n- Drum \n - Inlet Header of Hanger \n- Inlet Header of Low Temp Superheater \n- Inlet Header of High Temp Superheater \n- Outlet Header of Temp Superheater (uap siap pakai)"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: SUPERHEATER",
+      "content": "TURBIN\nCOND\nHOTWELL\nCP\nGLAND \nHEATER\nLP HEATER\nBFP\nDEARATOR\nHP HEATER\nECO\nBOILER\nDRUM\n \n3. BOILER PLTU JERANJANG UNIT 3 \n \n3.1 PENGENALAN TEKNOLOGI BOILER CFB (CIRCULATING FLUIDIZED BED) \n \nBoiler atau boleh juga kita sebut dengan ketel uap adalah sebuah bejana tertutup yang dapat \nmembentuk uap dengan tekanan lebih besar dari atmosfer dengan jalan memanaskan air boiler yang \nberada di dalamnya (wall tube) dengan radiasi panas dari hasil pembakaran bahan bakar di ruang bakar \n(furnace). \n \nDi indonesia, ada tiga jenis boiler yang umumnya dipakai, yaitu : \n- Boiler jenis Stocker yang pembakarannya ditempatkan diatas rantai seperti rantai tank yang berjalan \n(Chain Grate/Travelling Grate Boiler). \n- Boiler jenis pulverize, sering disebut PC ( Pulverized Coal ) Boiler. Pada boiler jenis ini Batu bara \nditepungkan terlebih dahulu kemudian disemprotkan ke ruang bakar sehingga melayang dan terbakar \nditengah-tengah ruang bakar. \n- Boiler jenis Circulating Fludize Bed (CFB), boiler ini ukuran diameter batubaranya sekitar 10 mm dan \ndilengkapi dengan cyclon diantara ruan g bakar dan outlet asapnya. Fungsi Cyclon untuk memisahkan \n(separator) gas untuk dibuang melalui cerobong asap dan partikel yang tidak terbakar untuk \ndikembalikan ke ruang bakar (proses sirkulasi). \n Dari ketiga jenis boiler di atas, secara umum yang di pa kai oleh PT.PLN dalam pembangkit \nlistriknya adalah jenis boiler PC dan CFB dan boiler jenis stocker lebih banyak di pakai oleh industri \nindustri skala kecil."
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5: Ilustrasi proses boiler unit 3",
+      "content": "High Temp.\nSuperheater\nLow Temp.\nSuperheater\nEconomizer\nAir Heater\nPrimary Air 150°C\nF ly Ash Recirculating Air\nFly Ash\nFly Ash +\nUnburned Coal\nUnburned\nCoal\nFlue\nGas\nESP\nSecondary Air 150°C\nBatubara\n \nPerbandingan Boiler CFB dengan Boiler PC \n \nT e k n o l o g i B o i l e r t i p e C F B i n i m e m p u n y a i b e b e r a p a k e l e b i h a n d i b a n d i n g k a n \nd e n g a n j e n i s b o i l e r P u l v e r i z e d C o a l y a n g k i t a k e n a l s e l a m a i n i . B e r i k u t a d a l a h \nbeberapa perbandingan antara Boiler Tipe CFB dan Boiler PC (Pulverized Coal). \n \nNo BOILER CFB BOILER PC \n1 Temperatur Pembaka ran di Furnace \nrendah (± 800 °C), low NOx \nTemperatur Pembakaran di \nFurnace tinggi (> 1000 °C), High \nNOx \n2 Kadar sulfur (Sox) yang rendah karena \nmenggunakan Limestone \nKadar sulfur (Sox) yang tinggi \nkarena tidak menggunakan \nLimestone. \n3 Ukuran batu b ara yang masuk ke \nFurnace (± 10 mm) \nUkuran batubara yang masuk ke \nfurnace dalam bentuk serbuk \nhalus. \n4 Dapat menggunakan batubara dengan \nnilai kalor yang rendah . \nMenggunakan batubara dengan \nnilai kalor yang tinggi. \n5 Menggunakan Panel Evaporator d an \nPanel Superheater didalam Furnace \nuntuk pemanfaatan radiasi panas dari \nPembakaran. \nTidak menggunakan Panel \nEvaporator dan Panel \nSuperheater. \n \nTabel perbedaan Boiler tipe CFB dan PC \n \nBoiler CFB"
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6",
+      "content": "Konsep dasar dari Boiler CFB adalah boiler stoker (unggun fluidisasi) atau type bioler bara api. \nBoiler CFB dapat di definisikan sebagai berikut : \n CIRCULATING yaitu Terjadinya sirkulasi batubara yang belum habis terbakar dari furnace ke \ncyclon kemudian masuk ke seal pot dan kembali ke furnace. \n F L U I D I Z E D y ai t u P e n g h e m b u s a n u d a r a p r i m e r u n t u k m e n j a g a m a t e r i a l b e d d a n \nbatubara tetap melayang di dalam Furnace. \n B E D y a i t u M a t e r i a l b e r u p a p a r t i k e l- p a r t i k e l k e c i l ( p a s i r k u a r s a , b o t t o m a s h ) y a n g \ndigunakan sebagai media awal transfer panas dari pembakaran HSD kepembakaran Batubara \n \nPada boiler type CFB terdapat 3 bagian utama yaitu: \n \n FURNACE yang berfungsi sebagai tempat terjadinya proses pembakaran bahan bakar batu \nbara. \n CYCLONE yang berfungsi untuk mensirkulasikan kembali material pembakaran dari furnace u ntuk \ndikembalikan ke furnace. Di sini juga terjadi proses pemisahan batubara yang belum terbakar d a n b e d \nm a t e r i a l s i s a p e m b a k a r a n u n t u k d i s i r k u l a s i k a n k e F u r n a c e d a n f l u e g a s u n t u k d i \nt e r u s k a n k e E l e c t r o s t a t i c p r e s i p i t a t o r ( E S P ) . \n BACK PASS yang berfungsi sebagai ruang pemanfaatan kalor yang terdapat dalam flue gas. Komponen \nutama di Backpass: Finishing Superheater, Low t emperature Superheater, Economizer, dan Air \nHeater. \n \nBOILER CFB\nBoiler PLTU Jeranjang unit #3 berjenis CFB\nUdara Primer\nuntuk mengangkat\nMaterial bed\nUdara Sekunder\nuntuk menciptakan\nturbulensi dalam furnace\nCFB :\nCirculating \nFluidized \nBed\nMaterial bed\nterfluidisasi\noleh udara primer\nPartikel batubara\nyang blm terbakar\nkembali ke furnace"
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7: BAGIAN UTAMA BOILER CFB",
+      "content": "FURNACE\nsebagai tempat terjadinya\nproses pembakaran dan tempat\nterjadinya transfer panas\nsecara konduksi, konveksi, dan\nradiasi dari proses pembakaran\nke air dengan tujuan merubah\nfasa air dari cair menjadi uap.\nCYCLONE\nsebagai pemisah antara bahan\nbakar yang sudah habis terbakar\ndengan bahan bakar yang belum\nhabis terbakar dengan prinsip\ngaya sentrifugal.\nBACK END DUCT\nsebagai tempat terjadinya \npenyerapan panas dari flue gas. \nDi furnace terdapat:\n-Combustion chamber & \nnozzle button\n-Water wall tube\n- Panel superheater\nDi dalam cyclone terdapat:\nCyclone separator & cyclone \nsuperheater\nDi dalam back end duct terdapat:\n- HT & LT Superheater \n- Economizer\n- Air preHeater\nDi bawah furnace terdapat\nair plenum dan wind box yang\nberfungsi sebagai tempat\npenampung udara primer\nsebelum masuk furnace. Di\nwind box terdapat burner\nBBM sebanyak 2 buah\nDi atas furnace terdapat\nboiler drum\nSeal pot yang didalamnya\ntersusun nozzle button sebagai\npengarah udara fluidizing\nDi bawah cyclone terdapat:\nBOILER DRUM\nBoiler drum berfungsi untuk menampung\nair pengisi boiler dan memisahkan fasa uap\ndengan fasa air sebelum masuk ke\nsuperheater.\nDi dalam boiler drum terdapat\nsejumlah cyclone separator dan\ncorrugated plate steam-water\nseparator (semacam dryer) untuk\nmemastikan hanya uap kering yang\nkeluar dari drum menuju superheater.\nDesain Boiler Drum PLTU Jeranjang:\nBahan : Plat baja P355GH, dengan ketebalan las\n100 mm\nPanjang : 10.000 mm\nBerat : + 50 ton\nAlat ukur : 2 bh level meter local dan 2 bh electric \ncontact water level gauges\nLevel normal : 180 mm di bawah center drum\nRata-rata continuous blowdown : 2 %"
+    },
+    {
+      "id": "page-8",
+      "heading": "Halaman 8: Cyclone separator & cyclone",
+      "content": "superheater\nCyclone separator : \nsebagai pemisah antara bahan bakar yang \nsudah habis terbakar dengan bahan bakar\nyang belum habis terbakar dengan prinsip\ngaya sentrifugal. \nCyclone superheater : \nUntuk menaikkan temperatur uap panas\nlanjut keluaran panel superheater dengan\nmemanfaatkan panas yang dibawa oleh\nunburnned coal."
+    },
+    {
+      "id": "page-9",
+      "heading": "Halaman 9: HT & LT superheater",
+      "content": "HT superheater :\nUntuk menaikkan temperatur uap\nsuperheat terakhir kali sebelum dialirkan\nke power house untuk memutar turbin.\nTemperatur out put nya di jaga 540° C\nLT superheater :\nUntuk menaikkan temperatur\nuap superheat output dari\ncyclone superheater\n \nEconomizer\nEconomizer :\nUntuk memanaskan air pengisi boiler dengan memanfaatkan panas \nyang dibawa flue gas"
+    },
+    {
+      "id": "page-10",
+      "heading": "Halaman 10: AIR PREHEATER",
+      "content": "Air heater yang terpasang berjenis tubular horizontal, terdiri atas 2 \nbagian dan setiap bagian terdiri atas 3 tingkatan. Satu bagian \nmerupakan air heater untuk udara primer sedangkan bagian lain \nmerupakan air heater untuk udara sekunder.\nFlue gas mengalir di sisi luar pipa dan mengalir dari tingkat atas air \nheater menuju ketingkat yang lebih bawah, sedangkan aliran udara di \ndalam pipa menyilangi dan melawan aliran flue gas. Suhu udara yang \ntelah dipanaskan adalah 150 \u0001C."
+    },
+    {
+      "id": "page-11",
+      "heading": "Halaman 11: Spesifikasi Boiler:",
+      "content": "Type : YG-130/9.8-M (CFB Boiler) \nKapasitas : 130 ton/jam \nTekanan uap superheat : 9,8 MPa \nTemperatur uap superheat : 540 °C \nEfisiensi thermal : 86,54 % \nTemperatur air pengisi boiler : 215 °C \nTemperatur udara primer : 150 °C \nTemperatur udara sekunder : 150 °C \nTemperatur gas buang : 150 °C \nBahan bakar : Batu bara \nUkuran bahan bakar : < 13 mm \nUkuran batu kapur : < 2 mm \nUkuran Boiler : \n Lebar : 14.800 mm \n Panjang : 20.500 mm \nTinggi : 43.000 mm \n \n \n \n \n \n \n4. Alat -ala t bantu Boiler PLTU Jeranjang 3 \n \nDiantaranya:"
+    },
+    {
+      "id": "page-12",
+      "heading": "Halaman 12:  Coal Feeder",
+      "content": " Primary Air Fan (PAF ) \n Secondary Air Fan (SAF) \n Induced Draft Fan (IDF) \n Fly Ash Reinjection Fan(FARF) \n \n \n4.1 Coal Feeder : \nCoal Feeder (Pemasok Batu Bara): \n \nMerupakan peralatan yang mengatur dan memasukan seberapa banyak batu \nbara yang akan disalurkan dari bunker ke dalam ruang bakar (funace) . \nCoal Feeder ini dilengkapi dengan Gate valve pada sisi inletnya untuk menutup aliran \nbatu bara dari Bunker bila ada pemeliharaan pada Coal Feeder. \nCoal feeder bekerja secara terus -menerus dan tidak putus -putus. Pengaturan \nseberapa banyak batu -bara yang dimasukan berbanding lurus dengan kecepatan \nputar belt feeder, kecepan beltfeederlah yang menakar batu -bara yang akan masuk \nkedalam ruang bakar (funace) . \nSedangkan perintah kecepatannya dari permintaan pembakaran dangan perhitungan \naliran uap ke turbin (main steam Flow) \n \n \n \n \n \n \n \nLiteran \nDan \nTimbangan \nBatu-Bara"
+    },
+    {
+      "id": "page-13",
+      "heading": "Halaman 13: Gambar : Coal Feeder",
+      "content": "Spesifikasi Coal Feeder: \n \n Kapasitas flow rate Coal feeder 18Ton/jam \n Ada 3 unit Coal Feeder \n Daya motor penggerak @7,5 kw \n Coal feeder dioperasikan saat temp furnace > 500 degC \n Pada saat beban penuh hanya cukup di opersikan 2 unit CF karena pada \nbeban penuh total Max flow rate 22 Ton/jam."
+    },
+    {
+      "id": "page-14",
+      "heading": "Halaman 14: Gambar:Panel Coal Feeder",
+      "content": "4.2 Primary Air Fan (PA Fan) \n \nBerfungsi \nuntuk menghembuskan udara primer melalui air preheater, air plenum, selanjutnya masuk ke furnace \nmelaui nozzle button untuk mengangkat material bed dan sebagai udara pembakaran, 55% udara \npembakaran adalah udara primer. \nSpesifikasi teknik: \nType : G6 -30 19.60 \nFlow rate : 100.671 m 3/jam \nRpm : 1465 \nNo. Seri : 95450202 \nArah putaran : Kiri (counter clockwise) \nMotor power : 630 kW \nMedium density : 1.165 kg/m 3 \nMedium temp. : 30°C \nFactory date : 2009.11 \nJumlah : 1 unit"
+    },
+    {
+      "id": "page-16",
+      "heading": "Halaman 16: 4.3 FDF (Force Draft Fan)",
+      "content": "Secondary Air Fan (SAF) berfungsi untuk menghembuskan udara sekunder melalui air preheater, \nselanjutnya masuk ke furnace melaui secondary air nozzle yang berada di sisi depan, belakang, kiri, dan \nkanan furnace (combustion chamber) untuk menciptakan turbulensi di ruang bakar sehingga terjadi \npencampuran yang merata antara bahan bakar dengan material bed, dan juga berfungsi sebagai udara \npembakaran. \nSpesifikasi teknik: \nType : YKK4005-4 \nFlow rate : 87.120 m3/h \nRpm : 1485 rpm \nNo. Seri : 93450201 \nArah putaran : Kanan (clockwise) \nMotor power : 400 kW \nMedium density : 1.165 kg/m3 \nMedium temp : 30°C \nFactory date : 2009.11 \nJumlah : 1 unit"
+    },
+    {
+      "id": "page-17",
+      "heading": "Halaman 17: 4.4 IDF (Induced Air Fan) :",
+      "content": "Induced Air Fan (IDF) berfungsi untuk menghisap gas hasil pembakaran di furnace, melewati cyclone \nseparator, back end duct, ESP, dan selanjutnya dikeluarkan melalui chimney. Serta mendapatkan ruang \nbakar bertekanan negatif. dengan kipas pendorong udara bakar ke ruang bakar dan kipas pengisap \nruang bakar, ini yang berperan mempertahankan tekanan ruang negatif dengan menyedot ruang bakar \ndan disalurkan ke cerobong yang disebut gas buang, dilakukan oleh kipas pengisap gas buang IDF. \n \nSpesifikasi teknik: \nType : Y6-40 22.2D \nFlow rate : 158400 m3/h \nRpm : 980 \nNo. Seri : 93450301/2 \nArah putaran : Kiri dan kanan \nMotor power : 450 kW \nMedium density : 0.84 kg/m3 \nMedium temp : 130 °C \nFactory date : 2009.11 \nJumlah : 2 unit"
+    },
+    {
+      "id": "page-18",
+      "heading": "Halaman 18: 4.5 Fly Ash Reinjection Fan (FARF)",
+      "content": "berfungsi untuk mengangkat (mem-fluidizing) batu bara yang belum habis terbakar setelah dipisahkan \noleh cyclone separator sehingga dapat mengalir masuk kembali ke dalam furnace (combustion \nchamber). \n \n \nSpesifikasi teknik: \nType : 3L63WC \nFlow rate : 4680 m3/h \nRpm : 1450 \nNo. Seri : 3751/2 \nMotor power : 55 kW \nFactory date : 2009.11 \nJumlah : 2 unit \n \n \n5.INTRUKSI KERJA OPERASI BOILER COLD START UP"
+    }
+  ]
+}

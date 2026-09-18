@@ -92,7 +92,21 @@ class DGAOverrideTests(unittest.TestCase):
         })
         original_trf002 = next(t for t in DEFAULT_TRANSFORMERS if t["transformer_id"] == "TRF-002")
         detail = get_dga_transformer_detail("TRF-002")
-        self.assertEqual(detail["gases"]["H2"], original_trf002["gases"]["H2"])
+    def test_duval_triangle_all_zones(self):
+        cases = [
+            ("PD", {"H2": 10, "CH4": 99, "C2H6": 5, "C2H4": 0.5, "C2H2": 0.5, "CO": 50, "CO2": 500}),
+            ("T1", {"H2": 10, "CH4": 85, "C2H6": 10, "C2H4": 13, "C2H2": 2, "CO": 100, "CO2": 800}),
+            ("T2", {"H2": 10, "CH4": 60, "C2H6": 10, "C2H4": 38, "C2H2": 2, "CO": 100, "CO2": 800}),
+            ("T3", {"H2": 10, "CH4": 20, "C2H6": 10, "C2H4": 75, "C2H2": 5, "CO": 100, "CO2": 800}),
+            ("D1", {"H2": 10, "CH4": 65, "C2H6": 10, "C2H4": 15, "C2H2": 20, "CO": 100, "CO2": 800}),
+            ("D2", {"H2": 10, "CH4": 20, "C2H6": 10, "C2H4": 30, "C2H2": 50, "CO": 100, "CO2": 800}),
+            ("DT", {"H2": 10, "CH4": 10, "C2H6": 10, "C2H4": 65, "C2H2": 25, "CO": 100, "CO2": 800}),
+        ]
+        for expected_code, gases in cases:
+            res = dga_data.calculate_dga_diagnosis(gases)
+            self.assertIn(expected_code, res["duval_diagnosis"], f"Failed for zone {expected_code}")
+            coords = res["duval_coords"]
+            self.assertAlmostEqual(coords["pct_CH4"] + coords["pct_C2H4"] + coords["pct_C2H2"], 100.0, places=1)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,89 @@
+{
+  "id": "sistem-kelistrikan-jeranjang",
+  "title": "Sistem kelistrikan Jeranjang",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "Maintenance",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: MATERI",
+      "content": "SISTEM KELISTRIKAN \n \n1. Pengertian Umum \nPembangkit listrik adalah bagian dari a lat industri yang dipakai untuk memproduksi dan \nmembangkitkan tenaga listrik dari berbagai sumber tenaga. Pr oduksi PLTU Jeranjang #3 disalurkan \nmelalui trafo step up dari 6,3 kV output Generator menjadi 150 kV pada sisi output trafo. Pada saat \nunit beroperasi sebagian kecil daya yang dihasilkan digunakan untuk memenuhi kebutuhan daya \npada peralatan unit atau yan g biasa disebut dengan Pemakaian Sendiri (PS). Sedangkan pada saat \nunit tidak beroperasi, PS unit diambil dari jaringan 150 kV yang di step down menggunakan trafo PS \nmenjadi 6,3 kV yang biasa disebur Unit Auxiliary Trafo (UAT). \n \nGambar 1. Single Line kelistrikan PLTU #3 Jeranjang"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2: Gambar 2. Single Line Diagram pada layar PS ECS",
+      "content": "2. Generator \nGenerator, yakni mesin berputar yang mengubah energi mekanis menjadi energi listrik dengan \nmenggunakan prinsip medan magnet dan penghantar listrik. Mesin generator ini membangkitakan \natau mengeluarkan tegangan 6.3 KV kemudian dinaikan dengan Main transformer ke 150 KV. \n2.1. Bagian Utama \nBagian Utama Generator : \n1. Stator \n2. Rotor \nBagian utama generator akan dijelaskan sebagai berikut. \na) Stator \nPengertian Stator adalah - bagian utama dari alternator yang terdiri dari inti stator dan \nkumparan – kumparan. Dari kumparan – kumparan tersebut dibangkitkan arus bolak – balik \n3 phase (AC) yang disalurkan ke sistem jaringan melalui kawat – kawat. Kumparan – \nkumparan tersebut terbuat dari gulungan – gulungan tembaga berisolasi yang dipasang pas \nke dalam alur – alur aksial sepanjang keliling bagian dalam dari inti stator. \n \nInti stator mengalami perubahan medan magnit (fluks) secara ter us menerus. Maka inti \ntersebut harus dibuat dari lembaran – lembaran baja yang sangat tipis yang dinamakan \nlaminasi – laminasi yang diisolasi satu sama lain dengan tujuan untuk mengurangi arus pusar \nyang berarti mengurangi panas yang diakibatkan."
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3: Gambar 3. Stator Generator",
+      "content": "b) Rotor \nPengertian Rotor adalah bagian yang berputar membangkitkan medan magnet. Rotor adalah \nbagian yang bebas bergerak di dalam inti stator dari alternator dan dikopel dengan poros \nturbin. Rotor tersebut juga mempunyai kumparan – kumparan (gulungan – gulungan kawat) \ndan berisolasi, yang dipasang di dalam alur – alur aksial dan dialiri arus searah (DC) \nkarenanya disini tidak diperlukan inti rotor yang berlaminasi dan biasanya terbuat dari \nsepotong baja campuran yang ditempa padat (bentuk tunggal). \nRotor ini pada hakekatnya adalah suatu elektro magnit yang besar dengan kutub – kutub \nutara dan selatan. \n \nSelama (selagi) rotor berputar dengan kecepatan tinggi di dalam inti stator , maka medan \nmagnet yang dihasilkan didalam rotor tersebut membu at medan putar (berubah – ubah) di \ndalam inti stator. Karenanya menyebabkan timbulnya suatu tegangan yang berubah – ubah \n(alternating voltage) di dalam kumparan stator. \n \nGambar 4. Stator Generator \n2.2. Data Teknik Generator : \nModel : QF-K30-2 \nSerial Number : 2009-3 \nCapacity : 37,5 MVa \nRated power : 30 MW \nRated voltage : 6,3 kV 3 phase 3 wire"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4: Rated current : 3237 A",
+      "content": "Rated power factor : 0,8 (lagging) \nRated speed : 3000 rpm \nRotary direction : clockwise (viewing at driven end) \nCooling type : Air \nExcitation : Static Exciter \nIsolation class : F \nCritical speed : 1410/3900 rpm \nFlywheel moment (GD2) : 4,94 t.m2 \nNatural bow of rotor : 0,586 mm \nRated torque : 95,5 kN.m \nShort circuit torque : 823,55 kN.m \nAmount of cooling air : 23 m3/s \nOil consumption of alternator bearing (each) : 110 l/min \nRotor weight : 16 t \nStator weight : 42 t \nBearing weight : 1,7 t \nMaximum transportation weight : 44,72 t \nBase frame weight : 3 t \nGenerator weight / total weight : 62 / 69 t \n \n \nGambar 5. Generator \nProteksi Generator : \n 59 = Over Voltage \n 27 =Uder Voltage \n 32 =Reverse Power \n 40 =Lost Off Field"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5:  59G/27 G = Stator Earth Fault Proteksi",
+      "content": " 64= Rotor Earth Fault \n 81= Under Frequncy \n 24 = Over fluxs Proteksi \n 46 = Negative Squence \n 87 GT =Ovrall Differential \n 25 = Syncroun Chek \n 51 /27 V = Over Current \n 21 = Impedanzi Relai \n2.3. Synchronizing Generator \nSynchronizing generator adalah memparalelkan kerja dua buah generator atau lebih untuk \nmendapatkan daya sebesar jumlah generator tersebut dengan syarat syarat yang telah \nditentukan. \nSyarat syarat dasar dari parallel generator adalah sebagai berikut : \n1. Mempunyai tegangan kerja yang sama \n2. Mempunyai urutan phase yang sama \n3. Mempunyai frekuensi kerja yang sama \n4. Mempunyai sudut phase yang sama \n \nGambar 6. Gambar Syncroun Generator dengan System Jaringan \n \n2.4. PMT (Pemutus Tenaga) atau CB (Circuit Breaker) \nPMT Adalah sebagai alat untuk membuka atau menutup suatu rangkaian listrik dalam kondisi \nkeadaan berbeban, kondisi gangguan (hubung singkat) pada jaringan listrik atau gangguan \nperalatan listrik."
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6: Gambar 7. PMT 6,3 kV (52G)",
+      "content": "2.5. Excitasi \nSistem eksitasi adalah sistem pasokan listrik DC sebagai penguatan pada generator listrik atau \nsebagai pembangkit medan magnet, sehingga suatu generator dapat menghasilkan energi listrik \ndengan besar tegangan keluaran generator bergantung pada besarnya arus eksitasinya. \n \nGambar 8. System Exsitasi dengan Brush (sikat Arang)"
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7: Gambar 9. System Static Excitasi PLTU 3 Jeranjang",
+      "content": "3. Main Transformer \nMain Transformer berfungsi untuk menyalurkan tenaga/daya listrik dari tegangan tinggi ke \ntegangan rendah atau sebaliknya, dengan frekuensi sama. Dalam pengoperasiannya, \ntransformator-transformator tenaga pada umumnya ditanahkan pada titik netral, sesuai dengan \nkebutuhan untuk sistem pengamanan atau proteksi. titik netral pada Trafo sisi 150 kV, tegangan \nprimer 6,3 kV. \n \nGambar 10. Main Transformer"
+    },
+    {
+      "id": "page-8",
+      "heading": "Halaman 8",
+      "content": "Gambar 11. Contoh Single Line Diagram Main & Auxiliary Trafo \nTransformator terdiri dari inti yang terbuat dari laminasi besi, kumparan primer dan kumparan \nsilinder, lihat berikut \n \n \n \n \n \n \n \n \n \n \n \n \n \n \nGambar 12. Diagram Transfomator \n \nBila tegangan bolak-balik (V1) dihubungkan pada kumparan primer, maka timbul meda n magnet \n(flux). Medan magnet ini mengalir dalam inti dan arahnya berubah -ubah. Kecepatan perubahan \nmedan magnet sesuai dengan frekwensi arus bolak -balik. Kuat medan magnet ditentukan oleh \nbesarnya arus yang mengalir dan banyaknya lilitan dalam kumparan ya ng dinyatakan dalam \nampere lilit."
+    },
+    {
+      "id": "page-9",
+      "heading": "Halaman 9",
+      "content": "Karena kumparan primer dan sekunder terletak pada inti yang sama, maka kedua kumparan \nakan terpotong oleh medan magnet yang arahnya berubah -ubah, akibatnya timbul GGL pada \nkedua kumparan. Besarnya GGL induksi tergantung pada kuat medan magnet dan banyaknya \nlilitan dalam kumparan. Arah GGL induksi selalu berlawanan dengan arah arus yang \nmembangkitkannya. Jika N1 dan N2 adalah banyaknya lilitan pada kumparan primer dan \nsekunder, maka : \n \n \nAtau : \n \n \nBila kumparan sekunder da lam keadaan terbuka, tegangan terminal V2 sama dengan GGL \ninduksi E2 . Arus primer mengalir sangat kecil karenanya GGL induksi E1 sama dengan tegangan \nterminal V1, tetapi arahnya berlawanan. \nJadi ; \n \n \nArus primer yang sangat kecil disebut sebagai arus memagnetisasi karena adanya fluks di inti. \n \n3.1. Data Teknis \nMerk : Dachi \nType : SF10-40000/150 \nNo. Seri : 1DB.710.4574 \nKapasitas : 40.000 kVA \nTegangan : (165±4x2,5%)/6,3 KV \nVektor group : YNd11 \nTap Changer : Off Load Tap Changer \nFrekuensi : 50 Hz \nTipe pendingin : ONAN/ONAF \n \n \n3.2. Sistem Proteksi Trafo \nSistem proteksi trafo adalah untuk mengamankan trafo apabila terjadi gangguan diluar maupun \ndidalam trafo supaya terhindar dari kerusakan. Disisi lain kesalahan koordinasi sistem proteksi \ndapat menimbulkan trip yan g tidak diharapkan sehingga memutuskan pasokan ke konsumen. \nDengan demikian perlu dilakukan penyetelan koordinasi sistem proteksi yang baik. \nProteksi Trafo terdiri dari : \n1. Rele Bucholz \n2. Pressure sudden \n3. Rele Differential \n4. Rele Over current"
+    },
+    {
+      "id": "page-10",
+      "heading": "Halaman 10: 5. Rele Earth fault",
+      "content": "6. Temperature winding \n7. Oil Temperatur \n \n3.3. Sistem Pendingin Trafo \nPendingin ini berfungsi untuk mendinginkan winding dari trafo tersebut dan juga minyak trafo. \nTipe-tipe dari pendingin trafo tersebut adalah sebagai berikut : \na. ONAN (Oil Natural Air Natural) \nONAN menggunakan minyak untuk pendingin internal dengan konveksi natural di dalam \ntankinya dan menggunakan udara dengan konveksi natural untuk pendingin eksternal. \nb. ONAF (Oil Natual Air Force) \nPada pendingin tipe ini minyak bersirkulasi secara natural, namun untuk udara \npendinginnya menggunakan fan untuk memaksa terjadinya aliran udara pendingin. \nc. OFAF (Oil Force Air Force) \nPada pendingin tipe ini baik minyak maupun udara bersirkulasi dengan menggunakan \nperalatan bantu, minyak menggunakan pompa sirkulasi sedangkan u dara menggunakan \nfan. \n \n \n4. Unit Auxiliary Transformer \nSebagaimana disebutkan sebelumnya, UAT adalah trafo yang digunakan untuk mencatu daya \npemakaian sendiri. \n4.1. Data Teknik UAT \nMerk : Dachi \nType : SZ10-6300/6 \nNo. Seri : 1DB.710.3484 \nKapasitas : 6300 kVA \nTegangan : (6300±4x2,5%)/6300 V \nVektor group : Dyn11 \nTap Changer : ON-Load Tap Changer \nFrekuensi : 50 Hz \nTipe pendingin : ONAN"
+    },
+    {
+      "id": "page-11",
+      "heading": "Halaman 11: Gambar 13. UAT PLTU Jeranjang",
+      "content": "4.2. Data Pemakaian Sendiri Aux Trafo"
+    },
+    {
+      "id": "page-12",
+      "heading": "Halaman 12: A",
+      "content": "NO MOTOR NO MOTOR NO MOTOR\n1 Motor ID Fan A , 16 Motor Elavator 29 Motor Mixing Tank Hydrasine \n2 Motor ID Fan B 17 Oil Supply Pump \n3 Motor Primary Air Fan 18 Oil Discharge Pump \n4 Motor Secondary Air Fan 19 Motor Air Compressor A \n5 Motor Recirculating Air Fan 20 Motor Air Compressor B \n6 Motor Recirculating Air Fan 21 Motor Blower limestone\n7 Motor Coal Feeder . 22 Motor A Dosing Posphate Pump \n8 Motor Coal Feeder . 23 Motor B Dosing Posphate Pump \n9 Motor Coal Feeder 24 Motor Dosing Hydrazin Pump \n10 Motor Slag Cooler A 25 Motor B Dosing Hydrazin Pump \n11 Motor Slag Cooler B 26 Motor Mixing Tank Posfat \n12 Motor Drain Pump A 27 Motor Mixing Tank Posfat \n13 Motor Drain Pump B 28 Motor Mixing Tank Hydrasine \nB\n1 Motor Starting Oil Pump 11 Motor Fan Oil\n2 Motor AC Lubricating 12 Motor Water jet Pump\n3 Motor DC Lubricating 13 Motor ball Cleaning\n4 Motor Jacking Oil Pump A 14 Motor Boiler Feed Pump \n5 Motor Jacking Oil Pump B 15 Motor Boiler Feed Pump \n6 Motor Condensat Pump A 16 Motor Low water Level \n7 Motor Condensat Pump B 17 Motor pelumas BFP \n8 Motor Condensat Pump C 18 Motor pelumas BFP \n9 Motor Turning Gear 19 Shaft Gland Motor \n10 Motor Crane 20 Shaft Gland Motor \nC\n1 Motor Hammering Vartikal \n2 Motor Hammering Horizontal \n3 Heater ESP \n4 Motor Cran ESP 3 kW\nD\n1 Make -up Cooling Tower A 16 Motor Fresh water B 29 Motor Regent pump A\n2 Make -up Cooling Tower B 17 Motor Flushpump SWRO A 30 Motor Regent pump B\n3 Motor Fire pump A 18 Motor Flushpump SWRO B 31 Motor CCWP A\n4 Motor Fire pump B 19 Motor Circulating pump A 32 Motor CCWP B\n5 Motor Fire pump kecil A 20 Motor Circulating pump B 33 Motor Cooling Tower blower A\n6 Motor Fire pump kecil B 21 Motor Servicepump A 34 Motor Cooling Tower B\n7 Motor Backwash pump A 22 Motor Servicepump B 35 Motor Feed Pump A\n8 Motor Backwash pump B 23 Motor Flushpump BWRO A 36 Motor feed pump B\n9 Motor Filter Feed pump A 24 Motor Flushpump BWRO B 37 Motor Make Up Polisher\n10 Motor Filter Feed pump B 25 Motor Domestik pump A 38 Motor Injeksi A\n11 Motor BWRO A 26 Motor Domestik pump B 39 Motor injeksi B\n12 Motor BWRO B 27 Motor Polisher pump A 40 Motor injeksi C\n13 Motor SWRO A 28 Motor Polisher pump B 41 Motor injeksi D\nBOILER\nWTP\nESP\nTURBINE"
+    },
+    {
+      "id": "page-13",
+      "heading": "Halaman 13: E",
+      "content": "NO NAMA MOTOR NO NAMA MOTOR\n1 Valve motorise Stoplog tengah A 5 Valve motorise depan \n2 Valve motorise stoplog B 6 Motor CWP A\n3 Motor Screen travel A 7 Motor CWP B\n4 Motor Screen travel B 8\nF\nNO NAMA MOTOR NO NAMA MOTOR\n1 Motor Crusser A 11 Motor Transfer Tower A\n2 Motor Crusser B 12 Motor Transfer Tower B\n3 Motor Hopper Transfer Tower A 13 Motor Transfer Tower A\n4 Motor Hopper Transfer Tower 1 B 14 Motor Transfer Tower B\n5 Motor Transfer Tower A 15 Motor Iron Sperator TT B\n6 Motor Transfer Tower B 16 Motor Iron Sperator B\n7 Motor Iron Sperator Motor Iron TT A 17 Motor Vibrating Screen A\n8 Motor Iron Sperator TT B 18 Motor Vibrating Screen B\n9 Sperator TT A 19 Motor Rolling Screen A\n10 Motor Iron Sperator TT B 20 Motor Rolling Screen B\nG\n1 Transfer Pump 1 & 2 \n2 Transfer Pump 1 & 2 \n3 Koanggulan pump 1\n4 Motor blower 1 & 2 \n5 Motor blower 1 & 2\n6 Pump limbah A\n7 Pump limbah B\nWATER INTAKE\nCOAL HANDLING\nMOTOR WWTP\n \n \n5. DC system \nDC Sistim yang dirancang untuk pembangkita n adalah untuk keandalan pembangkit itu sendiri \ndimana peralatan – peralatan yang di supplay adalah peralatan yang diha rapkan beroperasi dengan \nkontinyu serta bila sewaktu – waktu dibutuhkan maka peralatan itu harus bekerja baik itu didalam \nkondisi emergency. \n Dengan menyusun secara seri seba nyak 108 cell battery , maka didapat tegang an 220 Volt DC \ndengan kata lain 1 buah battery mempunyai kapasitas 400 Ah dan tegangan 2 Volt. Adapun \nperalatan utama yang harus di supplay oleh tegangan DC adalah : \n Controll system Turbine \n Control system Boiler \n System proteksi \n Emergency Lube Oil Pump \n Turning gear \nAdapun sistim chargernya (pengisian) dibuat secara floating yang fungsinya tetap untuk keandalan \ndan jika battery mengalami ke gangguan, maka line charger yang akan melayani sistim dan demikian \npula sebaliknya."
+    },
+    {
+      "id": "page-14",
+      "heading": "Halaman 14: Gambar 14. Diagram System Battery Charger",
+      "content": "Gambar 15. Feeder Pemakaian Power 220 V DC \nData Teknis Battery PLTU Jeranjang : \nMerk : Champion \nType : GPM 400 \nKapasitas : 400 Ah \nJenis : Lead Acid \nVoltage : 2 Volt \nJumlah Battery : 108 Cell \n \n6. Emergency Diesel Generator"
+    },
+    {
+      "id": "page-15",
+      "heading": "Halaman 15",
+      "content": "Fungsi Emergency Diesel Generator adalah sebagai power back up, diesel ini start secara otomatis \nketika black out, untuk mensupply panel Esensial. Pemakaian yang ada pada panel tersebut adalah : \n Panel incoming distribusi lampu penerangan \n Incoming Battery charger \nData Teknis Emergency Diesel Generator PLTU Jeranjang : \nModel : HLGF - 200 \nSerial No : 10460 \nDaya : 200 kW \nPhase : 3 \nVoltage : 400 V \nCurrent : 361 A \nFreq : 50 Hz \nRev : 1500 rpm"
+    }
+  ]
+}

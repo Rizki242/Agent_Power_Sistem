@@ -302,20 +302,18 @@ def calculate_dga_diagnosis(gases: Dict[str, float]) -> Dict[str, Any]:
     if sum_duval > 10:
         if p_ch4 >= 98:
             duval_diag = "PD (Partial Discharge)"
-        elif p_c2h2 < 4 and p_c2h4 < 20 and p_ch4 >= 76:
+        elif p_c2h2 < 4 and p_c2h4 < 20:
             duval_diag = "T1 (Thermal Fault T < 300°C)"
-        elif p_c2h4 >= 20 and p_c2h4 < 50 and p_c2h2 < 4:
+        elif p_c2h2 < 4 and 20 <= p_c2h4 < 50:
             duval_diag = "T2 (Thermal Fault 300°C < T < 700°C)"
-        elif p_c2h4 >= 50 and p_c2h2 < 15:
+        elif p_c2h2 < 15 and p_c2h4 >= 50:
             duval_diag = "T3 (Thermal Fault T > 700°C)"
-        elif p_c2h2 >= 4 and p_c2h2 < 13 and p_c2h4 <= 50:
-            duval_diag = "D1 (Low Energy Discharge / Sparking)"
-        elif p_c2h2 >= 13 and p_c2h2 <= 29:
-            duval_diag = "D1 (Low Energy Discharge / Sparking)"
+        elif (4 <= p_c2h2 < 29) and p_c2h4 >= 50:
+            duval_diag = "DT (Mixed Thermal & Electrical Fault)"
         elif p_c2h2 >= 29:
             duval_diag = "D2 (High Energy Discharge / Arcing)"
-        elif p_c2h2 >= 15 and p_c2h4 >= 50:
-            duval_diag = "DT (Mixed Thermal & Electrical Fault)"
+        elif 4 <= p_c2h2 < 29:
+            duval_diag = "D1 (Low Energy Discharge / Sparking)"
         else:
             duval_diag = "T1 (Thermal Fault T < 300°C)"
 

@@ -5,9 +5,12 @@ import re
 import os
 import glob
 import json
+import warnings
 from pathlib import Path
 from datetime import datetime
 from src.metadata import canonical_unit_name, canonical_voltage_level, enrich_equipment_metadata
+
+warnings.filterwarnings("ignore", category=DeprecationWarning, message=".*find_common_type.*")
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -832,7 +835,7 @@ def filter_mcsa_data(df, date_start=None, date_end=None, equipment=None):
         start = pd.Timestamp(date_start).normalize()
         work = work[work['Date'] >= start]
     if date_end is not None:
-        end = pd.Timestamp(date_end).normalize() + pd.Timedelta(days=1) - pd.Timedelta(microseconds=1)
+        end = pd.Timestamp(date_end).normalize() + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
         work = work[work['Date'] <= end]
     if equipment:
         selected = {str(item) for item in equipment}

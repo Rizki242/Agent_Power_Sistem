@@ -1,0 +1,69 @@
+{
+  "id": "pengetahuan-unit",
+  "title": "Pengetahuan Unit",
+  "tags": [
+    "PDF",
+    "Dokumen",
+    "Manual"
+  ],
+  "level": "General",
+  "source": "Operasi",
+  "language": "id",
+  "sections": [
+    {
+      "id": "page-1",
+      "heading": "Halaman 1: MATERI",
+      "content": "MENGOPERASIKAN SISTEM PENDINGIN UTAMA \n \n \n1.1. Pengertian Umum. \nPada sebuah unit pembangki t thermal, sistem air pendingin adalah sistem yang sangat penting dan \nutama karena sistem ini dapat mengatur perpindahan panas dan menjaga kestabilan suhu pada \nperalatan unit pembangkit. Sistem pendingin terdiri dari 2 peralatan utama, yaitu : \n1. CWP (Circulation Water Pump) \n2. Condensor \nPada satu sistem unit pembangkit termal khususnya untuk PLTU diperlukan Sistem Pendingin Utama. \nFungsi utama dari sistem air pendingin utama adalah menyediakan dan memasok air pendingin yang \ndiperlukan untuk mengkondensasikan uap bekas dan drain uap di dalam kondensor. \nAir pendingin utama merupakan media pendingin untuk menyerap panas laten uap bekas dari turbin \nyang mengalir kedalam konde nsor. Untuk mengkondensasikan uap menjadi air diperlukan air \npendingin. Air yang digunakan sebagai media pendingin utama yang akan dibahas disini ialah air laut. \nTanpa pasokan air pendingin turbin tidak dapat dioperasikan. Bila air pendingin berkurang maka \nvakum pada Condensor akan turun dan pada kondisi ekstrim dapat mengakibatkan derating dan bila \nvakum terus tur un akan mengakibatkan unit trip , karena itu air pendingin utama merupakan unsur \nyang vital pada sebuah PLTU. \nPada sistem pendingin sisi air laut, Air laut yang telah dipakai untuk mendinginkan peralatan di unit \npembangkit mengalir kembali ke discharge tunnel, kemudian dialirkan kembali ke laut. \n \nGambar 1. Kondenser dan CWP"
+    },
+    {
+      "id": "page-2",
+      "heading": "Halaman 2",
+      "content": "2 \n \n \n1.2. Peralatan Utama Sistem pendingin air laut \n1.2.1. Pompa air sirkulasi (Circulation Water Pump) \nCWP berfungsi untuk memompa air laut masuk ke condenser sebagai air pendingin untuk proses \nkondensasi & masuk ke sistem pendingin pada unit pembangkit tenaga listrik. CWP berada di sea \nwater intake area yaitu lokasi yang agak jauh dari unit sentral pembangkit dan mendekati \nsumber air laut. Pompa ini berbentuk vertikal dengan suctio nnya berada pada kedalaman laut \nsehingga dapat mengalirkan air pendingin dengan maksimal. \nContoh spesifikasi & Announciator CWP di PLTU Jeranjang. \nSpesifikasi \nKapasitas : 3204 m3/jam/pompa \nHead Total : 27 m \nPutaran : 980 rpm \nDaya Motor : 292,5 kW \nTegangan : 6,3 kV \nWeight : 11500 kg \nAnnounciator \na. Discharge press high (2,5 bar/0,25 MPa) \nb. 6,3 kV motor trip \nc. Sea water level low trip \n \n Beberapa peralatan pendukung yang ada di water intake area suatu unit pembangkit adalah: \n1. Batu pemecah ombak dan jaring \nBerfungsi \n Memecah ombak/arus dan pembatas antara lautan lepas dan water intake. \n Penghalang agar ikan-ikan besar tidak masuk area water intake \n Menjaring kotoran/sampah"
+    },
+    {
+      "id": "page-3",
+      "heading": "Halaman 3",
+      "content": "3 \n \n \n \n \n2. Bar Screen \nBar Screen adalah saringan kasar pada sisi masuk air laut sebelum dipompa ole h CWP \nyang berfungsi untuk menyaring berbagai macam kotoran air laut yang berukuran \nsedang, sehingg a air laut yang dipompa CWP menjadi bersih. Untuk kotoran yang \ntersaring bar screen dibersihkan secara manual. Bar screen terbuat dari batang logam \npipih yan g dirangkai sehingga membentuk semacam teralis. Dipasang pada saluran \nmasuk air pendingin sebelum saringan putar. \n \nGambar 2. Bar Screen \n \n \n3. Travelling Screen"
+    },
+    {
+      "id": "page-4",
+      "heading": "Halaman 4",
+      "content": "4 \n \n \nTravelling Screen berfungsi sebagai penyaring semua benda sampai yang berukuran \nrelatif kecil dan yang lolos dari Bar screen. Saringan travelling screen lebih halus \ndaripada bar screen sehingga air laut yang dipompa oleh CWP adalah air laut yang \nsangat bersih. Travelling screen menggunakan s istem penyaring dengan penggerak \nmotor untuk memutar saringan yang berupa rangkaian segmen – segmen kasa baja yang \nmembentuk suatu screen . Kotoran yang tersaring pada travelling screen akan \ndibersihkan dengan air laut yang dipompa oleh Screen Wash Pump dan sampahnya \ndibuang secara manual. \n \nGambar 3. Travelling Screen \n \nSpesifikasi: \nMotor Power : 3 / 4,5 kW \nNet Mesh size : 2000 mm \nNominal width of the net : dia 8 mm \n \n4. Pompa pencuci screen (Screen Wash Pump) \nScreen wash pump merupakan pemasok air yang dialirkan ke nosel penyemprot guna \nmembersihkan saringan putar. A ir yang digunakan adalah juga air pendingin utama (air \nlaut). Pompa ini dapat dioperasikan secara manual. Perbedaan tekanan yang tinggi \nmengindikasikan bahwa saringan sudah mulai tersumbat sampah. \nSpesifikasi : \nPompa \n Jumlah : 3 / 4 screen \n Kapasitas : 432 m3/jam"
+    },
+    {
+      "id": "page-5",
+      "heading": "Halaman 5",
+      "content": "5 \n \n \n Head total : 11 m \nRev : 1450 rpm \n \n Motor \nDaya :18,5 kW \nRev : 1.470 rpm \nTegangan : 380 v \nArus : 36,3 A \nCos ⱷ : 0,85 \nWeight : 169 kg \nConnection : delta \n \n1.2.2. Condensor \nCondensor adalah tangki yang berfungsi untuk menampung uap yang telah digunakan low \npressure turbine untuk selanjutnya mengalami proses kondensasi . Condensor merupakan \ntempat kondensasi atau merubah fasa uap dari turbin menjadi air kondensat dengan media \npendingin air laut yang dialirkan didalam tube -tube kondensor. Proses pada kondensor yang \nterjadi adalah proses perpindahan panas. Panas dari uap bekas diteruskan ke massa Fluida \npendingin melalui media pemisah yaitu permukaan perpindahan panas yang dibuat dengan pipa-\npipa dengan ketebalan yang tipis dalam jumlah banyak untuk mencapai effektifitas transmisi \n(proses kondensasi dalam kondensor). \n \nGambar. Kondenser \nMasalah yang umum dan sering terj adi pada kondensor adalah Fouling, Fouling memperbesar \nhambatan yang berarti menurunkan transmitasi. Fouling disebabkan oleh lumpur atau binatang"
+    },
+    {
+      "id": "page-6",
+      "heading": "Halaman 6",
+      "content": "6 \n \n \nlaut seperti tritip atau karang hijau akan mempertinggi resistansi sehingga akan menur unkan \nkecepatan Transmitasi yang menghambat perpindahan panas dari Last Stage Steam Turbine ke \nair pendingin, karena itu harus dihambat laju fouling terhadap pipa kondensor yang dapat \nmenurunkan performance kondensor. Untuk mencegah hal itu maka pada Condensor terdapat \nbeberapa peralatan yang berfungsi sebagai pelindung, yaitu : \n Chlorination Injection, berfungsi melemahkan atau memabukkan biota laut (ikan, tiram, \nkerang dll ) sehingga tidak berkembang biak di water intake tunnel. \nPada PLTU jenis kondensor yang digunakan adalah ber upa shell and tube , dimana air laut \nmengalir didalam tube untuk mendinginkan uap bekas yang berasal dari turbin, pada proses \nkondensasi ini mengakibatkan sisi uap kondensor (termasuk hotwell) berada dalam kondisi \nvakum . Karena kondisi tekanan pada kondensor yang vakum maka uap bekas dari LP turbin bisa \nbergerak dengan mudah menuju kondensor,selanjutnya pada kondensor akan terjadi proses \nkondensasi. Air hasil dari proses kondensasi (Air kondensat) kemudian ditampung di tempat \npenampung air kondensat yang disebut Hotwell. \nVakum pada k ondensor harus selalu dijaga. Jika terlalu rendah akan terjadi feedback pressure \npada turbin yang dapat menyebabkan kerusakan fatal pada turbin. Bila aliran air pendingin \nberkurang maka vakum akan turun dan pada kondisi ekstrim dapat mengakibatkan dearating \ndan bila vakum terus turun akan mengakibatkan unit trip , karena itu air pendingin utama \nmerupakan unsur yang vital pada sebuah PLTU. \nBall Cleaning System (Tapproge Ball System) , berfungsi untuk membersihkan pipa-pipa (tubes) \npendingin kondensor dari kotoran seperti lumpur dan kotoran halus dengan cara menginjeksikan \nbola karet (Tapproge Ball) kedalam pipa -pipa pendingin kondensor secara terus menerus proses \nini dilakukan oleh pompa sirkulasi (Circulation Pump) dengan cara me mompakan bola tapproge \npada sisi masuk air pendingin dan mengambil kembali bola pada sisi keluar air pendingin untuk \nselanjutnya disirkulasikan kembali pada kondensor."
+    },
+    {
+      "id": "page-7",
+      "heading": "Halaman 7",
+      "content": "7"
+    },
+    {
+      "id": "page-8",
+      "heading": "Halaman 8",
+      "content": "8 \n \n \n \n1.3. Persiapan Start CWP \nNO KEGIATAN OPERASI EKSEKUTOR \n1 Persiapan  Inlet valve CWP open \n Periksa level air laut pada \nIntake Room . Level \npermukaan air laut minimum \n2,2 m. \n Pastikan kondisi Intake Room \nbebas dari sampah. \n Periksa level chlorine serta \nposisi dosing pump pada \nstroke dan speed 100%. \n Periksa tekanan dan level o li \npada tangki Hydrolic Control \nButtrerfly Check Valve cukup. \nTekanan oli pada pada tangki \n15 MPa. \n Pastikan tombol emergency \nmotor CWP dalam kondisi \nbebas/ realese \n Periksa katub-katub pendingin \nBearing dan Sealing Water \npada kondisi normal. \n Pastikan supply daya 6,3 kV \nuntuk CWP sudah siap (stand-\nby) pada panel house CWP \n Lakukan proses venting di \nInlet dan Upper Kondensor \ndengan membuka Venting \nValve secara manual \nOperator Lokal \n \nOperator Lokal \n \n \n \n \nOperator Lokal \n \n \nOperator Lokal \n \n \nOperator Lokal \n \n \n \nOperator Lokal \n \n \nOperator Lokal \n \n \nOperator Lokal \n \n \nOperator Lokal"
+    },
+    {
+      "id": "page-9",
+      "heading": "Halaman 9",
+      "content": "9 \n \n \n2 Pelaksanaan Start  Operasikan pompa Spray \nWater kemudian buka katup \nceratan outlet CWP. Pastikan \ntekanan nomal pada 0,08 \nMPa. \n Operasikan Rotary Screen \nFilter pada panel local \n(kondisional). \n Koordinasikan dengan \noperator DCS bahwa CWP \ntelah siap dioperasikan \n Klik tombol ”START” pada \nMK230ASCS untuk \nmenghidupkan CWP 1# atau \nMK 230BSCS untuk \nmenghidupkan CWP 2#. \n CWP akan mulai beroperasi \nsaat Hydrolic Control Buttrerfly \nCheck Valve membuka 15 % \ndan Inlet Valve (MV 220 SCS \ndan MV 221 SCS) di \nKondensor terbuka 100 %. \n Lakukan monitoring terhadap \nCWP setelah start \n(Pengamatan vibrasi, \ndischarge press, sealing water \nflow). \n Lakukan proses venting \ndengan membuka venting \nLine CWP secara manual. \n Buka Flushing Valve untuk \nsuplai air ke Spray Water dan \nSeal Bearing di panel Rotary \nScreen Filter (jika yang \ndioperasikan CWP 2#). \n Jika dari katup venting di CWP \nkeluar 100 % air selanjutnya \ntutup katup venting untuk \nmengakhiri proses venting. \n Buka katup MV 217SCS dan \nOperator lokal \n \n \n \n \n \n \nOperator lokal \n \n \n \nOperator lokal \n \n \n \nOperator DCS \n \n \n \n \n \n \nOperator lokal \n \n \n \n \n \n \n \nOperator lokal \n \n \n \n \n \n \nOperator lokal \n \n \n \n \nOperator lokal \n \n \n \n \n \n \nOperator lokal \n \n \n \n \nOperator DCS"
+    },
+    {
+      "id": "page-10",
+      "heading": "Halaman 10",
+      "content": "10 \n \n \nMV 218SCS secara manua l \ndan bertahap untuk mengatur \ntekanan Inlet Kondensor pada \ntekanan 0,004 MPa (PT 256 \ndan PT 258) dan debit aliran \nair pendinginan (FT 205) \n6.500 m3/jam. \n Jika kondisi sudah normal \naktifkan logic interlock motor \nCWP MK216LS dari DCS. \n Lakukan monitoring \noperasional peralatan dan \npengisian laporan/ log-sheet \nsetiap jam. \n \n \n \n \n \n \n \n \n \n \nOperator DCS \n \n \n \nOperator lokal & DCS \n \n1.4. Stop CWP \nNO KEGIATAN OPERASI EKSEKUTOR \n1 Pelaksanaan Stop  Stop CWP dilakukan jika \ntemperatur uap keluar turbin \n(TE 214) di bawah 50 degC. \n Stop Interlock CWP. \n Klik tombol ” STOP” pada MK \n230ASCS untuk stop CWP 1# \natau MK 230 BSCS untuk stop \nCWP 2#. \n CWP akan stop saat posisi \nHydrolic Control Buttrerfly \nCheck Valve menutup 75 % \ndan Inlet Valve (MV 220SCS \ndan MV 221SCS) di \nKondensor menutup 100 %. \n Stop Rotary Screen Filter dari \npanel lokal. \n Stop pompa Spray Water \nuntuk Rotary Screen Filter \nkemudian tutup katup ceratan \noutlet CWP. \n Tutup semua katub pendingin \nBearing dan Sealing Water. \nOperator DCS \n \n \nOperator DCS \nOperator DCS \n \n \nOperator Lokal \n \n \n \n \n \nOperator Lokal \n \nOperator Lokal \n \n \nOperator Lokal \n \nOperator Lokal"
+    },
+    {
+      "id": "page-11",
+      "heading": "Halaman 11",
+      "content": "11 \n \n \n Stop dan tutup katup Chlorine \nDosing Pump."
+    }
+  ]
+}

@@ -78,6 +78,44 @@ def get_asset(asset_id: str) -> dict[str, Any] | None:
     return _read_registry().get(str(asset_id))
 
 
+def find_asset_canonical(name_or_alias: str) -> dict[str, Any] | None:
+    """Lookup an asset by asset_id, canonical name, or any registered alias."""
+    if not name_or_alias:
+        return None
+    raw = str(name_or_alias).strip()
+    raw_upper = raw.upper()
+    norm_query = re.sub(r"[^A-Z0-9]", "", raw_upper)
+    if not norm_query:
+        return None
+
+    records = _read_registry()
+    # 1. Exact match on asset_id or name
+    if raw_upper in records:
+        return records[raw_upper]
+    for r in records.values():
+        if r.get("name", "").strip().upper() == raw_upper:
+            return r
+
+    # 2. Normalized code match on asset_id, name, or aliases
+    for r in records.values():
+        r_id_norm = re.sub(r"[^A-Z0-9]", "", str(r.get("asset_id", "")).upper())
+        r_name_norm = re.sub(r"[^A-Z0-9]", "", str(r.get("name", "")).upper())
+        if norm_query in (r_id_norm, r_name_norm):
+            return r
+        for al in r.get("aliases", []):
+            if norm_query == re.sub(r"[^A-Z0-9]", "", str(al).upper()):
+                return r
+
+    # 3. Substring match
+    if len(norm_query) >= 3:
+        for r in records.values():
+            r_name_norm = re.sub(r"[^A-Z0-9]", "", str(r.get("name", "")).upper())
+            if norm_query in r_name_norm or r_name_norm in norm_query:
+                return r
+
+    return None
+
+
 def count_condition_records(asset_id: str) -> int:
     """How many condition-history rows reference this asset (shown to the
     user before they confirm deletion, since delete_asset() cascades)."""
@@ -483,4 +521,65 @@ def sync_assets_from_equipment_master() -> int:
             existing_eq_codes.add(norm_eq_code)
         added_count += 1
 
-    return db_added + added_count
+    dga_added = sync_assets_from_dga()
+    return db_added + added_count + dga_added
+
+
+def sync_assets_from_dga() -> int:
+    """Import transformers from DGA database into the central asset register."""
+    try:
+        from src.dga_data import search_dga_transformers
+        transformers = search_dga_transformers()
+    except Exception:
+        return 0
+
+    records = _read_registry()
+    existing_ids = {r.get("asset_id", "").upper() for r in records.values()}
+    existing_names = {r.get("name", "").strip().upper() for r in records.values()}
+    for r in records.values():
+        for al in r.get("aliases", []):
+            existing_names.add(str(al).strip().upper())
+
+    added_count = 0
+    for trf in transformers:
+        name = str(trf.get("name") or "").strip()
+        trf_id = str(trf.get("transformer_id") or "").strip()
+        if not name:
+            continue
+
+        if name.upper() in existing_names or (trf_id and trf_id.upper() in existing_ids):
+            continue
+
+        unit = str(trf.get("unit") or "UNIT 1").strip()
+        volt = str(trf.get("voltage_ratio") or "-").strip()
+        mva = str(trf.get("rated_capacity") or "-").strip()
+        oil = str(trf.get("oil_type") or "Mineral Oil (IEC 60296)").strip()
+
+        slug = re.sub(r"[^A-Z0-9]+", "-", trf_id.upper() or name.upper()).strip("-")[:16]
+        asset_id = f"AST-TRF-{slug}" if slug else make_asset_id(name)
+        if asset_id in records:
+            asset_id = make_asset_id(name)
+
+        upsert_asset({
+            "asset_id": asset_id,
+            "name": name,
+            "unit": unit,
+            "equipment_type": "Power Transformer",
+            "voltage_level": volt,
+            "lifecycle_status": "Aktif",
+            "monitoring_modules": ["DGA", "PD", "THERMAL"],
+            "aliases": [trf_id] if trf_id and trf_id != name else [],
+            "specs": {
+                "rated_capacity_kva": mva,
+                "oil_type": oil,
+                "voltage_ratio": volt,
+            },
+            "status": str(trf.get("status") or "Normal").capitalize(),
+            "notes": f"Sinkronisasi otomatis dari DGA Transformers Database ({trf_id})",
+        })
+        existing_names.add(name.upper())
+        if trf_id:
+            existing_ids.add(trf_id.upper())
+        added_count += 1
+
+    return added_count

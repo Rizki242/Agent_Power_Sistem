@@ -152,3 +152,22 @@ class AssetRegistryTests(unittest.TestCase):
                 self.assertEqual(fetched["asset_id"], "AST-GET-A")
                 self.assertIsNone(asset_registry.get_condition_record("DOES-NOT-EXIST"))
 
+    def test_find_asset_canonical_and_dga_sync(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with patch.object(asset_registry, "get_data_path", side_effect=lambda *parts: str(root.joinpath(*parts))):
+                # Test sync from DGA
+                added = asset_registry.sync_assets_from_dga()
+                self.assertGreater(added, 0)
+
+                # Test canonical lookup by exact name and alias
+                asset = asset_registry.find_asset_canonical("GT 1")
+                self.assertIsNotNone(asset)
+                self.assertEqual(asset["equipment_type"], "Power Transformer")
+                self.assertIn("DGA", asset["monitoring_modules"])
+
+                # Lookup by partial code
+                uat = asset_registry.find_asset_canonical("UAT 3")
+                self.assertIsNotNone(uat)
+                self.assertIn("UAT 3", uat["name"])
+
