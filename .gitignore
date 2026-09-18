@@ -69,6 +69,10 @@ archive-*/
 data/**/audit/
 data/audit/
 
+# Registry otomasi runtime (workflows.json/runs.json, lihat src/automations.py;
+# override lokasi via PPLE_AUTOMATION_DIR).
+data/automations/
+
 # Runtime state yang ditulis ulang otomatis (memori chatbot, continuous
 # learning) - bukan source of truth, jangan di-commit.
 data/agent_memory.db
