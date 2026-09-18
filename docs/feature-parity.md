@@ -1,6 +1,6 @@
 # Feature Parity Streamlit dan React
 
-Status: diperbarui 2026-09-16 terhadap kode aktual (lihat "Riwayat" di bawah)
+Status: diperbarui 2026-09-18 terhadap kode aktual (lihat "Riwayat" di bawah)
 Tujuan: mencegah dua UI mengembangkan business rule yang berbeda.
 
 ## Riwayat penting
@@ -37,8 +37,9 @@ seandainya React ingin membangunnya kembali, tapi belum ada konsumen React untuk
 | Capability | Streamlit | React | Sumber logic/contract | Keputusan |
 | --- | --- | --- | --- | --- |
 | Fleet command center / reliability fusion | Agent Dashboard (`src/pages/agent_dashboard_page.py`, pakai `DiagnoseEquipmentUseCase`/`FleetReliabilityUseCase`) | Tidak ada dashboard fleet; `Overview` hanya menampilkan status agent (`/api/v2/agents`) dan module-load-report, bukan health/watchlist | `src.fleet_reliability`, `pple/application/fleet.py`, fusion engine | Streamlit canonical; React tidak ada |
-| MCSA / Vibration / DGA / Tribology / Thermal / Partial Discharge analysis | Halaman per-domain + `src.components.domain_workspace` (ingest, tren, diagnosa, laporan) | Tidak ada | `src` rule-based + specialist agents, `pple/api/domain_router.py` | Streamlit canonical; React tidak ada |
-| Asset hierarchy/health (eksplorasi + edit) | Register Aset, Asset 360 | `Data` workspace menampilkan daftar equipment (`/api/v2/assets`) dan toggle enable/disable modul per equipment (`/api/v2/equipment/{id}/modules`) — bukan health/hierarchy penuh | `src/asset_registry.py`, `pple/assets` | Streamlit canonical untuk hierarchy/health/edit; React supported untuk konfigurasi modul per equipment saja |
+| MCSA / Vibration / DGA / Tribology / Thermal / Partial Discharge analysis | Halaman per-domain + `src.components.domain_workspace` (ingest, tren, diagnosa, laporan) | **Dashboard CBM** (`/cbm`, `CBMDashboard.jsx`) — Segitiga Duval interaktif (DGA), Parameter Vibrasi, Tren Kesehatan multi-domain. Data dari `/api/dga/*` + `/api/v2/domain/*`; rule-based thresholds per IEC 60599/ISO 10816. Upload/ingest/laporan masih Streamlit canonical. | `src` rule-based + specialist agents, `pple/api/domain_router.py`, `pple/api/specialist_router.py` | Streamlit canonical untuk ingest/laporan/diagnosa penuh; React supported untuk visualisasi grafik CBM |
+| Chat assistant (tanya status/threshold per domain) | Chatbot (`src.chatbot.MCSAChatbot`, rule-based + LLM opsional) | **Supported** — `ChatWorkspace.jsx` + `FloatingVoiceWidget.jsx`, endpoint `/api/agent/chat`, orchestrated by `PPLEMasterAgent` (multi-domain asset resolution, safety guardrail, LLM narrative enrichment) | `src.chatbot`, `src.llm_assistant`, `src.agents.master_agent` | Supported pada keduanya; React canonical untuk agent multi-domain; Streamlit canonical untuk MCSA spesifik |
+
 | Data management (upload/QC MCSA & 5 domain lain) | Manajemen Data, `domain_workspace` tab "Data & Upload" | Not planned | `src.data_loader`, `src.domain_ingest` | Streamlit canonical; React not planned |
 | Word batch sync dan QC | Sync + Quality Check | Not planned | `src.report_batches` | Streamlit canonical; React not planned |
 | Report PPT/Word/CSV | Laporan PPT/Word, `domain_workspace` tab "Laporan" | Tidak ada endpoint report di `frontend/src/api.js` | `src.ppt_generator`/`docx_generator`, `src.domain_report` | Streamlit canonical; React tidak ada |
@@ -59,7 +60,7 @@ risiko drift business-rule — tapi harus tetap dijaga begitu ada penambahan.
 | Automation workflows (jadwal + approval) | Tidak ada | `Otomasi` workspace (CRUD, enable/disable, run, approve, retry) | `src.automations`, `/api/automations/*` | React canonical |
 | Self-improvement / EnvHarness / benchmark | Tidak ada | `Agent Lab` (`runImprovementCycle`, `runHarnessEvaluation`, `learnFromHistory`) | `src.self_improvement`, `src.env_harness`, `/api/agent/*`, `/api/learning/*`, `/api/skills/*` | React canonical |
 | Memory browsing (experiences/instructions/knowledge/parametric) | Tidak ada | `Memori` workspace | `src.agent_memory`, `/api/skills/learned-patterns`, `/api/learning/harness-status` | React canonical |
-| Settings AI provider + system control | Settings (Streamlit page) | `Settings & System Control` (`getSettingsOverview`/`saveAISettings`) | `src/ai_settings.py`, `pple/api/routers/settings.py` | Supported pada keduanya; keduanya baca/tulis file konfigurasi yang sama |
+| Settings AI provider + system control | Settings (Streamlit page) | **6-tab Control Center** (`SettingsWorkspace.jsx`, route `/settings`) — AI & Model, Voice Assistant, Safety & Engineering, Data & Knowledge, System & Integration, User & Preferences. Baca/tulis file konfigurasi yang sama via `getSettingsOverview`/`saveAISettings`. | `src/ai_settings.py`, `pple/api/routers/settings.py` | Supported pada keduanya; keduanya baca/tulis file konfigurasi yang sama |
 | Digital twin | Tidak ada | Tidak ada (dihapus bersama frontend lama) | — | Not planned sampai ada keputusan produk baru |
 | CLI engineering/status | N/A | N/A | `pple` application/domain | CLI canonical untuk automation lokal |
 

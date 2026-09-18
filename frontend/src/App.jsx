@@ -1,19 +1,92 @@
-import { useEffect, useState } from 'react'
+import { Component, Suspense, lazy, useEffect, useState } from 'react'
 import {
-  Activity, Bot, BrainCircuit, CalendarClock, ChevronRight, CircleCheck,
-  Database, FileText, FlaskConical, Menu, Settings, ShieldCheck, Workflow, X,
+  Activity, BarChart2, Bot, BrainCircuit, CalendarClock, ChevronRight, CircleCheck,
+  Database, FileText, FlaskConical, Menu, MessageSquareText, Settings, ShieldCheck, Workflow, X,
 } from 'lucide-react'
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { getWorkspaceOverview } from './api.js'
-import DataWorkspace from './DataWorkspace.jsx'
-import DocumentWorkspace from './DocumentWorkspace.jsx'
-import MemoryWorkspace from './MemoryWorkspace.jsx'
-import AutomationWorkspace from './AutomationWorkspace.jsx'
-import AgentLab from './AgentLab.jsx'
-import SettingsWorkspace from './SettingsWorkspace.jsx'
+import FloatingVoiceWidget from './FloatingVoiceWidget.jsx'
+
+// Dynamic route-level code splitting per Vercel Best Practices (bundle-dynamic-imports)
+const DataWorkspace = lazy(() => import('./DataWorkspace.jsx'))
+const DocumentWorkspace = lazy(() => import('./DocumentWorkspace.jsx'))
+const MemoryWorkspace = lazy(() => import('./MemoryWorkspace.jsx'))
+const AutomationWorkspace = lazy(() => import('./AutomationWorkspace.jsx'))
+const AgentLab = lazy(() => import('./AgentLab.jsx'))
+const SettingsWorkspace = lazy(() => import('./SettingsWorkspace.jsx'))
+const ChatWorkspace = lazy(() => import('./ChatWorkspace.jsx'))
+const CBMDashboard = lazy(() => import('./CBMDashboard.jsx'))
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('ErrorBoundary caught an error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="page" style={{ padding: '48px 24px', maxWidth: '640px', margin: '0 auto' }}>
+          <div className="notice notice--error" style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '24px', borderRadius: '12px' }}>
+            <strong style={{ fontSize: '1.1rem' }}>Terjadi kendala saat memuat modul</strong>
+            <span style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: '1.5' }}>
+              {this.state.error?.message || 'Modul ini tidak dapat ditampilkan sementara.'}
+            </span>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+              <button
+                type="button"
+                className="button button--primary"
+                onClick={() => {
+                  this.setState({ hasError: false, error: null })
+                  window.location.reload()
+                }}
+              >
+                Muat Ulang Halaman
+              </button>
+              <button
+                type="button"
+                className="button"
+                onClick={() => {
+                  this.setState({ hasError: false, error: null })
+                  window.location.href = '/overview'
+                }}
+              >
+                Kembali ke Beranda
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+
+function PageFallback() {
+  return (
+    <div className="page page--loading" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+      <div className="chat-typing-indicator" aria-label="Memuat modul...">
+        <span />
+        <span />
+        <span />
+      </div>
+    </div>
+  )
+}
 
 const navigation = [
   { to: '/overview', label: 'Beranda', icon: Activity },
+  { to: '/chat', label: 'Bot', icon: MessageSquareText },
+  { to: '/cbm', label: 'Dashboard CBM', icon: BarChart2 },
   { to: '/data', label: 'Data', icon: Database },
   { to: '/documents', label: 'Dokumen', icon: FileText },
   { to: '/memory', label: 'Memori', icon: BrainCircuit },
@@ -57,20 +130,23 @@ function StatusPill({ state, children }) {
 }
 
 function Overview() {
-  const [overview, setOverview] = useState({ status: 'loading', agents: [], modules: [] })
+  const [overview, setOverview] = useState({ status: 'loading', agents: [], modules: [], runs: [], patterns: [] })
 
   useEffect(() => {
     const controller = new AbortController()
     getWorkspaceOverview(controller.signal)
-      .then(({ agents, modules }) => setOverview({ status: 'ready', agents, modules }))
+      .then(({ agents, modules, runs, patterns }) => setOverview({ status: 'ready', agents, modules, runs, patterns }))
       .catch((error) => {
-        if (error.name !== 'AbortError') setOverview({ status: 'error', agents: [], modules: [] })
+        if (error.name !== 'AbortError') setOverview({ status: 'error', agents: [], modules: [], runs: [], patterns: [] })
       })
     return () => controller.abort()
   }, [])
 
   const activeAgents = overview.agents.filter((agent) => ['ACTIVE', 'ONLINE'].includes(agent.status)).length
   const activeModules = overview.modules.filter((module) => module.status === 'ACTIVE').length
+  const runningAutomations = (overview.runs || []).filter((run) => ['RUNNING', 'PENDING'].includes(run.status)).length
+  const totalRuns = (overview.runs || []).length
+  const patternsCount = (overview.patterns || []).length
 
   return (
     <div className="page">
@@ -84,8 +160,8 @@ function Overview() {
       <section className="overview-strip" aria-label="Ringkasan sistem">
         <div><span>Agent aktif</span><strong>{overview.status === 'ready' ? `${activeAgents}/${overview.agents.length}` : '—'}</strong></div>
         <div><span>Modul engineering</span><strong>{overview.status === 'ready' ? `${activeModules}/${overview.modules.length}` : '—'}</strong></div>
-        <div><span>Otomasi berjalan</span><strong>Belum tersedia</strong></div>
-        <div><span>Memori menunggu review</span><strong>Belum tersedia</strong></div>
+        <div><span>Otomasi berjalan</span><strong>{overview.status === 'ready' ? (totalRuns > 0 ? `${runningAutomations} aktif (${totalRuns} total)` : '0 aktif') : '—'}</strong></div>
+        <div><span>Memori terdata</span><strong>{overview.status === 'ready' ? (patternsCount > 0 ? `${patternsCount} pola siap` : '0 pola') : '—'}</strong></div>
       </section>
 
       {overview.status === 'error' && (
@@ -108,7 +184,7 @@ function Overview() {
 
         <aside className="activity-panel">
           <div className="section-heading"><div><h2>Aktivitas sistem</h2><p>Status nyata dari backend.</p></div></div>
-          {overview.status === 'ready' && overview.modules.length ? (
+          {overview.status === 'ready' && overview.modules.length > 0 ? (
             <ul className="activity-list">
               {overview.modules.slice(0, 6).map((module) => (
                 <li key={module.module_id}>
@@ -127,24 +203,40 @@ function Overview() {
 
 export default function App() {
   const [navOpen, setNavOpen] = useState(false)
+  const location = useLocation()
+  const isChatMode = location.pathname === '/chat'
+
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${isChatMode ? 'app-shell--chat-mode' : ''}`}>
       <Sidebar open={navOpen} onClose={() => setNavOpen(false)} />
-      {navOpen && <button className="sidebar-backdrop" onClick={() => setNavOpen(false)} aria-label="Tutup navigasi" />}
+      {navOpen ? (
+        <button
+          className="sidebar-backdrop"
+          onClick={() => setNavOpen(false)}
+          aria-label="Tutup navigasi"
+        />
+      ) : null}
       <main className="main-content">
         <button className="icon-button mobile-menu" onClick={() => setNavOpen(true)} aria-label="Buka navigasi"><Menu /></button>
-        <Routes>
-          <Route path="/" element={<Navigate to="/overview" replace />} />
-          <Route path="/overview" element={<Overview />} />
-          <Route path="/data" element={<DataWorkspace />} />
-          <Route path="/documents" element={<DocumentWorkspace />} />
-          <Route path="/memory" element={<MemoryWorkspace />} />
-          <Route path="/automation" element={<AutomationWorkspace />} />
-          <Route path="/agent-lab" element={<AgentLab />} />
-          <Route path="/settings" element={<SettingsWorkspace />} />
-          <Route path="*" element={<Navigate to="/overview" replace />} />
-        </Routes>
+        <ErrorBoundary>
+          <Suspense fallback={<PageFallback />}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/overview" replace />} />
+              <Route path="/overview" element={<Overview />} />
+              <Route path="/chat" element={<ChatWorkspace onOpenNav={() => setNavOpen(true)} />} />
+              <Route path="/cbm" element={<CBMDashboard />} />
+              <Route path="/data" element={<DataWorkspace />} />
+              <Route path="/documents" element={<DocumentWorkspace />} />
+              <Route path="/memory" element={<MemoryWorkspace />} />
+              <Route path="/automation" element={<AutomationWorkspace />} />
+              <Route path="/agent-lab" element={<AgentLab />} />
+              <Route path="/settings" element={<SettingsWorkspace />} />
+              <Route path="*" element={<Navigate to="/overview" replace />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </main>
+      <FloatingVoiceWidget />
     </div>
   )
 }

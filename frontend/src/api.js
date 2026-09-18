@@ -22,11 +22,19 @@ async function sendJson(path, options = {}) {
 }
 
 export async function getWorkspaceOverview(signal) {
-  const [agents, modules] = await Promise.all([
+  const [agentsRes, modulesRes, automationsRes, learnedRes] = await Promise.allSettled([
     getJson('/api/v2/agents', signal),
     getJson('/api/v2/module-load-report', signal),
+    getJson('/api/automations/runs', signal),
+    getJson('/api/skills/learned-patterns', signal),
   ])
-  return { agents: agents.agents ?? [], modules: modules.results ?? [] }
+
+  const agents = agentsRes.status === 'fulfilled' ? (agentsRes.value.agents ?? []) : []
+  const modules = modulesRes.status === 'fulfilled' ? (modulesRes.value.results ?? []) : []
+  const runs = automationsRes.status === 'fulfilled' ? (automationsRes.value.runs ?? []) : []
+  const patterns = learnedRes.status === 'fulfilled' ? (learnedRes.value.skills ?? []) : []
+
+  return { agents, modules, runs, patterns }
 }
 
 export async function getDataWorkspace(signal) {
@@ -150,4 +158,98 @@ export function getSettingsOverview(signal) {
 
 export function saveAISettings(payload) {
   return sendJson('/api/settings/ai', { method: 'PUT', body: JSON.stringify(payload) })
+}
+
+export function testAIConnection() {
+  return sendJson('/api/settings/test-ai', { method: 'POST' })
+}
+
+export async function sendChatMessage({ message, provider, model, apiKey, file, source = 'CHAT', sessionId = null, signal }) {
+  if (file) {
+    const body = new FormData()
+    body.append('message', message || '')
+    if (provider) body.append('provider', provider)
+    if (model) body.append('model', model)
+    if (apiKey) body.append('api_key', apiKey)
+    if (source) body.append('source', source)
+    if (sessionId) body.append('session_id', sessionId)
+    body.append('file', file)
+    const response = await fetch(`${API_BASE}/api/agent/chat`, {
+      method: 'POST',
+      body,
+      headers: { ...authHeaders, 'X-Source': source },
+      signal,
+    })
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.detail || `Chat merespons ${response.status}`)
+    }
+    return response.json()
+  }
+
+  return sendJson('/api/agent/chat', {
+    method: 'POST',
+    headers: { 'X-Source': source },
+    body: JSON.stringify({
+      message: message || '',
+      provider: provider || 'gemini',
+      model,
+      api_key: apiKey,
+      source,
+      session_id: sessionId,
+    }),
+    signal,
+  })
+}
+
+export async function getChatSessions(sessionType, signal) {
+  const query = sessionType ? `?session_type=${encodeURIComponent(sessionType)}` : ''
+  const res = await getJson(`/api/agent/chat/sessions${query}`, signal)
+  return res.sessions ?? []
+}
+
+export async function createNewChatSession({ title, sessionType = 'chat' }) {
+  return sendJson('/api/agent/chat/sessions', {
+    method: 'POST',
+    body: JSON.stringify({ title, session_type: sessionType }),
+  })
+}
+
+export async function getChatSessionMessages(sessionId, signal) {
+  const res = await getJson(`/api/agent/chat/sessions/${encodeURIComponent(sessionId)}`, signal)
+  return res.messages ?? []
+}
+
+export async function deleteChatSession(sessionId) {
+  return sendJson(`/api/agent/chat/sessions/${encodeURIComponent(sessionId)}`, {
+    method: 'DELETE',
+  })
+}
+
+// ── CBM Dashboard API ──────────────────────────────────────────────────────
+
+export function getDomains(signal) {
+  return getJson('/api/v2/domain/domains', signal)
+}
+
+export function getDomainMeasurements(domain, { equipment, start, end, limit = 200 } = {}, signal) {
+  const params = new URLSearchParams()
+  if (equipment) params.set('equipment', equipment)
+  if (start) params.set('start', start)
+  if (end) params.set('end', end)
+  params.set('limit', String(limit))
+  const qs = params.toString()
+  return getJson(`/api/v2/domain/${encodeURIComponent(domain)}/measurements${qs ? `?${qs}` : ''}`, signal)
+}
+
+export function getDgaTransformers(signal) {
+  return getJson('/api/dga/transformers', signal)
+}
+
+export function getDgaTransformerDetail(transformerId, signal) {
+  return getJson(`/api/dga/transformers/${encodeURIComponent(transformerId)}`, signal)
+}
+
+export function getReliabilityHealth(equipmentId, signal) {
+  return getJson(`/api/v2/reliability/${encodeURIComponent(equipmentId)}`, signal)
 }
