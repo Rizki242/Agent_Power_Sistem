@@ -1,9 +1,10 @@
-﻿"""Agents & Learning API router."""
+"""Agents & Learning API router."""
 
 from __future__ import annotations
 
 import io
 import os
+import re
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import pandas as pd
@@ -11,8 +12,18 @@ from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 
 from pple.api.schemas.core import SpecialistSubAgentsResponse
+from pple.core.audit import record_change
+from src.agent_memory import (
+    create_chat_session,
+    delete_chat_session,
+    get_chat_session_messages,
+    list_chat_sessions,
+    save_session_message,
+    update_session_title,
+)
 from src.agents.continuous_learning import PowerPlantSkillLearner
 from src.agents.env_harness import EnvRigger
+from src.agents.master_agent import get_master_agent
 from src.agents.safety_guard import SafetyGuardrailAgent
 from src.agents.self_improvement import RecursiveSelfImprover
 from src.agents.subagent_coordinator import SubAgentCoordinator
@@ -22,7 +33,8 @@ from src.llm_assistant import DEFAULT_GEMINI_MODEL, MCSALLMAssistant, resolve_pr
 
 router = APIRouter(prefix="/api", tags=["agents"])
 
-# Singletons for coordinator, safety guard, learning, and harness
+# Singletons for master agent, coordinator, safety guard, learning, and harness
+master_agent = get_master_agent()
 subagent_coordinator = SubAgentCoordinator()
 safety_guard = SafetyGuardrailAgent()
 plant_skill_learner = PowerPlantSkillLearner()
@@ -244,6 +256,86 @@ def evaluate_agent_on_harness():
     return plant_skill_learner.evaluate_env_harness()
 
 
+def generate_speech_summary(text: str, matched_equipment: Optional[str] = None) -> str:
+    """Generate concise, natural spoken Indonesian narrative free of raw codes/tables."""
+    if not text:
+        return ""
+    # Strip markdown headers, code blocks, bold, table syntax
+    clean = re.sub(r"```[\s\S]*?```", "", text)
+    clean = re.sub(r"\|[^\n]+\|", "", clean)
+    clean = re.sub(r"[*_#~`]", "", clean)
+    clean = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", clean)
+    clean = re.sub(r"\s+", " ", clean).strip()
+
+    # Expand technical abbreviations for natural Indonesian pronunciation
+    replacements = [
+        (r"\bmm/s\b", "milimeter per detik"),
+        (r"\bdegC\b", "derajat Celcius"),
+        (r"°C", "derajat Celcius"),
+        (r"\bTDCG\b", "T D C G"),
+        (r"\bpC\b", "piko Coulomb"),
+        (r"\bTHD\b", "T H D"),
+        (r"\bkV\b", "kilo Volt"),
+        (r"\bMW\b", "Mega Watt"),
+        (r"\bRUL\b", "R U L"),
+        (r"\bDGA\b", "D G A"),
+        (r"\bMCSA\b", "M C S A"),
+        (r"\bISO\b", "I S O"),
+        (r"\bBFP\b", "B F P"),
+        (r"\bCWP\b", "C W P"),
+    ]
+    for pattern, rep in replacements:
+        clean = re.sub(pattern, rep, clean)
+
+    # Take first 1-2 sentences
+    sentences = [
+        s.strip()
+        for s in re.split(r"(?<=[.!?])\s+", clean)
+        if s.strip() and not s.strip().startswith("-")
+    ]
+    if sentences:
+        speech = " ".join(sentences[:2])
+    else:
+        speech = clean[:220]
+
+    return speech.strip()
+
+
+@router.get("/agent/chat/sessions")
+def get_chat_sessions(session_type: Optional[str] = None, limit: int = 50):
+    """Retrieve chat and task sessions for the chat sidebar."""
+    return {"sessions": list_chat_sessions(session_type=session_type, limit=limit)}
+
+
+@router.post("/agent/chat/sessions")
+async def create_new_chat_session(request: Request):
+    """Create a new chat session."""
+    body = {}
+    try:
+        if "application/json" in request.headers.get("content-type", ""):
+            body = await request.json()
+    except Exception:
+        pass
+    title = body.get("title", "Untitled")
+    session_type = body.get("session_type", "chat")
+    session_id = create_chat_session(title=title, session_type=session_type)
+    return {"session_id": session_id, "title": title, "session_type": session_type}
+
+
+@router.get("/agent/chat/sessions/{session_id}")
+def get_single_chat_session(session_id: str):
+    """Retrieve messages for a specific chat session."""
+    messages = get_chat_session_messages(session_id)
+    return {"session_id": session_id, "messages": messages}
+
+
+@router.delete("/agent/chat/sessions/{session_id}")
+def delete_single_chat_session(session_id: str):
+    """Delete a chat session and its messages."""
+    delete_chat_session(session_id)
+    return {"status": "success", "session_id": session_id}
+
+
 @router.post("/agent/chat")
 async def agent_chat(
     request: Request,
@@ -251,6 +343,8 @@ async def agent_chat(
     provider: Optional[str] = Form("gemini"),
     model: Optional[str] = Form(DEFAULT_GEMINI_MODEL),
     api_key: Optional[str] = Form(None),
+    source: Optional[str] = Form(None),
+    session_id: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
 ):
     df_raw, df_latest = get_data_frames()
@@ -259,6 +353,8 @@ async def agent_chat(
     content_type = request.headers.get("content-type", "")
     file_name = None
     extra_file_context = ""
+    source_val = source or request.headers.get("X-Source")
+    session_id_val = None
 
     if "application/json" in content_type:
         body = await request.json()
@@ -266,11 +362,15 @@ async def agent_chat(
         prov = body.get("provider", "gemini")
         mdl = body.get("model", DEFAULT_GEMINI_MODEL)
         k = body.get("api_key")
+        source_val = body.get("source") or source_val or "CHAT"
+        session_id_val = body.get("session_id")
     else:
         msg_text = message or ""
         prov = provider or "gemini"
         mdl = model or DEFAULT_GEMINI_MODEL
         k = api_key
+        source_val = source_val or "CHAT"
+        session_id_val = session_id
         if file and file.filename:
             file_name = file.filename
             file_bytes = await file.read()
@@ -280,11 +380,33 @@ async def agent_chat(
                 f"{extracted_text[:12000]}\n--- AKHIR DOKUMEN TERLAMPIR ---"
             )
 
+    # Save user message to session history if session_id is active
+    if session_id_val and msg_text:
+        save_session_message(
+            session_id_val,
+            "user",
+            msg_text,
+            payload={"file": file_name, "source": source_val},
+        )
+        # Automatically update Untitled sessions with a short title
+        try:
+            sessions = list_chat_sessions(limit=50)
+            current_s = next((s for s in sessions if s["session_id"] == session_id_val), None)
+            if current_s and current_s.get("title") == "Untitled":
+                clean_title = msg_text[:32].strip()
+                if len(msg_text) > 32:
+                    clean_title += "..."
+                update_session_title(session_id_val, clean_title)
+        except Exception:
+            pass
+
     bot_reply = bot.process_query(msg_text) if msg_text else ""
     if not bot_reply and file_name:
         bot_reply = f"File `{file_name}` berhasil diterima. Silakan ajukan pertanyaan terkait dokumen ini."
 
-    matched_eq = bot.last_matched_equipment
+    # Asset resolution via Master Agent across all plant domains (MCSA, DGA, Vibration, Central Register)
+    resolved_info = master_agent.resolve_asset(msg_text) if msg_text else None
+    matched_eq = bot.last_matched_equipment or (resolved_info.get("equipment") if resolved_info else None)
 
     # Identify active specialist sub-agents
     active_agent_keys = subagent_coordinator.identify_relevant_agents(msg_text, matched_eq)
@@ -298,12 +420,31 @@ async def agent_chat(
     # Safety Guardrail Check
     safety_check = safety_guard.check_safety(msg_text)
     if not safety_check["safe"]:
+        speech_warning = f"Peringatan keselamatan! Perintah ditolak oleh Safety Guardrail: {safety_check['message']}"
+        record_change(
+            entity="SAFETY_GUARDRAIL",
+            field="command_intercepted",
+            old_value=msg_text,
+            new_value="BLOCKED",
+            source=source_val or "CHAT",
+            details={"reason": safety_check["message"]},
+        )
+        if session_id_val:
+            save_session_message(
+                session_id_val,
+                "assistant",
+                safety_check["message"],
+                summary_for_speech=speech_warning,
+                payload={"safety_blocked": True, "active_subagents": active_subagents},
+            )
         return {
             "reply": safety_check["message"],
+            "summary_for_speech": speech_warning,
             "matched_equipment": matched_eq,
             "ai_enhanced": False,
             "file_name": file_name,
             "provider": prov,
+            "session_id": session_id_val,
             "safety_blocked": True,
             "active_subagents": active_subagents,
             "subagent_traces": [],
@@ -314,7 +455,7 @@ async def agent_chat(
     subagents_context = ""
     if matched_eq:
         try:
-            collab_result = subagent_coordinator.run_collaborative_diagnosis(matched_eq, msg_text)
+            collab_result = master_agent.execute_collaborative_diagnosis(matched_eq, msg_text)
             subagent_traces = collab_result.get("subagent_traces", [])
             subagents_context = (
                 f"Consolidated Health: {collab_result.get('consensus_health_index')}/100 ({collab_result.get('consensus_health_status')})\n"
@@ -323,6 +464,27 @@ async def agent_chat(
             )
             for t in subagent_traces:
                 subagents_context += f"• [{t['subagent']['name']}] ({t['status']}): {t['key_finding']}\n"
+
+            # If bot_reply was empty (e.g. non-MCSA transformer or vibration asset), format full diagnosis
+            if not bot_reply:
+                h_idx = collab_result.get("consensus_health_index", 90.0)
+                h_st = collab_result.get("consensus_health_status", "HEALTHY")
+                f_mode = collab_result.get("consensus_failure_mode", "Operasi Normal")
+                rul_days = collab_result.get("predictive_rul", {}).get("estimated_rul_days", "N/A")
+                dec = collab_result.get("maintenance_decision", {}).get("recommended_action", "Lanjutkan pemantauan berkala.")
+                diag_lines = [
+                    f"### 📋 Evaluasi CBM Multi-Disiplin: **{matched_eq}**",
+                    f"- **Unit & Sistem**: {collab_result.get('unit', '-')} | {collab_result.get('system', '-')}",
+                    f"- **Tipe Aset & Kritikalitas**: {collab_result.get('asset_type', '-')} (Kelas {collab_result.get('criticality', '-')})",
+                    f"- **Consolidated Health Index**: **{h_idx}/100** ({h_st})",
+                    f"- **Primary Failure Mode**: {f_mode}",
+                    f"- **Prediksi Sisa Umur (RUL)**: **{rul_days} hari**",
+                    f"- **Rekomendasi CBM**: {dec}",
+                    "\n#### 🔬 Temuan Specialist Sub-Agents:",
+                ]
+                for tr in subagent_traces:
+                    diag_lines.append(f"- {tr['subagent'].get('icon', '🔹')} **{tr['subagent']['name']}** [{tr.get('status')}]: {tr.get('key_finding')}")
+                bot_reply = "\n".join(diag_lines)
         except Exception as e:
             print(f"Sub-agent collaboration note: {e}")
 
@@ -354,12 +516,42 @@ async def agent_chat(
         except Exception as e:
             print(f"LLM AI processing note: {e}")
 
+    speech_summary = generate_speech_summary(final_reply, matched_eq)
+
+    # Log voice commands or significant equipment queries in the audit trail
+    if source_val == "VOICE":
+        record_change(
+            entity=matched_eq or "VOICE_COMMAND",
+            field="voice_input",
+            old_value=msg_text,
+            new_value="PROCESSED",
+            source="VOICE",
+            details={"summary": speech_summary[:120]},
+        )
+
+    if session_id_val:
+        save_session_message(
+            session_id_val,
+            "assistant",
+            final_reply,
+            summary_for_speech=speech_summary,
+            payload={
+                "matched_equipment": matched_eq,
+                "ai_enhanced": ai_enhanced,
+                "safety_blocked": False,
+                "subagent_traces": subagent_traces,
+                "active_subagents": active_subagents,
+            },
+        )
+
     return {
         "reply": final_reply,
+        "summary_for_speech": speech_summary,
         "matched_equipment": matched_eq,
         "ai_enhanced": ai_enhanced,
         "file_name": file_name,
         "provider": prov,
+        "session_id": session_id_val,
         "active_subagents": active_subagents,
         "subagent_traces": subagent_traces,
     }

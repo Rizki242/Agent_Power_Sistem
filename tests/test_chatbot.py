@@ -1,5 +1,8 @@
 import unittest
+import warnings
 import pandas as pd
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from src.chatbot import MCSAChatbot
 

@@ -14,21 +14,31 @@ class SafetyGuardrailAgent:
     """
     FORBIDDEN_AUTONOMOUS_ACTIONS = [
         "trip generator",
+        "trip unit",
+        "tripkan unit",
+        "tripkan",
+        "trip motor",
+        "trip boiler",
         "shutdown turbine",
         "shutdown turbin",
+        "shutdown unit",
+        "matikan unit",
+        "matikan generator",
+        "matikan turbin",
+        "matikan bfp",
+        "matikan pompa",
         "open breaker",
         "buka breaker",
         "close breaker",
         "tutup breaker",
-        "trip motor",
-        "trip boiler",
         "open safety valve",
         "buka safety valve",
         "change protection setting",
         "ubah setting proteksi",
         "override interlock",
         "bypass proteksi",
-        "emergency stop"
+        "emergency stop",
+        "emergency trip",
     ]
 
     def check_safety(self, action_or_query: str) -> Dict[str, Any]:

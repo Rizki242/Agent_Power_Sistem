@@ -9,32 +9,26 @@ import pandas as pd
 from src.knowledge_retriever import build_knowledge_context
 
 
-DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
 AVAILABLE_GEMINI_MODELS = [
-    "gemini-3.8-flash"
-    "gemini-3.6-flash"
-    "gemini-3-flash",
-    "gemini-2.5-flash"
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-2.5-pro",
+    "gemini-3.8-flash",
+    "gemini-3.7-flash",
+    "gemini-3.6-flash",
+    "gemini-3.1-pro",
 ]
 
-DEFAULT_GEMINI_ENTERPRISE_MODEL = "gemini-3.6-flash"
+DEFAULT_GEMINI_ENTERPRISE_MODEL = "gemini-3.8-flash"
 AVAILABLE_GEMINI_ENTERPRISE_MODELS = [
-    "gemini-3.8-flash"
-    "gemini-3.6-flash"
-    "gemini-3-flash",
-    "gemini-2.5-flash",
-    "gemini-2.5-pro",
-    "gemini-1.5-pro",
-    "gemini-1.5-flash",
+    "gemini-3.8-flash",
+    "gemini-3.7-flash",
+    "gemini-3.6-flash",
+    "gemini-3.1-pro",
 ]
 
 DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b"
 AVAILABLE_GROQ_MODELS = [
-    "qwen/qwen3.8-27b"
-    "qwen/qwen3.6-27b"
+    "qwen/qwen3.8-27b",
+    "qwen/qwen3.6-27b",
     "llama-3.3-70b-versatile",
     "deepseek-r1-distill-llama-70b",
     "mixtral-8x7b-32768",
