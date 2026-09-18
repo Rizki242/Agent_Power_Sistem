@@ -37,6 +37,34 @@ class ProviderStatus(BaseModel):
     models: List[str]
 
 
+class SafetyPermission(BaseModel):
+    name: str
+    allowed: bool
+    category: Literal["analysis", "actuation"]
+
+
+class SafetyStatus(BaseModel):
+    guardrail_active: bool = True
+    core_locked: bool = True
+    policy: str = "ISO 13374 / CBM Advisory"
+    permissions: List[SafetyPermission]
+
+
+class CBMDomainStatus(BaseModel):
+    id: str
+    name: str
+    status: Literal["ACTIVE", "STANDBY", "EMPTY"]
+    description: str
+
+
+class DatabaseStatus(BaseModel):
+    engine: str = "SQLite"
+    status: Literal["HEALTHY", "WARNING", "ERROR"] = "HEALTHY"
+    documents_count: int = Field(ge=0)
+    max_backups: int = Field(ge=1)
+    backup_frequency: str = "Daily"
+
+
 class SystemStatus(BaseModel):
     api: Literal["ONLINE"] = "ONLINE"
     data_store: Literal["DEFAULT", "CUSTOM"]
@@ -44,6 +72,7 @@ class SystemStatus(BaseModel):
     automation_workflows: int = Field(ge=0)
     scheduler: Literal["CONFIGURED"] = "CONFIGURED"
     api_auth_enabled: bool
+    api_protection_label: str = "Protected — Localhost"
     custom_cors_enabled: bool
     max_backups: int = Field(ge=1)
 
@@ -53,6 +82,9 @@ class SettingsOverview(BaseModel):
     active_provider: ProviderName
     providers: Dict[str, ProviderStatus]
     system: SystemStatus
+    safety: SafetyStatus
+    data_sources: List[CBMDomainStatus]
+    database: DatabaseStatus
     version: str
     generated_at: datetime
 
@@ -113,6 +145,42 @@ def get_settings_overview():
     except ValueError:
         max_backups = 5
 
+    api_auth = bool(os.environ.get("PPLE_API_KEY"))
+    protection_label = "Protected — API Key Required" if api_auth else "Protected — Localhost"
+
+    safety = {
+        "guardrail_active": True,
+        "core_locked": True,
+        "policy": "ISO 13374 / CBM Advisory Boundary",
+        "permissions": [
+            {"name": "Read equipment data & telemetry", "allowed": True, "category": "analysis"},
+            {"name": "Analyze CBM multi-modal data", "allowed": True, "category": "analysis"},
+            {"name": "Generate RUL & risk recommendations", "allowed": True, "category": "analysis"},
+            {"name": "Create maintenance assessment report", "allowed": True, "category": "analysis"},
+            {"name": "Control physical equipment", "allowed": False, "category": "actuation"},
+            {"name": "Trip generator / motor breaker", "allowed": False, "category": "actuation"},
+            {"name": "Shutdown plant boiler / turbine unit", "allowed": False, "category": "actuation"},
+            {"name": "Modify protection relay thresholds", "allowed": False, "category": "actuation"},
+        ],
+    }
+
+    data_sources = [
+        {"id": "dga", "name": "DGA (Dissolved Gas Analysis)", "status": "ACTIVE", "description": "Analisa gas terlarut trafo (Duval Triangle & TDCG)"},
+        {"id": "mcsa", "name": "MCSA & ESA", "status": "ACTIVE", "description": "Motor Current Signature & Electrical Signature Analysis"},
+        {"id": "vibration", "name": "Vibration Mechanical", "status": "ACTIVE", "description": "Spektrum FFT, 1X/2X, dan kondisi bearing ISO 10816"},
+        {"id": "thermal", "name": "Thermal / Infrared", "status": "ACTIVE", "description": "Termografi inframerah titik panas (hotspot) busbar & motor"},
+        {"id": "tribology", "name": "Tribology & Oil", "status": "ACTIVE", "description": "Viskositas, TAN, kontaminasi partikel dan keausan Fe/Cu"},
+        {"id": "pd", "name": "Partial Discharge", "status": "ACTIVE", "description": "Deteksi lucutan parsial isolasi stator tegangan tinggi"},
+    ]
+
+    database = {
+        "engine": "SQLite",
+        "status": "HEALTHY",
+        "documents_count": knowledge_count,
+        "max_backups": max_backups,
+        "backup_frequency": "Daily",
+    }
+
     return {
         "ai_enabled": bool(preferences.get("ai_enabled", False)),
         "active_provider": active_provider,
@@ -121,13 +189,62 @@ def get_settings_overview():
             "data_store": "CUSTOM" if os.environ.get("MCSA_DATA_DIR") else "DEFAULT",
             "knowledge_documents": knowledge_count,
             "automation_workflows": len(list_workflows()),
-            "api_auth_enabled": bool(os.environ.get("PPLE_API_KEY")),
+            "api_auth_enabled": api_auth,
+            "api_protection_label": protection_label,
             "custom_cors_enabled": bool(os.environ.get("PPLE_CORS_ORIGINS")),
             "max_backups": max_backups,
         },
+        "safety": safety,
+        "data_sources": data_sources,
+        "database": database,
         "version": "2.0.0",
         "generated_at": datetime.now(timezone.utc),
     }
+
+
+@router.post("/test-ai")
+def test_ai_connection():
+    from src import ai_settings
+    from src.llm_assistant import (
+        DEFAULT_GEMINI_MODEL,
+        DEFAULT_GROQ_MODEL,
+        DEFAULT_OLLAMA_HOST,
+        DEFAULT_OPENCODE_BASE_URL,
+        DEFAULT_OPENCODE_MODEL,
+        resolve_provider_key,
+        test_gemini_connection,
+        test_groq_connection,
+        test_ollama_connection,
+        test_opencode_connection,
+    )
+    prefs = ai_settings.load()
+    provider = prefs.get("ai_provider", "gemini")
+
+    if provider == "gemini":
+        key = resolve_provider_key("gemini")
+        model = prefs.get("gemini_model", DEFAULT_GEMINI_MODEL)
+        ok, msg = test_gemini_connection(key, model=model)
+        return {"success": ok, "provider": provider, "model": model, "message": msg}
+
+    elif provider == "groq":
+        key = resolve_provider_key("groq")
+        model = prefs.get("groq_model", DEFAULT_GROQ_MODEL)
+        ok, msg = test_groq_connection(key, model=model)
+        return {"success": ok, "provider": provider, "model": model, "message": msg}
+
+    elif provider in {"opencode", "openai"}:
+        key = resolve_provider_key(provider)
+        base_url = prefs.get("opencode_base_url", DEFAULT_OPENCODE_BASE_URL)
+        model = prefs.get(f"{provider}_model", DEFAULT_OPENCODE_MODEL)
+        ok, msg = test_opencode_connection(base_url=base_url, api_key=key, model=model)
+        return {"success": ok, "provider": provider, "model": model, "message": msg}
+
+    elif provider == "ollama":
+        host = prefs.get("ollama_host", DEFAULT_OLLAMA_HOST)
+        ok, msg, _ = test_ollama_connection(host=host)
+        return {"success": ok, "provider": provider, "message": msg}
+
+    return {"success": False, "provider": provider, "message": f"Provider {provider} tidak dikenal."}
 
 
 @router.put("/ai", response_model=AISettingsEnvelope)
