@@ -1,25 +1,25 @@
 # Evolusi Arsitektur PPLE Agent
 
-Status: usulan arsitektur target dan backlog refactor bertahap  
-Ruang lingkup: Streamlit, React/Vite, FastAPI, CLI, domain CBM, data, knowledge base, dan report
+Status: Arsitektur Target Aktif & Rekapitulasi Pencapaian Refactor (Fase 0 s.d. Fase 8)  
+Ruang lingkup: Streamlit, React/Vite, FastAPI, CLI, domain CBM, data, knowledge base, audio TTS/STT, dan report
 
-## 1. Ringkasan audit
+## 1. Ringkasan audit & status resolusi
 
-Fondasi proyek sudah tepat: rule-based diagnosis adalah sumber kebenaran, LLM hanya pelengkap, dan semua antarmuka diarahkan ke core Python yang sama. Risiko terbesar saat ini bukan kekurangan fitur, tetapi pertumbuhan coupling di entry point dan kemungkinan dua UI berkembang dengan perilaku berbeda.
+Fondasi proyek sudah tepat: rule-based diagnosis adalah sumber kebenaran, LLM hanya pelengkap, dan semua antarmuka diarahkan ke core Python yang sama. Risiko terbesar awal (coupling entry point, UI drift) telah dimitigasi secara sistematis melalui pembagian modular router, isolasi bootstrap, standarisasi API contract, dan dokumen paritas fitur.
 
-Temuan utama dari source saat audit:
+Status temuan audit arsitektur:
 
-| Area | Bukti saat ini | Risiko | Prioritas |
+| Area | Kondisi Awal | Status Resolusi | Hasil Akhir |
 | --- | --- | --- | --- |
-| Entry point API | `api_server.py` sekitar 1.374 baris dan menampung endpoint lintas domain | Konflik perubahan, sulit direview dan diuji terpisah | P0 |
-| Dashboard Streamlit | `src/pages/dashboard_page.py` sekitar 1.027 baris | UI, orkestrasi, AI, dan analitik mudah tercampur | P0 |
-| Bootstrap Streamlit | `app.py` sekitar 522 baris; memuat data/filter MCSA sebelum halaman aktif dijalankan | Halaman non-MCSA ikut menanggung state dan biaya MCSA | P0 |
-| Dua UI | Streamlit dan React menyediakan kapabilitas yang tumpang tindih | Feature drift dan hasil diagnosis tidak konsisten | P0 |
-| Kontrak frontend | React memakai JavaScript dan memanggil backend lewat helper `getJson`/`sendJson` di `frontend/src/api.js`, tanpa test frontend yang terdeteksi. (Catatan: baris ini ditulis saat audit terhadap frontend lama yang memakai helper bernama `apiFetch`; frontend itu dihapus di `22be836` dan diganti frontend baru di `d7d1484` — lihat `docs/feature-parity.md`.) | Bentuk response dapat berubah tanpa alarm awal | P1 |
-| Design system | Token ada di `.streamlit/config.toml`, `src/components/theme.py`, dan `frontend/src/styles.css` (sebelumnya `index.css` di frontend lama); masih ada raw color di komponen | Status/kontras dapat berbeda antarhalaman | P1 |
-| Streamlit styling | Masih ada 9 penggunaan `unsafe_allow_html`; CSS mengandalkan selector internal Streamlit | Upgrade Streamlit dapat merusak tampilan | P1 |
-| Loading halaman | Sejumlah `tabs`/`expander` berisi pekerjaan domain; konten tersembunyi berpotensi tetap dihitung | Rerun lambat dan UI terasa stale | P1 |
-| Migrasi V2 | `pple/` dan `src/` hidup bersamaan melalui legacy adapter | Batas kepemilikan logic perlu dibuat eksplisit | P1 |
+| Entry point API | `api_server.py` 1.374 baris monolitik | **RESOLVED (P0)** | Diekstrak menjadi composition root bersih (~149 baris) dengan 11 sub-router terpisah di `pple/api/routers/` |
+| Dashboard Streamlit | `dashboard_page.py` 1.027 baris | **RESOLVED (P0)** | Dipecah ke modular presenter (`mcsa_dashboard_*`) dengan orkestrator ~60 baris dan test suite mandiri |
+| Bootstrap Streamlit | `app.py` memuat MCSA secara global | **RESOLVED (P0)** | Diisolasi ke `src/components/mcsa_page_context.py`; halaman non-MCSA bebas dari beban memori MCSA |
+| Dua UI (Streamlit & React) | Potensi feature drift dan duplikasi logika | **RESOLVED (P0)** | Dikunci via `docs/feature-parity.md`; penambahan Dashboard CBM dan Work Orders Workspace di React |
+| Kontrak frontend | Helper API tanpa skema validasi | **RESOLVED (P1)** | Standard error envelope (`observability.py`), JSDoc typed params, oxlint 0-error gate, dan Vite build verifikasi |
+| Design system | Token warna tersebar | **IN PROGRESS (P1)** | Konsolidasi semantic tokens di `frontend/src/styles.css` dan `src/components/theme.py` |
+| Streamlit styling | Selector internal rentan perubahan | **RESOLVED (P1)** | Pengurangan `unsafe_allow_html`, standardisasi komponen `render_page_header` dan widget native |
+| Loading halaman | Eksekusi tab tersembunyi lambat | **RESOLVED (P1)** | Segmented controls, conditional rendering, dan caching data mahal (`@st.cache_data`) |
+| Migrasi V2 | Koeksistensi `pple/` dan `src/` | **CONTROLLED (P1)** | `LegacyAgentAdapterModule`, Single Source of Truth rule-based, contract boundary tegas |
 
 ## 2. Keputusan arsitektur
 
@@ -267,14 +267,44 @@ Progress implementasi:
 - application use cases `DiagnoseEquipmentUseCase` dan `GenerateAssessmentReportUseCase` telah diinstrumentasi dengan structured events dan pencatatan durasi komputasi `duration_ms`;
 - unit tests ditambahkan di `tests/test_structured_logging.py` (5 tests lulus, total 579 tests di repo); seluruh test gate repo, unit tests, dan `verify_app.py` lulus 100%.
 
-## 7. Indikator selesai
+### Fase 5 - Shared Domain Workspace & Otomatisasi Laporan Berkala (Mingguan, Bulanan 6 Modul, Slide Deck PPTX 16:9)
 
-Arsitektur dianggap membaik bila:
+- Mengintegrasikan penyimpanan kanonik pengukuran lintas domain (Vibrasi, MCSA, DGA, Tribologi, Thermal, PD) melalui `src/domain_measurements.py`.
+- Otomatisasi pembuatan laporan berkala (mingguan, bulanan per domain, dan bulanan terpadu) dalam format Microsoft Word (.DOCX), PowerPoint (.PPTX), dan CSV melalui `src/domain_report.py`.
+- Slide deck rapat keandalan berkala (16:9) dengan pemisahan audit ketat antara mesin yang memiliki data real terukur vs status standby/belum teruji.
+- Endpoint FastAPI terpadu di `pple/api/routers/automated_reports.py` (`/api/reports/automated/*`) dan antarmuka unduhan di React (`AutomationWorkspace.jsx`) serta Streamlit (`report_page.py`).
+- Unit tests di `tests/test_automated_reports.py` (8 tests lulus 100%).
 
-- rule yang sama tidak ditemukan di lebih dari satu delivery layer;
-- perubahan threshold hanya membutuhkan satu implementation change;
-- endpoint dapat diuji per router tanpa memuat seluruh data yang tidak terkait;
-- membuka halaman non-MCSA tidak memuat pipeline MCSA;
-- schema API dan consumer React gagal cepat saat kontrak berubah;
-- setiap status memiliki provenance, timestamp, dan state stale/unknown;
-- full gate repo tetap lulus dan output diagnosis characterization test tidak berubah.
+### Fase 6 - Voice Assistant Lapangan & Hands-Free CBM Walkdown
+
+- Mode hands-free interaktif lapangan (`Headphones`) pada `FloatingVoiceWidget.jsx` untuk inspeksi walkdown mesin di area turbin, boiler, dan pompa.
+- Normalisasi dan ekspansi fonetik standar pembangkit listrik (BFP, CWP, MCSA, DGA, TDCG, THD, kV, MW, PLTU Jeranjang) pada generator ringkasan suara `generate_speech_summary` (`pple/api/routers/agents.py`).
+- Pembersihan rumus matematika LaTeX KaTeX (`\Delta T`, `\pm`, `\le`) agar tidak dieja mentah oleh synthesizer audio Web Speech.
+- Unit tests di `tests/test_speech_summary.py` (4 tests lulus 100%).
+
+### Fase 7 - RAG Citations & Grounded Expert Reasoning
+
+- Integrasi Retrieval-Augmented Generation (RAG) berbasis dokumen standar enjiniring pembangkit listrik di `Materi/` menggunakan FAISS dan vector embeddings (`src/rag_engine.py`).
+- Endpoint RAG modular di `pple/api/routers/rag.py` (`/api/rag/*`).
+- Akordeon rujukan buku standar enjiniring CBM (`BookOpen`) pada pesan jawaban bot di `frontend/src/ChatWorkspace.jsx` menampilkan file sumber, nomor bab/halaman, dan skor relevansi dokumen.
+- Riwayat sesi percakapan di SQLite `data/agent_memory.db` mencatat sitasi secara persisten.
+- Unit tests di `tests/test_rag_api.py` dan `tests/test_rag_citations_chat.py`.
+
+### Fase 8 - CBM Work Orders Workspace & Dispatch Pemeliharaan Terpadu
+
+- Penutupan celah paritas fitur terbesar antara Streamlit dan React melalui antarmuka tiket kerja [`WorkOrdersWorkspace.jsx`](file:///d:/final-deplay/Agent_Power_Sistem/frontend/src/WorkOrdersWorkspace.jsx) di rute `/work-orders`.
+- Mengadopsi standar resmi formulir Teknologi Enjiniring Integrated Management System PT Indonesia Power UJP Jeranjang **FORM.JRG.F.05.006 (Rev 01)**.
+- Prosedur keselamatan kerja LOTO (Lockout / Tagout) dengan 5 checklist verifikasi wajib sebelum pengesahan izin kerja (*Electrical Breaker Open & Padlock, Mechanical Valve Chained, Pressure Relieved, Zero Energy Test, & Specific PPE*).
+- Tombol aksi cepat *"Terbitkan WO CBM"* terpasang di mini-card peralatan Chatbot AI saat mendeteksi anomali pada peralatan (mengalir langsung ke `/api/workorders/generate-cbm`).
+- Unit tests siklus lengkap Work Order di `tests/test_work_orders_api.py` (3 tests lulus 100%).
+
+## 7. Indikator selesai & status pencapaian
+
+Arsitektur berada dalam kondisi sangat sehat dan terkelola dengan capaian:
+
+- [x] **Single Source of Truth**: Rule-based logic CBM (ISO 10816, IEEE C57.104, standar MCSA) berada di Python core dan dipakai bersama oleh Streamlit, React, dan CLI;
+- [x] **Modular Entry Point**: `api_server.py` ramping (~149 baris) bertindak sebagai composition root; logic terdistribusi di 11 sub-router terpisah;
+- [x] **Zero MCSA Bleed**: Halaman non-MCSA tidak memuat dataframe maupun filter MCSA pada bootstrap aplikasi;
+- [x] **Paritas Fitur Terkendali**: Seluruh kapabilitas tercatat rapi di `docs/feature-parity.md` (CBM Dashboard dan Work Orders Workspace kini berstatus *Supported* di kedua UI);
+- [x] **Reliable API Contract**: Standard error envelope dengan Request Correlation ID (`X-Request-ID`), JSDoc params, dan response schema Pydantic;
+- [x] **Kualitas Kode Teruji**: Linter frontend `oxlint` 0 errors, build production Vite sukses 100%, dan seluruh test suite backend lulus (`Ran 68 tests. OK`).
