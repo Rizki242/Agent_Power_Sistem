@@ -15,12 +15,14 @@ import {
   X,
 } from 'lucide-react'
 import { approveWorkOrder, createNewWorkOrder, getWorkOrders } from './api.js'
+import { useToast } from './components/Toast.jsx'
+import AsyncState from './components/AsyncState.jsx'
 
 const PRIORITY_BADGES = {
-  'P1 - Critical': { label: 'P1 - Kritis', color: 'badge--critical', border: '#ef4444' },
-  'P2 - High': { label: 'P2 - Tinggi', color: 'badge--high', border: '#f97316' },
-  'P3 - Medium': { label: 'P3 - Menengah', color: 'badge--medium', border: '#f59e0b' },
-  'P4 - Low': { label: 'P4 - Rendah', color: 'badge--low', border: '#10b981' },
+  'P1 - Critical': { label: 'P1 - Kritis', color: 'badge--critical', border: 'var(--critical)' },
+  'P2 - High': { label: 'P2 - Tinggi', color: 'badge--high', border: 'var(--attention)' },
+  'P3 - Medium': { label: 'P3 - Menengah', color: 'badge--medium', border: 'var(--attention)' },
+  'P4 - Low': { label: 'P4 - Rendah', color: 'badge--low', border: 'var(--healthy)' },
 }
 
 const LOTO_ITEMS = [
@@ -32,6 +34,7 @@ const LOTO_ITEMS = [
 ]
 
 export default function WorkOrdersWorkspace() {
+  const { notify } = useToast()
   const [workOrders, setWorkOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -123,7 +126,7 @@ export default function WorkOrdersWorkspace() {
     if (actionType === 'Approve') {
       const allChecked = LOTO_ITEMS.every((item) => lotoChecked[item.id])
       if (!allChecked) {
-        alert('Mohon verifikasi dan centang seluruh 5 persyaratan LOTO & Keselamatan Kerja sebelum menyetujui Work Order.')
+        notify({ tone: 'warning', message: 'Centang seluruh 5 persyaratan LOTO & Keselamatan Kerja sebelum menyetujui Work Order.' })
         return
       }
     }
@@ -143,7 +146,7 @@ export default function WorkOrdersWorkspace() {
       setLotoChecked({})
       loadData()
     } catch (err) {
-      alert(`Gagal memproses Work Order: ${err.message}`)
+      notify({ tone: 'error', message: `Gagal memproses Work Order: ${err.message}` })
     } finally {
       setActionLoading(false)
     }
@@ -153,7 +156,7 @@ export default function WorkOrdersWorkspace() {
   const handleCreateSubmit = async (e) => {
     e.preventDefault()
     if (!newForm.equipment.trim() || !newForm.title.trim()) {
-      alert('Peralatan dan Judul Pekerjaan wajib diisi.')
+      notify({ tone: 'warning', message: 'Peralatan dan Judul Pekerjaan wajib diisi.' })
       return
     }
 
@@ -193,7 +196,7 @@ export default function WorkOrdersWorkspace() {
       })
       loadData()
     } catch (err) {
-      alert(`Gagal membuat Work Order: ${err.message}`)
+      notify({ tone: 'error', message: `Gagal membuat Work Order: ${err.message}` })
     } finally {
       setActionLoading(false)
     }
@@ -215,7 +218,7 @@ Target Selesai: ${wo.target_completion_date || '-'}
 Status: ${wo.status}`
 
     navigator.clipboard.writeText(text)
-    alert(`Ringkasan briefing untuk ${wo.wo_number} berhasil disalin ke clipboard! Siap dikirim ke tim lapangan.`)
+    notify({ tone: 'success', message: `Ringkasan briefing ${wo.wo_number} disalin ke clipboard, siap dikirim ke tim lapangan.` })
   }
 
   return (
@@ -224,7 +227,7 @@ Status: ${wo.status}`
       <header className="page-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span className="domain-pill" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+            <span className="domain-pill" style={{ background: 'rgba(59, 130, 246, 0.15)', color: 'var(--action)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
               FORM.JRG.F.05.006 (Rev 01)
             </span>
             <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>PT INDONESIA POWER UJP JERANJANG</span>
@@ -273,29 +276,29 @@ Status: ${wo.status}`
           <strong>{metrics.total}</strong>
         </div>
         <div>
-          <span style={{ color: '#ef4444' }}>P1 - Critical</span>
-          <strong style={{ color: '#ef4444' }}>{metrics.p1}</strong>
+          <span style={{ color: 'var(--critical)' }}>P1 - Critical</span>
+          <strong style={{ color: 'var(--critical)' }}>{metrics.p1}</strong>
         </div>
         <div>
-          <span style={{ color: '#f97316' }}>P2 - High</span>
-          <strong style={{ color: '#f97316' }}>{metrics.p2}</strong>
+          <span style={{ color: 'var(--attention)' }}>P2 - High</span>
+          <strong style={{ color: 'var(--attention)' }}>{metrics.p2}</strong>
         </div>
         <div>
-          <span style={{ color: '#f59e0b' }}>Awaiting Approval</span>
-          <strong style={{ color: '#f59e0b' }}>{metrics.draft}</strong>
+          <span style={{ color: 'var(--attention)' }}>Awaiting Approval</span>
+          <strong style={{ color: 'var(--attention)' }}>{metrics.draft}</strong>
         </div>
         <div>
-          <span style={{ color: '#3b82f6' }}>In Progress</span>
-          <strong style={{ color: '#3b82f6' }}>{metrics.inProgress}</strong>
+          <span style={{ color: 'var(--action)' }}>In Progress</span>
+          <strong style={{ color: 'var(--action)' }}>{metrics.inProgress}</strong>
         </div>
         <div>
-          <span style={{ color: '#10b981' }}>Completed</span>
-          <strong style={{ color: '#10b981' }}>{metrics.completed}</strong>
+          <span style={{ color: 'var(--healthy)' }}>Completed</span>
+          <strong style={{ color: 'var(--healthy)' }}>{metrics.completed}</strong>
         </div>
       </section>
 
       {/* Filters Toolbar */}
-      <div className="wo-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', margin: '20px 0 16px', padding: '14px 18px', background: 'var(--panel)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+      <div className="wo-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', margin: '20px 0 16px', padding: '14px 18px', background: 'var(--surface)', borderRadius: '10px', border: '1px solid var(--border)' }}>
         <div style={{ position: 'relative', flex: '1 1 240px' }}>
           <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
           <input
@@ -338,24 +341,18 @@ Status: ${wo.status}`
       </div>
 
       {/* Table / List */}
-      {loading ? (
-        <div className="empty-state" style={{ minHeight: '300px' }}>
-          <div className="chat-typing-indicator"><span /><span /><span /></div>
-          <span>Memuat data Work Order...</span>
-        </div>
-      ) : error ? (
-        <div className="notice notice--error">
-          <strong>Gagal Memuat Data</strong>
-          <span>{error}</span>
-        </div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="empty-state" style={{ padding: '48px 24px', textAlign: 'center', background: 'var(--panel)', borderRadius: '12px', border: '1px dashed var(--border)' }}>
-          <ClipboardList size={38} style={{ opacity: 0.5, marginBottom: '12px' }} />
-          <strong>Tidak ada Work Order yang cocok</strong>
-          <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Coba ubah filter pencarian atau buat Work Order baru.</p>
-        </div>
-      ) : (
-        <div className="wo-table-wrapper" style={{ overflowX: 'auto', background: 'var(--panel)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+      <AsyncState
+        status={loading ? 'loading' : error ? 'error' : 'ready'}
+        error={error}
+        onRetry={loadData}
+        isEmpty={filteredOrders.length === 0}
+        emptyIcon={ClipboardList}
+        emptyTitle="Tidak ada Work Order yang cocok"
+        emptyHint="Coba ubah filter pencarian atau terbitkan Work Order baru."
+        skeleton="table"
+        loadingLabel="Memuat data Work Order"
+      >
+        <div className="wo-table-wrapper" style={{ overflowX: 'auto', background: 'var(--surface)', borderRadius: '10px', border: '1px solid var(--border)' }}>
           <table className="wo-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)', background: 'rgba(255, 255, 255, 0.02)', color: 'var(--muted)' }}>
@@ -370,7 +367,7 @@ Status: ${wo.status}`
             </thead>
             <tbody>
               {filteredOrders.map((wo) => {
-                const priorityInfo = PRIORITY_BADGES[wo.priority] || { label: wo.priority || 'Normal', border: '#64748b' }
+                const priorityInfo = PRIORITY_BADGES[wo.priority] || { label: wo.priority || 'Normal', border: 'var(--muted)' }
                 const isDraft = String(wo.status).toLowerCase().includes('draft') || String(wo.status).toLowerCase().includes('awaiting')
                 const isInProgress = String(wo.status).toLowerCase().includes('progress') || String(wo.status).toLowerCase().includes('approved')
                 const isCompleted = String(wo.status).toLowerCase().includes('complete') || String(wo.status).toLowerCase().includes('closed')
@@ -378,11 +375,11 @@ Status: ${wo.status}`
                 return (
                   <tr key={wo.wo_number} style={{ borderBottom: '1px solid var(--border)' }} className="wo-row">
                     <td style={{ padding: '14px 16px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
-                      <strong style={{ color: '#60a5fa', fontFamily: 'monospace', fontSize: '0.95rem' }}>{wo.wo_number}</strong>
+                      <strong style={{ color: 'var(--action)', fontFamily: 'monospace', fontSize: '0.95rem' }}>{wo.wo_number}</strong>
                       <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '2px' }}>{wo.created_at || '-'}</div>
                     </td>
                     <td style={{ padding: '14px 16px', verticalAlign: 'top' }}>
-                      <strong style={{ fontSize: '0.95rem', color: '#f8fafc' }}>{wo.equipment}</strong>
+                      <strong style={{ fontSize: '0.95rem', color: 'var(--ink)' }}>{wo.equipment}</strong>
                       <div style={{ fontSize: '0.8rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
                         <span className="tag-source">{wo.domain || 'CBM'}</span>
                       </div>
@@ -404,17 +401,17 @@ Status: ${wo.status}`
                       </span>
                     </td>
                     <td style={{ padding: '14px 16px', verticalAlign: 'top', maxWidth: '320px' }}>
-                      <div style={{ fontWeight: '600', color: '#f1f5f9', marginBottom: '4px' }}>{wo.title}</div>
+                      <div style={{ fontWeight: '600', color: 'var(--ink)', marginBottom: '4px' }}>{wo.title}</div>
                       <div style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: '1.4' }}>
                         {wo.reason || 'Pekerjaan pemeliharaan preventif/korektif.'}
                       </div>
                       {wo.required_tools && wo.required_tools.length > 0 && (
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '6px' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '6px' }}>
                           🔧 <strong>Alat:</strong> {wo.required_tools.join(', ')}
                         </div>
                       )}
                     </td>
-                    <td style={{ padding: '14px 16px', verticalAlign: 'top', whiteSpace: 'nowrap', color: '#cbd5e1' }}>
+                    <td style={{ padding: '14px 16px', verticalAlign: 'top', whiteSpace: 'nowrap', color: 'var(--muted)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <Clock size={14} style={{ color: 'var(--muted)' }} />
                         <span>{wo.target_completion_date || '-'}</span>
@@ -441,12 +438,12 @@ Status: ${wo.status}`
                             ? 'rgba(16, 185, 129, 0.12)'
                             : 'rgba(239, 68, 68, 0.12)',
                           color: isDraft
-                            ? '#f59e0b'
+                            ? 'var(--attention)'
                             : isInProgress
-                            ? '#60a5fa'
+                            ? 'var(--action)'
                             : isCompleted
-                            ? '#34d399'
-                            : '#f87171',
+                            ? 'var(--healthy)'
+                            : 'var(--critical)',
                           border: `1px solid ${
                             isDraft
                               ? 'rgba(245, 158, 11, 0.3)'
@@ -491,21 +488,21 @@ Status: ${wo.status}`
             </tbody>
           </table>
         </div>
-      )}
+      </AsyncState>
 
       {/* MODAL: LOTO & Work Order Approval */}
       {selectedWo && (
         <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999, padding: '16px' }}>
-          <div className="modal-card" style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto', padding: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #334155', paddingBottom: '16px', marginBottom: '20px' }}>
+          <div className="modal-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto', padding: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border)', paddingBottom: '16px', marginBottom: '20px' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <HardHat size={20} style={{ color: '#f59e0b' }} />
-                  <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#f8fafc' }}>
+                  <HardHat size={20} style={{ color: 'var(--attention)' }} />
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--ink)' }}>
                     Verifikasi LOTO & Pengesahan WO
                   </h3>
                 </div>
-                <div style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '4px' }}>
+                <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: '4px' }}>
                   No. Dokumen: <strong>FORM.JRG.F.05.006 (Rev 01)</strong> | {selectedWo.wo_number}
                 </div>
               </div>
@@ -520,28 +517,28 @@ Status: ${wo.status}`
             </div>
 
             {/* Equipment & Task Info Card */}
-            <div style={{ background: '#1e293b', padding: '16px', borderRadius: '8px', marginBottom: '20px', borderLeft: '4px solid #38bdf8' }}>
+            <div style={{ background: 'var(--action-soft)', padding: '16px', borderRadius: '8px', marginBottom: '20px', borderLeft: '4px solid color-mix(in srgb, var(--action) 45%, transparent)' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.88rem' }}>
                 <div>
-                  <span style={{ color: '#94a3b8' }}>Peralatan:</span>{' '}
-                  <strong style={{ color: '#f8fafc' }}>{selectedWo.equipment}</strong>
+                  <span style={{ color: 'var(--muted)' }}>Peralatan:</span>{' '}
+                  <strong style={{ color: 'var(--ink)' }}>{selectedWo.equipment}</strong>
                 </div>
                 <div>
-                  <span style={{ color: '#94a3b8' }}>Prioritas:</span>{' '}
-                  <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>{selectedWo.priority}</span>
+                  <span style={{ color: 'var(--muted)' }}>Prioritas:</span>{' '}
+                  <span style={{ color: 'var(--attention)', fontWeight: 'bold' }}>{selectedWo.priority}</span>
                 </div>
                 <div>
-                  <span style={{ color: '#94a3b8' }}>Domain CBM:</span>{' '}
-                  <span style={{ color: '#38bdf8' }}>{selectedWo.domain || 'Multi-Agent'}</span>
+                  <span style={{ color: 'var(--muted)' }}>Domain CBM:</span>{' '}
+                  <span style={{ color: 'var(--action)' }}>{selectedWo.domain || 'Multi-Agent'}</span>
                 </div>
                 <div>
-                  <span style={{ color: '#94a3b8' }}>Target Selesai:</span>{' '}
-                  <span style={{ color: '#f1f5f9' }}>{selectedWo.target_completion_date || '-'}</span>
+                  <span style={{ color: 'var(--muted)' }}>Target Selesai:</span>{' '}
+                  <span style={{ color: 'var(--ink)' }}>{selectedWo.target_completion_date || '-'}</span>
                 </div>
               </div>
               <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <strong style={{ color: '#f8fafc', fontSize: '0.95rem' }}>{selectedWo.title}</strong>
-                <p style={{ margin: '4px 0 0', color: '#cbd5e1', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                <strong style={{ color: 'var(--ink)', fontSize: '0.95rem' }}>{selectedWo.title}</strong>
+                <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '0.85rem', lineHeight: '1.4' }}>
                   {selectedWo.reason || 'Pemeriksaan lanjutan hasil diagnosa CBM.'}
                 </p>
               </div>
@@ -550,12 +547,12 @@ Status: ${wo.status}`
             {/* LOTO Safety Verification Section */}
             <div style={{ marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                <ShieldCheck size={18} style={{ color: '#10b981' }} />
-                <h4 style={{ margin: 0, fontSize: '0.98rem', color: '#f1f5f9' }}>
+                <ShieldCheck size={18} style={{ color: 'var(--healthy)' }} />
+                <h4 style={{ margin: 0, fontSize: '0.98rem', color: 'var(--ink)' }}>
                   Prosedur Isolasi Energi & Keselamatan (LOTO Checklist)
                 </h4>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(0,0,0,0.2)', padding: '14px', borderRadius: '8px', border: '1px solid #334155' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(0,0,0,0.2)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border)' }}>
                 {LOTO_ITEMS.map((item) => (
                   <label
                     key={item.id}
@@ -564,7 +561,7 @@ Status: ${wo.status}`
                       alignItems: 'flex-start',
                       gap: '10px',
                       fontSize: '0.85rem',
-                      color: lotoChecked[item.id] ? '#f8fafc' : '#94a3b8',
+                      color: lotoChecked[item.id] ? 'var(--ink)' : 'var(--muted)',
                       cursor: 'pointer',
                       userSelect: 'none',
                     }}
@@ -585,7 +582,7 @@ Status: ${wo.status}`
 
             {/* Approver Name Input */}
             <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '6px' }}>
                 Nama Supervisor / Approver Resmi:
               </label>
               <input
@@ -599,7 +596,7 @@ Status: ${wo.status}`
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'flex-end', borderTop: '1px solid #334155', paddingTop: '16px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
               <button
                 type="button"
                 className="button"
@@ -611,7 +608,7 @@ Status: ${wo.status}`
               <button
                 type="button"
                 className="button"
-                style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', border: '1px solid rgba(239,68,68,0.4)' }}
+                style={{ background: 'rgba(239, 68, 68, 0.2)', color: 'var(--critical)', border: '1px solid rgba(239,68,68,0.4)' }}
                 onClick={() => handleApprovalAction('Reject')}
                 disabled={actionLoading}
               >
@@ -620,7 +617,7 @@ Status: ${wo.status}`
               <button
                 type="button"
                 className="button"
-                style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', border: '1px solid rgba(16,185,129,0.4)' }}
+                style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--healthy)', border: '1px solid rgba(16,185,129,0.4)' }}
                 onClick={() => handleApprovalAction('Complete')}
                 disabled={actionLoading}
               >
@@ -643,13 +640,13 @@ Status: ${wo.status}`
       {/* MODAL: Create New Work Order */}
       {isCreateOpen && (
         <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999, padding: '16px' }}>
-          <div className="modal-card" style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', width: '100%', maxWidth: '640px', maxHeight: '90vh', overflowY: 'auto', padding: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #334155', paddingBottom: '14px', marginBottom: '20px' }}>
+          <div className="modal-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', width: '100%', maxWidth: '640px', maxHeight: '90vh', overflowY: 'auto', padding: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border)', paddingBottom: '14px', marginBottom: '20px' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#f8fafc' }}>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--ink)' }}>
                   Terbitkan Work Order CBM Baru
                 </h3>
-                <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: '0.85rem' }}>
+                <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '0.85rem' }}>
                   Form Standar TE IMS PLTU Jeranjang FORM.JRG.F.05.006 (Rev 01)
                 </p>
               </div>
@@ -666,7 +663,7 @@ Status: ${wo.status}`
             <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '6px' }}>
                     Peralatan / KKS *:
                   </label>
                   <input
@@ -680,7 +677,7 @@ Status: ${wo.status}`
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '6px' }}>
                     Domain / Spesialisasi:
                   </label>
                   <select
@@ -701,7 +698,7 @@ Status: ${wo.status}`
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '6px' }}>
                   Judul Pekerjaan Pemeliharaan *:
                 </label>
                 <input
@@ -717,7 +714,7 @@ Status: ${wo.status}`
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '6px' }}>
                     Tingkat Prioritas:
                   </label>
                   <select
@@ -733,7 +730,7 @@ Status: ${wo.status}`
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '6px' }}>
                     Target Selesai:
                   </label>
                   <input
@@ -747,7 +744,7 @@ Status: ${wo.status}`
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '6px' }}>
                   Alasan Teknis / Temuan Diagnosa AI:
                 </label>
                 <textarea
@@ -762,7 +759,7 @@ Status: ${wo.status}`
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '6px' }}>
                     Alat Kerja (Tools, pisahkan koma):
                   </label>
                   <input
@@ -775,7 +772,7 @@ Status: ${wo.status}`
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '6px' }}>
                     Suku Cadang / Material (pisahkan koma):
                   </label>
                   <input
@@ -790,7 +787,7 @@ Status: ${wo.status}`
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#94a3b8', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '6px' }}>
                   Alokasi Tim Personel:
                 </label>
                 <input
@@ -803,7 +800,7 @@ Status: ${wo.status}`
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px', borderTop: '1px solid #334155', paddingTop: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
                 <button
                   type="button"
                   className="button"
