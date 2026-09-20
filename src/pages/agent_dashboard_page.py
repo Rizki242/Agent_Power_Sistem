@@ -146,50 +146,29 @@ def _run_equipment_diagnosis(coordinator: SubAgentCoordinator, df_latest_all: pd
     }
 
 
+def _kpi_card(st, value, label: str, variant: str = "") -> None:
+    value_class = f"kpi-value kpi-value-{variant}" if variant else "kpi-value"
+    st.markdown(
+        f'<div class="kpi-card"><div class="{value_class}">{value}</div>'
+        f'<div class="kpi-label">{label}</div></div>',
+        unsafe_allow_html=True,
+    )
+
+
 def _render_mission_control_overview(st, fleet: dict, specialists: list) -> None:
     import plotly.graph_objects as go
-    
-    st.markdown("""
-    <style>
-    .kpi-card {
-        background: #1e293b;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        border: 1px solid #334155;
-    }
-    .kpi-value { font-size: 28px; font-weight: bold; color: #f8fafc; }
-    .kpi-label { font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-    .alert-item {
-        background: rgba(239, 68, 68, 0.1);
-        border-left: 4px solid #ef4444;
-        padding: 10px 15px;
-        margin-bottom: 10px;
-        border-radius: 4px;
-        font-size: 14px;
-    }
-    .warning-item {
-        background: rgba(245, 158, 11, 0.1);
-        border-left: 4px solid #f59e0b;
-        padding: 10px 15px;
-        margin-bottom: 10px;
-        border-radius: 4px;
-        font-size: 14px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
     # Top KPI Row
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.markdown(f'<div class="kpi-card"><div class="kpi-value">{fleet.get("total_assets", 0)}</div><div class="kpi-label">Total Aset Aktif</div></div>', unsafe_allow_html=True)
+        _kpi_card(st, fleet.get("total_assets", 0), "Total Aset Aktif")
     with c2:
-        st.markdown(f'<div class="kpi-card"><div class="kpi-value">{fleet.get("fleet_health_average", 0):.1f}/100</div><div class="kpi-label">Rata-rata Fleet Health</div></div>', unsafe_allow_html=True)
+        _kpi_card(st, f'{fleet.get("fleet_health_average", 0):.1f}/100', "Rata-rata Fleet Health")
     with c3:
-        st.markdown(f'<div class="kpi-card"><div class="kpi-value" style="color: #ef4444;">{len(fleet.get("critical_watchlist", []))}</div><div class="kpi-label">Aset Masuk Watchlist</div></div>', unsafe_allow_html=True)
+        _kpi_card(st, len(fleet.get("critical_watchlist", [])), "Aset Masuk Watchlist", variant="warn")
     with c4:
-        st.markdown(f'<div class="kpi-card"><div class="kpi-value" style="color: #10b981;">{len(specialists)}</div><div class="kpi-label">Agen CBM Online</div></div>', unsafe_allow_html=True)
-    
+        _kpi_card(st, len(specialists), "Agen CBM Online", variant="ok")
+
     st.markdown("<br>", unsafe_allow_html=True)
 
     # Main Visualizations
@@ -268,7 +247,7 @@ def render_agent_dashboard_page(st, df_latest_all: pd.DataFrame, mcsa_page=None)
     # Render Modern Overview
     _render_mission_control_overview(st, fleet, specialists)
 
-    st.markdown("---")
+    st.divider()
     st.subheader("Sub-Agent Roster", anchor=False)
     _render_roster(st, specialists)
 

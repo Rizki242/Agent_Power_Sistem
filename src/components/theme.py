@@ -390,6 +390,44 @@ _STATIC_CSS = """
         font-weight: 600;
         color: var(--mcsa-slate-900);
       }
+
+      /* Mission Control KPI Cards & Alert Feed */
+      .kpi-card {
+        background-color: var(--mcsa-card);
+        border: 1px solid var(--mcsa-border);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        text-align: center;
+        box-shadow: var(--shadow-xs);
+      }
+      .kpi-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--mcsa-slate-900);
+      }
+      .kpi-value.kpi-value-warn { color: var(--mcsa-err-dot); }
+      .kpi-value.kpi-value-ok { color: var(--mcsa-ok-dot); }
+      .kpi-label {
+        font-size: 13px;
+        color: var(--mcsa-slate-500);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .alert-item, .warning-item {
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        color: var(--mcsa-slate-800);
+      }
+      .alert-item {
+        background-color: var(--mcsa-err-bg);
+        border-left: 4px solid var(--mcsa-err-dot);
+      }
+      .warning-item {
+        background-color: var(--mcsa-warn-bg);
+        border-left: 4px solid var(--mcsa-warn-dot);
+      }
     </style>
     """
 

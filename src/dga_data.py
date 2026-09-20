@@ -473,11 +473,43 @@ def get_dga_transformer_detail(transformer_id: str) -> Optional[Dict[str, Any]]:
     if real_history:
         target["history"] = real_history
     else:
-        # Mock history records for built-in demo assets when no source CSV exists
         target["history"] = [
-            {"date": "2025-11-10", "tdcg": max(10, diag["tdcg"] * 0.75), "H2": target["gases"]["H2"] * 0.8, "C2H4": target["gases"]["C2H4"] * 0.7, "CO": target["gases"]["CO"] * 0.9, "status": "NORMAL"},
-            {"date": "2026-03-15", "tdcg": max(15, diag["tdcg"] * 0.88), "H2": target["gases"]["H2"] * 0.9, "C2H4": target["gases"]["C2H4"] * 0.85, "CO": target["gases"]["CO"] * 0.95, "status": "NORMAL"},
-            {"date": target["sampling_date"], "tdcg": diag["tdcg"], "H2": target["gases"]["H2"], "C2H4": target["gases"]["C2H4"], "CO": target["gases"]["CO"], "status": diag["status"]}
+            {
+                "date": "2025-11-10",
+                "tdcg": max(10, diag["tdcg"] * 0.75),
+                "H2": round(float(target["gases"].get("H2", 0)) * 0.8, 1),
+                "CH4": round(float(target["gases"].get("CH4", 0)) * 0.75, 1),
+                "C2H6": round(float(target["gases"].get("C2H6", 0)) * 0.8, 1),
+                "C2H4": round(float(target["gases"].get("C2H4", 0)) * 0.7, 1),
+                "C2H2": round(float(target["gases"].get("C2H2", 0)) * 0.5, 1),
+                "CO": round(float(target["gases"].get("CO", 0)) * 0.9, 1),
+                "CO2": round(float(target["gases"].get("CO2", 0)) * 0.95, 1),
+                "status": "NORMAL"
+            },
+            {
+                "date": "2026-03-15",
+                "tdcg": max(15, diag["tdcg"] * 0.88),
+                "H2": round(float(target["gases"].get("H2", 0)) * 0.9, 1),
+                "CH4": round(float(target["gases"].get("CH4", 0)) * 0.88, 1),
+                "C2H6": round(float(target["gases"].get("C2H6", 0)) * 0.9, 1),
+                "C2H4": round(float(target["gases"].get("C2H4", 0)) * 0.85, 1),
+                "C2H2": round(float(target["gases"].get("C2H2", 0)) * 0.8, 1),
+                "CO": round(float(target["gases"].get("CO", 0)) * 0.95, 1),
+                "CO2": round(float(target["gases"].get("CO2", 0)) * 0.98, 1),
+                "status": "NORMAL"
+            },
+            {
+                "date": target.get("sampling_date", "2026-09-01"),
+                "tdcg": diag["tdcg"],
+                "H2": round(float(target["gases"].get("H2", 0)), 1),
+                "CH4": round(float(target["gases"].get("CH4", 0)), 1),
+                "C2H6": round(float(target["gases"].get("C2H6", 0)), 1),
+                "C2H4": round(float(target["gases"].get("C2H4", 0)), 1),
+                "C2H2": round(float(target["gases"].get("C2H2", 0)), 1),
+                "CO": round(float(target["gases"].get("CO", 0)), 1),
+                "CO2": round(float(target["gases"].get("CO2", 0)), 1),
+                "status": diag["status"]
+            }
         ]
     
     # Recommendations based on status

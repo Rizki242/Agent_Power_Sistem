@@ -26,11 +26,17 @@ CORS_ORIGINS_ENV = "PPLE_CORS_ORIGINS"
 
 API_KEY_HEADER = "X-API-Key"
 
-# Origin yang dipakai saat pengembangan lokal: Vite (5173), Streamlit (8501),
-# dan FastAPI itu sendiri (8000) supaya Swagger /docs tetap bisa mencoba API.
+# Origin yang dipakai saat pengembangan lokal: Vite (5173, plus 5174/5175
+# yang otomatis dipakai Vite saat 5173 sedang dipakai proses lain),
+# Streamlit (8501), dan FastAPI itu sendiri (8000) supaya Swagger /docs
+# tetap bisa mencoba API.
 DEFAULT_DEV_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
     "http://localhost:8501",
     "http://127.0.0.1:8501",
     "http://localhost:8000",

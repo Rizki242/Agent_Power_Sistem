@@ -2,9 +2,11 @@
 
 from pple.api.routers.agents import router as agents_router
 from pple.api.routers.automations import router as automations_router
+from pple.api.routers.automated_reports import router as automated_reports_router
 from pple.api.routers.core import router as core_router
 from pple.api.routers.equipment import router as equipment_router
 from pple.api.routers.knowledge import router as knowledge_router
+from pple.api.routers.rag import router as rag_router
 from pple.api.routers.reports import router as reports_router
 from pple.api.routers.settings import router as settings_router
 from pple.api.routers.vibration import router as vibration_router
@@ -12,13 +14,14 @@ from pple.api.routers.work_orders import router as work_orders_router
 
 __all__ = [
     "agents_router",
+    "automated_reports_router",
     "automations_router",
     "core_router",
     "equipment_router",
     "knowledge_router",
+    "rag_router",
     "reports_router",
     "settings_router",
     "vibration_router",
     "work_orders_router",
 ]
-

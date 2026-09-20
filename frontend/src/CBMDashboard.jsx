@@ -12,7 +12,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  Activity, AlertTriangle, BarChart2, RefreshCw, TrendingUp, Triangle, Zap,
+  Activity, AlertTriangle, BarChart2, CheckCircle2, Compass, Download, Eye, HelpCircle, Info, Layers, RefreshCw, Sliders, TrendingUp, Triangle, Zap,
 } from 'lucide-react'
 import {
   getDgaTransformerDetail,
@@ -85,8 +85,11 @@ const DUVAL_ZONES = [
     id: 'PD',
     label: 'PD',
     fullLabel: 'Partial Discharge (Corona)',
-    color: '#2563eb', // Royal Blue (top apex)
+    color: '#1e40af', // Deep Royal Blue (top apex)
     textColor: '#ffffff',
+    desc: 'Pelepasan muatan parsial / korona pada rongga bergas (void) atau gelembung minyak.',
+    action: 'Lakukan pengujian akustik PD / UHF, periksa kadar gas H2 dan pertahankan sampling berkala.',
+    labelPos: { x: 320, y: 56 },
     points: [
       [100, 0, 0],
       [98, 2, 0],
@@ -97,8 +100,11 @@ const DUVAL_ZONES = [
     id: 'T1',
     label: 'T1',
     fullLabel: 'Thermal fault < 300°C',
-    color: '#f472b6', // Light Pink / Rose (upper right)
+    color: '#f472b6', // Soft Rose Pink (upper right)
     textColor: '#831843',
+    desc: 'Gangguan termal suhu rendah (<300°C), pemanasan lokal pada konduktor atau sirkulasi minyak.',
+    action: 'Periksa sistem pendingin (oil radiator & fan), pastikan pembebanan tidak melebihi kapasitas MVA.',
+    labelPos: { x: 382, y: 135 },
     points: [
       [98, 2, 0],
       [80, 20, 0],
@@ -113,6 +119,9 @@ const DUVAL_ZONES = [
     fullLabel: 'Thermal fault 300–700°C',
     color: '#fb7185', // Coral / Salmon (middle right)
     textColor: '#881337',
+    desc: 'Gangguan termal suhu menengah (300–700°C), kontak sambungan baut longgar atau kabel penghubung.',
+    action: 'Lakukan thermovision pada bushing & sambungan eksternal, jadwalkan re-sampling DGA 1 bulan.',
+    labelPos: { x: 465, y: 250 },
     points: [
       [80, 20, 0],
       [50, 50, 0],
@@ -126,6 +135,9 @@ const DUVAL_ZONES = [
     fullLabel: 'Thermal fault > 700°C',
     color: '#be185d', // Deep Crimson / Magenta (bottom right)
     textColor: '#ffffff',
+    desc: 'Gangguan termal suhu tinggi (>700°C), karbonisasi isolasi kertas, hotspot parah pada inti/belitan.',
+    action: 'Kondisi Kritis! Pantau laju gas etilena (C2H4), rencanakan shutdown inspeksi internal & uji resistansi.',
+    labelPos: { x: 465, y: 430 },
     points: [
       [50, 50, 0],
       [0, 100, 0],
@@ -137,8 +149,11 @@ const DUVAL_ZONES = [
     id: 'DT',
     label: 'DT',
     fullLabel: 'Electrical & thermal fault',
-    color: '#1e40af', // Dark Navy Blue (central zigzag)
+    color: '#2563eb', // Indigo Blue (central zigzag)
     textColor: '#ffffff',
+    desc: 'Kombinasi gangguan termal dan pelepasan listrik (sparking/arcing lokal disertai panas tinggi).',
+    action: 'Inspeksi switch kontak On-Load Tap Changer (OLTC) dan pantau rasio gas C2H2/C2H4.',
+    labelPos: { x: 385, y: 330 },
     points: [
       [96, 0, 4],
       [46, 50, 4],
@@ -156,6 +171,9 @@ const DUVAL_ZONES = [
     fullLabel: 'Discharge of high energy (Arcing)',
     color: '#06b6d4', // Bright Cyan / Turquoise (middle bottom)
     textColor: '#083344',
+    desc: 'Pelepasan busur api energi tinggi (Arcing) menembus minyak trafo, flashover antar lilitan.',
+    action: 'Bahaya Tinggi! Asetilena (C2H2) terdeteksi. Segera verifikasi rele Buchholz dan siapkan uji offline.',
+    labelPos: { x: 325, y: 420 },
     points: [
       [47, 40, 13],
       [31, 40, 29],
@@ -168,15 +186,16 @@ const DUVAL_ZONES = [
     id: 'D1',
     label: 'D1',
     fullLabel: 'Discharge of low energy (Sparking)',
-    color: '#7dd3fc', // Sky Blue (left sector)
+    color: '#7dd3fc', // Sky Blue (left sector, exact IEC 60599 boundaries)
     textColor: '#0369a1',
+    desc: 'Pelepasan percikan listrik energi rendah (Sparking), potensi elektroda mengambang atau pin isolator.',
+    action: 'Lakukan pembersihan isolator, periksa pembumian netral (grounding), uji kadar air & BDV minyak.',
+    labelPos: { x: 215, y: 310 },
     points: [
-      [98, 0, 2],
-      [96, 0, 4],
-      [87, 0, 13],
-      [64, 23, 13],
-      [0, 23, 77],
       [0, 0, 100],
+      [0, 23, 77],
+      [64, 23, 13],
+      [87, 0, 13],
     ],
   },
 ]
@@ -188,7 +207,7 @@ const TRI_PAD_X = 75
 const TRI_PAD_TOP = 65
 const TRI_BASE = TRI_W - 2 * TRI_PAD_X // 490px
 const TRI_H_EQUIL = (TRI_BASE * Math.sqrt(3)) / 2 // ~424.35px
-const TRI_H = Math.round(TRI_PAD_TOP + TRI_H_EQUIL + 65) // ~554px
+const TRI_H = Math.round(TRI_PAD_TOP + TRI_H_EQUIL + 70) // ~559px
 
 // Three vertices of equilateral triangle in SVG space:
 const V_CH4  = { x: TRI_W / 2,            y: TRI_PAD_TOP }                 // Top Apex: 100% CH4
@@ -214,19 +233,38 @@ function zonePolygonPoints(zone) {
   }).join(' ')
 }
 
+function detectDuvalZone(ch4, c2h4, c2h2) {
+  const sum = (ch4 || 0) + (c2h4 || 0) + (c2h2 || 0)
+  if (sum <= 0) return null
+  const p_ch4 = (ch4 / sum) * 100
+  const p_c2h4 = (c2h4 / sum) * 100
+  const p_c2h2 = (c2h2 / sum) * 100
+
+  if (p_ch4 >= 98) return DUVAL_ZONES.find((z) => z.id === 'PD')
+  if (p_c2h2 < 4 && p_c2h4 < 20) return DUVAL_ZONES.find((z) => z.id === 'T1')
+  if (p_c2h2 < 4 && p_c2h4 >= 20 && p_c2h4 < 50) return DUVAL_ZONES.find((z) => z.id === 'T2')
+  if (p_c2h2 < 15 && p_c2h4 >= 50) return DUVAL_ZONES.find((z) => z.id === 'T3')
+  if (p_c2h2 >= 4 && p_c2h2 < 29 && p_c2h4 >= 50) return DUVAL_ZONES.find((z) => z.id === 'DT')
+  if (p_c2h2 >= 29) return DUVAL_ZONES.find((z) => z.id === 'D2')
+  if (p_c2h2 >= 4 && p_c2h2 < 29) return DUVAL_ZONES.find((z) => z.id === 'D1')
+  return DUVAL_ZONES.find((z) => z.id === 'T1')
+}
+
 // ─── Duval Triangle Component ─────────────────────────────────────────────────
 
 function DuvalTriangle({ gases, transformerName, duvalDiag, history = [] }) {
   const [hoveredZone, setHoveredZone] = useState(null)
+  const [selectedZone, setSelectedZone] = useState(null)
   const [hoveredPoint, setHoveredPoint] = useState(null)
   const [showGrid, setShowGrid] = useState(true)
+  const [showProjections, setShowProjections] = useState(true)
   const [showHistory, setShowHistory] = useState(true)
   const svgRef = useRef(null)
 
   // Current gas readings
-  const ch4raw  = gases?.CH4  ?? 0
-  const c2h4raw = gases?.C2H4 ?? 0
-  const c2h2raw = gases?.C2H2 ?? 0
+  const ch4raw  = Number(gases?.CH4 ?? 0)
+  const c2h4raw = Number(gases?.C2H4 ?? 0)
+  const c2h2raw = Number(gases?.C2H2 ?? 0)
   const gasSum  = ch4raw + c2h4raw + c2h2raw
 
   const pch4  = gasSum > 0 ? (ch4raw  / gasSum) * 100 : 0
@@ -234,21 +272,22 @@ function DuvalTriangle({ gases, transformerName, duvalDiag, history = [] }) {
   const pc2h2 = gasSum > 0 ? (c2h2raw / gasSum) * 100 : 0
 
   const activePoint = gasSum > 0 ? ternaryToSvg(pch4, pc2h4, pc2h2) : null
+  const currentDetectedZone = gasSum > 0 ? detectDuvalZone(ch4raw, c2h4raw, c2h2raw) : null
 
   // Historical trajectory points
   const historyPoints = (history || [])
     .filter((h) => {
-      const sum = (h.CH4 || 0) + (h.C2H4 || 0) + (h.C2H2 || 0)
+      const sum = Number(h.CH4 || 0) + Number(h.C2H4 || 0) + Number(h.C2H2 || 0)
       return sum > 0
     })
     .sort((a, b) => (a.date > b.date ? 1 : -1))
-    .map((h) => {
-      const tot = (h.CH4 || 0) + (h.C2H4 || 0) + (h.C2H2 || 0)
-      const pCH4 = ((h.CH4 || 0) / tot) * 100
-      const pC2H4 = ((h.C2H4 || 0) / tot) * 100
-      const pC2H2 = ((h.C2H2 || 0) / tot) * 100
+    .map((h, idx) => {
+      const tot = Number(h.CH4 || 0) + Number(h.C2H4 || 0) + Number(h.C2H2 || 0)
+      const pCH4 = (Number(h.CH4 || 0) / tot) * 100
+      const pC2H4 = (Number(h.C2H4 || 0) / tot) * 100
+      const pC2H2 = (Number(h.C2H2 || 0) / tot) * 100
       const pos = ternaryToSvg(pCH4, pC2H4, pC2H2)
-      return { ...h, pos, pCH4, pC2H4, pC2H2 }
+      return { ...h, pos, pCH4, pC2H4, pC2H2, stepIndex: idx + 1 }
     })
 
   const triPointsStr = `${V_CH4.x},${V_CH4.y} ${V_C2H4.x},${V_C2H4.y} ${V_C2H2.x},${V_C2H2.y}`
@@ -288,292 +327,432 @@ function DuvalTriangle({ gases, transformerName, duvalDiag, history = [] }) {
     return { p, x: pt.x, y: pt.y }
   })
 
+  // 3-Axis Projection coordinates for active data point
+  const projCH4_left = activePoint ? ternaryToSvg(pch4, 0, 100 - pch4) : null
+  const projCH4_right = activePoint ? ternaryToSvg(pch4, 100 - pch4, 0) : null
+  const projC2H4_top = activePoint ? ternaryToSvg(100 - pc2h4, pc2h4, 0) : null
+  const projC2H4_bot = activePoint ? ternaryToSvg(0, pc2h4, 100 - pc2h4) : null
+  const projC2H2_top = activePoint ? ternaryToSvg(100 - pc2h2, 0, pc2h2) : null
+  const projC2H2_bot = activePoint ? ternaryToSvg(0, 100 - pc2h2, pc2h2) : null
+
+  function handleDownloadSvg() {
+    if (!svgRef.current) return
+    const svgData = new XMLSerializer().serializeToString(svgRef.current)
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Duval_Triangle_1_${(transformerName || 'DGA').replace(/\s+/g, '_')}.svg`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const activeZoneInfo = DUVAL_ZONES.find((z) => z.id === (hoveredZone || selectedZone || currentDetectedZone?.id))
+
   return (
-    <div className="chart-container">
-      <div className="chart-title">
+    <div className="chart-container duval-workspace-card">
+      <div className="chart-title" style={{ flexWrap: 'wrap', gap: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Triangle size={18} />
-          <span style={{ fontWeight: 600 }}>Segitiga Duval 1 (IEC 60599 / IEEE C57.104)</span>
+          <Triangle size={18} className="text-amber-500" />
+          <span style={{ fontWeight: 700, fontSize: '0.98rem' }}>Segitiga Duval 1 (IEC 60599 / IEEE C57.104)</span>
           {duvalDiag && duvalDiag !== '—' && (
             <span className="duval-diag-pill">{duvalDiag}</span>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: '0.78rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.78rem', flexWrap: 'wrap' }}>
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
             <input type="checkbox" checked={showGrid} onChange={(e) => setShowGrid(e.target.checked)} />
             <span>Grid Kisi</span>
           </label>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
+            <input type="checkbox" checked={showProjections} onChange={(e) => setShowProjections(e.target.checked)} />
+            <span>Garis Proyeksi 3-Sumbu</span>
+          </label>
           {historyPoints.length > 1 && (
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: 5, cursor: 'pointer' }}>
               <input type="checkbox" checked={showHistory} onChange={(e) => setShowHistory(e.target.checked)} />
-              <span>Tren Trajectory ({historyPoints.length} titik)</span>
+              <span>Trajektori ({historyPoints.length} titik)</span>
             </label>
           )}
+          <button
+            type="button"
+            className="duval-action-btn"
+            onClick={handleDownloadSvg}
+            title="Unduh diagram beresolusi tinggi (SVG)"
+          >
+            <Download size={13} />
+            <span>Unduh SVG</span>
+          </button>
         </div>
       </div>
 
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${TRI_W} ${TRI_H}`}
-        className="duval-svg"
-        role="img"
-        aria-label={`Segitiga Duval untuk ${transformerName}`}
-        style={{ width: '100%', height: 'auto', background: 'var(--surface)', borderRadius: 10 }}
-      >
-        <defs>
-          <clipPath id="tri-main-clip">
-            <polygon points={triPointsStr} />
-          </clipPath>
-          {/* Arrow marker for history path */}
-          <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto">
-            <polygon points="0 0, 6 3, 0 6" fill="#475569" />
-          </marker>
-        </defs>
+      <div className="duval-interactive-wrap">
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${TRI_W} ${TRI_H}`}
+          className="duval-svg"
+          role="img"
+          aria-label={`Segitiga Duval untuk ${transformerName}`}
+          style={{ width: '100%', height: 'auto', background: 'var(--surface)', borderRadius: 12 }}
+        >
+          <defs>
+            <clipPath id="tri-main-clip">
+              <polygon points={triPointsStr} />
+            </clipPath>
+            {/* Arrow marker for trajectory migration path */}
+            <marker id="arrowhead" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+              <polygon points="0 0, 7 3.5, 0 7" fill="#0f172a" />
+            </marker>
+            {/* Glow filter for active point */}
+            <filter id="glow-target" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="3.5" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
 
-        {/* 1. FAULT ZONE POLYGONS (100% full coverage, no gaps) */}
-        <g clipPath="url(#tri-main-clip)">
-          {DUVAL_ZONES.map((zone) => {
-            const isHov = hoveredZone === zone.id
-            return (
-              <polygon
-                key={zone.id}
-                points={zonePolygonPoints(zone)}
-                fill={zone.color}
-                fillOpacity={isHov ? 0.95 : 0.82}
+          {/* 1. FAULT ZONE POLYGONS (100% full coverage, zero gaps, zero overlap) */}
+          <g clipPath="url(#tri-main-clip)">
+            {DUVAL_ZONES.map((zone) => {
+              const isHov = (hoveredZone === zone.id) || (selectedZone === zone.id)
+              return (
+                <polygon
+                  key={zone.id}
+                  points={zonePolygonPoints(zone)}
+                  fill={zone.color}
+                  fillOpacity={isHov ? 0.98 : 0.84}
+                  stroke="#ffffff"
+                  strokeWidth={isHov ? 2 : 1.2}
+                  strokeOpacity={isHov ? 1.0 : 0.75}
+                  style={{ cursor: 'pointer', transition: 'fill-opacity 0.15s ease, stroke-width 0.15s ease' }}
+                  onMouseEnter={() => setHoveredZone(zone.id)}
+                  onMouseLeave={() => setHoveredZone(null)}
+                  onClick={() => setSelectedZone(selectedZone === zone.id ? null : zone.id)}
+                />
+              )
+            })}
+          </g>
+
+          {/* 2. OPTIONAL TERNARY GRID LINES */}
+          {showGrid && (
+            <g clipPath="url(#tri-main-clip)" opacity={0.35}>
+              {gridLines.map((line, i) => (
+                <line
+                  key={i}
+                  x1={line.x1} y1={line.y1}
+                  x2={line.x2} y2={line.y2}
+                  stroke="#ffffff"
+                  strokeWidth={0.8}
+                  strokeDasharray="3 3"
+                />
+              ))}
+            </g>
+          )}
+
+          {/* 3. 3-AXIS PROJECTION GUIDELINES (White dashed lines from active point to all 3 axes) */}
+          {showProjections && activePoint && (
+            <g clipPath="url(#tri-main-clip)" style={{ pointerEvents: 'none' }}>
+              {/* Horizontal %CH4 Projection */}
+              <line
+                x1={projCH4_left.x} y1={activePoint.y}
+                x2={projCH4_right.x} y2={activePoint.y}
                 stroke="#ffffff"
-                strokeWidth={1.2}
-                strokeOpacity={0.8}
-                style={{ cursor: 'pointer', transition: 'fill-opacity 0.15s ease' }}
-                onMouseEnter={() => setHoveredZone(zone.id)}
-                onMouseLeave={() => setHoveredZone(null)}
+                strokeWidth={1.6}
+                strokeDasharray="4 3"
+                strokeOpacity={0.95}
               />
+              {/* Parallel %C2H4 Projection */}
+              <line
+                x1={projC2H4_top.x} y1={projC2H4_top.y}
+                x2={projC2H4_bot.x} y2={projC2H4_bot.y}
+                stroke="#ffffff"
+                strokeWidth={1.6}
+                strokeDasharray="4 3"
+                strokeOpacity={0.95}
+              />
+              {/* Parallel %C2H2 Projection */}
+              <line
+                x1={projC2H2_top.x} y1={projC2H2_top.y}
+                x2={projC2H2_bot.x} y2={projC2H2_bot.y}
+                stroke="#ffffff"
+                strokeWidth={1.6}
+                strokeDasharray="4 3"
+                strokeOpacity={0.95}
+              />
+            </g>
+          )}
+
+          {/* 4. TRIANGLE OUTER BORDER */}
+          <polygon
+            points={triPointsStr}
+            fill="none"
+            stroke="#0f172a"
+            strokeWidth={2.6}
+          />
+
+          {/* 5. ZONE IDENTIFIER LABELS ON CHART */}
+          {DUVAL_ZONES.map((zone) => {
+            const isHov = (hoveredZone === zone.id) || (selectedZone === zone.id)
+            return (
+              <g key={`lbl-${zone.id}`} style={{ pointerEvents: 'none' }}>
+                <text
+                  x={zone.labelPos.x}
+                  y={zone.labelPos.y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  style={{
+                    fontSize: zone.id === 'PD' ? 12 : (zone.id === 'T1' || zone.id === 'T2' ? 11 : 14),
+                    fontWeight: 800,
+                    fill: zone.textColor,
+                    textShadow: zone.textColor === '#ffffff' ? '0 1px 3px rgba(0,0,0,0.65)' : '0 1px 2px rgba(255,255,255,0.7)',
+                    transform: isHov ? 'scale(1.15)' : 'scale(1)',
+                    transformOrigin: `${zone.labelPos.x}px ${zone.labelPos.y}px`,
+                    transition: 'transform 0.15s ease',
+                  }}
+                >
+                  {zone.id}
+                </text>
+              </g>
             )
           })}
-        </g>
 
-        {/* 2. OPTIONAL GRID LINES */}
-        {showGrid && (
-          <g clipPath="url(#tri-main-clip)" opacity={0.4}>
-            {gridLines.map((line, i) => (
-              <line
-                key={i}
-                x1={line.x1} y1={line.y1}
-                x2={line.x2} y2={line.y2}
-                stroke="#ffffff"
-                strokeWidth={0.7}
-                strokeDasharray="3 3"
-              />
-            ))}
-          </g>
-        )}
-
-        {/* 3. TRIANGLE OUTER BORDER */}
-        <polygon
-          points={triPointsStr}
-          fill="none"
-          stroke="#0f172a"
-          strokeWidth={2.5}
-        />
-
-        {/* 4. ZONE IDENTIFIER LABELS ON CHART */}
-        {/* PD at apex */}
-        <text x={V_CH4.x} y={V_CH4.y - 12} textAnchor="middle" style={{ fontSize: 13, fontWeight: 800, fill: '#1e40af' }}>
-          (PD)
-        </text>
-        {/* T1 beside right edge */}
-        <text x={385} y={130} textAnchor="middle" style={{ fontSize: 11, fontWeight: 800, fill: '#831843' }}>
-          (T1)
-        </text>
-        {/* T2 beside right edge */}
-        <text x={470} y={245} textAnchor="middle" style={{ fontSize: 11, fontWeight: 800, fill: '#881337' }}>
-          (T2)
-        </text>
-        {/* T3 inside zone */}
-        <text x={470} y={425} textAnchor="middle" style={{ fontSize: 15, fontWeight: 800, fill: '#ffffff', textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
-          T3
-        </text>
-        {/* DT inside zigzag */}
-        <text x={385} y={325} textAnchor="middle" style={{ fontSize: 14, fontWeight: 800, fill: '#ffffff', textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
-          DT
-        </text>
-        {/* D2 inside cyan zone */}
-        <text x={330} y={420} textAnchor="middle" style={{ fontSize: 15, fontWeight: 800, fill: '#083344' }}>
-          D2
-        </text>
-        {/* D1 inside light blue zone */}
-        <text x={220} y={290} textAnchor="middle" style={{ fontSize: 16, fontWeight: 800, fill: '#0369a1' }}>
-          D1
-        </text>
-
-        {/* 5. AXIS TICKS AND LABELS */}
-        {/* LEFT AXIS: % CH4 (increases from bottom-left to top apex) */}
-        {leftTicks.map(({ p, x, y }) => (
-          <g key={`l-${p}`}>
-            {/* Tick mark pointing up-left */}
-            <line x1={x} y1={y} x2={x - 6} y2={y - 3.5} stroke="#334155" strokeWidth={1.5} />
-            <text x={x - 12} y={y + 3} textAnchor="end" className="chart-tick-label" style={{ fontSize: 10, fontWeight: 600 }}>
-              {p}
-            </text>
-          </g>
-        ))}
-        {/* Left edge title */}
-        <text
-          x={(V_CH4.x + V_C2H2.x) / 2 - 38}
-          y={(V_CH4.y + V_C2H2.y) / 2}
-          textAnchor="middle"
-          style={{ fontSize: 13, fontWeight: 700, fill: 'var(--ink)' }}
-          transform={`rotate(-60, ${(V_CH4.x + V_C2H2.x) / 2 - 38}, ${(V_CH4.y + V_C2H2.y) / 2})`}
-        >
-          % CH₄ →
-        </text>
-
-        {/* RIGHT AXIS: % C2H4 (increases from top apex to bottom-right) */}
-        {rightTicks.map(({ p, x, y }) => (
-          <g key={`r-${p}`}>
-            <line x1={x} y1={y} x2={x + 6} y2={y - 3.5} stroke="#334155" strokeWidth={1.5} />
-            <text x={x + 12} y={y + 3} textAnchor="start" className="chart-tick-label" style={{ fontSize: 10, fontWeight: 600 }}>
-              {p}
-            </text>
-          </g>
-        ))}
-        {/* Right edge title */}
-        <text
-          x={(V_CH4.x + V_C2H4.x) / 2 + 38}
-          y={(V_CH4.y + V_C2H4.y) / 2}
-          textAnchor="middle"
-          style={{ fontSize: 13, fontWeight: 700, fill: 'var(--ink)' }}
-          transform={`rotate(60, ${(V_CH4.x + V_C2H4.x) / 2 + 38}, ${(V_CH4.y + V_C2H4.y) / 2})`}
-        >
-          % C₂H₄ →
-        </text>
-
-        {/* BOTTOM AXIS: % C2H2 (increases from bottom-right to bottom-left) */}
-        {bottomTicks.map(({ p, x, y }) => (
-          <g key={`b-${p}`}>
-            <line x1={x} y1={y} x2={x} y2={y + 6} stroke="#334155" strokeWidth={1.5} />
-            <text x={x} y={y + 18} textAnchor="middle" className="chart-tick-label" style={{ fontSize: 10, fontWeight: 600 }}>
-              {p}
-            </text>
-          </g>
-        ))}
-        {/* Bottom edge title */}
-        <text
-          x={(V_C2H2.x + V_C2H4.x) / 2}
-          y={V_C2H2.y + 36}
-          textAnchor="middle"
-          style={{ fontSize: 13, fontWeight: 700, fill: 'var(--ink)' }}
-        >
-          ← % C₂H₂
-        </text>
-
-        {/* Vertex 100% Labels */}
-        <text x={V_CH4.x - 18} y={V_CH4.y - 12} textAnchor="end" style={{ fontSize: 11, fontWeight: 700, fill: 'var(--muted)' }}>
-          100%
-        </text>
-        <text x={V_C2H4.x + 10} y={V_C2H4.y + 18} textAnchor="start" style={{ fontSize: 11, fontWeight: 700, fill: 'var(--muted)' }}>
-          100% C₂H₄
-        </text>
-        <text x={V_C2H2.x - 10} y={V_C2H2.y + 18} textAnchor="end" style={{ fontSize: 11, fontWeight: 700, fill: 'var(--muted)' }}>
-          100% C₂H₂
-        </text>
-
-        {/* 6. HISTORICAL TRAJECTORY LINE & POINTS (Image 1 & 2 feature) */}
-        {showHistory && historyPoints.length > 1 && (
-          <g>
-            {/* Trajectory polyline */}
-            <polyline
-              points={historyPoints.map((h) => `${h.pos.x.toFixed(1)},${h.pos.y.toFixed(1)}`).join(' ')}
-              fill="none"
-              stroke="#0f172a"
-              strokeWidth={1.8}
-              strokeDasharray="4 2"
-              markerMid="url(#arrowhead)"
-            />
-            {/* History point markers */}
-            {historyPoints.slice(0, -1).map((h, i) => (
-              <circle
-                key={i}
-                cx={h.pos.x} cy={h.pos.y}
-                r={4}
-                fill="#f59e0b"
-                stroke="#0f172a"
-                strokeWidth={1.5}
-                style={{ cursor: 'pointer' }}
-                onMouseEnter={() => setHoveredPoint(h)}
-                onMouseLeave={() => setHoveredPoint(null)}
-              />
-            ))}
-          </g>
-        )}
-
-        {/* 7. LATEST DATA POINT — PROMINENT TARGET MARKER */}
-        {activePoint && (
-          <g style={{ cursor: 'pointer' }} onMouseEnter={() => setHoveredPoint({ date: 'Terbaru', pCH4: pch4, pC2H4: pc2h4, pC2H2: pc2h2, CH4: ch4raw, C2H4: c2h4raw, C2H2: c2h2raw })} onMouseLeave={() => setHoveredPoint(null)}>
-            {/* Horizontal guide line (Image 2 style) */}
-            <line
-              x1={ternaryToSvg(pch4, 0, 100 - pch4).x}
-              y1={activePoint.y}
-              x2={ternaryToSvg(pch4, 100 - pch4, 0).x}
-              y2={activePoint.y}
-              stroke="#f43f5e"
-              strokeWidth={1.2}
-              strokeDasharray="4 3"
-              opacity={0.85}
-            />
-            {/* Outer halo */}
-            <circle cx={activePoint.x} cy={activePoint.y} r={16} fill="#f43f5e" fillOpacity={0.2} />
-            {/* Inner ring */}
-            <circle cx={activePoint.x} cy={activePoint.y} r={7.5} fill="#f43f5e" stroke="#ffffff" strokeWidth={2} />
-            {/* Center dot */}
-            <circle cx={activePoint.x} cy={activePoint.y} r={2.5} fill="#ffffff" />
-          </g>
-        )}
-
-        {/* 8. FLOATING INTERACTIVE HOVER BOX */}
-        {hoveredPoint && (
-          <g>
-            <rect
-              x={Math.min(hoveredPoint.pos ? hoveredPoint.pos.x + 12 : activePoint.x + 12, TRI_W - 175)}
-              y={Math.max((hoveredPoint.pos ? hoveredPoint.pos.y - 65 : activePoint.y - 65), 10)}
-              width={165}
-              height={85}
-              rx={6}
-              fill="#0f172a"
-              fillOpacity={0.92}
-              stroke="#475569"
-              strokeWidth={1}
-            />
-            <text x={Math.min(hoveredPoint.pos ? hoveredPoint.pos.x + 20 : activePoint.x + 20, TRI_W - 165)} y={Math.max((hoveredPoint.pos ? hoveredPoint.pos.y - 45 : activePoint.y - 45), 30)} fill="#ffffff" style={{ fontSize: 11, fontWeight: 700 }}>
-              {hoveredPoint.date || 'Sampel DGA'}
-            </text>
-            <text x={Math.min(hoveredPoint.pos ? hoveredPoint.pos.x + 20 : activePoint.x + 20, TRI_W - 165)} y={Math.max((hoveredPoint.pos ? hoveredPoint.pos.y - 30 : activePoint.y - 30), 45)} fill="#94a3b8" style={{ fontSize: 10 }}>
-              %CH₄: {hoveredPoint.pCH4.toFixed(1)}% | {hoveredPoint.CH4 ?? ch4raw} ppm
-            </text>
-            <text x={Math.min(hoveredPoint.pos ? hoveredPoint.pos.x + 20 : activePoint.x + 20, TRI_W - 165)} y={Math.max((hoveredPoint.pos ? hoveredPoint.pos.y - 16 : activePoint.y - 16), 59)} fill="#94a3b8" style={{ fontSize: 10 }}>
-              %C₂H₄: {hoveredPoint.pC2H4.toFixed(1)}% | {hoveredPoint.C2H4 ?? c2h4raw} ppm
-            </text>
-            <text x={Math.min(hoveredPoint.pos ? hoveredPoint.pos.x + 20 : activePoint.x + 20, TRI_W - 165)} y={Math.max((hoveredPoint.pos ? hoveredPoint.pos.y - 2 : activePoint.y - 2), 73)} fill="#94a3b8" style={{ fontSize: 10 }}>
-              %C₂H₂: {hoveredPoint.pC2H2.toFixed(1)}% | {hoveredPoint.C2H2 ?? c2h2raw} ppm
-            </text>
-          </g>
-        )}
-
-        {/* No data overlay */}
-        {gasSum === 0 && (
-          <text x={TRI_W / 2} y={TRI_H / 2} className="duval-axis-label" textAnchor="middle" fill="var(--muted)" opacity={0.6}>
-            (Pilih transformer dengan data gas aktif)
+          {/* 6. AXIS TICKS AND LABELS */}
+          {/* LEFT AXIS: % CH4 (increases from bottom-left to top apex) */}
+          {leftTicks.map(({ p, x, y }) => (
+            <g key={`l-${p}`}>
+              <line x1={x} y1={y} x2={x - 6} y2={y - 3.5} stroke="#334155" strokeWidth={1.5} />
+              <text x={x - 11} y={y + 3} textAnchor="end" className="chart-tick-label" style={{ fontSize: 10, fontWeight: 600 }}>
+                {p}
+              </text>
+            </g>
+          ))}
+          {/* Left edge title */}
+          <text
+            x={(V_CH4.x + V_C2H2.x) / 2 - 38}
+            y={(V_CH4.y + V_C2H2.y) / 2}
+            textAnchor="middle"
+            style={{ fontSize: 13, fontWeight: 700, fill: 'var(--ink)' }}
+            transform={`rotate(-60, ${(V_CH4.x + V_C2H2.x) / 2 - 38}, ${(V_CH4.y + V_C2H2.y) / 2})`}
+          >
+            % CH₄ →
           </text>
-        )}
-      </svg>
 
-      {/* 9. LEGEND WITH ZONE HIGHLIGHTS */}
+          {/* RIGHT AXIS: % C2H4 (increases from top apex to bottom-right) */}
+          {rightTicks.map(({ p, x, y }) => (
+            <g key={`r-${p}`}>
+              <line x1={x} y1={y} x2={x + 6} y2={y - 3.5} stroke="#334155" strokeWidth={1.5} />
+              <text x={x + 11} y={y + 3} textAnchor="start" className="chart-tick-label" style={{ fontSize: 10, fontWeight: 600 }}>
+                {p}
+              </text>
+            </g>
+          ))}
+          {/* Right edge title */}
+          <text
+            x={(V_CH4.x + V_C2H4.x) / 2 + 38}
+            y={(V_CH4.y + V_C2H4.y) / 2}
+            textAnchor="middle"
+            style={{ fontSize: 13, fontWeight: 700, fill: 'var(--ink)' }}
+            transform={`rotate(60, ${(V_CH4.x + V_C2H4.x) / 2 + 38}, ${(V_CH4.y + V_C2H4.y) / 2})`}
+          >
+            % C₂H₄ →
+          </text>
+
+          {/* BOTTOM AXIS: % C2H2 (increases from bottom-right to bottom-left) */}
+          {bottomTicks.map(({ p, x, y }) => (
+            <g key={`b-${p}`}>
+              <line x1={x} y1={y} x2={x} y2={y + 6} stroke="#334155" strokeWidth={1.5} />
+              <text x={x} y={y + 17} textAnchor="middle" className="chart-tick-label" style={{ fontSize: 10, fontWeight: 600 }}>
+                {p}
+              </text>
+            </g>
+          ))}
+          {/* Bottom edge title */}
+          <text
+            x={(V_C2H2.x + V_C2H4.x) / 2}
+            y={V_C2H2.y + 38}
+            textAnchor="middle"
+            style={{ fontSize: 13, fontWeight: 700, fill: 'var(--ink)' }}
+          >
+            ← % C₂H₂
+          </text>
+
+          {/* Vertex 100% Labels */}
+          <text x={V_CH4.x} y={V_CH4.y - 18} textAnchor="middle" style={{ fontSize: 11, fontWeight: 800, fill: 'var(--ink)' }}>
+            100% CH₄
+          </text>
+          <text x={V_C2H4.x + 12} y={V_C2H4.y + 20} textAnchor="start" style={{ fontSize: 11, fontWeight: 800, fill: 'var(--ink)' }}>
+            100% C₂H₄
+          </text>
+          <text x={V_C2H2.x - 12} y={V_C2H2.y + 20} textAnchor="end" style={{ fontSize: 11, fontWeight: 800, fill: 'var(--ink)' }}>
+            100% C₂H₂
+          </text>
+
+          {/* Projection Axis Badges for active sample */}
+          {showProjections && activePoint && (
+            <g style={{ pointerEvents: 'none' }}>
+              {/* %CH4 Left badge */}
+              <circle cx={projCH4_left.x} cy={projCH4_left.y} r={3.5} fill="#f43f5e" />
+              <text x={projCH4_left.x - 18} y={projCH4_left.y - 3} textAnchor="end" style={{ fontSize: 9.5, fontWeight: 800, fill: '#f43f5e' }}>
+                {pch4.toFixed(1)}%
+              </text>
+              {/* %C2H4 Right badge */}
+              <circle cx={projC2H4_top.x} cy={projC2H4_top.y} r={3.5} fill="#f43f5e" />
+              <text x={projC2H4_top.x + 18} y={projC2H4_top.y - 3} textAnchor="start" style={{ fontSize: 9.5, fontWeight: 800, fill: '#f43f5e' }}>
+                {pc2h4.toFixed(1)}%
+              </text>
+              {/* %C2H2 Bottom badge */}
+              <circle cx={projC2H2_bot.x} cy={projC2H2_bot.y} r={3.5} fill="#f43f5e" />
+              <text x={projC2H2_bot.x} y={projC2H2_bot.y + 25} textAnchor="middle" style={{ fontSize: 9.5, fontWeight: 800, fill: '#f43f5e' }}>
+                {pc2h2.toFixed(1)}%
+              </text>
+            </g>
+          )}
+
+          {/* 7. HISTORICAL TRAJECTORY LINE & POINTS */}
+          {showHistory && historyPoints.length > 1 && (
+            <g>
+              {/* Trajectory migration polyline */}
+              <polyline
+                points={historyPoints.map((h) => `${h.pos.x.toFixed(1)},${h.pos.y.toFixed(1)}`).join(' ')}
+                fill="none"
+                stroke="#0f172a"
+                strokeWidth={2}
+                strokeDasharray="4 3"
+                markerMid="url(#arrowhead)"
+              />
+              {/* Prior historical point nodes */}
+              {historyPoints.slice(0, -1).map((h) => (
+                <g
+                  key={`hist-${h.stepIndex}`}
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={() => setHoveredPoint(h)}
+                  onMouseLeave={() => setHoveredPoint(null)}
+                >
+                  <circle
+                    cx={h.pos.x} cy={h.pos.y}
+                    r={5.5}
+                    fill="#f59e0b"
+                    stroke="#0f172a"
+                    strokeWidth={1.8}
+                  />
+                  <text
+                    x={h.pos.x} y={h.pos.y + 3}
+                    textAnchor="middle"
+                    style={{ fontSize: 7.5, fontWeight: 800, fill: '#0f172a' }}
+                  >
+                    {h.stepIndex}
+                  </text>
+                </g>
+              ))}
+            </g>
+          )}
+
+          {/* 8. LATEST DATA POINT — BULLSEYE TARGET MARKER */}
+          {activePoint && (
+            <g
+              filter="url(#glow-target)"
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={() => setHoveredPoint({
+                date: 'Sampel Aktif',
+                pCH4: pch4, pC2H4: pc2h4, pC2H2: pc2h2,
+                CH4: ch4raw, C2H4: c2h4raw, C2H2: c2h2raw,
+              })}
+              onMouseLeave={() => setHoveredPoint(null)}
+            >
+              {/* Outer pulsing halo */}
+              <circle cx={activePoint.x} cy={activePoint.y} r={18} fill="#f43f5e" fillOpacity={0.25} />
+              {/* White ring */}
+              <circle cx={activePoint.x} cy={activePoint.y} r={8.5} fill="#f43f5e" stroke="#ffffff" strokeWidth={2.4} />
+              {/* Center bullseye dot */}
+              <circle cx={activePoint.x} cy={activePoint.y} r={2.8} fill="#ffffff" />
+            </g>
+          )}
+
+          {/* 9. FLOATING INTERACTIVE HOVER BOX */}
+          {hoveredPoint && (
+            <g style={{ pointerEvents: 'none' }}>
+              <rect
+                x={Math.min((hoveredPoint.pos ? hoveredPoint.pos.x + 12 : activePoint.x + 12), TRI_W - 180)}
+                y={Math.max((hoveredPoint.pos ? hoveredPoint.pos.y - 70 : activePoint.y - 70), 12)}
+                width={172}
+                height={88}
+                rx={7}
+                fill="#0f172a"
+                fillOpacity={0.94}
+                stroke="#475569"
+                strokeWidth={1}
+              />
+              <text
+                x={Math.min((hoveredPoint.pos ? hoveredPoint.pos.x + 22 : activePoint.x + 22), TRI_W - 170)}
+                y={Math.max((hoveredPoint.pos ? hoveredPoint.pos.y - 50 : activePoint.y - 50), 32)}
+                fill="#ffffff"
+                style={{ fontSize: 11, fontWeight: 700 }}
+              >
+                {hoveredPoint.date || 'Sampel DGA'} {hoveredPoint.stepIndex ? `(#${hoveredPoint.stepIndex})` : ''}
+              </text>
+              <text
+                x={Math.min((hoveredPoint.pos ? hoveredPoint.pos.x + 22 : activePoint.x + 22), TRI_W - 170)}
+                y={Math.max((hoveredPoint.pos ? hoveredPoint.pos.y - 34 : activePoint.y - 34), 48)}
+                fill="#94a3b8"
+                style={{ fontSize: 10 }}
+              >
+                %CH₄: {hoveredPoint.pCH4.toFixed(1)}% | {hoveredPoint.CH4 ?? ch4raw} ppm
+              </text>
+              <text
+                x={Math.min((hoveredPoint.pos ? hoveredPoint.pos.x + 22 : activePoint.x + 22), TRI_W - 170)}
+                y={Math.max((hoveredPoint.pos ? hoveredPoint.pos.y - 20 : activePoint.y - 20), 62)}
+                fill="#94a3b8"
+                style={{ fontSize: 10 }}
+              >
+                %C₂H₄: {hoveredPoint.pC2H4.toFixed(1)}% | {hoveredPoint.C2H4 ?? c2h4raw} ppm
+              </text>
+              <text
+                x={Math.min((hoveredPoint.pos ? hoveredPoint.pos.x + 22 : activePoint.x + 22), TRI_W - 170)}
+                y={Math.max((hoveredPoint.pos ? hoveredPoint.pos.y - 6 : activePoint.y - 6), 76)}
+                fill="#94a3b8"
+                style={{ fontSize: 10 }}
+              >
+                %C₂H₂: {hoveredPoint.pC2H2.toFixed(1)}% | {hoveredPoint.C2H2 ?? c2h2raw} ppm
+              </text>
+            </g>
+          )}
+
+          {/* No data overlay */}
+          {gasSum === 0 && (
+            <text x={TRI_W / 2} y={TRI_H / 2} className="duval-axis-label" textAnchor="middle" fill="var(--muted)" opacity={0.6}>
+              (Pilih transformer dengan data gas aktif atau gunakan Simulator)
+            </text>
+          )}
+        </svg>
+
+        {/* Selected / Hovered Zone Details Card */}
+        {activeZoneInfo && (
+          <div className="duval-zone-info-card" style={{ borderLeftColor: activeZoneInfo.color }}>
+            <div className="duval-zone-info-header">
+              <span className="duval-zone-badge" style={{ background: activeZoneInfo.color, color: activeZoneInfo.textColor }}>
+                {activeZoneInfo.id}
+              </span>
+              <strong>{activeZoneInfo.fullLabel}</strong>
+            </div>
+            <p className="duval-zone-desc">{activeZoneInfo.desc}</p>
+            <div className="duval-zone-action">
+              <Compass size={14} className="text-amber-500 shrink-0" />
+              <span><strong>Rekomendasi CBM:</strong> {activeZoneInfo.action}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 10. LEGEND WITH ZONE HIGHLIGHTS */}
       <div className="duval-legend">
         {DUVAL_ZONES.map((zone) => (
           <span
             key={zone.id}
-            className={`duval-legend-item ${hoveredZone === zone.id ? 'duval-legend-item--active' : ''}`}
+            className={`duval-legend-item ${(hoveredZone === zone.id || selectedZone === zone.id) ? 'duval-legend-item--active' : ''}`}
             onMouseEnter={() => setHoveredZone(zone.id)}
             onMouseLeave={() => setHoveredZone(null)}
+            onClick={() => setSelectedZone(selectedZone === zone.id ? null : zone.id)}
             style={{ cursor: 'pointer' }}
           >
             <i style={{ background: zone.color, border: '1px solid rgba(0,0,0,0.15)' }} />
@@ -586,13 +765,65 @@ function DuvalTriangle({ gases, transformerName, duvalDiag, history = [] }) {
   )
 }
 
+// ─── Preset Gangguan DGA Riil untuk Simulator ─────────────────────────────────
+
+const DUVAL_PRESETS = [
+  {
+    name: 'Hotspot T3 (>700°C)',
+    zone: 'T3',
+    gases: { CH4: 40, C2H4: 280, C2H2: 12, H2: 50, C2H6: 30, CO: 450, CO2: 2400 },
+  },
+  {
+    name: 'Arcing D2 (High Energy)',
+    zone: 'D2',
+    gases: { CH4: 60, C2H4: 75, C2H2: 150, H2: 220, C2H6: 15, CO: 320, CO2: 1800 },
+  },
+  {
+    name: 'Sparking D1 (Low Energy)',
+    zone: 'D1',
+    gases: { CH4: 25, C2H4: 15, C2H2: 85, H2: 95, C2H6: 10, CO: 210, CO2: 1500 },
+  },
+  {
+    name: 'Partial Discharge (PD)',
+    zone: 'PD',
+    gases: { CH4: 260, C2H4: 2, C2H2: 1, H2: 480, C2H6: 25, CO: 160, CO2: 1400 },
+  },
+  {
+    name: 'Thermal T1 (<300°C)',
+    zone: 'T1',
+    gases: { CH4: 190, C2H4: 18, C2H2: 2, H2: 45, C2H6: 40, CO: 380, CO2: 2900 },
+  },
+  {
+    name: 'Thermal T2 (300-700°C)',
+    zone: 'T2',
+    gases: { CH4: 120, C2H4: 90, C2H2: 4, H2: 70, C2H6: 45, CO: 420, CO2: 2600 },
+  },
+  {
+    name: 'Campuran DT (Arcing+Termal)',
+    zone: 'DT',
+    gases: { CH4: 95, C2H4: 135, C2H2: 40, H2: 140, C2H6: 25, CO: 350, CO2: 2200 },
+  },
+]
+
 // ─── Duval Tab ────────────────────────────────────────────────────────────────
 
 function DuvalTab() {
+  const [mode, setMode] = useState('asset') // 'asset' | 'simulator'
   const [transformers, setTransformers] = useState([])
   const [selected, setSelected] = useState('')
   const [detail, setDetail] = useState(null)
   const [status, setStatus] = useState('loading')
+
+  // Simulator state
+  const [simGases, setSimGases] = useState({
+    CH4: 40,
+    C2H4: 280,
+    C2H2: 12,
+    H2: 50,
+    C2H6: 30,
+    CO: 450,
+    CO2: 2400,
+  })
 
   useEffect(() => {
     const controller = new AbortController()
@@ -619,68 +850,160 @@ function DuvalTab() {
     return () => controller.abort()
   }, [selected])
 
-  const gases = detail?.gases ?? {}
-  const diagnosis = detail?.duval_diag ?? detail?.diagnosis?.duval ?? '—'
-  const tdcg = detail?.tdcg
-  const statusLabel = detail?.status ?? '—'
+  // Active gases depending on mode
+  const activeGases = mode === 'simulator' ? simGases : (detail?.gases ?? {})
+  const activeName = mode === 'simulator' ? 'Simulasi Laboratorium DGA' : (detail?.name ?? selected)
+
+  // Recalculate diagnosis for simulator or use detail diagnosis
+  const detectedZone = detectDuvalZone(activeGases.CH4, activeGases.C2H4, activeGases.C2H2)
+  const diagnosis = mode === 'simulator'
+    ? (detectedZone ? `${detectedZone.id} (${detectedZone.fullLabel})` : 'Normal')
+    : (detail?.duval_diag ?? detail?.diagnosis?.duval ?? (detectedZone ? `${detectedZone.id} (${detectedZone.fullLabel})` : '—'))
+
+  const simTdcg = Number(activeGases.H2 || 0) + Number(activeGases.CH4 || 0) + Number(activeGases.C2H6 || 0) + Number(activeGases.C2H4 || 0) + Number(activeGases.C2H2 || 0) + Number(activeGases.CO || 0)
+  const tdcg = mode === 'simulator' ? simTdcg : detail?.tdcg
+  const statusLabel = mode === 'simulator'
+    ? (simTdcg > 4630 ? 'CRITICAL' : (simTdcg > 1920 ? 'ALERT' : (simTdcg > 720 ? 'WARNING' : 'NORMAL')))
+    : (detail?.status ?? '—')
 
   return (
     <div className="cbm-tab-content">
-      <div className="cbm-controls">
-        <label htmlFor="transformer-select" className="cbm-control-label">Transformer</label>
-        <select
-          id="transformer-select"
-          className="cbm-select"
-          value={selected}
-          onChange={(e) => setSelected(e.target.value)}
-          disabled={status !== 'ready'}
+      {/* Mode Switcher */}
+      <div className="duval-mode-switcher">
+        <button
+          type="button"
+          className={`duval-mode-btn ${mode === 'asset' ? 'duval-mode-btn--active' : ''}`}
+          onClick={() => setMode('asset')}
         >
-          {transformers.map((t) => (
-            <option key={t.transformer_id} value={t.transformer_id}>
-              {t.name || t.transformer_id} ({t.unit})
-            </option>
-          ))}
-        </select>
-
-        {detail && (
-          <div className="cbm-badges">
-            <span className={`cbm-badge cbm-badge--${(statusLabel || '').toLowerCase().includes('normal') ? 'ok' : 'warn'}`}>
-              {statusLabel}
-            </span>
-            {tdcg != null && <span className="cbm-badge cbm-badge--neutral">TDCG: {tdcg.toFixed(0)} ppm</span>}
-            {diagnosis !== '—' && <span className="cbm-badge cbm-badge--info">Duval: {diagnosis}</span>}
-          </div>
-        )}
+          <Activity size={15} />
+          <span>Data Trafo PLTU Terpasang</span>
+        </button>
+        <button
+          type="button"
+          className={`duval-mode-btn ${mode === 'simulator' ? 'duval-mode-btn--active' : ''}`}
+          onClick={() => setMode('simulator')}
+        >
+          <Sliders size={15} />
+          <span>Simulator & Uji Gas CBM</span>
+        </button>
       </div>
 
-      {status === 'error' && (
+      {mode === 'asset' ? (
+        <div className="cbm-controls">
+          <label htmlFor="transformer-select" className="cbm-control-label">Pilih Transformer</label>
+          <select
+            id="transformer-select"
+            className="cbm-select"
+            value={selected}
+            onChange={(e) => setSelected(e.target.value)}
+            disabled={status !== 'ready'}
+          >
+            {transformers.map((t) => (
+              <option key={t.transformer_id} value={t.transformer_id}>
+                {t.name || t.transformer_id} ({t.unit})
+              </option>
+            ))}
+          </select>
+
+          {detail && (
+            <div className="cbm-badges">
+              <span className={`cbm-badge cbm-badge--${(statusLabel || '').toLowerCase().includes('normal') ? 'ok' : 'warn'}`}>
+                {statusLabel}
+              </span>
+              {tdcg != null && <span className="cbm-badge cbm-badge--neutral">TDCG: {Number(tdcg).toFixed(0)} ppm</span>}
+              {diagnosis !== '—' && <span className="cbm-badge cbm-badge--info">Duval: {diagnosis}</span>}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="duval-simulator-panel">
+          <div className="duval-simulator-header">
+            <div>
+              <strong style={{ fontSize: '0.92rem', color: 'var(--ink)' }}>Uji Cepat Gas Terlarut (Simulasi Laboratorium)</strong>
+              <p style={{ margin: '3px 0 0 0', fontSize: '0.78rem', color: 'var(--muted)' }}>
+                Geser nilai ppm gas hidrokarbon untuk mengamati pergeseran koordinat dan deteksi zona kerusakan seketika.
+              </p>
+            </div>
+            <div className="cbm-badges">
+              <span className={`cbm-badge cbm-badge--${statusLabel === 'NORMAL' ? 'ok' : 'warn'}`}>
+                Status: {statusLabel}
+              </span>
+              <span className="cbm-badge cbm-badge--neutral">TDCG: {simTdcg.toFixed(0)} ppm</span>
+              {detectedZone && <span className="cbm-badge cbm-badge--info">Zona: {detectedZone.id}</span>}
+            </div>
+          </div>
+
+          {/* Quick Preset Buttons */}
+          <div className="duval-preset-bar">
+            <span className="duval-preset-title">Preset Gangguan:</span>
+            {DUVAL_PRESETS.map((p) => (
+              <button
+                key={p.name}
+                type="button"
+                className="duval-preset-pill"
+                onClick={() => setSimGases(p.gases)}
+              >
+                {p.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Gas Sliders Grid */}
+          <div className="duval-sliders-grid">
+            {[
+              { key: 'CH4', label: 'Metana (CH₄)', max: 400, color: '#3b82f6', unit: 'ppm' },
+              { key: 'C2H4', label: 'Etilena (C₂H₄)', max: 400, color: '#ec4899', unit: 'ppm' },
+              { key: 'C2H2', label: 'Asetilena (C₂H₂)', max: 250, color: '#06b6d4', unit: 'ppm' },
+              { key: 'H2', label: 'Hidrogen (H₂)', max: 600, color: '#8b5cf6', unit: 'ppm' },
+            ].map((gas) => (
+              <div key={gas.key} className="duval-slider-card">
+                <div className="duval-slider-label">
+                  <span>{gas.label}</span>
+                  <strong style={{ color: gas.color }}>{simGases[gas.key]} {gas.unit}</strong>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max={gas.max}
+                  value={simGases[gas.key]}
+                  onChange={(e) => setSimGases({ ...simGases, [gas.key]: Number(e.target.value) })}
+                  className="duval-slider-input"
+                  style={{ accentColor: gas.color }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {status === 'error' && mode === 'asset' && (
         <div className="notice notice--error">
           <strong>Data DGA tidak dapat dimuat.</strong>
-          <span>Pastikan FastAPI berjalan di port 8000.</span>
+          <span>Pastikan FastAPI berjalan di port 8000. Anda tetap dapat menggunakan Simulator & Uji Gas di atas.</span>
         </div>
       )}
 
+      {/* Main Duval Triangle Visualizer */}
       <DuvalTriangle
-        gases={gases}
-        transformerName={detail?.name ?? selected}
+        gases={activeGases}
+        transformerName={activeName}
         duvalDiag={diagnosis}
-        history={detail?.history}
+        history={mode === 'asset' ? detail?.history : []}
       />
 
-      {detail && (
-        <div className="cbm-gas-grid">
-          {['H2', 'CH4', 'C2H6', 'C2H4', 'C2H2', 'CO', 'CO2'].map((gas) => {
-            const val = gases[gas]
-            return val != null ? (
-              <div key={gas} className="cbm-gas-card">
-                <span className="cbm-gas-name">{gas}</span>
-                <strong className="cbm-gas-value">{val.toFixed(1)}</strong>
-                <span className="cbm-gas-unit">ppm</span>
-              </div>
-            ) : null
-          })}
-        </div>
-      )}
+      {/* Gas Concentration Cards */}
+      <div className="cbm-gas-grid">
+        {['H2', 'CH4', 'C2H6', 'C2H4', 'C2H2', 'CO', 'CO2'].map((gas) => {
+          const val = activeGases[gas]
+          return val != null ? (
+            <div key={gas} className="cbm-gas-card">
+              <span className="cbm-gas-name">{gas}</span>
+              <strong className="cbm-gas-value">{Number(val).toFixed(1)}</strong>
+              <span className="cbm-gas-unit">ppm</span>
+            </div>
+          ) : null
+        })}
+      </div>
     </div>
   )
 }

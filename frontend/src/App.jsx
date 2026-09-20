@@ -1,7 +1,7 @@
 import { Component, Suspense, lazy, useEffect, useState } from 'react'
 import {
   Activity, BarChart2, Bot, BrainCircuit, CalendarClock, ChevronRight, CircleCheck,
-  Database, FileText, FlaskConical, Menu, MessageSquareText, Settings, ShieldCheck, Workflow, X,
+  ClipboardList, Database, FileText, FlaskConical, Menu, MessageSquareText, Settings, ShieldCheck, Workflow, X,
 } from 'lucide-react'
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { getWorkspaceOverview } from './api.js'
@@ -16,6 +16,7 @@ const AgentLab = lazy(() => import('./AgentLab.jsx'))
 const SettingsWorkspace = lazy(() => import('./SettingsWorkspace.jsx'))
 const ChatWorkspace = lazy(() => import('./ChatWorkspace.jsx'))
 const CBMDashboard = lazy(() => import('./CBMDashboard.jsx'))
+const WorkOrdersWorkspace = lazy(() => import('./WorkOrdersWorkspace.jsx'))
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -87,6 +88,7 @@ const navigation = [
   { to: '/overview', label: 'Beranda', icon: Activity },
   { to: '/chat', label: 'Bot', icon: MessageSquareText },
   { to: '/cbm', label: 'Dashboard CBM', icon: BarChart2 },
+  { to: '/work-orders', label: 'Work Orders', icon: ClipboardList },
   { to: '/data', label: 'Data', icon: Database },
   { to: '/documents', label: 'Dokumen', icon: FileText },
   { to: '/memory', label: 'Memori', icon: BrainCircuit },
@@ -225,6 +227,7 @@ export default function App() {
               <Route path="/overview" element={<Overview />} />
               <Route path="/chat" element={<ChatWorkspace onOpenNav={() => setNavOpen(true)} />} />
               <Route path="/cbm" element={<CBMDashboard />} />
+              <Route path="/work-orders" element={<WorkOrdersWorkspace />} />
               <Route path="/data" element={<DataWorkspace />} />
               <Route path="/documents" element={<DocumentWorkspace />} />
               <Route path="/memory" element={<MemoryWorkspace />} />

@@ -71,11 +71,80 @@ class LlmAssistantTests(unittest.TestCase):
                 raise ConnectionError("API connection timed out")
 
         assistant = MCSALLMAssistant(enabled=True, provider="groq", client=BrokenClient(), model="llama-3.3-70b-versatile")
+        # Ensure cross-provider fallback also fails to test terminal rule fallback
+        assistant._try_cross_provider_fallback = lambda prompt: (None, None, None)
         df = pd.DataFrame([{"Equipment": "BC101", "Parameter": "Kondisi", "Raw_Value": "Alarm"}])
 
         answer = assistant.enhance_answer("analisa BC101", "Jawaban Rule Fallback", df)
         self.assertEqual(answer, "Jawaban Rule Fallback")
         self.assertIn("gagal menjawab", assistant.last_error)
+        self.assertEqual(assistant.resilience_info["effective_provider"], "rule_based")
+
+    def test_cross_provider_failover(self):
+        class BrokenClient:
+            def generate(self, *args, **kwargs):
+                raise ConnectionError("Primary provider connection refused")
+
+        assistant = MCSALLMAssistant(enabled=True, provider="groq", client=BrokenClient(), model="llama-3.3-70b-versatile")
+        # Simulate successful cross-provider failover
+        assistant._try_cross_provider_fallback = lambda prompt: ("Jawaban Failover dari Gemini", "gemini", "gemini-3.1-flash-lite")
+        df = pd.DataFrame([{"Equipment": "BC101", "Parameter": "Kondisi", "Raw_Value": "Alarm"}])
+
+        answer = assistant.enhance_answer("analisa BC101", "Jawaban Rule Fallback", df)
+        self.assertEqual(answer, "Jawaban Failover dari Gemini")
+        self.assertEqual(assistant.resilience_info["effective_provider"], "gemini")
+        self.assertTrue(assistant.resilience_info["failover_occurred"])
+
+    def test_groq_model_fallback_on_rate_limit(self):
+        class CascadeClient:
+            def __init__(self):
+                self.attempted_models = []
+
+            def generate(self, model, prompt, system=None):
+                self.attempted_models.append(model)
+                if model == "llama-3.3-70b-versatile":
+                    raise ValueError("HTTP 429: Rate limit reached")
+                return f"Jawaban sukses dari model cadangan: {model}"
+
+        cascade_client = CascadeClient()
+        assistant = MCSALLMAssistant(
+            enabled=True,
+            provider="groq",
+            client=cascade_client,
+            model="llama-3.3-70b-versatile",
+        )
+        df = pd.DataFrame([{"Equipment": "BC101", "Parameter": "Kondisi", "Raw_Value": "Alarm"}])
+
+        answer = assistant.enhance_answer("analisa BC101", "Jawaban Rule Fallback", df)
+        self.assertIn("Jawaban sukses dari model cadangan", answer)
+        self.assertIn("llama-3.3-70b-versatile", cascade_client.attempted_models)
+        self.assertTrue(len(cascade_client.attempted_models) >= 2)
+        self.assertNotEqual(assistant.model, "llama-3.3-70b-versatile")
+
+    def test_opencode_model_fallback(self):
+        class OpenCodeFallbackClient:
+            def __init__(self):
+                self.attempted_models = []
+
+            def generate(self, model, prompt, system=None):
+                self.attempted_models.append(model)
+                if model == "gpt-4o-mini":
+                    raise ConnectionError("Timeout on gpt-4o-mini")
+                return f"Jawaban OpenCode dari: {model}"
+
+        client = OpenCodeFallbackClient()
+        assistant = MCSALLMAssistant(
+            enabled=True,
+            provider="opencode",
+            client=client,
+            model="gpt-4o-mini",
+        )
+        df = pd.DataFrame([{"Equipment": "BC101", "Parameter": "Kondisi", "Raw_Value": "Normal"}])
+
+        answer = assistant.enhance_answer("status BC101", "Rule normal", df)
+        self.assertIn("Jawaban OpenCode dari", answer)
+        self.assertIn("gpt-4o-mini", client.attempted_models)
+        self.assertEqual(assistant.resilience_info["effective_provider"], "opencode")
 
 
 if __name__ == "__main__":

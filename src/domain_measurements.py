@@ -82,7 +82,8 @@ COLUMNS = [
 ]
 
 # Fields an ingested/manually entered row must carry for the row to be usable.
-REQUIRED_FIELDS = ("equipment", "test_date", "parameter")
+# test_date is automatically resolved to upload date if omitted in the document.
+REQUIRED_FIELDS = ("equipment", "parameter")
 
 
 class UnknownDomainError(ValueError):
@@ -195,10 +196,19 @@ def normalise_rows(domain: str, rows: Iterable[dict[str, Any]]) -> tuple[list[di
             rejected.append({**raw, "_reason": f"Kolom wajib kosong: {', '.join(missing)}"})
             continue
 
-        test_date = pd.to_datetime(_text(raw.get("test_date")), errors="coerce")
-        if pd.isna(test_date):
+        if "test_date" in raw and raw["test_date"] is pd.NaT:
             rejected.append({**raw, "_reason": "Tanggal pengujian tidak dapat dibaca."})
             continue
+
+        raw_date_str = _text(raw.get("test_date"))
+        if raw_date_str:
+            test_date = pd.to_datetime(raw_date_str, errors="coerce")
+            if pd.isna(test_date):
+                rejected.append({**raw, "_reason": f"Tanggal pengujian '{raw_date_str}' tidak dapat dibaca."})
+                continue
+        else:
+            # Fallback otomatis ke tanggal upload / hari ini jika tidak ada tanggal di dokumen
+            test_date = pd.to_datetime(datetime.now().strftime("%Y-%m-%d"))
 
         numeric = pd.to_numeric(raw.get("value"), errors="coerce")
         raw_value = _text(raw.get("raw_value")) or _text(raw.get("value"))

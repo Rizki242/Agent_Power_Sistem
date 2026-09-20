@@ -253,3 +253,60 @@ export function getDgaTransformerDetail(transformerId, signal) {
 export function getReliabilityHealth(equipmentId, signal) {
   return getJson(`/api/v2/reliability/${encodeURIComponent(equipmentId)}`, signal)
 }
+
+export function getAutomatedReportsSummary(signal) {
+  return getJson('/api/reports/automated/summary', signal)
+}
+
+export function getWeeklyReportDownloadUrl(module, format = 'docx', week = 3) {
+  return `${API_BASE}/api/reports/automated/download/weekly/${encodeURIComponent(module)}?format=${encodeURIComponent(format)}&week=${week}`
+}
+
+export function getMonthlyReportDownloadUrl(format = 'docx', year = 2026, month = 9) {
+  return `${API_BASE}/api/reports/automated/download/monthly?format=${encodeURIComponent(format)}&year=${year}&month=${month}`
+}
+
+export function getMonthlyModuleReportDownloadUrl(module, format = 'docx', year = 2026, month = 9) {
+  return `${API_BASE}/api/reports/automated/download/monthly/${encodeURIComponent(module)}?format=${encodeURIComponent(format)}&year=${year}&month=${month}`
+}
+
+export function getMeetingPptxDownloadUrl(year = 2026, month = 9) {
+  return `${API_BASE}/api/reports/automated/download/meeting-pptx?year=${year}&month=${month}`
+}
+
+// ── Work Orders (CBM & Maintenance Dispatch) API ───────────────────────────
+
+export function getWorkOrders({ equipment, domain, status } = {}, signal) {
+  const params = new URLSearchParams()
+  if (equipment) params.set('equipment', equipment)
+  if (domain) params.set('domain', domain)
+  if (status) params.set('status', status)
+  const qs = params.toString()
+  return getJson(`/api/workorders${qs ? `?${qs}` : ''}`, signal)
+}
+
+export function createNewWorkOrder(data) {
+  return sendJson('/api/workorders', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function generateCbmWorkOrder(data) {
+  return sendJson('/api/workorders/generate-cbm', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function approveWorkOrder({ woNumber, approvedBy, action = 'Approve' }) {
+  return sendJson('/api/workorders/approve', {
+    method: 'POST',
+    body: JSON.stringify({
+      wo_number: woNumber,
+      approved_by: approvedBy,
+      action,
+    }),
+  })
+}
+

@@ -9,20 +9,29 @@ import pandas as pd
 from src.knowledge_retriever import build_knowledge_context
 
 
-DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite"
 AVAILABLE_GEMINI_MODELS = [
-    "gemini-3.8-flash",
-    "gemini-3.7-flash",
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
     "gemini-3.6-flash",
-    "gemini-3.1-pro",
+    "gemini-3.5-flash",
+    "gemini-3.8-flash",
 ]
 
-DEFAULT_GEMINI_ENTERPRISE_MODEL = "gemini-3.8-flash"
+DEFAULT_GEMINI_ENTERPRISE_MODEL = "gemini-3.1-flash-lite"
 AVAILABLE_GEMINI_ENTERPRISE_MODELS = [
-    "gemini-3.8-flash",
-    "gemini-3.7-flash",
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
     "gemini-3.6-flash",
-    "gemini-3.1-pro",
+    "gemini-3.5-flash",
+    "gemini-3.8-flash",
+]
+
+FALLBACK_GEMINI_MODELS = [
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
 ]
 
 DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b"
@@ -35,6 +44,13 @@ AVAILABLE_GROQ_MODELS = [
     "gemma2-9b-it",
     "llama-3.1-8b-instant",
 ]
+FALLBACK_GROQ_MODELS = [
+    "llama-3.3-70b-versatile",
+    "qwen/qwen3.6-27b",
+    "qwen/qwen3.8-27b",
+    "llama-3.1-8b-instant",
+    "mixtral-8x7b-32768",
+]
 
 DEFAULT_OPENCODE_BASE_URL = "https://api.openai.com/v1"
 DEFAULT_OPENCODE_MODEL = "gpt-4o-mini"
@@ -43,6 +59,12 @@ AVAILABLE_OPENCODE_MODELS = [
     "gpt-4o",
     "deepseek-chat",
     "deepseek-reasoner",
+    "qwen/qwen-2.5-coder-32b-instruct",
+]
+FALLBACK_OPENCODE_MODELS = [
+    "gpt-4o-mini",
+    "gpt-4o",
+    "deepseek-chat",
     "qwen/qwen-2.5-coder-32b-instruct",
 ]
 
@@ -57,6 +79,12 @@ AVAILABLE_OLLAMA_MODELS = [
     "mistral",
     "phi3",
     "gemma2",
+]
+FALLBACK_OLLAMA_MODELS = [
+    "llama3.2",
+    "llama3.1",
+    "qwen2.5",
+    "mistral",
 ]
 
 # Backward compatibility alias
@@ -560,7 +588,10 @@ class MCSALLMAssistant:
 
         # Model resolution per provider
         if self.provider in {"gemini_enterprise", "vertex_ai"}:
-            self.model = model or DEFAULT_GEMINI_ENTERPRISE_MODEL
+            m = model or DEFAULT_GEMINI_ENTERPRISE_MODEL
+            if m in {"gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"}:
+                m = DEFAULT_GEMINI_ENTERPRISE_MODEL
+            self.model = m
         elif self.provider == "groq":
             self.model = model or DEFAULT_GROQ_MODEL
         elif self.provider in {"opencode", "openai"}:
@@ -568,7 +599,10 @@ class MCSALLMAssistant:
         elif self.provider == "ollama":
             self.model = model or DEFAULT_OLLAMA_MODEL
         else:
-            self.model = model or DEFAULT_GEMINI_MODEL
+            m = model or DEFAULT_GEMINI_MODEL
+            if m in {"gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"}:
+                m = DEFAULT_GEMINI_MODEL
+            self.model = m
 
         if api_key or client or enabled:
             self.enabled = True
@@ -620,6 +654,131 @@ class MCSALLMAssistant:
             self.last_error = f"Gagal membuat Gemini client: {exc}"
             return None
 
+    def _generate_with_gemini_fallback(self, prompt: str) -> Optional[str]:
+        """Generate content with Gemini using automatic fallback across active candidate models."""
+        candidates = [self.model] + [m for m in FALLBACK_GEMINI_MODELS if m != self.model]
+        last_exc = None
+        for candidate in candidates:
+            try:
+                response = self.client.models.generate_content(
+                    model=candidate,
+                    contents=prompt,
+                )
+                text = getattr(response, "text", None)
+                if text:
+                    self.model = candidate  # stick to working model
+                    self.last_error = None
+                    return str(text).strip()
+            except Exception as exc:
+                last_exc = exc
+                continue
+        if last_exc:
+            raise last_exc
+        return None
+
+    def _generate_with_groq_fallback(self, prompt: str) -> Optional[str]:
+        """Generate content with Groq using automatic fallback across active candidate models."""
+        candidates = [self.model] + [m for m in FALLBACK_GROQ_MODELS if m != self.model]
+        last_exc = None
+        for candidate in candidates:
+            try:
+                text = self.client.generate(model=candidate, prompt=prompt)
+                if text:
+                    self.model = candidate
+                    self.last_error = None
+                    return str(text).strip()
+            except Exception as exc:
+                last_exc = exc
+                continue
+        if last_exc:
+            raise last_exc
+        return None
+
+    def _generate_with_opencode_fallback(self, prompt: str) -> Optional[str]:
+        """Generate content with OpenCode/OpenAI using automatic fallback across candidate models."""
+        candidates = [self.model] + [m for m in FALLBACK_OPENCODE_MODELS if m != self.model]
+        last_exc = None
+        for candidate in candidates:
+            try:
+                text = self.client.generate(model=candidate, prompt=prompt)
+                if text:
+                    self.model = candidate
+                    self.last_error = None
+                    return str(text).strip()
+            except Exception as exc:
+                last_exc = exc
+                continue
+        if last_exc:
+            raise last_exc
+        return None
+
+    def _generate_with_ollama_fallback(self, prompt: str) -> Optional[str]:
+        """Generate content with local Ollama using automatic fallback across candidate models."""
+        available_models = []
+        try:
+            available_models = self.client.list_models()
+        except Exception:
+            pass
+        candidates = [self.model]
+        for m in (available_models or FALLBACK_OLLAMA_MODELS):
+            if m and m not in candidates:
+                candidates.append(m)
+        last_exc = None
+        for candidate in candidates:
+            try:
+                text = self.client.generate(model=candidate, prompt=prompt)
+                if text:
+                    self.model = candidate
+                    self.last_error = None
+                    return str(text).strip()
+            except Exception as exc:
+                last_exc = exc
+                continue
+        if last_exc:
+            raise last_exc
+        return None
+
+    def _generate_with_current_provider(self, prompt: str) -> Optional[str]:
+        """Generate content using the current provider's model fallback chain."""
+        if self.provider == "groq":
+            return self._generate_with_groq_fallback(prompt)
+        elif self.provider in {"opencode", "openai"}:
+            return self._generate_with_opencode_fallback(prompt)
+        elif self.provider == "ollama":
+            return self._generate_with_ollama_fallback(prompt)
+        else:
+            return self._generate_with_gemini_fallback(prompt)
+
+    def _try_cross_provider_fallback(self, prompt: str) -> tuple[Optional[str], Optional[str], Optional[str]]:
+        """Try alternative providers if current provider failed completely.
+        Returns: (generated_text, provider_name, model_name)
+        """
+        # Determine candidate alternative providers
+        order: list[tuple[str, str]] = []
+        if self.provider not in {"gemini", "gemini_enterprise", "vertex_ai"} and resolve_provider_key("gemini"):
+            order.append(("gemini", DEFAULT_GEMINI_MODEL))
+        if self.provider != "groq" and resolve_provider_key("groq"):
+            order.append(("groq", DEFAULT_GROQ_MODEL))
+        if self.provider not in {"opencode", "openai"} and resolve_provider_key("opencode"):
+            order.append(("opencode", DEFAULT_OPENCODE_MODEL))
+        if self.provider != "ollama":
+            order.append(("ollama", DEFAULT_OLLAMA_MODEL))
+
+        for alt_prov, def_model in order:
+            try:
+                alt_assistant = MCSALLMAssistant(
+                    enabled=True,
+                    provider=alt_prov,
+                    model=def_model,
+                )
+                if alt_assistant.available:
+                    text = alt_assistant._generate_with_current_provider(prompt)
+                    if text:
+                        return text, alt_prov, alt_assistant.model
+            except Exception:
+                continue
+        return None, None, None
+
     def enhance_answer(
         self,
         question: str,
@@ -630,7 +789,19 @@ class MCSALLMAssistant:
         extra_file_context: str = "",
         subagents_context: str = "",
     ) -> str:
+        self.resilience_info = {
+            "primary_provider": self.provider,
+            "primary_model": self.model,
+            "effective_provider": self.provider,
+            "effective_model": self.model,
+            "failover_occurred": False,
+            "fallback_used": None,
+        }
+
         if not self.available:
+            self.resilience_info["effective_provider"] = "rule_based"
+            self.resilience_info["effective_model"] = "rule_expert"
+            self.resilience_info["fallback_used"] = "rule_answer"
             return rule_answer
 
         mcsa_context = build_mcsa_context(df_context)
@@ -652,24 +823,41 @@ class MCSALLMAssistant:
         )
 
         try:
-            if self.provider in {"groq", "opencode", "openai", "ollama"}:
-                text = self.client.generate(model=self.model, prompt=prompt)
-            else:
-                response = self.client.models.generate_content(
-                    model=self.model,
-                    contents=prompt,
-                )
-                text = getattr(response, "text", None)
-
+            text = self._generate_with_current_provider(prompt)
             if text:
+                self.resilience_info["effective_model"] = self.model
                 return str(text).strip()
         except Exception as exc:
-            self.last_error = f"LLM ({self.provider.upper()}) gagal menjawab: {exc}"
+            primary_err = str(exc)
+            self.last_error = f"LLM ({self.provider.upper()}) gagal menjawab: {primary_err}"
+
+            # Attempt cross-provider failover
+            cross_text, cross_prov, cross_model = self._try_cross_provider_fallback(prompt)
+            if cross_text:
+                self.resilience_info["effective_provider"] = cross_prov
+                self.resilience_info["effective_model"] = cross_model
+                self.resilience_info["failover_occurred"] = True
+                self.resilience_info["fallback_used"] = f"provider_failover_{cross_prov}"
+                try:
+                    from pple.core.logging import log_fallback
+                    log_fallback(
+                        component=f"llm_{self.provider}",
+                        reason=primary_err,
+                        fallback_used=f"provider_failover:{cross_prov}:{cross_model}",
+                        model=self.model,
+                    )
+                except Exception:
+                    pass
+                return str(cross_text).strip()
+
+            self.resilience_info["effective_provider"] = "rule_based"
+            self.resilience_info["effective_model"] = "rule_expert"
+            self.resilience_info["fallback_used"] = "rule_answer"
             try:
                 from pple.core.logging import log_fallback
                 log_fallback(
                     component=f"llm_{self.provider}",
-                    reason=str(exc),
+                    reason=primary_err,
                     fallback_used="rule_answer",
                     model=self.model,
                 )
@@ -678,6 +866,9 @@ class MCSALLMAssistant:
             return rule_answer
 
         self.last_error = f"Respons LLM ({self.provider.upper()}) kosong."
+        self.resilience_info["effective_provider"] = "rule_based"
+        self.resilience_info["effective_model"] = "rule_expert"
+        self.resilience_info["fallback_used"] = "rule_answer"
         try:
             from pple.core.logging import log_fallback
             log_fallback(
@@ -735,18 +926,16 @@ class MCSALLMAssistant:
         )
 
         try:
-            if self.provider in {"groq", "opencode", "openai", "ollama"}:
-                text = self.client.generate(model=self.model, prompt=prompt)
-            else:
-                response = self.client.models.generate_content(
-                    model=self.model,
-                    contents=prompt,
-                )
-                text = getattr(response, "text", None)
-
+            text = self._generate_with_current_provider(prompt)
+            if not text:
+                cross_text, _, _ = self._try_cross_provider_fallback(prompt)
+                text = cross_text
             if text:
                 return str(text).strip()
         except Exception as exc:
+            cross_text, _, _ = self._try_cross_provider_fallback(prompt)
+            if cross_text:
+                return str(cross_text).strip()
             self.last_error = f"LLM ({self.provider.upper()}) gagal menghasilkan analisa: {exc}"
             try:
                 from pple.core.logging import log_fallback
@@ -772,21 +961,70 @@ class MCSALLMAssistant:
         extra_file_context: str = "",
         subagents_context: str = "",
     ) -> str:
+        q_clean = question.strip()
+        q_lower = q_clean.lower()
+
+        # Check if question is technical or general/casual
+        technical_keywords = [
+            "vibrasi", "vibration", "getaran", "bearing", "arus", "motor", "pompa", "fan",
+            "trafo", "transformer", "dga", "duval", "rogers", "tdcg", "c2h2", "h2", "ch4",
+            "c2h4", "c2h6", "co", "co2", "mcsa", "atpol", "sideband", "unbalance", "thd",
+            "rotor bar", "rotorbar", "isolasi", "partial discharge", "pd", "tribologi",
+            "tribology", "oli", "pelumas", "viskositas", "tan", "fe", "cu", "thermal", "irt",
+            "suhu", "panas", "delta-t", "hotspot", "kks", "bfp", "cwp", "c3wp", "bc ", "id fan",
+            "pa fan", "fd fan", "alarm", "kritis", "high", "warning", "sop", "standar", "iso",
+            "ieee", "iec", "astm", "rul", "health index", "work order", "pm", "cbm", "spektrum",
+        ]
+        spec_context = build_equipment_spec_context(question)
+        is_technical = (
+            any(k in q_lower for k in technical_keywords)
+            or bool(extra_file_context)
+            or bool(subagents_context)
+            or bool(spec_context)
+        )
+
+        if not is_technical:
+            # Natural, conversational prompt for general, casual, greetings, or non-technical inquiries
+            parts = [
+                "IDENTITAS & PERAN:",
+                "Anda adalah **Agent CBM Learning PLTU Jeranjang**, asisten kecerdasan buatan terpadu untuk pemantauan kondisi mesin (*Condition-Based Maintenance*) dan pembelajaran keandalan di PLTU Jeranjang (3 × 25 MW).",
+                "",
+                "PANDUAN KOMUNIKASI NATURAL (NON-TEKNIS):",
+                "- Pertanyaan user saat ini bertema santai, percakapan umum, sapaan, perkenalan, atau non-teknis.",
+                "- Jawablah dengan bahasa Indonesia yang SANGAT NATURAL, luwes, ramah, hangat, dan bersahabat layaknya rekan kerja yang cerdas dan menyenangkan.",
+                "- Tetap perkenalkan diri atau pertahankan identitas Anda secara elegan sebagai **Agent CBM Learning PLTU Jeranjang** (asisten CBM yang ramah, terus belajar, dan selalu siaga menjaga keandalan pembangkit).",
+                "- JANGAN kaku, JANGAN memaksakan menumpahkan tabel data pengukuran atau parameter teknis mesin yang tidak relevan dengan pertanyaan user.",
+                "- Tanggapi langsung pesan user dengan tulus, cerdas, dan positif.",
+                "",
+                "--- PERTANYAAN USER ---",
+                question,
+            ]
+            if rule_answer:
+                parts.extend(["\n--- ACUAN RULE-BASED SISTEM ---", rule_answer])
+            parts.append("\nBalaslah pertanyaan user di atas dengan gaya bahasa natural, hangat, dan ramah sebagai Agent CBM Learning PLTU Jeranjang.")
+            return "\n\n".join(parts)
+
+        # Technical query prompt
         parts = [
-            "Anda adalah AI O&M Reliability Orchestrator PLTU Jeranjang yang memimpin tim Specialist Sub-Agents:",
-            "1. ⚡ MCSA Specialist (EPRI Sideband dB, Unbalance, THD, Rotor Bar Severity Level 1-4)",
-            "2. 🌀 Vibration Specialist (ISO 10816-3 RMS Zone A-D, 1X Unbalance, 2X Misalignment, BPFO/BPFI Bearing)",
-            "3. 🧪 DGA Specialist (IEEE C57.104 TDCG, Duval Triangle 1, Rogers Ratios)",
-            "4. 💥 PD Specialist (IEC 60270, PRPD cluster, pulse pC)",
-            "5. 🛢️ Tribology Specialist (ASTM D445, TAN, ISO 4406 Cleanliness, Fe/Cu wear)",
+            "Anda adalah **Senior Predictive Maintenance (PdM) & Reliability Engineer PLTU Jeranjang (3 × 25 MW)** sekaligus asisten AI terpadu **Agent CBM Learning PLTU Jeranjang** yang memimpin 6 domain spesialis CBM:",
+            "1. ⚡ MCSA Specialist (EPRI Sideband dB, Unbalance Arus/Tegangan NEMA MG-1, THD IEEE 519, Rotor Bar Fault Severity Level 1-4)",
+            "2. 🌀 Vibration Specialist (ISO 10816-3 RMS Zone A-D, 1X Unbalance, 2X Misalignment, BPFO/BPFI/BSF/FTF Bearing)",
+            "3. 🧪 DGA Specialist (IEEE C57.104 TDCG, Duval Triangle 1, Rogers Ratios, CO2/CO Cellulose Degradation)",
+            "4. 💥 PD Specialist (IEC 60270, PRPD cluster void/slot/corona, pulse pC)",
+            "5. 🛢️ Tribology Specialist (ASTM D445 Kinematic Viscosity, TAN, ISO 4406 Cleanliness Code, Fe/Cu wear spectrometry)",
             "6. 🌡️ Thermal Specialist (ISO 18434-1, IR Delta-T, Hotspot)",
             "7. 🔗 Reliability Fusion & Risk Specialist (Health Index 0-100, RUL, Risk Matrix, Work Order)",
-            "8. 🛡️ Safety Guardrail (Human-in-the-Loop clearance)",
-            "\nJawablah pertanyaan user secara profesional, teknis, terstruktur, dan solutif dalam Bahasa Indonesia.",
-            "PANDUAN KETAT:",
-            "- Gunakan fakta dari data pengukuran, bukti spesialis sub-agent, file terlampir, dan knowledge base. Jangan mengarang angka atau tanggal.",
-            "- Jika pertanyaan melibatkan multi-domain (misal: getaran + arus + oli), sintesiskan hasil dari sub-agent terkait secara terpadu.",
-            "- Sertakan estimasi Health Index, kemungkinan akar penyebab (root cause), dan rekomendasi tindakan / Work Order terencana.",
+            "8. 🛡️ Safety Guardrail (Human-in-the-Loop clearance, LOTO)",
+            "\nPANDUAN KOMUNIKASI & FORMAT (SENIOR ENGINEER STANDARD):",
+            "- Jawablah dengan bahasa Indonesia teknis yang matang, lugas, berwibawa, dan berbasis fakta fisika mesin serta standar internasional.",
+            "- FORMAT MATEMATIKA (KaTeX): Selalu tulis formula matematika/rumus blok dengan $$ ... $$ (misal: $$F = m \\cdot r \\cdot \\omega^2$$, $$f_L = f_0 \\pm 2sf_0$$) dan simbol inline dengan $ ... $ (misal: $H_2$, $CH_4$, $1\\times$, $\\omega$, $\\le 720\\text{ ppm}$) agar dirender presisi oleh KaTeX frontend.",
+            "- STRUKTUR JAWABAN KONSEPTUAL: Jika pertanyaan menanyakan teori, definisi, atau konsep ('apa itu X', 'jelaskan X'):",
+            "  1. Definisi & Konsep Fisika / Mekanikal / Elektrikal.",
+            "  2. Batasan Standar Internasional (ISO / IEEE / NEMA / EPRI / IEC) & Kriteria Alarm/High.",
+            "  3. Dampak Keandalan Aset PLTU Jeranjang (pada pompa BFP/CWP, fan ID/FD/PA, trafo, motor 6.3 KV & 380V).",
+            "  4. Rekomendasi Investigasi & Tindakan Pemeliharaan Lapangan.",
+            "- RUJUKAN DOKUMEN: Kutip secara eksplisit dokumen atau standar yang relevan dari KNOWLEDGE BASE (misal: `[Dokumen: Standar Evaluasi MCSA PLTU Jeranjang]`, `[Dokumen: ISO 10816-3 Vibrasi]`, `[Dokumen: Materi DGA Study Case Mr. Duval]`).",
+            "- Jangan mengarang angka pengukuran. Jika ada data pengukuran riil terlampir, jadikan itu bukti diagnosis utama.",
             "\n--- PERTANYAAN USER ---",
             question,
         ]
@@ -797,7 +1035,6 @@ class MCSALLMAssistant:
         if extra_file_context:
             parts.extend(["\n--- DOKUMEN / DATA TERLAMPIR DARI USER ---", extra_file_context])
 
-        spec_context = build_equipment_spec_context(question)
         if spec_context:
             parts.extend(["\n" + spec_context])
 

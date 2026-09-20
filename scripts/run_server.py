@@ -10,6 +10,17 @@ import subprocess
 import time
 from pathlib import Path
 
+# run_api.bat sets `chcp 65001` before launching this script, but other entry
+# points (pple serve api, a plain PowerShell/VS Code terminal, launching this
+# file directly) don't - on those, Windows' default cp1252 console encoding
+# crashes on the emoji below with UnicodeEncodeError before uvicorn even
+# starts. Force UTF-8 stdout/stderr so the banner never takes the server down.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # This launcher lives in scripts/ (repo convention for helper scripts), but the
 # app it serves ("api_server:app") lives at the repo root. Put the root on
 # sys.path so `python scripts/run_server.py`, run_api.bat and `pple serve api`
@@ -43,9 +54,21 @@ def kill_process_on_port(port: int):
                         killed_pids.add(pid)
                         print(f"[*] Menutup proses lama (PID: {pid}) yang menahan Port {port}...")
                         subprocess.run(f"taskkill /F /T /PID {pid}", shell=True, capture_output=True)
-            time.sleep(1)
         except Exception:
             pass
+
+
+def wait_until_port_free(port: int, host: str = "127.0.0.1", timeout: float = 5.0) -> bool:
+    """Poll until `port` is free instead of blindly sleeping a fixed amount -
+    taskkill returns before Windows has actually released the socket, so a
+    fixed sleep(1) sometimes wasn't long enough and uvicorn still crashed
+    with WinError 10048 (address already in use)."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if not is_port_in_use(port, host):
+            return True
+        time.sleep(0.3)
+    return not is_port_in_use(port, host)
 
 
 def main(host: str = None, port: int = None):
@@ -65,17 +88,37 @@ def main(host: str = None, port: int = None):
     if is_port_in_use(port, "127.0.0.1"):
         print(f"[!] Port {port} sedang digunakan oleh proses lain. Membersihkan port...")
         kill_process_on_port(port)
+        if not wait_until_port_free(port):
+            print(
+                f"[!] Port {port} masih terpakai setelah dibersihkan. "
+                "Uvicorn tetap akan mencoba start; jika gagal, tutup manual "
+                f"proses yang memegang port {port} (lihat 'netstat -ano | findstr :{port}')."
+            )
 
     import uvicorn
-    # Try 0.0.0.0, fallback to 127.0.0.1 if permission issues occur
+
+    def _start(bind_host: str):
+        uvicorn.run("api_server:app", host=bind_host, port=port, reload=True)
+
+    # Try the requested host, fall back to 127.0.0.1 on Windows-specific
+    # binding failures instead of crashing the whole launcher.
     try:
-        uvicorn.run("api_server:app", host=host, port=port, reload=True)
+        _start(host)
     except OSError as e:
-        if "10013" in str(e) or "access permissions" in str(e).lower():
+        message = str(e)
+        if "10013" in message or "access permissions" in message.lower():
             print(f"[!] Port {port} dibatasi pada 0.0.0.0, beralih ke 127.0.0.1...")
-            uvicorn.run("api_server:app", host="127.0.0.1", port=port, reload=True)
+            _start("127.0.0.1")
+        elif "10048" in message or "address already in use" in message.lower():
+            # Stale listener survived the earlier cleanup (taskkill can return
+            # before Windows actually releases the socket) - clean up once
+            # more, wait for the OS to confirm the port is free, then retry.
+            print(f"[!] Port {port} masih dipegang proses lain, mencoba membersihkan ulang...")
+            kill_process_on_port(port)
+            wait_until_port_free(port)
+            _start(host)
         else:
-            raise e
+            raise
 
 
 if __name__ == "__main__":

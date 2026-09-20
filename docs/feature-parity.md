@@ -43,7 +43,7 @@ seandainya React ingin membangunnya kembali, tapi belum ada konsumen React untuk
 | Data management (upload/QC MCSA & 5 domain lain) | Manajemen Data, `domain_workspace` tab "Data & Upload" | Not planned | `src.data_loader`, `src.domain_ingest` | Streamlit canonical; React not planned |
 | Word batch sync dan QC | Sync + Quality Check | Not planned | `src.report_batches` | Streamlit canonical; React not planned |
 | Report PPT/Word/CSV | Laporan PPT/Word, `domain_workspace` tab "Laporan" | Tidak ada endpoint report di `frontend/src/api.js` | `src.ppt_generator`/`docx_generator`, `src.domain_report` | Streamlit canonical; React tidak ada |
-| Work order (draft CBM, approval, EAM) | `src/pages/work_orders_page.py` + draft otomatis dari Asset 360/Agent Dashboard (`src.work_orders`) — implementasi nyata, bukan placeholder | Tidak ada | `src.work_orders`, `pple/api/routers/work_orders.py` | Streamlit canonical; React tidak ada |
+| Work order (draft CBM, approval, EAM) | `src/pages/work_orders_page.py` + draft otomatis dari Asset 360/Agent Dashboard (`src.work_orders`) — implementasi nyata | **Supported** — `WorkOrdersWorkspace.jsx` (`/work-orders`) + tombol aksi cepat "Terbitkan WO CBM" di `ChatWorkspace.jsx`, verifikasi checklist keselamatan LOTO, form TE IMS `FORM.JRG.F.05.006`, terhubung penuh ke `/api/workorders/*` | `src.work_orders`, `pple/api/routers/work_orders.py` | Supported pada keduanya |
 | Chat assistant (tanya status/threshold per domain) | Chatbot (`src.chatbot.MCSAChatbot`, rule-based + LLM opsional) | Tidak ada panel chat | `src.chatbot`, `src.llm_assistant` | Streamlit canonical; React tidak ada |
 
 ## Matrix — platform PPLE V2 (operasi agent, bukan domain CBM)

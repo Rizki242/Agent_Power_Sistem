@@ -28,10 +28,11 @@ def _get_materi_subdirs() -> list[str]:
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     materi_dir = os.path.join(root_dir, "Materi")
     subdirs = []
-    for name in ["VIBRASI", "TRIBOLOGY"]:
-        path = os.path.join(materi_dir, name)
-        if os.path.isdir(path):
-            subdirs.append(path)
+    if os.path.isdir(materi_dir):
+        for item in sorted(os.listdir(materi_dir)):
+            path = os.path.join(materi_dir, item)
+            if os.path.isdir(path) and not item.startswith(".") and item != "__pycache__":
+                subdirs.append(path)
     return subdirs
 
 
@@ -63,44 +64,65 @@ def _load_json_knowledge_files() -> list[dict]:
     materi_dir = os.path.join(root_dir, "Materi")
     if not os.path.isdir(materi_dir):
         return documents
-    for fn in sorted(os.listdir(materi_dir)):
-        if not fn.lower().endswith(".json"):
-            continue
-        path = os.path.join(materi_dir, fn)
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            source_name = os.path.splitext(fn)[0]
-            if isinstance(data, dict) and isinstance(data.get("sections"), list):
-                title = data.get("title") or source_name
-                for s in data["sections"]:
-                    if not isinstance(s, dict):
-                        continue
-                    content = _clean_text(s.get("content"))
-                    if content:
-                        heading = s.get("heading") or "Section"
-                        documents.append({
-                            "source": fn,
-                            "title": title,
-                            "heading": heading,
-                            "content": content,
-                            "type": "json",
-                        })
-            elif isinstance(data, list) and all(isinstance(x, dict) for x in data):
-                for item in data:
-                    content = _clean_text(item.get("content"))
-                    if content:
-                        pg = item.get("page", 1)
-                        documents.append({
-                            "source": fn,
-                            "title": source_name,
-                            "heading": f"Halaman {pg}",
-                            "content": content,
-                            "type": "json",
-                        })
-        except Exception:
-            continue
+
+    # Scan both root Materi and all subdirectories
+    search_dirs = [materi_dir] + _get_materi_subdirs()
+    seen_paths = set()
+
+    for s_dir in search_dirs:
+        for fn in sorted(os.listdir(s_dir)):
+            if not fn.lower().endswith(".json"):
+                continue
+            path = os.path.join(s_dir, fn)
+            if path in seen_paths or not os.path.isfile(path):
+                continue
+            seen_paths.add(path)
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                source_name = os.path.splitext(fn)[0]
+                rel_src = os.path.relpath(path, root_dir)
+                if isinstance(data, dict) and isinstance(data.get("sections"), list):
+                    title = data.get("title") or source_name
+                    for s in data["sections"]:
+                        if not isinstance(s, dict):
+                            continue
+                        content = _clean_text(s.get("content"))
+                        if content:
+                            heading = s.get("heading") or "Section"
+                            documents.append({
+                                "source": rel_src,
+                                "title": title,
+                                "heading": heading,
+                                "content": content,
+                                "type": "json",
+                            })
+                elif isinstance(data, list) and all(isinstance(x, dict) for x in data):
+                    for item in data:
+                        content = _clean_text(item.get("content"))
+                        if content:
+                            pg = item.get("page", 1)
+                            documents.append({
+                                "source": rel_src,
+                                "title": source_name,
+                                "heading": f"Halaman {pg}",
+                                "content": content,
+                                "type": "json",
+                            })
+            except Exception:
+                continue
     return documents
+
+
+_RAW_DOCS_CACHE: Optional[list[dict]] = None
+_CHUNKS_CACHE: Optional[list[dict]] = None
+
+
+def clear_rag_cache():
+    """Clear memory cache of parsed documents and chunks."""
+    global _RAW_DOCS_CACHE, _CHUNKS_CACHE
+    _RAW_DOCS_CACHE = None
+    _CHUNKS_CACHE = None
 
 
 def _load_pdf_files() -> list[dict]:
@@ -109,7 +131,9 @@ def _load_pdf_files() -> list[dict]:
         from pypdf import PdfReader
     except ImportError:
         return documents
-    import io
+    import logging
+    logging.getLogger("pypdf").setLevel(logging.ERROR)
+
     for subdir in _get_materi_subdirs():
         for root, _, files in os.walk(subdir):
             for fn in files:
@@ -119,8 +143,9 @@ def _load_pdf_files() -> list[dict]:
                         reader = PdfReader(path)
                         title = os.path.splitext(fn)[0].replace("_", " ").replace("-", " ").title()
                         all_text = []
-                        for page in reader.pages:
-                            t = _clean_text(page.extract_text())
+                        # Read up to 50 pages per PDF to keep indexing performant
+                        for page in reader.pages[:50]:
+                            t = _clean_text(page.extract_text() or "")
                             if t:
                                 all_text.append(t)
                         if all_text:
@@ -135,11 +160,16 @@ def _load_pdf_files() -> list[dict]:
     return documents
 
 
-def _load_all_documents() -> list[dict]:
+def _load_all_documents(force_reload: bool = False) -> list[dict]:
+    global _RAW_DOCS_CACHE
+    if _RAW_DOCS_CACHE is not None and not force_reload:
+        return _RAW_DOCS_CACHE
+
     docs = []
     docs.extend(_load_markdown_files())
     docs.extend(_load_json_knowledge_files())
     docs.extend(_load_pdf_files())
+    _RAW_DOCS_CACHE = docs
     return docs
 
 
@@ -157,7 +187,11 @@ def _chunk_text(text: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> 
     return chunks
 
 
-def _create_documents_with_metadata(raw_docs: list[dict]) -> list[dict]:
+def _create_documents_with_metadata(raw_docs: list[dict], force_reload: bool = False) -> list[dict]:
+    global _CHUNKS_CACHE
+    if _CHUNKS_CACHE is not None and not force_reload:
+        return _CHUNKS_CACHE
+
     langchain_docs = []
     for doc in raw_docs:
         content = doc.get("content", "")
@@ -175,6 +209,7 @@ def _create_documents_with_metadata(raw_docs: list[dict]) -> list[dict]:
                     "type": doc.get("type", ""),
                 },
             })
+    _CHUNKS_CACHE = langchain_docs
     return langchain_docs
 
 
@@ -192,13 +227,22 @@ class RAGEngine:
             return self.embeddings
         try:
             from langchain_community.embeddings import HuggingFaceEmbeddings
-            self.embeddings = HuggingFaceEmbeddings(
-                model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-                model_kwargs={"device": "cpu"},
-                encode_kwargs={"normalize_embeddings": True},
-            )
-            return self.embeddings
-        except ImportError:
+            # First try local cache to avoid network hang on offline/sandboxed environments
+            try:
+                self.embeddings = HuggingFaceEmbeddings(
+                    model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+                    model_kwargs={"device": "cpu", "local_files_only": True},
+                    encode_kwargs={"normalize_embeddings": True},
+                )
+                return self.embeddings
+            except Exception:
+                self.embeddings = HuggingFaceEmbeddings(
+                    model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+                    model_kwargs={"device": "cpu"},
+                    encode_kwargs={"normalize_embeddings": True},
+                )
+                return self.embeddings
+        except Exception:
             try:
                 from langchain_community.embeddings import GeminiEmbeddings
                 from src.llm_assistant import resolve_provider_key
@@ -361,6 +405,58 @@ class RAGEngine:
         context_str = "\n\n".join(lines)
         return context_str, citations
 
+    def get_metadata(self) -> dict:
+        index_file = os.path.join(self.index_dir, "index.faiss")
+        index_exists = os.path.exists(index_file)
+        index_size_kb = round(os.path.getsize(index_file) / 1024, 1) if index_exists else 0.0
+        total_chunks = 0
+        if self.vectorstore and hasattr(self.vectorstore, "index") and self.vectorstore.index:
+            total_chunks = getattr(self.vectorstore.index, "ntotal", 0)
+
+        subdirs = [os.path.basename(d) for d in _get_materi_subdirs()]
+
+        return {
+            "is_available": is_rag_available(),
+            "is_ready": self.is_ready,
+            "index_exists": index_exists,
+            "index_size_kb": index_size_kb,
+            "total_chunks": total_chunks,
+            "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            "chunk_size": 1000,
+            "chunk_overlap": 200,
+            "scanned_directories": subdirs,
+        }
+
+    def inspect_chunks(self, source_filter: Optional[str] = None, limit: int = 50, offset: int = 0) -> dict:
+        """Returns parsed document chunks with metadata for UI inspection and debugging."""
+        all_chunks = []
+        raw_docs = _load_all_documents()
+        langchain_docs = _create_documents_with_metadata(raw_docs)
+
+        for i, doc in enumerate(langchain_docs):
+            src = doc.get("metadata", {}).get("source", "")
+            if source_filter and source_filter.lower() not in src.lower():
+                continue
+            all_chunks.append({
+                "chunk_id": f"chunk-{i}",
+                "source": src,
+                "title": doc.get("metadata", {}).get("title", ""),
+                "heading": doc.get("metadata", {}).get("heading", ""),
+                "chunk_index": doc.get("metadata", {}).get("chunk_index", 0),
+                "type": doc.get("metadata", {}).get("type", ""),
+                "content": doc.get("page_content", ""),
+                "char_length": len(doc.get("page_content", "")),
+            })
+
+        total = len(all_chunks)
+        paginated = all_chunks[offset : offset + limit]
+        return {
+            "total": total,
+            "offset": offset,
+            "limit": limit,
+            "chunks": paginated,
+        }
+
     @property
     def is_ready(self) -> bool:
         return self._initialized and self.vectorstore is not None
@@ -398,3 +494,15 @@ def is_rag_available() -> bool:
         return True
     except ImportError:
         return False
+
+
+def rag_get_metadata() -> dict:
+    engine = get_rag_engine()
+    if not engine.is_ready and os.path.exists(os.path.join(engine.index_dir, "index.faiss")):
+        engine.load_index()
+    return engine.get_metadata()
+
+
+def rag_inspect_chunks(source_filter: Optional[str] = None, limit: int = 50, offset: int = 0) -> dict:
+    engine = get_rag_engine()
+    return engine.inspect_chunks(source_filter=source_filter, limit=limit, offset=offset)

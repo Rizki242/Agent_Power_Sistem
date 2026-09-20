@@ -321,11 +321,19 @@ def wide_to_long(domain: str, frame: pd.DataFrame, source_file: str = "") -> lis
     parameter_keys = [spec.key for spec in parameter_specs(domain) if spec.key in inverse]
 
     rows: list[dict[str, Any]] = []
+    today_str = datetime.now().strftime("%Y-%m-%d")
     for _, record in frame.iterrows():
+        raw_test_date = record.get(inverse["test_date"]) if "test_date" in inverse else ""
+        if raw_test_date is None or (isinstance(raw_test_date, float) and pd.isna(raw_test_date)) or str(raw_test_date).strip() == "":
+            resolved_test_date = today_str
+        else:
+            resolved_test_date = str(raw_test_date).strip()
+
         identity = {
             field: record.get(inverse[field]) if field in inverse else ""
-            for field in ("equipment", "asset_id", "unit_name", "test_date", "condition", "notes")
+            for field in ("equipment", "asset_id", "unit_name", "condition", "notes")
         }
+        identity["test_date"] = resolved_test_date
         for key in parameter_keys:
             raw_value = record.get(inverse[key])
             if raw_value is None or (isinstance(raw_value, float) and pd.isna(raw_value)) or str(raw_value).strip() == "":

@@ -505,17 +505,41 @@ class PPLEMasterAgent:
                     "Informasi standar terkait telah dicek dalam basis pengetahuan PPLE (ISO 10816, IEEE 519, IEEE C57.104, IEC 60270, ASTM)."
                 )
 
-        # Case D: General Plant Query
+        # Case D: General / Casual / Non-technical Query
         else:
-            rule_output_parts.append(
-                "Halo! Saya **PPLE Master Agent**, asisten kecerdasan predictive maintenance terpadu PLTU Jeranjang (3 × 25 MW).\n"
-                "Saya mengorkestrasi 6 domain spesialis: **Vibrasi, MCSA, DGA Trafo, Partial Discharge, Tribologi Oli, dan Thermal IRT**, "
-                "serta mesin Reliability Fusion, kalkulasi RUL, dan mitigasi risiko.\n\n"
-                "Anda dapat menanyakan:\n"
-                "- Kondisi spesifik peralatan (contoh: *'Bagaimana status BFP 1A?'*, *'Kondisi DGA Trafo UAT 1'*, *'Hasil oli CWP 1B'*)\n"
-                "- Daftar alarm plant (contoh: *'List equipment alarm'*)\n"
-                "- Rujukan standar dan SOP CBM (contoh: *'Standar ISO 10816-3 zona C'*, *'Batas gas C2H2 Duval trafo'*)"
-            )
+            if any(w in q_lower for w in ["siapa kamu", "kamu siapa", "siapa anda", "identitas", "namamu", "profil", "tentang kamu", "peranmu"]):
+                rule_output_parts.append(
+                    "Saya adalah **Agent CBM Learning PLTU Jeranjang**, asisten kecerdasan buatan terpadu untuk pemantauan kondisi mesin "
+                    "(*Condition-Based Maintenance*) dan pembelajaran keandalan di PLTU Jeranjang (3 × 25 MW).\n\n"
+                    "Saya mengorkestrasi 6 domain spesialis: **Vibrasi, MCSA, DGA Trafo, Partial Discharge, Tribologi Oli, dan Thermal IRT**, "
+                    "serta terus belajar dari pola riwayat gangguan terdahulu untuk mendeteksi anomali dini dan mencegah forced outage."
+                )
+            elif any(w in q_lower for w in ["terima kasih", "terimakasih", "makasih", "thanks", "mantap", "hebat", "keren", "bagus"]):
+                rule_output_parts.append(
+                    "Sama-sama! Senang sekali bisa membantu Anda. 😊\n\n"
+                    "Sebagai **Agent CBM Learning PLTU Jeranjang**, keandalan unit pembangkit dan keselamatan operasional adalah prioritas utama. "
+                    "Jangan ragu menyapa atau bertanya kapan saja dibutuhkan!"
+                )
+            elif any(w in q_lower for w in ["apa kabar", "gimana kabar", "bagaimana kabar", "lagi ngapain", "sedang apa", "lagi apa", "kamu sehat"]):
+                rule_output_parts.append(
+                    "Kabar saya sangat baik dan selalu siap siaga 24/7! ⚡\n\n"
+                    "Sebagai **Agent CBM Learning PLTU Jeranjang**, saya saat ini terus memantau telemetri operasional peralatan berputar "
+                    "dan transformator, serta memperbarui wawasan pembelajaran keandalan. Ada sistem atau mesin yang ingin kita cek hari ini?"
+                )
+            elif any(w in q_lower for w in ["halo", "hai", "hi", "hey", "pagi", "siang", "sore", "malam", "assalamualaikum", "selamat"]):
+                rule_output_parts.append(
+                    "👋 **Halo! Selamat datang di Command Center CBM PLTU Jeranjang.**\n\n"
+                    "Saya **Agent CBM Learning PLTU Jeranjang**, asisten kecerdasan prediktif yang siap mendampingi Anda memantau keandalan "
+                    "peralatan Unit 1, 2, 3, dan Common. Anda dapat menanyakan kondisi mesin, tren getaran, analisis oli, gas trafo, atau rujukan standar teknis."
+                )
+            else:
+                rule_output_parts.append(
+                    "Halo! Sebagai **Agent CBM Learning PLTU Jeranjang**, saya sangat senang bisa mengobrol dan berdiskusi dengan Anda.\n\n"
+                    "Saya siap membantu memantau kondisi dan keandalan operasional PLTU Jeranjang (3 × 25 MW) melalui 6 domain: "
+                    "**Vibrasi, MCSA, DGA Trafo, Partial Discharge, Tribologi Oli, dan Thermal IRT**.\n\n"
+                    "Silakan sebutkan nama peralatan (contoh: *'Status BFP 1A'*), tanyakan alarm (*'List equipment alarm'*), "
+                    "atau tanyakan topik lainnya yang ingin Anda pelajari!"
+                )
 
         rule_based_response = "\n".join(rule_output_parts)
         if file_content and file_name:

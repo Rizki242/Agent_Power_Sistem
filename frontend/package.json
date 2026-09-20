@@ -11,10 +11,14 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "latest",
+    "katex": "^0.18.7",
     "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "latest",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "tailwindcss": "^4.3.3",
     "vite": "latest"
   },

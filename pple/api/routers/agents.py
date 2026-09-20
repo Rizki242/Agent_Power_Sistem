@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 import io
 import os
 import re
@@ -91,6 +92,62 @@ def extract_text_from_upload(file_bytes: bytes, filename: str) -> str:
     except Exception as e:
         return f"[File text extraction note: {e}]"
     return f"[File {filename} attached]"
+
+
+MONTH_NAMES_ID = {
+    "januari": 1, "februari": 2, "maret": 3, "april": 4, "mei": 5, "juni": 6,
+    "juli": 7, "agustus": 8, "september": 9, "oktober": 10, "november": 11, "desember": 12,
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "jun": 6, "jul": 7, "agu": 8, "agt": 8, "sep": 9, "okt": 10, "nov": 11, "des": 12,
+}
+
+
+def detect_document_date(text: str, filename: str = "") -> Tuple[str, str, str]:
+    """
+    Ekstrak tanggal referensi dari teks dokumen atau nama file.
+    Aturan bisnis:
+    1. Jika di dalam dokumen terdapat tanggal, maka waktu data merujuk pada tanggal tersebut.
+    2. Jika TIDAK ada tanggal, waktu data merujuk pada tanggal saat di-upload (hari ini).
+    Mengembalikan (date_str_YYYY_MM_DD, source ['document'|'upload_date'], label).
+    """
+    sample = (filename + " " + text[:5000]).lower()
+
+    # 1. Format ISO YYYY-MM-DD
+    m_iso = re.search(r"\b(20\d{2})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12]\d|3[01])\b", sample)
+    if m_iso:
+        d_str = f"{m_iso.group(1)}-{m_iso.group(2)}-{m_iso.group(3)}"
+        return (d_str, "document", f"Terdeteksi tanggal dokumen: {d_str}")
+
+    # 2. Format DD/MM/YYYY atau DD-MM-YYYY
+    m_dmy = re.search(r"\b(0?[1-9]|[12]\d|3[01])[-/](0?[1-9]|1[0-2])[-/](20\d{2})\b", sample)
+    if m_dmy:
+        day = int(m_dmy.group(1))
+        month = int(m_dmy.group(2))
+        year = int(m_dmy.group(3))
+        d_str = f"{year:04d}-{month:02d}-{day:02d}"
+        return (d_str, "document", f"Terdeteksi tanggal dokumen: {d_str}")
+
+    # 3. Format teks Indonesia: "15 September 2026" atau "10 Okt 2025"
+    m_txt = re.search(r"\b(0?[1-9]|[12]\d|3[01])\s+([a-zA-Z]{3,9})\s+(20\d{2})\b", sample)
+    if m_txt:
+        day = int(m_txt.group(1))
+        m_name = m_txt.group(2).lower()
+        year = int(m_txt.group(3))
+        if m_name in MONTH_NAMES_ID:
+            d_str = f"{year:04d}-{MONTH_NAMES_ID[m_name]:02d}-{day:02d}"
+            return (d_str, "document", f"Terdeteksi tanggal dokumen: {d_str}")
+
+    # 4. Format Bulan-Tahun: "September 2026"
+    m_my = re.search(r"\b([a-zA-Z]{3,9})\s+(20\d{2})\b", sample)
+    if m_my:
+        m_name = m_my.group(1).lower()
+        year = int(m_my.group(2))
+        if m_name in MONTH_NAMES_ID:
+            d_str = f"{year:04d}-{MONTH_NAMES_ID[m_name]:02d}-01"
+            return (d_str, "document", f"Terdeteksi periode dokumen: {m_my.group(1).title()} {year} ({d_str})")
+
+    # Fallback: Tidak ada tanggal pada dokumen -> merujuk ke tanggal upload hari ini
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    return (today_str, "upload_date", f"Tidak ada tanggal pada dokumen -> Data merujuk pada tanggal upload ({today_str})")
 
 
 # Request Models
@@ -257,12 +314,47 @@ def evaluate_agent_on_harness():
 
 
 def generate_speech_summary(text: str, matched_equipment: Optional[str] = None) -> str:
-    """Generate concise, natural spoken Indonesian narrative free of raw codes/tables."""
+    """
+    Generate concise, natural spoken Indonesian narrative free of raw codes/tables.
+    Optimized for radio/headset listening during plant field walkdown inspections.
+    """
     if not text:
         return ""
-    # Strip markdown headers, code blocks, bold, table syntax
-    clean = re.sub(r"```[\s\S]*?```", "", text)
+
+    # Check for structured multi-agent CBM diagnostic output
+    health_m = re.search(r"(?:Consolidated\s+Health\s+Index|Health\s+Score|Skor\s+Kesehatan)[*_]*\s*:\s*[*_]*([0-9.]+)(?:/100)?[*_]*\s*(?:\(([^)]+)\))?", text, re.IGNORECASE)
+    failure_m = re.search(r"(?:Primary\s+Failure\s+Mode|Mode\s+Kegagalan)[*_]*\s*:\s*[*_]*([^\n\r*]+)", text, re.IGNORECASE)
+    recom_m = re.search(r"(?:Rekomendasi\s+CBM|Rekomendasi\s+Tindakan|Rekomendasi)[*_]*\s*:\s*[*_]*([^\n\r*]+)", text, re.IGNORECASE)
+
+    if health_m and matched_equipment:
+        score = health_m.group(1).strip()
+        status = (health_m.group(2) or "Normal").strip()
+        mode = failure_m.group(1).strip() if failure_m else "kondisi operasi normal"
+        recom = recom_m.group(1).strip() if recom_m else "lanjutkan pemantauan rutin"
+
+        spoken_diag = (
+            f"Laporan CBM untuk {matched_equipment}. "
+            f"Indeks kesehatan {score} persen dengan status {status}. "
+            f"Indikasi utama: {mode}. "
+            f"Rekomendasi tindakan: {recom}."
+        )
+        return spoken_diag
+
+    # Clean LaTeX math syntax
+    clean = re.sub(r"\\(?:Delta|delta)\s*T", "Delta T", text)
+    clean = re.sub(r"\\pm", "plus minus", clean)
+    clean = re.sub(r"\\(?:times|cdot)", "kali", clean)
+    clean = re.sub(r"\\(?:le|leq)", "kurang dari sama dengan", clean)
+    clean = re.sub(r"\\(?:ge|geq)", "lebih dari sama dengan", clean)
+    clean = re.sub(r"\\(?:mu|micro)", "mikro", clean)
+    clean = re.sub(r"\\\s*%", "persen", clean)
+    clean = re.sub(r"\\[a-zA-Z]+", " ", clean)  # drop any remaining latex commands
+    clean = re.sub(r"[\$\(\)\[\]]{1,2}(.*?)[\$\(\)\[\]]{1,2}", r"\1", clean)
+
+    # Strip markdown headers, code blocks, bold, bullets, table syntax
+    clean = re.sub(r"```[\s\S]*?```", "", clean)
     clean = re.sub(r"\|[^\n]+\|", "", clean)
+    clean = re.sub(r"^[\s*•#-]+", "", clean, flags=re.MULTILINE)
     clean = re.sub(r"[*_#~`]", "", clean)
     clean = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", clean)
     clean = re.sub(r"\s+", " ", clean).strip()
@@ -272,33 +364,43 @@ def generate_speech_summary(text: str, matched_equipment: Optional[str] = None) 
         (r"\bmm/s\b", "milimeter per detik"),
         (r"\bdegC\b", "derajat Celcius"),
         (r"°C", "derajat Celcius"),
-        (r"\bTDCG\b", "T D C G"),
+        (r"\bTDCG\b", "T D C G total gas terlarut"),
         (r"\bpC\b", "piko Coulomb"),
-        (r"\bTHD\b", "T H D"),
+        (r"\bTHD\b", "T H D distorsi harmonik"),
         (r"\bkV\b", "kilo Volt"),
         (r"\bMW\b", "Mega Watt"),
-        (r"\bRUL\b", "R U L"),
+        (r"\bkW\b", "kilo Watt"),
+        (r"\bRUL\b", "sisa umur operasi"),
         (r"\bDGA\b", "D G A"),
         (r"\bMCSA\b", "M C S A"),
-        (r"\bISO\b", "I S O"),
-        (r"\bBFP\b", "B F P"),
-        (r"\bCWP\b", "C W P"),
+        (r"\bISO\b", "standar I S O"),
+        (r"\bIEEE\b", "standar I triple E"),
+        (r"\bBFP\b", "B F P Boiler Feed Pump"),
+        (r"\bCWP\b", "C W P Circulating Water Pump"),
+        (r"\bID Fan\b", "I D Fan"),
+        (r"\bFD Fan\b", "F D Fan"),
+        (r"\bPA Fan\b", "P A Fan"),
+        (r"\bPLTU\b", "P L T U"),
+        (r"\bWO\b", "Work Order"),
     ]
     for pattern, rep in replacements:
-        clean = re.sub(pattern, rep, clean)
+        clean = re.sub(pattern, rep, clean, flags=re.IGNORECASE)
 
-    # Take first 1-2 sentences
-    sentences = [
+    # Take first 2-3 coherent sentences
+    raw_sentences = [
         s.strip()
         for s in re.split(r"(?<=[.!?])\s+", clean)
-        if s.strip() and not s.strip().startswith("-")
+        if s.strip() and len(s.strip()) > 5
     ]
-    if sentences:
-        speech = " ".join(sentences[:2])
+    if raw_sentences:
+        speech = " ".join(raw_sentences[:3])
+        if len(speech) > 320:
+            speech = " ".join(raw_sentences[:2])
     else:
-        speech = clean[:220]
+        speech = clean[:250]
 
     return speech.strip()
+
 
 
 @router.get("/agent/chat/sessions")
@@ -356,18 +458,23 @@ async def agent_chat(
     source_val = source or request.headers.get("X-Source")
     session_id_val = None
 
+    from src import ai_settings
+    saved_ai = ai_settings.load()
+
     if "application/json" in content_type:
         body = await request.json()
         msg_text = body.get("message", "")
-        prov = body.get("provider", "gemini")
-        mdl = body.get("model", DEFAULT_GEMINI_MODEL)
+        prov = body.get("provider") or saved_ai.get("ai_provider") or "gemini"
+        saved_model = saved_ai.get(f"{prov}_model")
+        mdl = body.get("model") or saved_model or DEFAULT_GEMINI_MODEL
         k = body.get("api_key")
         source_val = body.get("source") or source_val or "CHAT"
         session_id_val = body.get("session_id")
     else:
         msg_text = message or ""
-        prov = provider or "gemini"
-        mdl = model or DEFAULT_GEMINI_MODEL
+        prov = provider or saved_ai.get("ai_provider") or "gemini"
+        saved_model = saved_ai.get(f"{prov}_model")
+        mdl = model or saved_model or DEFAULT_GEMINI_MODEL
         k = api_key
         source_val = source_val or "CHAT"
         session_id_val = session_id
@@ -375,8 +482,15 @@ async def agent_chat(
             file_name = file.filename
             file_bytes = await file.read()
             extracted_text = extract_text_from_upload(file_bytes, file.filename)
+            detected_date, date_source, date_label = detect_document_date(extracted_text, file.filename)
             extra_file_context = (
                 f"\n\n--- KONTEN DOKUMEN/FILE TERLAMPIR ({file.filename}) ---\n"
+                f"[STATUS TEMPORAL DOKUMEN]: {date_label}\n"
+                f"[WAKTU ACUAN PENGUJIAN]: {detected_date} (Sumber Acuan: {date_source})\n"
+                f"[PEDOMAN ANALISIS HISTORIS & CONTINUOUS LEARNING]:\n"
+                f"- Jika data bertanggal masa lalu ({date_source} == 'document'), perlakukan dokumen ini sebagai data historis/baseline.\n"
+                f"- Jika dokumen tidak bertanggal ({date_source} == 'upload_date'), data merujuk pada pengukuran saat di-upload ({detected_date}).\n"
+                f"- Jadikan data ini sebagai riwayat pembelajaran untuk menganalisis tren perubahan parameter, pola degradasi, dan perbandingan kondisi mesin dari waktu ke waktu.\n\n"
                 f"{extracted_text[:12000]}\n--- AKHIR DOKUMEN TERLAMPIR ---"
             )
 
@@ -491,14 +605,24 @@ async def agent_chat(
     resolved_key = resolve_provider_key(prov, k)
     ai_enhanced = False
     final_reply = bot_reply
+    resilience_meta = {
+        "primary_provider": prov,
+        "primary_model": mdl,
+        "effective_provider": prov,
+        "effective_model": mdl,
+        "failover_occurred": False,
+        "fallback_used": None,
+    }
 
-    if resolved_key:
+    citations = []
+    assistant = None
+    if resolved_key or str(prov).lower() in ("ollama", "opencode"):
         try:
             assistant = MCSALLMAssistant(
                 enabled=True,
                 provider=prov or "gemini",
                 model=mdl or DEFAULT_GEMINI_MODEL,
-                api_key=resolved_key,
+                api_key=resolved_key or "local",
             )
             if assistant.available:
                 ai_resp = assistant.enhance_answer(
@@ -510,11 +634,30 @@ async def agent_chat(
                     extra_file_context=extra_file_context,
                     subagents_context=subagents_context,
                 )
-                if ai_resp and len(ai_resp.strip()) > 10:
+                r_info = getattr(assistant, "resilience_info", {})
+                if r_info:
+                    resilience_meta.update(r_info)
+                    prov = r_info.get("effective_provider", prov)
+                    mdl = r_info.get("effective_model", mdl)
+
+                if getattr(assistant, "last_citations", None):
+                    citations = assistant.last_citations
+
+                if ai_resp and len(ai_resp.strip()) > 10 and ai_resp.strip() != bot_reply.strip() and not getattr(assistant, "last_error", None):
                     final_reply = ai_resp
                     ai_enhanced = True
         except Exception as e:
             print(f"LLM AI processing note: {e}")
+
+    # Fallback to direct RAG retrieval if citations not yet populated and query exists
+    if not citations and msg_text:
+        try:
+            from src.knowledge_retriever import build_knowledge_context
+            _, retrieved_cits = build_knowledge_context(msg_text, max_items=3, use_rag=True)
+            if retrieved_cits:
+                citations = retrieved_cits
+        except Exception as e:
+            print(f"Direct RAG retrieval note: {e}")
 
     speech_summary = generate_speech_summary(final_reply, matched_eq)
 
@@ -541,6 +684,10 @@ async def agent_chat(
                 "safety_blocked": False,
                 "subagent_traces": subagent_traces,
                 "active_subagents": active_subagents,
+                "provider": prov,
+                "model": mdl,
+                "resilience": resilience_meta,
+                "citations": citations,
             },
         )
 
@@ -551,7 +698,10 @@ async def agent_chat(
         "ai_enhanced": ai_enhanced,
         "file_name": file_name,
         "provider": prov,
+        "model": mdl,
         "session_id": session_id_val,
         "active_subagents": active_subagents,
         "subagent_traces": subagent_traces,
+        "resilience": resilience_meta,
+        "citations": citations,
     }

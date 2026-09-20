@@ -60,6 +60,11 @@ app.add_middleware(
 _startup_warning = startup_warning()
 if _startup_warning:
     print(_startup_warning)
+print(f"[PPLE] CORS origins diizinkan: {', '.join(_cors_origins)}")
+print(
+    "[PPLE] Jika frontend gagal terhubung (CORS error di console browser), "
+    "pastikan origin di atas cocok dengan alamat frontend, atau set PPLE_CORS_ORIGINS."
+)
 
 # PPLE V2 (docs/final.md Phase 24): additive /api/v2/* routes exposing the
 # pple.engineering module registry. Does not affect any /api/* route above.
@@ -80,20 +85,24 @@ app.include_router(specialist_router)
 
 from pple.api.routers import (
     agents_router,
+    automated_reports_router,
     automations_router,
     core_router,
     equipment_router,
     knowledge_router,
+    rag_router,
     reports_router,
     settings_router,
     vibration_router,
     work_orders_router,
 )
 app.include_router(agents_router)
+app.include_router(automated_reports_router)
 app.include_router(automations_router)
 app.include_router(core_router)
 app.include_router(equipment_router)
 app.include_router(knowledge_router)
+app.include_router(rag_router)
 app.include_router(reports_router)
 app.include_router(settings_router)
 app.include_router(vibration_router)

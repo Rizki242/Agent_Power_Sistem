@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AlertTriangle,
+  BookOpen,
   Bot,
   ChevronDown,
   ChevronUp,
+  ClipboardList,
   Copy,
   ExternalLink,
   FileText,
@@ -25,6 +26,7 @@ import { Link } from 'react-router-dom'
 import {
   createNewChatSession,
   deleteChatSession,
+  generateCbmWorkOrder,
   getChatSessionMessages,
   getChatSessions,
   sendChatMessage,
@@ -46,99 +48,7 @@ const QUICK_ACTIONS = [
   { label: '📉 Rekomendasi RUL & CBM teratas', prompt: 'Sebutkan peralatan dengan RUL kritis dan tindakan pemeliharaan yang disarankan.' },
 ]
 
-function renderInlineMarkdown(str) {
-  // Regex to match **bold** and `code`
-  const parts = []
-  let remaining = str
-  let key = 0
-
-  while (remaining) {
-    const boldMatch = remaining.match(/\*\*(.*?)\*\*/)
-    const codeMatch = remaining.match(/`([^`]+)`/)
-
-    let firstMatch = null
-    let type = ''
-    let matchIndex = Infinity
-
-    if (boldMatch && boldMatch.index < matchIndex) {
-      firstMatch = boldMatch
-      type = 'bold'
-      matchIndex = boldMatch.index
-    }
-    if (codeMatch && codeMatch.index < matchIndex) {
-      firstMatch = codeMatch
-      type = 'code'
-      matchIndex = codeMatch.index
-    }
-
-    if (!firstMatch) {
-      parts.push(remaining)
-      break
-    }
-
-    if (matchIndex > 0) {
-      parts.push(remaining.slice(0, matchIndex))
-    }
-
-    if (type === 'bold') {
-      parts.push(<strong key={key++}>{firstMatch[1]}</strong>)
-      remaining = remaining.slice(matchIndex + firstMatch[0].length)
-    } else if (type === 'code') {
-      parts.push(<code key={key++} className="chat-inline-code">{firstMatch[1]}</code>)
-      remaining = remaining.slice(matchIndex + firstMatch[0].length)
-    }
-  }
-
-  return parts
-}
-
-function formatMarkdown(text) {
-  if (!text) return null
-
-  const lines = text.split('\n')
-  const elements = []
-  let currentList = []
-
-  const flushList = () => {
-    if (currentList.length > 0) {
-      elements.push(
-        <ul key={`ul-${elements.length}`} className="chat-markdown-list">
-          {currentList.map((item, idx) => (
-            <li key={idx}>{renderInlineMarkdown(item)}</li>
-          ))}
-        </ul>
-      )
-      currentList = []
-    }
-  }
-
-  lines.forEach((line, i) => {
-    const trimmed = line.trim()
-    if (!trimmed) {
-      flushList()
-      return
-    }
-
-    if (trimmed.startsWith('### ')) {
-      flushList()
-      elements.push(<h4 key={i} className="chat-heading-3">{trimmed.slice(4)}</h4>)
-    } else if (trimmed.startsWith('## ')) {
-      flushList()
-      elements.push(<h3 key={i} className="chat-heading-2">{trimmed.slice(3)}</h3>)
-    } else if (trimmed.startsWith('# ')) {
-      flushList()
-      elements.push(<h2 key={i} className="chat-heading-1">{trimmed.slice(2)}</h2>)
-    } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      currentList.push(trimmed.slice(2))
-    } else {
-      flushList()
-      elements.push(<p key={i} className="chat-paragraph">{renderInlineMarkdown(trimmed)}</p>)
-    }
-  })
-
-  flushList()
-  return elements
-}
+import MarkdownRenderer from './components/MarkdownRenderer.jsx'
 
 function formatChatTime(raw) {
   if (!raw) return ''
@@ -158,7 +68,7 @@ function formatChatTime(raw) {
 const defaultWelcomeMessage = {
   id: 'welcome',
   role: 'assistant',
-  text: 'Halo! Saya **Asisten CBM PPLE Agent** untuk PLTU Jeranjang (3 × 25 MW).\n\nSaya memadukan analisa 6 spesialis (*Vibrasi, MCSA, DGA, Partial Discharge, Tribologi, Thermal*), Safety Guardrail, dan pengetahuan unit. Anda dapat memilih sesi di sebelah kiri, mengetik pertanyaan, atau menekan tombol mikrofon untuk berbicara.',
+  text: 'Halo! Saya **Agent CBM Learning PLTU Jeranjang** (PPLE Agent).\n\nSaya memadukan analisa 6 spesialis (*Vibrasi, MCSA, DGA, Partial Discharge, Tribologi, Thermal*), Safety Guardrail, dan pengetahuan unit PLTU Jeranjang (3 × 25 MW).\n\nAnda dapat menanyakan kondisi mesin, tren getaran, analisis oli, gas trafo, atau mengobrol santai seputar operasional plant.',
   subagent_traces: [],
   timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
 }
@@ -168,14 +78,18 @@ const ChatMessageBubble = React.memo(function ChatMessageBubble({
   msg,
   isSpeaking,
   isExpanded,
+  isCitationsExpanded,
   onToggleTraces,
+  onToggleCitations,
   onSpeak,
   onCopy,
   hasTTS,
+  onCreateWo,
 }) {
   const isUser = msg.role === 'user'
-  const formattedContent = useMemo(() => formatMarkdown(msg.text), [msg.text])
   const traceCount = msg.subagent_traces?.length ?? 0
+  const citations = msg.citations || []
+  const citationCount = citations.length
 
   return (
     <div className={`chat-bubble-row ${isUser ? 'chat-bubble-row--user' : 'chat-bubble-row--bot'}`}>
@@ -207,7 +121,7 @@ const ChatMessageBubble = React.memo(function ChatMessageBubble({
         ) : null}
 
         <div className="chat-bubble__content">
-          {formattedContent}
+          <MarkdownRenderer content={msg.text} />
         </div>
 
         {/* Matched Equipment Mini Card */}
@@ -217,13 +131,24 @@ const ChatMessageBubble = React.memo(function ChatMessageBubble({
               <span>Peralatan terdeteksi:</span>
               <strong>{msg.matched_equipment}</strong>
             </div>
-            <Link
-              to={`/data`}
-              className="chat-equipment-card__link"
-              title="Buka detail aset di halaman Data"
-            >
-              Lihat di Data <ExternalLink size={13} />
-            </Link>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Link
+                to={`/data`}
+                className="chat-equipment-card__link"
+                title="Buka detail aset di halaman Data"
+              >
+                Lihat di Data <ExternalLink size={13} />
+              </Link>
+              <button
+                type="button"
+                className="chat-equipment-card__wo-btn"
+                onClick={() => onCreateWo && onCreateWo(msg)}
+                title="Terbitkan Work Order CBM untuk peralatan ini"
+              >
+                <ClipboardList size={13} />
+                <span>Terbitkan WO CBM</span>
+              </button>
+            </div>
           </div>
         ) : null}
 
@@ -250,6 +175,42 @@ const ChatMessageBubble = React.memo(function ChatMessageBubble({
                       </span>
                     </div>
                     <p className="trace-item__finding">{trace.key_finding}</p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {/* RAG Knowledge Citations Accordion */}
+        {citationCount > 0 ? (
+          <div className="chat-citations">
+            <button
+              type="button"
+              className="chat-citations__toggle"
+              onClick={() => onToggleCitations(msg.id)}
+              aria-expanded={isCitationsExpanded}
+            >
+              <div className="chat-citations__toggle-left">
+                <BookOpen size={14} />
+                <span>Rujukan Dokumen & Standar CBM ({citationCount})</span>
+              </div>
+              {isCitationsExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+
+            {isCitationsExpanded ? (
+              <div className="chat-citations__list">
+                {citations.map((cit, idx) => (
+                  <div key={idx} className="citation-item">
+                    <div className="citation-item__header">
+                      <span className="citation-item__badge">{cit.source || 'Materi CBM'}</span>
+                      <strong className="citation-item__title">
+                        {cit.title} {cit.heading ? `— ${cit.heading}` : ''}
+                      </strong>
+                    </div>
+                    {cit.preview ? (
+                      <p className="citation-item__preview">{cit.preview}</p>
+                    ) : null}
                   </div>
                 ))}
               </div>
@@ -322,7 +283,24 @@ export default function ChatWorkspace({ onOpenNav }) {
     }
   })
   const [expandedTraces, setExpandedTraces] = useState({})
+  const [expandedCitations, setExpandedCitations] = useState({})
   const [speechError, setSpeechError] = useState(null)
+
+  // LLM Full Power active provider & model state
+  const [activeProvider, _setActiveProvider] = useState(() => {
+    try {
+      return localStorage.getItem('pple_chat_provider') || 'gemini'
+    } catch {
+      return 'gemini'
+    }
+  })
+  const [activeModel, _setActiveModel] = useState(() => {
+    try {
+      return localStorage.getItem('pple_chat_model') || ''
+    } catch {
+      return ''
+    }
+  })
 
   // Resizable sidebar state per user request (flexible divider)
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -336,7 +314,27 @@ export default function ChatWorkspace({ onOpenNav }) {
     return 270
   })
   const [isDragging, setIsDragging] = useState(false)
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [woNotification, setWoNotification] = useState(null)
+
+  const handleCreateWoFromChat = useCallback(async (msg) => {
+    if (!msg.matched_equipment) return
+    try {
+      const res = await generateCbmWorkOrder({
+        equipment: msg.matched_equipment,
+        domain: 'Multi-Agent CBM',
+        severity: msg.text?.toLowerCase().includes('critical') || msg.text?.toLowerCase().includes('danger') ? 'CRITICAL' : 'WARNING',
+        anomaly_desc: msg.text?.slice(0, 280) || 'Temuan anomali CBM dari Chatbot',
+        created_by: 'Chatbot CBM Assistant',
+      })
+      setWoNotification({
+        woNumber: res.work_order?.wo_number,
+        equipment: msg.matched_equipment,
+        title: res.work_order?.title,
+      })
+    } catch (err) {
+      alert(`Gagal menerbitkan Work Order: ${err.message}`)
+    }
+  }, [])
   const startXRef = useRef(0)
   const startWidthRef = useRef(sidebarWidth)
 
@@ -605,6 +603,10 @@ export default function ChatWorkspace({ onOpenNav }) {
     setExpandedTraces((prev) => ({ ...prev, [msgId]: !prev[msgId] }))
   }, [])
 
+  const toggleCitations = useCallback((msgId) => {
+    setExpandedCitations((prev) => ({ ...prev, [msgId]: !prev[msgId] }))
+  }, [])
+
   const handleSubmit = async (e, directText = null, fromVoice = false) => {
     if (e) e.preventDefault()
     const query = (directText !== null ? directText : input).trim()
@@ -636,6 +638,8 @@ export default function ChatWorkspace({ onOpenNav }) {
         file: currentFile,
         source: fromVoice ? 'VOICE' : 'CHAT',
         sessionId: activeSessionId,
+        provider: activeProvider,
+        model: activeModel || undefined,
       })
 
       // If active session was Untitled, update its title in UI state
@@ -659,9 +663,12 @@ export default function ChatWorkspace({ onOpenNav }) {
         summary_for_speech: response.summary_for_speech,
         matched_equipment: response.matched_equipment,
         ai_enhanced: response.ai_enhanced,
+        provider: response.provider || activeProvider,
+        model: response.model || activeModel,
         safety_blocked: response.safety_blocked,
         subagent_traces: response.subagent_traces || [],
         active_subagents: response.active_subagents || [],
+        citations: response.citations || [],
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       }
 
@@ -803,10 +810,9 @@ export default function ChatWorkspace({ onOpenNav }) {
             ) : null}
             <div>
               <div className="chat-title-row">
-                <h1>Asisten AI & Voice CBM</h1>
+                <h1>Power Learning</h1>
                 <span className="badge badge--ai"><Sparkles size={13} /> Multi-Agent CBM</span>
               </div>
-              <p>Tanya status mesin, tren vibrasi, gas DGA, oil tribologi, atau minta rekomendasi pemeliharaan.</p>
             </div>
           </div>
 
@@ -849,6 +855,40 @@ export default function ChatWorkspace({ onOpenNav }) {
           </div>
         ) : null}
 
+        {woNotification ? (
+          <div
+            className="notice notice--success"
+            style={{
+              margin: '0 20px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ClipboardList size={18} style={{ color: '#10b981' }} />
+              <span>
+                Work Order <strong>{woNotification.woNumber}</strong> untuk{' '}
+                <strong>{woNotification.equipment}</strong> berhasil diterbitkan!
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Link to="/work-orders" className="button button--small button--primary" style={{ textDecoration: 'none' }}>
+                Buka di Work Orders <ExternalLink size={13} />
+              </Link>
+              <button
+                type="button"
+                className="icon-button-subtle"
+                onClick={() => setWoNotification(null)}
+                aria-label="Tutup notifikasi"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         {/* Main chat window */}
         <div className="chat-container">
           <div className="chat-feed" role="log" aria-live="polite">
@@ -858,10 +898,13 @@ export default function ChatWorkspace({ onOpenNav }) {
                 msg={msg}
                 isSpeaking={speakingId === msg.id}
                 isExpanded={Boolean(expandedTraces[msg.id])}
+                isCitationsExpanded={Boolean(expandedCitations[msg.id])}
                 onToggleTraces={toggleTraces}
+                onToggleCitations={toggleCitations}
                 onSpeak={handleSpeak}
                 onCopy={handleCopy}
                 hasTTS={hasTTS}
+                onCreateWo={handleCreateWoFromChat}
               />
             ))}
 
