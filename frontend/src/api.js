@@ -314,3 +314,31 @@ export function approveWorkOrder({ woNumber, approvedBy, action = 'Approve' }) {
   })
 }
 
+// ── MCSA (Motor Current Signature Analysis) API ───────────────────────────
+
+export function getMcsaSummary(signal) {
+  return getJson('/api/summary', signal)
+}
+
+export function getMcsaEquipmentList({ unit, voltage, status, search } = {}, signal) {
+  const params = new URLSearchParams()
+  if (unit && unit !== 'all') params.set('unit', unit)
+  if (voltage && voltage !== 'all') params.set('voltage', voltage)
+  if (status && status !== 'all') params.set('status', status)
+  if (search && search.trim()) params.set('search', search.trim())
+  const qs = params.toString()
+  return getJson(`/api/equipment${qs ? `?${qs}` : ''}`, signal)
+}
+
+export function getMcsaEquipmentDetail(equipmentName, signal) {
+  return getJson(`/api/equipment/${encodeURIComponent(equipmentName)}`, signal)
+}
+
+export function calculateRotorBar(data) {
+  return sendJson('/api/rotorbar/calculate', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+

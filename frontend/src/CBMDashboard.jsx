@@ -19,12 +19,15 @@ import {
   getDgaTransformers,
   getDomainMeasurements,
   getDomains,
+  getMcsaEquipmentList,
+  getMcsaSummary,
 } from './api.js'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: 'duval', label: 'Segitiga Duval', icon: Triangle },
+  { id: 'duval', label: 'Segitiga Duval (DGA)', icon: Triangle },
+  { id: 'mcsa', label: 'MCSA & Motor', icon: Zap },
   { id: 'vibration', label: 'Parameter Vibrasi', icon: BarChart2 },
   { id: 'trend', label: 'Tren Kesehatan', icon: TrendingUp },
 ]
@@ -1389,6 +1392,140 @@ function TrendTab() {
   )
 }
 
+function McsaTab() {
+  const [summary, setSummary] = useState(null)
+  const [equipment, setEquipment] = useState([])
+  const [status, setStatus] = useState('loading')
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setStatus('loading')
+    Promise.all([
+      getMcsaSummary(controller.signal),
+      getMcsaEquipmentList({}, controller.signal),
+    ])
+      .then(([sumRes, eqRes]) => {
+        setSummary(sumRes)
+        setEquipment(eqRes.equipment || [])
+        setStatus('ready')
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError') setStatus('error')
+      })
+    return () => controller.abort()
+  }, [])
+
+  const counts = summary?.counts || { Normal: 0, Alarm: 0, High: 0 }
+  const attentionList = equipment.filter((e) => ['Alarm', 'High'].includes(e.status || e.condition))
+
+  return (
+    <div className="cbm-tab-content">
+      {status === 'error' && (
+        <div className="notice notice--error">
+          <strong>Data MCSA tidak dapat dimuat.</strong>
+          <span>Pastikan FastAPI berjalan pada port 8000 dan data MCSA tersedia.</span>
+        </div>
+      )}
+
+      {status === 'loading' && (
+        <div className="chart-loading"><RefreshCw size={20} className="spin" />Memuat data MCSA motor…</div>
+      )}
+
+      {status === 'ready' && (
+        <>
+          {/* Summary Strip */}
+          <div className="cbm-card" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--ink)' }}>Kondisi Motor Current Signature (MCSA)</h3>
+                <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Pemantauan kesehatan rotor bar & deviasi kelistrikan 93 motor PLTU Jeranjang</span>
+              </div>
+              <a href="/mcsa" className="button button--secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', textDecoration: 'none' }}>
+                <Zap size={15} color="#0891b2" />
+                Buka Workspace MCSA Lengkap
+              </a>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+              <div style={{ padding: '14px', borderRadius: '10px', background: 'var(--canvas)', border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.74rem', color: 'var(--muted)', display: 'block' }}>Total Motor</span>
+                <strong style={{ fontSize: '1.4rem', color: 'var(--ink)' }}>{summary?.total_equipment || equipment.length}</strong>
+              </div>
+              <div style={{ padding: '14px', borderRadius: '10px', background: '#f0fdf4', border: '1px solid #dcfce7' }}>
+                <span style={{ fontSize: '0.74rem', color: '#166534', display: 'block' }}>Normal</span>
+                <strong style={{ fontSize: '1.4rem', color: 'var(--healthy)' }}>{counts.Normal}</strong>
+              </div>
+              <div style={{ padding: '14px', borderRadius: '10px', background: '#fffbeb', border: '1px solid #fef3c7' }}>
+                <span style={{ fontSize: '0.74rem', color: '#92400e', display: 'block' }}>Alarm (Waspada)</span>
+                <strong style={{ fontSize: '1.4rem', color: 'var(--attention)' }}>{counts.Alarm}</strong>
+              </div>
+              <div style={{ padding: '14px', borderRadius: '10px', background: '#fef2f2', border: '1px solid #fee2e2' }}>
+                <span style={{ fontSize: '0.74rem', color: '#991b1b', display: 'block' }}>High / Kritis</span>
+                <strong style={{ fontSize: '1.4rem', color: 'var(--critical)' }}>{counts.High}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Attention Motors Table */}
+          <div className="cbm-card" style={{ padding: '20px', marginTop: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <strong style={{ fontSize: '0.92rem', color: 'var(--ink)' }}>
+                Daftar Motor dalam Perhatian (Status Alarm / High)
+              </strong>
+              <span style={{ fontSize: '0.76rem', color: 'var(--muted)' }}>
+                {attentionList.length} motor memerlukan verifikasi
+              </span>
+            </div>
+
+            {attentionList.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '30px', color: 'var(--healthy)' }}>
+                Seluruh motor berada dalam kondisi operasi normal.
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table className="data-table" style={{ fontSize: '0.8rem' }}>
+                  <thead>
+                    <tr>
+                      <th>Motor Equipment</th>
+                      <th>Unit</th>
+                      <th>Tegangan</th>
+                      <th>Kondisi</th>
+                      <th>Rotor Bar</th>
+                      <th>Tanggal Uji</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attentionList.slice(0, 10).map((m) => (
+                      <tr key={m.equipment}>
+                        <td><strong>{m.equipment}</strong></td>
+                        <td>{m.unit}</td>
+                        <td>{m.voltage}</td>
+                        <td>
+                          <span className={`status status--${m.status === 'High' ? 'critical' : 'attention'}`}>
+                            <i />{m.status}
+                          </span>
+                        </td>
+                        <td>{m.rotorbar_status || 'Normal'}</td>
+                        <td>{m.last_date || '-'}</td>
+                        <td>
+                          <a href={`/mcsa?search=${encodeURIComponent(m.equipment)}`} style={{ color: 'var(--action)', textDecoration: 'none', fontWeight: 600 }}>
+                            Lihat &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ─── Main CBMDashboard ────────────────────────────────────────────────────────
 
 export default function CBMDashboard() {
@@ -1399,7 +1536,7 @@ export default function CBMDashboard() {
       <header className="page-header">
         <div>
           <h1>Dashboard CBM</h1>
-          <p>Visualisasi interaktif kondisi aset — Duval Triangle, Parameter Vibrasi, Tren Kesehatan.</p>
+          <p>Visualisasi interaktif kondisi aset — Duval Triangle, MCSA & Motor, Parameter Vibrasi, Tren Kesehatan.</p>
         </div>
         <span className="status status--healthy"><i />Grafik interaktif</span>
       </header>
@@ -1429,6 +1566,7 @@ export default function CBMDashboard() {
 
       {/* Tab panels */}
       {activeTab === 'duval' && <DuvalTab />}
+      {activeTab === 'mcsa' && <McsaTab />}
       {activeTab === 'vibration' && <VibrationTab />}
       {activeTab === 'trend' && <TrendTab />}
     </div>

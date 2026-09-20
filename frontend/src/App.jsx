@@ -1,7 +1,7 @@
 import { Component, Suspense, lazy, useEffect, useState } from 'react'
 import {
   Activity, BarChart2, Bot, BrainCircuit, CalendarClock, ChevronRight, CircleCheck,
-  ClipboardList, Database, FileText, FlaskConical, Gauge, Menu, MessageSquareText, Settings, ShieldCheck, Workflow, X,
+  ClipboardList, Database, FileText, FlaskConical, Gauge, Menu, MessageSquareText, Settings, ShieldCheck, Workflow, X, Zap,
 } from 'lucide-react'
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { getWorkspaceOverview } from './api.js'
@@ -16,6 +16,7 @@ const AgentLab = lazy(() => import('./AgentLab.jsx'))
 const SettingsWorkspace = lazy(() => import('./SettingsWorkspace.jsx'))
 const ChatWorkspace = lazy(() => import('./ChatWorkspace.jsx'))
 const CBMDashboard = lazy(() => import('./CBMDashboard.jsx'))
+const MCSAWorkspace = lazy(() => import('./MCSAWorkspace.jsx'))
 const WorkOrdersWorkspace = lazy(() => import('./WorkOrdersWorkspace.jsx'))
 const FleetWorkspace = lazy(() => import('./FleetWorkspace.jsx'))
 
@@ -90,6 +91,7 @@ const navigation = [
   { to: '/chat', label: 'Bot', icon: MessageSquareText },
   { to: '/fleet', label: 'Keandalan Armada', icon: Gauge },
   { to: '/cbm', label: 'Dashboard CBM', icon: BarChart2 },
+  { to: '/mcsa', label: 'MCSA Motor', icon: Zap },
   { to: '/work-orders', label: 'Work Orders', icon: ClipboardList },
   { to: '/data', label: 'Data', icon: Database },
   { to: '/documents', label: 'Dokumen', icon: FileText },
@@ -230,6 +232,7 @@ export default function App() {
               <Route path="/chat" element={<ChatWorkspace onOpenNav={() => setNavOpen(true)} />} />
               <Route path="/fleet" element={<FleetWorkspace />} />
               <Route path="/cbm" element={<CBMDashboard />} />
+              <Route path="/mcsa" element={<MCSAWorkspace />} />
               <Route path="/work-orders" element={<WorkOrdersWorkspace />} />
               <Route path="/data" element={<DataWorkspace />} />
               <Route path="/documents" element={<DocumentWorkspace />} />
