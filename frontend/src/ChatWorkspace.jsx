@@ -315,6 +315,7 @@ export default function ChatWorkspace({ onOpenNav }) {
     return 270
   })
   const [isDragging, setIsDragging] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const [woNotification, setWoNotification] = useState(null)
 
   const handleCreateWoFromChat = useCallback(async (msg) => {
