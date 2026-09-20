@@ -3168,3 +3168,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   letter-spacing: 0.03em;
 }
 
+/* ── Fleet Reliability Command Center ── */
+.fleet-row {
+  transition: background 0.15s ease;
+}
+
+.fleet-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.fleet-table-wrapper table th {
+  font-weight: 650;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+

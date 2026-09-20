@@ -35,6 +35,9 @@ class FleetReliabilityResponse(BaseModel):
     )
     critical_watchlist: List[Dict[str, Any]] = Field(default_factory=list)
     asset_matrix: List[Dict[str, Any]] = Field(default_factory=list)
+    unit_summary: Optional[Dict[str, Any]] = None
+    risk_matrix: Optional[Dict[str, Any]] = None
+    bad_actors: Optional[List[Dict[str, Any]]] = None
 
 
 class FailureHypothesisModel(BaseModel):

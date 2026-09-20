@@ -1,7 +1,7 @@
 import { Component, Suspense, lazy, useEffect, useState } from 'react'
 import {
   Activity, BarChart2, Bot, BrainCircuit, CalendarClock, ChevronRight, CircleCheck,
-  ClipboardList, Database, FileText, FlaskConical, Menu, MessageSquareText, Settings, ShieldCheck, Workflow, X,
+  ClipboardList, Database, FileText, FlaskConical, Gauge, Menu, MessageSquareText, Settings, ShieldCheck, Workflow, X,
 } from 'lucide-react'
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { getWorkspaceOverview } from './api.js'
@@ -17,6 +17,7 @@ const SettingsWorkspace = lazy(() => import('./SettingsWorkspace.jsx'))
 const ChatWorkspace = lazy(() => import('./ChatWorkspace.jsx'))
 const CBMDashboard = lazy(() => import('./CBMDashboard.jsx'))
 const WorkOrdersWorkspace = lazy(() => import('./WorkOrdersWorkspace.jsx'))
+const FleetWorkspace = lazy(() => import('./FleetWorkspace.jsx'))
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -87,6 +88,7 @@ function PageFallback() {
 const navigation = [
   { to: '/overview', label: 'Beranda', icon: Activity },
   { to: '/chat', label: 'Bot', icon: MessageSquareText },
+  { to: '/fleet', label: 'Keandalan Armada', icon: Gauge },
   { to: '/cbm', label: 'Dashboard CBM', icon: BarChart2 },
   { to: '/work-orders', label: 'Work Orders', icon: ClipboardList },
   { to: '/data', label: 'Data', icon: Database },
@@ -226,6 +228,7 @@ export default function App() {
               <Route path="/" element={<Navigate to="/overview" replace />} />
               <Route path="/overview" element={<Overview />} />
               <Route path="/chat" element={<ChatWorkspace onOpenNav={() => setNavOpen(true)} />} />
+              <Route path="/fleet" element={<FleetWorkspace />} />
               <Route path="/cbm" element={<CBMDashboard />} />
               <Route path="/work-orders" element={<WorkOrdersWorkspace />} />
               <Route path="/data" element={<DataWorkspace />} />

@@ -254,6 +254,10 @@ export function getReliabilityHealth(equipmentId, signal) {
   return getJson(`/api/v2/reliability/${encodeURIComponent(equipmentId)}`, signal)
 }
 
+export function getFleetReliability(signal) {
+  return getJson('/api/reliability/fleet', signal)
+}
+
 export function getAutomatedReportsSummary(signal) {
   return getJson('/api/reports/automated/summary', signal)
 }

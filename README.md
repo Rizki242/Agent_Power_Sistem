@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=000" alt="React 19">
   <img src="https://img.shields.io/badge/decision%20core-rule--based-0284c7" alt="Rule-based decision core">
-  <img src="https://img.shields.io/badge/tests-360%20passing-10b981" alt="360 unit tests passing">
+  <img src="https://img.shields.io/badge/tests-745%20passing-10b981" alt="745 unit tests passing">
   <img src="https://img.shields.io/badge/platform-Windows--first-64748b" alt="Windows-first">
 </p>
 
@@ -28,6 +28,7 @@ Antarmuka utama menggunakan Streamlit dengan desain navigasi berbasis domain. Da
 - [Kapabilitas utama](#kapabilitas-utama)
 - [Alur diagnosis multi-agent](#alur-diagnosis-multi-agent)
 - [Arsitektur](#arsitektur)
+- [Keamanan API](#keamanan-api)
 - [CLI `pple`](#cli-pple)
 - [Prasyarat](#prasyarat)
 - [Instalasi dan verifikasi](#instalasi-dan-verifikasi)
@@ -62,6 +63,8 @@ Navigasi Streamlit dikelompokkan sebagai berikut:
 
 Diagram rancangan target (visi jangka panjang, termasuk database dan admin config yang belum diimplementasi) tersedia di [docs/desain.png](docs/desain.png). Diagram tersebut adalah arah arsitektur, bukan gambaran kondisi saat ini — bagian [Arsitektur](#arsitektur) di bawah menjelaskan apa yang benar-benar berjalan hari ini.
 
+Antarmuka React (`frontend/`) menyediakan alur kerja modern yang setara sebagian dengan Streamlit: **Chat/Voice Workspace** (chat lintas domain lewat `PPLEMasterAgent`, plus balasan yang aman dibacakan suara), **CBM Dashboard**, **Automation Workspace**, dan **Settings** yang kini punya 6 tab (AI & Model, Voice Assistant, Safety & Engineering, Data & Knowledge, System & Integration, User & Preferences). Frontend ini juga sudah bisa dipasang sebagai PWA (manifest + service worker) untuk akses offline-first di perangkat mobile/tablet operator lapangan. Cakupan fitur React dibanding Streamlit masih dilacak per halaman di [docs/feature-parity.md](docs/feature-parity.md) — jangan asumsikan paritas penuh.
+
 ## Kapabilitas utama
 
 - **Diagnosis multi-agent rule-based** untuk MCSA, vibrasi, DGA, partial discharge, tribology, dan thermal.
@@ -70,9 +73,12 @@ Diagram rancangan target (visi jangka panjang, termasuk database dan admin confi
 - **MCSA dashboard**: evaluasi sideband rotor bar, deviasi arus/tegangan, THD, status bearing, tren, dan ringkasan kinerja.
 - **Manajemen laporan**: preview, quality check, sinkronisasi laporan Word, arsip batch, manifest audit, serta backup CSV otomatis.
 - **Knowledge base**: pencarian kata kunci selalu tersedia; pencarian semantik FAISS bersifat opsional dan memiliki fallback.
-- **Laporan**: generator PowerPoint dan Word dari data/filter aktif.
-- **API FastAPI**: akses data aset, ringkasan domain, diagnostik fusion, chatbot, knowledge base, laporan, dan work order — plus `/api/v2/*` (modules, assets, reliability, agents) dari migrasi `pple`.
-- **CLI `pple`**: status/doctor sistem, jalankan analisis satu modul, telusuri hierarki aset, cek reliability fusion, perintah bahasa natural (`pple ask "cek CWP-1A"`) dengan klasifikasi risiko READ/WRITE/HIGH-RISK, `pple config llm` untuk melihat/mengganti provider-model LLM dari terminal, `pple chat` (chatbot rule-based, opsional diperkaya LLM), flag `--offline` yang memblokir semua provider cloud, dan `pple serve api/frontend/all` sebagai alternatif native untuk skrip `.bat`.
+- **Laporan**: generator PowerPoint dan Word dari data/filter aktif, termasuk **laporan otomatis** (`/api/automated-reports/*`) untuk ringkasan, PPTX mingguan/bulanan per modul, dan rangkuman meeting.
+- **RAG & jawaban bersitasi**: pencarian semantik opsional (LangChain + FAISS) di atas knowledge base, dengan endpoint `/api/rag/*` (status, search, chunks, rebuild) agar chatbot dapat menyertakan sitasi sumber; selalu punya fallback ke pencarian kata kunci bila dependensi opsional tidak terpasang.
+- **PPLEMasterAgent**: orkestrator chat lintas domain (`src/agents/master_agent.py`) yang menautkan query bahasa natural ke equipment/asset, mengumpulkan telemetry, menjalankan diagnosis kolaboratif antar specialist agent, dan menghasilkan ringkasan naratif yang aman dibacakan sebagai suara (voice assistant).
+- **Ollama & provider LLM lokal**: selain Gemini/Groq/OpenCode, provider `ollama` didukung penuh (tanpa API key, host lokal `http://localhost:11434`) sebagai fallback offline-first untuk enhancement chatbot.
+- **API FastAPI**: akses data aset, ringkasan domain, diagnostik fusion, chatbot, knowledge base, laporan, dan work order — plus `/api/v2/*` (modules, assets, reliability, agents, audit) dari migrasi `pple`.
+- **CLI `pple`**: status/doctor sistem, jalankan analisis satu modul, telusuri hierarki aset, cek reliability fusion, perintah bahasa natural (`pple ask "cek CWP-1A"`) dengan klasifikasi risiko READ/WRITE/HIGH-RISK, `pple config llm` untuk melihat/mengganti provider-model LLM dari terminal, `pple chat` (chatbot rule-based, opsional diperkaya LLM), `pple audit list` untuk riwayat perubahan konfigurasi, flag `--offline` yang memblokir semua provider cloud, dan `pple serve api/frontend/all` sebagai alternatif native untuk skrip `.bat`.
 
 ## Alur diagnosis multi-agent
 
@@ -100,6 +106,18 @@ pple CLI (Typer) ──────┘      └─ /api/v2/* (pple.api.router)
 
 Logika rule-based di `src/` adalah sumber kebenaran untuk perhitungan kondisi, threshold, dan rekomendasi. Bila AI provider tidak dikonfigurasi atau gagal, aplikasi tetap menggunakan jawaban dan evaluasi lokal. Paket `pple/` (migrasi V2, lihat `docs/final.md`) dibangun **secara aditif** di atas `src/` — `LegacyAgentAdapterModule` memanggil ulang agent yang sama, bukan menduplikasi logikanya.
 
+Dua modul lintas-layer melengkapi migrasi ini tanpa mengubah alur diagnosis: `pple/core/audit.py` mencatat setiap perubahan konfigurasi (WHO/WHAT/WHEN/OLD/NEW/SOURCE) sebagai JSONL, dan `pple/core/events.py` menyediakan event bus in-process dengan kosakata tetap (equipment/measurement/analysis/diagnostic/work-order) yang dipakai `src/domain_ingest.py`, `src/work_orders.py`, dan `src/asset_registry.py` untuk memberi sinyal tanpa membuat komponen saling bergantung erat.
+
+## Keamanan API
+
+FastAPI (`api_server.py`) menerapkan keamanan lewat satu HTTP middleware di `pple/api/security.py`, bukan `Depends` per-route, supaya seluruh endpoint (termasuk yang baru) otomatis tercakup:
+
+- **API key** (`PPLE_API_KEY`): kosong berarti API tetap terbuka seperti sebelumnya (aman untuk localhost); bila diisi, setiap request selain `/api/health` wajib menyertakan header `X-API-Key` atau `Authorization: Bearer <key>`.
+- **CORS** (`PPLE_CORS_ORIGINS`): default hanya origin localhost (Vite 5173-5175, Streamlit 8501, FastAPI 8000). Jangan pernah mengatur `allow_origins=["*"]` bersamaan dengan credentials — browser akan menolaknya.
+- Frontend React mengirim key lewat `apiFetch()` di `frontend/src/api.js`; gunakan helper ini, bukan `fetch()` polos, untuk semua panggilan ke backend.
+
+Untuk deployment di luar localhost, set `PPLE_API_KEY` dan `PPLE_CORS_ORIGINS` sebelum membuka akses jaringan publik.
+
 ## CLI `pple`
 
 ```powershell
@@ -120,6 +138,7 @@ pple config llm                          # provider/model LLM aktif saat ini + s
 pple config set llm.provider groq        # gemini | groq | opencode | ollama
 pple config set llm.model qwen/3.6-27b   # model untuk provider yang sedang aktif
 pple config test                         # tes koneksi ke provider aktif (helper yang sama dengan tombol "Tes Koneksi" di Settings)
+pple audit list                          # riwayat perubahan konfigurasi (WHO/WHAT/WHEN/OLD/NEW/SOURCE)
 
 pple chat "status CWP 1A"                # chatbot rule-based (src.chatbot), boleh diperkaya LLM bila dikonfigurasi
 pple --offline chat "status CWP 1A"      # sama persis, tapi provider cloud (gemini/groq/opencode) dipastikan tidak dipanggil
@@ -238,7 +257,11 @@ Gunakan [.env.example](.env.example) sebagai referensi. Jangan menyimpan API key
 | `MCSA_MAX_BACKUPS` | Retensi backup CSV; default `5`. |
 | `WORK_ORDERS_FILE` | Lokasi JSON penyimpanan work order; opsional. |
 | `VITE_API_BASE_URL` | Base URL FastAPI untuk frontend React; default `http://localhost:8000`. |
-| `GEMINI_API_KEY` | Opsional untuk enhancement AI (model dapat dipilih/diketik bebas di halaman Settings). |
+| `PPLE_API_KEY` | Bila diisi, mewajibkan header `X-API-Key`/`Authorization: Bearer` di semua request API selain `/api/health`. Kosong = API terbuka (default). |
+| `PPLE_CORS_ORIGINS` | Daftar origin CORS yang diizinkan (pisah koma); default hanya localhost. Lihat [Keamanan API](#keamanan-api). |
+| `VITE_API_KEY` | Nilai `PPLE_API_KEY` yang sama, dibaca frontend React lewat `apiFetch()` agar request-nya lolos middleware. |
+| `PPLE_ACTOR` | Nama aktor default untuk audit trail (`pple/core/audit.py`) saat request tidak mengirim header `X-Actor`; fallback ke OS user. |
+| `GEMINI_API_KEY` | Opsional untuk enhancement AI (model dapat dipilih/diketik bebas di halaman Settings). Provider `ollama` tidak butuh API key sama sekali (jalan lokal di `http://localhost:11434`). |
 
 File `.env` tidak dimuat otomatis oleh seluruh aplikasi. Untuk Streamlit, gunakan environment variable atau `.streamlit/secrets.toml`; modul asisten LLM juga dapat membaca `.env` sebagai fallback.
 
