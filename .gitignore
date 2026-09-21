@@ -31,6 +31,7 @@ pnpm-debug.log*
 *.pem
 *.key
 mcp.json
+skills-lock.json
 
 # OS / editor
 .DS_Store
@@ -84,3 +85,17 @@ data/learning/improvement_state.json
 .tmp-npm-cache/
 .venv-linux-backup/
 scripts/scratch/
+
+# Materi/: hanya .json (v1/v2 knowledge docs) dan .pdf (dibaca rag_engine)
+# yang dipakai aplikasi. Installer/video/firmware ini tidak pernah dibaca
+# oleh knowledge_retriever.py atau rag_engine.py - jangan di-commit lagi.
+Materi/**/*.exe
+Materi/**/*.msi
+Materi/**/*.mp4
+Materi/**/*.flv
+Materi/**/*.zip
+Materi/**/*.ptz
+
+# Index FAISS - artefak build regenerable via `python build_rag_index.py`,
+# bukan source of truth (lihat src/rag_engine.py RAG_INDEX_DIR).
+data/rag_index/
