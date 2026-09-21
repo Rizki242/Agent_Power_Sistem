@@ -373,6 +373,25 @@ def test_ollama_connection(
     )
 
 
+def build_retrieval_query(question: str, conversation_context: str = "", max_chars: int = 220) -> str:
+    """Perkaya kata kunci pencarian knowledge base untuk pertanyaan lanjutan pendek.
+
+    Pertanyaan seperti "kenapa bisa begitu?" tidak punya kata kunci teknis sendiri,
+    sehingga retrieval keyword/RAG mengembalikan dokumen yang tidak relevan. Kata kunci
+    dari giliran percakapan terakhir ditambahkan agar rujukan tetap nyambung.
+    """
+    q = (question or "").strip()
+    ctx = (conversation_context or "").strip()
+    if not ctx or len(q) > 60:
+        return q
+
+    tail_lines = [line.strip() for line in ctx.splitlines() if line.strip()]
+    tail = " ".join(tail_lines[-2:]) if tail_lines else ""
+    if not tail:
+        return q
+    return f"{q} {tail}"[:max_chars].strip()
+
+
 def build_mcsa_context(df: pd.DataFrame, max_rows: int = 40) -> str:
     if df is None or df.empty:
         return "Tidak ada konteks data MCSA yang tersedia."
@@ -788,6 +807,7 @@ class MCSALLMAssistant:
         include_knowledge: bool = True,
         extra_file_context: str = "",
         subagents_context: str = "",
+        conversation_context: str = "",
     ) -> str:
         self.resilience_info = {
             "primary_provider": self.provider,
@@ -810,7 +830,10 @@ class MCSALLMAssistant:
         knowledge_context = ""
         self.last_citations = []
         if include_knowledge:
-            knowledge_context, self.last_citations = build_knowledge_context(question)
+            # Pertanyaan lanjutan sering sangat pendek ("kenapa?", "lalu?"), sehingga
+            # kata kunci retrieval diperkaya dari giliran percakapan sebelumnya.
+            retrieval_query = build_retrieval_query(question, conversation_context)
+            knowledge_context, self.last_citations = build_knowledge_context(retrieval_query)
 
         prompt = self._build_rag_prompt(
             question=question,
@@ -820,6 +843,7 @@ class MCSALLMAssistant:
             knowledge_context=knowledge_context,
             extra_file_context=extra_file_context,
             subagents_context=subagents_context,
+            conversation_context=conversation_context,
         )
 
         try:
@@ -960,6 +984,7 @@ class MCSALLMAssistant:
         knowledge_context: str,
         extra_file_context: str = "",
         subagents_context: str = "",
+        conversation_context: str = "",
     ) -> str:
         q_clean = question.strip()
         q_lower = q_clean.lower()
@@ -976,11 +1001,28 @@ class MCSALLMAssistant:
             "ieee", "iec", "astm", "rul", "health index", "work order", "pm", "cbm", "spektrum",
         ]
         spec_context = build_equipment_spec_context(question)
+        # Pertanyaan lanjutan pendek ("kenapa?", "bagaimana trennya?") tidak memuat kata
+        # kunci teknis sendiri; topik teknis diwarisi dari giliran percakapan sebelumnya.
+        follow_up_markers = (
+            "kenapa", "mengapa", "bagaimana", "gimana", "jelaskan", "lalu", "terus",
+            "dampak", "penyebab", "solusi", "tindak lanjut", "berapa", "apa artinya",
+            "bandingkan", "trennya", "lanjutkan", "detail",
+        )
+        pleasantries = ("terima kasih", "makasih", "oke", "sip", "halo", "hai", "siap")
+        is_follow_up_style = (
+            len(q_clean) <= 80 or any(q_lower.startswith(m) for m in follow_up_markers)
+        ) and not any(q_lower.strip(" .!?") == p for p in pleasantries)
+        follow_up_is_technical = (
+            bool(conversation_context)
+            and is_follow_up_style
+            and any(k in conversation_context.lower() for k in technical_keywords)
+        )
         is_technical = (
             any(k in q_lower for k in technical_keywords)
             or bool(extra_file_context)
             or bool(subagents_context)
             or bool(spec_context)
+            or follow_up_is_technical
         )
 
         if not is_technical:
@@ -996,9 +1038,17 @@ class MCSALLMAssistant:
                 "- JANGAN kaku, JANGAN memaksakan menumpahkan tabel data pengukuran atau parameter teknis mesin yang tidak relevan dengan pertanyaan user.",
                 "- Tanggapi langsung pesan user dengan tulus, cerdas, dan positif.",
                 "",
+            ]
+            if conversation_context:
+                parts.extend([
+                    "--- RIWAYAT PERCAKAPAN SEBELUMNYA (untuk menjaga konteks) ---",
+                    conversation_context,
+                    "",
+                ])
+            parts.extend([
                 "--- PERTANYAAN USER ---",
                 question,
-            ]
+            ])
             if rule_answer:
                 parts.extend(["\n--- ACUAN RULE-BASED SISTEM ---", rule_answer])
             parts.append("\nBalaslah pertanyaan user di atas dengan gaya bahasa natural, hangat, dan ramah sebagai Agent CBM Learning PLTU Jeranjang.")
@@ -1018,6 +1068,7 @@ class MCSALLMAssistant:
             "\nPANDUAN KOMUNIKASI & FORMAT (SENIOR ENGINEER STANDARD):",
             "- Jawablah dengan bahasa Indonesia teknis yang matang, lugas, berwibawa, dan berbasis fakta fisika mesin serta standar internasional.",
             "- FORMAT MATEMATIKA (KaTeX): Selalu tulis formula matematika/rumus blok dengan $$ ... $$ (misal: $$F = m \\cdot r \\cdot \\omega^2$$, $$f_L = f_0 \\pm 2sf_0$$) dan simbol inline dengan $ ... $ (misal: $H_2$, $CH_4$, $1\\times$, $\\omega$, $\\le 720\\text{ ppm}$) agar dirender presisi oleh KaTeX frontend.",
+            "- FORMAT TABEL (MARKDOWN GFM): Sajikan data perbandingan, batasan standar, matriks kriteria alarm, dan spesifikasi parameter dalam bentuk TABEL MARKDOWN yang rapi dengan header dan garis pembatas (| Kolom 1 | Kolom 2 |\\n| :--- | :--- |\\n| Data 1 | Data 2 |). Pastikan setiap baris tabel selalu dipisahkan oleh karakter baris baru (newline) agar dirender menjadi tabel HTML interaktif.",
             "- STRUKTUR JAWABAN KONSEPTUAL: Jika pertanyaan menanyakan teori, definisi, atau konsep ('apa itu X', 'jelaskan X'):",
             "  1. Definisi & Konsep Fisika / Mekanikal / Elektrikal.",
             "  2. Batasan Standar Internasional (ISO / IEEE / NEMA / EPRI / IEC) & Kriteria Alarm/High.",
@@ -1025,9 +1076,21 @@ class MCSALLMAssistant:
             "  4. Rekomendasi Investigasi & Tindakan Pemeliharaan Lapangan.",
             "- RUJUKAN DOKUMEN: Kutip secara eksplisit dokumen atau standar yang relevan dari KNOWLEDGE BASE (misal: `[Dokumen: Standar Evaluasi MCSA PLTU Jeranjang]`, `[Dokumen: ISO 10816-3 Vibrasi]`, `[Dokumen: Materi DGA Study Case Mr. Duval]`).",
             "- Jangan mengarang angka pengukuran. Jika ada data pengukuran riil terlampir, jadikan itu bukti diagnosis utama.",
+        ]
+
+        if conversation_context:
+            parts.extend([
+                "\nPANDUAN KESINAMBUNGAN PERCAKAPAN:",
+                "- Riwayat di bawah adalah percakapan sebelumnya pada sesi yang sama. Gunakan untuk memahami rujukan seperti 'motor itu', 'kondisinya', atau 'kenapa begitu'.",
+                "- Jangan mengulang penjelasan yang sudah diberikan; lanjutkan dan perdalam pembahasan.",
+                "\n--- RIWAYAT PERCAKAPAN SESI INI ---",
+                conversation_context,
+            ])
+
+        parts.extend([
             "\n--- PERTANYAAN USER ---",
             question,
-        ]
+        ])
 
         if subagents_context:
             parts.extend(["\n--- TEMUAN & BUKTI SPECIALIST SUB-AGENTS ---", subagents_context])
