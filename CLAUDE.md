@@ -2,6 +2,48 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Mandatory workflow: Check -> Plan -> Build -> Verify -> Record
+
+Applies to every task that changes files, however small. Do not start writing code or running a build as the first step.
+
+### 1. Check (before anything else)
+
+- Read `CONTEXT.md` (domain vocabulary + invariants), the sections of this file relevant to the area, `docs/coding-protocol.md` section 2, and any ADR under `docs/adr/` that touches the area.
+- Read the target files, their callers, and the nearest tests. Find the existing pattern; do not invent a new one.
+- Run `git status --short` and note changes that are not yours. Never overwrite or revert them.
+- Confirm the request against the invariants (rule-based source of truth, no fabricated data, safety guard has no bypass, no secrets in files, no business logic in UI/API/CLI). If the request conflicts with one, say so before building.
+
+### 2. Plan (before building)
+
+- Write the plan down in the reply before touching code: scope, files to change, contract changes (input/output/side effects/errors/compatibility), which test proves the behavior, and how you will verify.
+- Prefer the smallest change that fits the current codebase. Reject "clean up everything" scopes; one reviewable change per task.
+- For a non-trivial task (new endpoint, new page, new module, cross-surface change, data-format change, anything touching thresholds/safety/auth) stop after the plan and get the user's confirmation. For a trivial task (typo, one-line fix, doc edit) state "trivial, no plan needed" with a reason and continue.
+- If a decision is architectural (see `docs/coding-protocol.md` section 13), the plan must include an ADR.
+
+### 3. Build
+
+- Implement exactly the agreed plan. If you discover the plan is wrong mid-way, stop, say what changed, and re-plan; do not silently widen scope.
+- For bugs and behavior changes, write the failing test first and confirm it fails for the right reason.
+- Keep edits narrowly scoped, ASCII by default, Indonesian for user-facing strings, existing patterns over new abstractions.
+
+### 4. Verify (before claiming done)
+
+Nothing is "done" until all of these pass and the results are quoted in the reply (real output, not "should pass"):
+
+- Python: `python -m py_compile` on every touched `.py` file, then the specific test modules for the area (`python -m unittest tests.test_<area>`), then `python -m unittest discover -s . -p "test_*.py"` unless a network-hanging test is known (then run files individually with a hard timeout and say which were skipped).
+- `python verify_app.py` for any change under `src/`, `pple/`, `api_server.py`, or `app.py`.
+- Streamlit page changes: `AppTest.from_file("app.py")` loads without exceptions (a broken page import kills the whole app).
+- Frontend changes: `npm --prefix frontend run lint` (oxlint) and `npm --prefix frontend run build` both clean.
+- API changes: the FastAPI `TestClient` test for the route passes, and `/docs` still renders (import `api_server.app` without errors).
+- Re-read your own diff (`git diff`) once for leftover debug prints, TODOs, hardcoded paths/keys, and accidental edits to files outside the plan.
+- A failing test, a warning you introduced, or a skipped step is reported as such - never described as passing, never worked around by deleting or weakening the test.
+
+### 5. Record (same task, not later)
+
+- Append an entry to `docs/agent-changelog.md` using its template: requested, plan, changed files, exact verification commands + results, what was left out, docs/ADR touched.
+- Update `CONTEXT.md` when a new domain term appears, `docs/feature-parity.md` when a surface gains/loses a feature, `docs/adr/` when a decision qualifies, and this file/`CLAUDE.md` (kept identical apart from their headers) when a rule or convention changes.
+- The final reply summarizes: what was checked, the plan, what changed, verification results, and what is left. If the user saw only this reply, they should know everything.
+
 ## Commands
 
 Windows-first repo; `.bat` scripts create/use `.venv` with Python 3.11 (`py -3.11`, with fallbacks). A `.venv` mixed across Python versions (cp311 vs cp313) triggers the dependency-repair screen in `app.py` — recreate the venv if that appears.
@@ -108,7 +150,8 @@ Rule-based thresholds used across the codebase (keep these consistent when touch
 
 ## Before Making Changes
 
-- Read `README.md` and the relevant source files first.
+- Follow "Mandatory workflow: Check -> Plan -> Build -> Verify -> Record" above - no code before the Check and Plan steps are done and (for non-trivial work) the plan is confirmed.
+- Read `README.md`, `CONTEXT.md`, and the relevant source files first.
 - Follow the local patterns already used in `app.py` and `src/`.
 - Check for existing tests and extend them when behavior changes.
 
@@ -131,8 +174,9 @@ Rule-based thresholds used across the codebase (keep these consistent when touch
 ## Validation Rules
 
 - Add or update tests for behavior changes.
-- Run the relevant test commands after edits (see Commands).
+- Run the relevant test commands after edits (see Commands) and the full Verify checklist in the mandatory workflow; quote real results in the reply.
 - Run `python verify_app.py` before claiming completion.
+- Record the change in `docs/agent-changelog.md` before claiming completion.
 
 ## Safety Rules
 
@@ -152,4 +196,4 @@ Canonical triage vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `r
 
 ### Domain docs
 
-Single-context layout (`CONTEXT.md` + `docs/adr/`). See `docs/agents/domain.md`. These files are created lazily by the domain-modeling skill; proceed silently if absent.
+Single-context layout (`CONTEXT.md` + `docs/adr/`). See `docs/agents/domain.md`. `CONTEXT.md` exists at the repo root (glossary, invariants, source-of-truth map) and must be read before exploring; use its vocabulary. `docs/adr/` is created with the first ADR; proceed silently if absent.
