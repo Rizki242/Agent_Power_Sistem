@@ -282,7 +282,7 @@ export default function AutomationWorkspace() {
                   <h2 style={{ margin: 0, fontSize: '1.25rem' }}>
                     Matriks Kesiapan 6 Modul CBM — {reportSummary?.current_sample_month || 'September 2026'}
                   </h2>
-                  <small style={{ color: 'var(--text-secondary, #94a3b8)' }}>
+                  <small style={{ color: 'var(--muted)' }}>
                     {reportSummary?.plant || 'PLTU Jeranjang (3 × 25 MW)'} | Periode Pelaporan Aktif
                   </small>
                 </div>
@@ -313,20 +313,20 @@ export default function AutomationWorkspace() {
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong style={{ fontSize: '1.05rem', color: 'var(--text-primary, #f8fafc)' }}>
+                    <strong style={{ fontSize: '1.05rem', color: 'var(--ink)' }}>
                       {mod.domain}
                     </strong>
                     {mod.has_data ? (
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--healthy)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <CheckCircle2 size={14} /> AKTIF DIUJI
                       </span>
                     ) : (
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--attention)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <AlertTriangle size={14} /> STANDBY
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #cbd5e1)' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
                     {mod.label}
                   </div>
                   <div style={{ fontSize: '0.8rem', marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
@@ -334,7 +334,7 @@ export default function AutomationWorkspace() {
                     <span>Equipment: <strong>{mod.equipment_count}</strong> unit</span>
                   </div>
                   {!mod.has_data ? (
-                    <div style={{ marginTop: '6px', fontSize: '0.75rem', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.15)', padding: '4px 8px', borderRadius: '4px' }}>
+                    <div style={{ marginTop: '6px', fontSize: '0.75rem', color: 'var(--attention)', background: 'rgba(245, 158, 11, 0.15)', padding: '4px 8px', borderRadius: '4px' }}>
                       ⚠️ [BELUM ADA DATA PENGUJIAN / STANDBY PADA PERIODE INI]
                     </div>
                   ) : null}
@@ -360,8 +360,8 @@ export default function AutomationWorkspace() {
                   style={{
                     padding: '20px',
                     borderRadius: '8px',
-                    border: '1px solid var(--border-color, #334155)',
-                    background: 'var(--bg-card, #1e293b)',
+                    border: '1px solid var(--border)',
+                    background: 'var(--surface)',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
@@ -373,14 +373,14 @@ export default function AutomationWorkspace() {
                         <Activity size={20} style={{ color: mod.color }} />
                         <h3 style={{ margin: 0, fontSize: '1.05rem' }}>{mod.name}</h3>
                       </div>
-                      <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '4px', color: '#94a3b8' }}>
+                      <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '4px', color: 'var(--muted)' }}>
                         Setiap {mod.day}
                       </span>
                     </div>
-                    <p style={{ fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '12px' }}>
+                    <p style={{ fontSize: '0.83rem', color: 'var(--muted)', marginBottom: '12px' }}>
                       {mod.desc}
                     </p>
-                    <div style={{ fontSize: '0.78rem', marginBottom: '16px', color: '#cbd5e1' }}>
+                    <div style={{ fontSize: '0.78rem', marginBottom: '16px', color: 'var(--muted)' }}>
                       <span>Periode: <strong>Minggu ke-3 (15 - 21 September 2026)</strong></span>
                     </div>
                   </div>
@@ -422,8 +422,8 @@ export default function AutomationWorkspace() {
                   style={{
                     padding: '20px',
                     borderRadius: '8px',
-                    border: '1px solid var(--border-color, #334155)',
-                    background: 'var(--bg-card, #1e293b)',
+                    border: '1px solid var(--border)',
+                    background: 'var(--surface)',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
@@ -435,14 +435,14 @@ export default function AutomationWorkspace() {
                         <Layers size={20} style={{ color: mod.color }} />
                         <h3 style={{ margin: 0, fontSize: '1.05rem' }}>Bulanan: {mod.name}</h3>
                       </div>
-                      <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '4px', color: '#94a3b8' }}>
+                      <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '4px', color: 'var(--muted)' }}>
                         Akhir Bulan
                       </span>
                     </div>
-                    <p style={{ fontSize: '0.83rem', color: 'var(--text-secondary, #94a3b8)', marginBottom: '12px' }}>
+                    <p style={{ fontSize: '0.83rem', color: 'var(--muted)', marginBottom: '12px' }}>
                       Evaluasi bulanan {mod.name}: verifikasi tren parameter dan rekomendasi pemeliharaan prediktif.
                     </p>
-                    <div style={{ fontSize: '0.78rem', marginBottom: '16px', color: '#cbd5e1' }}>
+                    <div style={{ fontSize: '0.78rem', marginBottom: '16px', color: 'var(--muted)' }}>
                       <span>Periode: <strong>01 - 30 September 2026</strong></span>
                     </div>
                   </div>
@@ -480,7 +480,7 @@ export default function AutomationWorkspace() {
               style={{
                 padding: '24px',
                 borderRadius: '8px',
-                border: '1px solid var(--border-color, #334155)',
+                border: '1px solid var(--border)',
                 background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%)',
                 marginTop: '12px',
                 display: 'flex',
@@ -492,17 +492,17 @@ export default function AutomationWorkspace() {
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <span style={{ background: '#3b82f6', color: '#fff', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                  <span style={{ background: 'var(--action)', color: 'var(--on-accent)', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
                     EDISI LENGKAP 360°
                   </span>
-                  <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>September 2026</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>September 2026</span>
                 </div>
                 <h3 style={{ margin: '0 0 6px 0', fontSize: '1.25rem' }}>
                   Laporan Asset Management & Condition-Based Maintenance PLTU Jeranjang
                 </h3>
-                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary, #94a3b8)', maxWidth: '640px' }}>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--muted)', maxWidth: '640px' }}>
                   Memuat data lengkap dari modul aktif (MCSA, Vibrasi, DGA, Thermal) dan penanda tegas{' '}
-                  <code style={{ color: '#f59e0b' }}>⚠️ [BELUM ADA DATA PENGUJIAN / STANDBY]</code> untuk modul tanpa pengujian di bulan September 2026.
+                  <code style={{ color: 'var(--attention)' }}>⚠️ [BELUM ADA DATA PENGUJIAN / STANDBY]</code> untuk modul tanpa pengujian di bulan September 2026.
                 </p>
               </div>
 
@@ -555,14 +555,14 @@ export default function AutomationWorkspace() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ background: '#3b82f6', color: '#fff', padding: '16px', borderRadius: '12px' }}>
+                <div style={{ background: 'var(--action)', color: 'var(--on-accent)', padding: '16px', borderRadius: '12px' }}>
                   <Presentation size={32} />
                 </div>
                 <div>
                   <h4 style={{ margin: '0 0 4px 0', fontSize: '1.15rem' }}>
                     Slide Deck Meeting Keandalan CBM PLTU Jeranjang — September 2026
                   </h4>
-                  <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.85rem', color: '#94a3b8' }}>
+                  <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.85rem', color: 'var(--muted)' }}>
                     <li>Slide 1: Cover Eksekutif Rapat Keandalan Pembangkit</li>
                     <li>Slide 2: Matriks Kesiapan 6 Modul CBM (Tabel Modul, Status, Jml Pengujian)</li>
                     <li>Slide 3-8: Evaluasi per Modul (dengan tanda visual khusus untuk modul Standby)</li>

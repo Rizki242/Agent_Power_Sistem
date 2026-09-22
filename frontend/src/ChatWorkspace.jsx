@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   AlertTriangle,
   BookOpen,
-  Bot,
   ChevronDown,
   ChevronUp,
   ClipboardList,
   Copy,
+  Download,
   ExternalLink,
   FileText,
   Menu,
@@ -24,6 +24,7 @@ import {
   X,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAuth } from './context/AuthContext.jsx'
 import {
   createNewChatSession,
   deleteChatSession,
@@ -33,6 +34,7 @@ import {
   sendChatMessage,
 } from './api.js'
 import ChatHistoryPanel from './ChatHistoryPanel.jsx'
+import { useToast } from './components/Toast.jsx'
 import {
   isSpeechRecognitionSupported,
   isSpeechSynthesisSupported,
@@ -50,6 +52,14 @@ const QUICK_ACTIONS = [
 ]
 
 import MarkdownRenderer from './components/MarkdownRenderer.jsx'
+import thinkingGear from './assets/thinking-gear.svg'
+
+const LOADING_STAGES = [
+  'Memeriksa Safety Guardrail & mengenali aset...',
+  'Mengumpulkan bukti specialist agents (MCSA, Vibrasi, DGA, PD, Tribologi, Thermal)...',
+  'Menelusuri knowledge base & standar (ISO / IEEE / NEMA / EPRI)...',
+  'Menyusun diagnosis konsensus dan rekomendasi CBM...',
+]
 
 function formatChatTime(raw) {
   if (!raw) return ''
@@ -69,10 +79,46 @@ function formatChatTime(raw) {
 const defaultWelcomeMessage = {
   id: 'welcome',
   role: 'assistant',
-  text: 'Halo! Saya **Agent CBM Learning PLTU Jeranjang** (PPLE Agent).\n\nSaya memadukan analisa 6 spesialis (*Vibrasi, MCSA, DGA, Partial Discharge, Tribologi, Thermal*), Safety Guardrail, dan pengetahuan unit PLTU Jeranjang (3 × 25 MW).\n\nAnda dapat menanyakan kondisi mesin, tren getaran, analisis oli, gas trafo, atau mengobrol santai seputar operasional plant.',
+  text: 'Halo! Saya **Agent Learning Sistem PLTU Jeranjang**.\n\nSaya memadukan analisa 6 spesialis (*Vibrasi, MCSA, DGA, Partial Discharge, Tribologi, Thermal*), Safety Guardrail, dan pengetahuan unit PLTU Jeranjang (3 × 25 MW).\n\nAnda dapat menanyakan kondisi mesin, tren getaran, analisis oli, gas trafo, atau mengobrol santai seputar operasional plant.',
   subagent_traces: [],
   timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
 }
+
+// Gulir pelan ke dasar feed (ease-out ~900ms) supaya pesan baru terasa "mengalir"
+// alih-alih melompat. Menghormati prefers-reduced-motion dengan lompat langsung.
+function animateFeedScroll(feed, target) {
+  const start = feed.scrollTop
+  const distance = target - start
+  if (Math.abs(distance) < 2) return
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  if (reduceMotion) {
+    feed.scrollTop = target
+    return
+  }
+  const duration = Math.min(1400, Math.max(600, Math.abs(distance) * 1.2))
+  const startTime = performance.now()
+  if (feed._scrollRaf) cancelAnimationFrame(feed._scrollRaf)
+  const step = (now) => {
+    const t = Math.min(1, (now - startTime) / duration)
+    const eased = 1 - Math.pow(1 - t, 3)
+    feed.scrollTop = start + distance * eased
+    if (t < 1) feed._scrollRaf = requestAnimationFrame(step)
+    else feed._scrollRaf = null
+  }
+  feed._scrollRaf = requestAnimationFrame(step)
+}
+
+function scrollFeedToBottom(feed, fallbackEl) {
+  if (!feed) {
+    fallbackEl?.scrollIntoView({ behavior: 'smooth' })
+    return
+  }
+  animateFeedScroll(feed, feed.scrollHeight - feed.clientHeight)
+}
+
+// Ruang yang disisakan di bawah pertanyaan saat disematkan ke atas: indikator
+// "berpikir" (44px) + jarak antar-baris feed.
+const PINNED_RESERVE_PX = 96
 
 // Memoized message bubble per Vercel Best Practices (rerender-memo)
 const ChatMessageBubble = React.memo(function ChatMessageBubble({
@@ -86,6 +132,7 @@ const ChatMessageBubble = React.memo(function ChatMessageBubble({
   onCopy,
   hasTTS,
   onCreateWo,
+  onRetry,
 }) {
   const isUser = msg.role === 'user'
   const traceCount = msg.subagent_traces?.length ?? 0
@@ -95,12 +142,16 @@ const ChatMessageBubble = React.memo(function ChatMessageBubble({
   return (
     <div className={`chat-bubble-row ${isUser ? 'chat-bubble-row--user' : 'chat-bubble-row--bot'}`}>
       <div className={`chat-avatar ${isUser ? 'chat-avatar--user' : 'chat-avatar--bot'}`}>
-        {isUser ? <User size={18} /> : <Bot size={18} />}
+        {isUser ? (
+          <User size={24} />
+        ) : (
+          <img src={thinkingGear} alt="Agent Learning Sistem" className="chat-avatar-gear" />
+        )}
       </div>
 
       <div className={`chat-bubble ${isUser ? 'chat-bubble--user' : 'chat-bubble--bot'} ${msg.safety_blocked ? 'chat-bubble--safety' : ''} ${msg.isError ? 'chat-bubble--error' : ''}`}>
         <div className="chat-bubble__meta">
-          <span className="chat-bubble__sender">{isUser ? 'Anda' : 'PPLE Agent'}</span>
+          <span className="chat-bubble__sender">{isUser ? 'Anda' : 'Agent Learning Sistem'}</span>
           {msg.ai_enhanced ? (
             <span className="badge badge--enhanced" title="Jawaban diperkaya oleh LLM">
               <Sparkles size={11} /> AI Enhanced
@@ -114,7 +165,17 @@ const ChatMessageBubble = React.memo(function ChatMessageBubble({
           <span className="chat-bubble__time">{formatChatTime(msg.timestamp || msg.created_at)}</span>
         </div>
 
-        {msg.file ? (
+        {msg.file && msg.imagePreviewUrl ? (
+          <a
+            className="chat-attached-image"
+            href={msg.imagePreviewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`Buka ${msg.file} ukuran penuh`}
+          >
+            <img src={msg.imagePreviewUrl} alt={msg.file} loading="lazy" />
+          </a>
+        ) : msg.file ? (
           <div className="chat-attached-file">
             <FileText size={14} />
             <span>{msg.file}</span>
@@ -124,6 +185,17 @@ const ChatMessageBubble = React.memo(function ChatMessageBubble({
         <div className="chat-bubble__content">
           <MarkdownRenderer content={msg.text} />
         </div>
+
+        {msg.isError && msg.retryPrompt ? (
+          <button
+            type="button"
+            className="chat-retry-button"
+            onClick={() => onRetry && onRetry(msg.retryPrompt)}
+            title="Kirim ulang pertanyaan terakhir"
+          >
+            <RotateCcw size={13} /> Coba lagi
+          </button>
+        ) : null}
 
         {/* Matched Equipment Mini Card */}
         {msg.matched_equipment ? (
@@ -268,12 +340,35 @@ const QuickActionList = React.memo(function QuickActionList({ onSelect, disabled
 })
 
 export default function ChatWorkspace({ onOpenNav }) {
+  const { user, logout } = useAuth()
   const [sessions, setSessions] = useState([])
   const [activeSessionId, setActiveSessionId] = useState(null)
   const [messages, setMessages] = useState([defaultWelcomeMessage])
+  const messagesRef = useRef(messages)
+  messagesRef.current = messages
+  // Revoke any image-attachment object URLs on unmount to avoid leaking blob
+  // memory over a long-lived session (URL.createObjectURL is per-tab, not
+  // per-message, so it must be cleaned up explicitly).
+  useEffect(() => () => {
+    messagesRef.current.forEach((m) => {
+      if (m.imagePreviewUrl) URL.revokeObjectURL(m.imagePreviewUrl)
+    })
+  }, [])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [attachedFile, setAttachedFile] = useState(null)
+  const [attachedPreviewUrl, setAttachedPreviewUrl] = useState(null)
+  // Build/revoke a preview object URL whenever the composer's attached file
+  // changes, so an image thumbnail can be shown before sending.
+  useEffect(() => {
+    if (attachedFile && attachedFile.type && attachedFile.type.startsWith('image/')) {
+      const url = URL.createObjectURL(attachedFile)
+      setAttachedPreviewUrl(url)
+      return () => URL.revokeObjectURL(url)
+    }
+    setAttachedPreviewUrl(null)
+    return undefined
+  }, [attachedFile])
   const [isListening, setIsListening] = useState(false)
   const [speakingId, setSpeakingId] = useState(null)
   const [autoTTS, setAutoTTS] = useState(() => {
@@ -283,9 +378,11 @@ export default function ChatWorkspace({ onOpenNav }) {
       return false
     }
   })
+  const [loadingStage, setLoadingStage] = useState(0)
   const [expandedTraces, setExpandedTraces] = useState({})
   const [expandedCitations, setExpandedCitations] = useState({})
   const [speechError, setSpeechError] = useState(null)
+  const [showScrollBottom, setShowScrollBottom] = useState(false)
 
   // LLM Full Power active provider & model state
   const [activeProvider, _setActiveProvider] = useState(() => {
@@ -316,7 +413,7 @@ export default function ChatWorkspace({ onOpenNav }) {
   })
   const [isDragging, setIsDragging] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [woNotification, setWoNotification] = useState(null)
+  const { notify } = useToast()
 
   const handleCreateWoFromChat = useCallback(async (msg) => {
     if (!msg.matched_equipment) return
@@ -328,19 +425,27 @@ export default function ChatWorkspace({ onOpenNav }) {
         anomaly_desc: msg.text?.slice(0, 280) || 'Temuan anomali CBM dari Chatbot',
         created_by: 'Chatbot CBM Assistant',
       })
-      setWoNotification({
-        woNumber: res.work_order?.wo_number,
-        equipment: msg.matched_equipment,
-        title: res.work_order?.title,
+      notify({
+        tone: 'success',
+        message: `Work Order ${res.work_order?.wo_number} untuk ${msg.matched_equipment} berhasil diterbitkan.`,
+        action: { label: 'Buka Work Orders', to: '/work-orders' },
       })
     } catch (err) {
-      alert(`Gagal menerbitkan Work Order: ${err.message}`)
+      notify({ tone: 'error', message: `Gagal menerbitkan Work Order: ${err.message}` })
     }
-  }, [])
+  }, [notify])
   const startXRef = useRef(0)
   const startWidthRef = useRef(sidebarWidth)
 
   const messagesEndRef = useRef(null)
+  const feedRef = useRef(null)
+  // Saat agent sedang berpikir, pertanyaan terakhir disematkan ke atas feed
+  // (gaya ChatGPT/Claude) supaya indikator reasoning selalu terlihat di bawahnya.
+  const pinnedRef = useRef(false)
+  const feedSpacerRef = useRef(0)
+  const [feedSpacer, setFeedSpacer] = useState(0)
+  const chatAbortRef = useRef(null)
+  const submitRef = useRef(null)
   const fileInputRef = useRef(null)
   const textareaRef = useRef(null)
   const activeRecognizerRef = useRef(null)
@@ -451,17 +556,30 @@ export default function ChatWorkspace({ onOpenNav }) {
     }
   }, [])
 
-  // Load chat sessions on mount
+  // Load chat sessions on mount. Jika belum ada sesi sama sekali, satu sesi dibuat
+  // otomatis supaya percakapan pertama tetap tersimpan (tanpa ini, pesan pertama
+  // terkirim dengan session_id null dan riwayatnya hilang saat halaman dimuat ulang).
   useEffect(() => {
     const controller = new AbortController()
     getChatSessions(null, controller.signal)
-      .then((sList) => {
+      .then(async (sList) => {
         if (sList && sList.length > 0) {
           setSessions(sList)
           const firstId = sList[0].session_id
           setActiveSessionId(firstId)
           loadSessionMessages(firstId, controller.signal)
+          return
         }
+        const res = await createNewChatSession({ title: 'Untitled', sessionType: 'chat' })
+        if (controller.signal.aborted) return
+        setSessions([{
+          session_id: res.session_id,
+          title: 'Untitled',
+          session_type: 'chat',
+          status: 'active',
+          message_count: 0,
+        }])
+        setActiveSessionId(res.session_id)
       })
       .catch(() => {})
     return () => controller.abort()
@@ -525,7 +643,7 @@ export default function ChatWorkspace({ onOpenNav }) {
       `\n---\n`,
     ]
     messages.forEach((m) => {
-      const roleName = m.role === 'user' ? '👤 Engineer' : '🤖 PPLE CBM Agent'
+      const roleName = m.role === 'user' ? '👤 Engineer' : '🤖 Agent Learning Sistem'
       lines.push(`### ${roleName} (${m.timestamp || ''})\n\n${m.text}\n`)
       if (m.matched_equipment) {
         lines.push(`> **Aset Terdeteksi:** ${m.matched_equipment}\n`)
@@ -558,19 +676,102 @@ export default function ChatWorkspace({ onOpenNav }) {
     })
   }, [])
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  // Pantau posisi scroll untuk menampilkan tombol 'Pesan terbaru' saat pengguna melihat histori di atas
+  const handleFeedScroll = useCallback(() => {
+    const feed = feedRef.current
+    if (!feed) return
+    // Spacer sematan tidak dihitung sebagai "konten di bawah".
+    const distanceFromBottom = feed.scrollHeight - feedSpacerRef.current - feed.scrollTop - feed.clientHeight
+    setShowScrollBottom(distanceFromBottom > 160)
+  }, [])
 
+  const applyFeedSpacer = useCallback((px) => {
+    feedSpacerRef.current = px
+    setFeedSpacer(px)
+  }, [])
+
+  // Begitu loading dimulai: sematkan bubble pertanyaan terakhir ke tepi atas feed
+  // dan sisakan ruang kosong di bawahnya agar indikator berpikir tetap terlihat.
   useEffect(() => {
-    scrollToBottom()
-  }, [messages, loading])
+    if (!loading) return undefined
+    const feed = feedRef.current
+    if (!feed) return undefined
+    const rows = feed.querySelectorAll('.chat-bubble-row--user')
+    const row = rows[rows.length - 1]
+    if (!row) return undefined
+    const spacer = Math.max(0, feed.clientHeight - row.offsetHeight - PINNED_RESERVE_PX)
+    pinnedRef.current = true
+    applyFeedSpacer(spacer)
+    // Dua frame: satu agar spacer masuk layout, satu lagi agar tinggi scroll terbarui.
+    let raf2 = 0
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        const feedTop = feed.getBoundingClientRect().top
+        const rowTop = row.getBoundingClientRect().top
+        const paddingTop = parseFloat(getComputedStyle(feed).paddingTop) || 0
+        const target = feed.scrollTop + (rowTop - feedTop) - paddingTop
+        animateFeedScroll(feed, Math.max(0, target))
+      })
+    })
+    return () => {
+      cancelAnimationFrame(raf1)
+      cancelAnimationFrame(raf2)
+    }
+  }, [loading, applyFeedSpacer])
+
+  const scrollToBottom = useCallback(() => {
+    pinnedRef.current = false
+    if (feedSpacerRef.current) applyFeedSpacer(0)
+    requestAnimationFrame(() => scrollFeedToBottom(feedRef.current, messagesEndRef.current))
+    setShowScrollBottom(false)
+  }, [applyFeedSpacer])
+
+  // Auto-scroll hanya saat pengguna memang sedang berada di dasar percakapan.
+  // Tanpa ini, membaca jawaban lama akan terus tertarik ke bawah setiap ada pesan baru.
+  useEffect(() => {
+    const feed = feedRef.current
+    if (messages.length <= 1) {
+      // Sesi baru / riwayat dibersihkan: lepaskan sematan.
+      pinnedRef.current = false
+      if (feedSpacerRef.current) applyFeedSpacer(0)
+    }
+    // Selama pertanyaan disematkan di atas, jawaban muncul tepat di bawahnya;
+    // jangan tarik ke dasar agar pertanyaan + reasoning tetap di posisi semula.
+    if (pinnedRef.current) return undefined
+    if (!feed) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      return undefined
+    }
+    const distanceFromBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight
+    if (distanceFromBottom < 220) {
+      // Tunggu satu frame agar layout pesan baru selesai dihitung sebelum mulai bergulir.
+      const raf = requestAnimationFrame(() => scrollFeedToBottom(feed, messagesEndRef.current))
+      return () => cancelAnimationFrame(raf)
+    }
+    return undefined
+  }, [messages, loading, applyFeedSpacer])
+
+  // Tahapan kerja agent ditampilkan bergantian supaya penantian LLM terasa hidup
+  // dan pengguna tahu proses apa yang sedang berjalan.
+  useEffect(() => {
+    if (!loading) {
+      setLoadingStage(0)
+      return
+    }
+    const timer = setInterval(() => {
+      setLoadingStage((prev) => (prev + 1) % LOADING_STAGES.length)
+    }, 2600)
+    return () => clearInterval(timer)
+  }, [loading])
 
   useEffect(() => {
     return () => {
       stopSpeaking()
       if (activeRecognizerRef.current) {
         activeRecognizerRef.current.abort()
+      }
+      if (chatAbortRef.current) {
+        chatAbortRef.current.abort()
       }
     }
   }, [])
@@ -615,11 +816,13 @@ export default function ChatWorkspace({ onOpenNav }) {
     if (!query && !attachedFile) return
 
     const userMessageId = `user-${Date.now()}`
+    const isImageAttachment = Boolean(attachedFile && attachedFile.type && attachedFile.type.startsWith('image/'))
     const userMsg = {
       id: userMessageId,
       role: 'user',
       text: query,
       file: attachedFile ? attachedFile.name : null,
+      imagePreviewUrl: isImageAttachment ? URL.createObjectURL(attachedFile) : null,
       fromVoice,
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
     }
@@ -634,6 +837,9 @@ export default function ChatWorkspace({ onOpenNav }) {
     setLoading(true)
     setSpeechError(null)
 
+    const controller = new AbortController()
+    chatAbortRef.current = controller
+
     try {
       const response = await sendChatMessage({
         message: query,
@@ -642,6 +848,7 @@ export default function ChatWorkspace({ onOpenNav }) {
         sessionId: activeSessionId,
         provider: activeProvider,
         model: activeModel || undefined,
+        signal: controller.signal,
       })
 
       // If active session was Untitled, update its title in UI state
@@ -686,20 +893,33 @@ export default function ChatWorkspace({ onOpenNav }) {
         handleSpeak(botMessageId, response.reply, response.summary_for_speech)
       }
     } catch (err) {
+      const cancelled = err.name === 'AbortError'
       setMessages((prev) => [
         ...prev,
         {
           id: `error-${Date.now()}`,
           role: 'assistant',
           isError: true,
-          text: `Gagal berkomunikasi dengan server: ${err.message}. Pastikan backend FastAPI aktif di port 8000.`,
+          text: cancelled
+            ? 'Permintaan dihentikan sebelum agent selesai menjawab.'
+            : `Gagal berkomunikasi dengan server: ${err.message}. Pastikan backend FastAPI aktif di port 8000.`,
+          retryPrompt: cancelled ? null : query,
           timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         },
       ])
     } finally {
+      chatAbortRef.current = null
       setLoading(false)
     }
   }
+
+  // Identitas handleRetry dijaga stabil (lewat ref) agar React.memo pada bubble pesan
+  // tidak batal dan seluruh riwayat tidak ikut render ulang setiap ada pesan baru.
+  const handleRetry = useCallback((prompt) => {
+    if (prompt) submitRef.current?.(null, prompt)
+  }, [])
+
+  submitRef.current = handleSubmit
 
   const handleToggleVoice = () => {
     if (!hasSTT) {
@@ -758,8 +978,9 @@ export default function ChatWorkspace({ onOpenNav }) {
             onExportSession={handleExportSession}
             onOpenNav={onOpenNav}
             onToggleCollapse={() => setIsCollapsed(true)}
-            userName="Rizki"
-            userRole="Engineer"
+            user={user}
+            onLogout={logout}
+            onSelectPrompt={(prompt) => handleSubmit(null, prompt)}
           />
         </div>
       ) : null}
@@ -810,10 +1031,13 @@ export default function ChatWorkspace({ onOpenNav }) {
                 </button>
               </div>
             ) : null}
-            <div>
+            <div className="chat-header-session-title">
               <div className="chat-title-row">
-                <h1>Power Learning</h1>
-                <span className="badge badge--ai"><Sparkles size={13} /> Multi-Agent CBM</span>
+                <h1 className="chat-title-claude" title="Sesi obrolan aktif">
+                  {sessions.find((s) => s.session_id === activeSessionId)?.title || 'Percakapan baru'}
+                </h1>
+                <ChevronDown size={15} className="chat-title-chevron" />
+                <span className="badge badge--ai"><Sparkles size={12} /> Multi-Agent CBM</span>
               </div>
             </div>
           </div>
@@ -830,6 +1054,16 @@ export default function ChatWorkspace({ onOpenNav }) {
                 <span>{autoTTS ? 'Auto-Voice ON' : 'Auto-Voice OFF'}</span>
               </button>
             ) : null}
+
+            <button
+              type="button"
+              className="icon-button"
+              onClick={handleExportSession}
+              title="Ekspor Ringkasan Sesi (.md)"
+              aria-label="Ekspor Laporan Sesi"
+            >
+              <Download size={16} />
+            </button>
 
             <button
               type="button"
@@ -857,43 +1091,15 @@ export default function ChatWorkspace({ onOpenNav }) {
           </div>
         ) : null}
 
-        {woNotification ? (
-          <div
-            className="notice notice--success"
-            style={{
-              margin: '0 20px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 16px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ClipboardList size={18} style={{ color: '#10b981' }} />
-              <span>
-                Work Order <strong>{woNotification.woNumber}</strong> untuk{' '}
-                <strong>{woNotification.equipment}</strong> berhasil diterbitkan!
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Link to="/work-orders" className="button button--small button--primary" style={{ textDecoration: 'none' }}>
-                Buka di Work Orders <ExternalLink size={13} />
-              </Link>
-              <button
-                type="button"
-                className="icon-button-subtle"
-                onClick={() => setWoNotification(null)}
-                aria-label="Tutup notifikasi"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          </div>
-        ) : null}
-
         {/* Main chat window */}
         <div className="chat-container">
-          <div className="chat-feed" role="log" aria-live="polite">
+          <div
+            className="chat-feed"
+            role="log"
+            aria-live="polite"
+            ref={feedRef}
+            onScroll={handleFeedScroll}
+          >
             {messages.map((msg) => (
               <ChatMessageBubble
                 key={msg.id}
@@ -907,39 +1113,61 @@ export default function ChatWorkspace({ onOpenNav }) {
                 onCopy={handleCopy}
                 hasTTS={hasTTS}
                 onCreateWo={handleCreateWoFromChat}
+                onRetry={handleRetry}
               />
             ))}
 
             {loading ? (
-              <div className="chat-bubble-row chat-bubble-row--bot">
-                <div className="chat-avatar chat-avatar--bot">
-                  <Bot size={18} />
-                </div>
-                <div className="chat-bubble chat-bubble--bot chat-bubble--loading">
-                  <div className="chat-typing-indicator">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                  <span className="chat-typing-text">Menghubungi specialist agents & memeriksa safety...</span>
+              <div className="claude-thinking-row" role="status" aria-live="polite">
+                <div className="claude-thinking-content">
+                  <img
+                    src={thinkingGear}
+                    alt=""
+                    aria-hidden="true"
+                    className="claude-gear-spin"
+                  />
+                  <span className="claude-thinking-text">
+                    {LOADING_STAGES[loadingStage]}
+                    <span className="claude-cursor">_</span>
+                  </span>
                 </div>
               </div>
             ) : null}
 
-            <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} style={{ flexShrink: 0, height: feedSpacer }} aria-hidden="true" />
           </div>
 
+          {/* Floating Scroll to Bottom Button */}
+          {showScrollBottom ? (
+            <button
+              type="button"
+              className="chat-scroll-bottom-btn"
+              onClick={scrollToBottom}
+              title="Gulir ke pesan terbaru"
+              aria-label="Kembali ke pesan terbaru"
+            >
+              <ChevronDown size={14} />
+              <span>Pesan terbaru</span>
+            </button>
+          ) : null}
+
           {/* Quick Action Chips (Memoized) */}
-          <QuickActionList
-            onSelect={(prompt) => handleSubmit(null, prompt)}
-            disabled={loading || isListening}
-          />
+          {messages.length <= 1 ? (
+            <QuickActionList
+              onSelect={(prompt) => handleSubmit(null, prompt)}
+              disabled={loading || isListening}
+            />
+          ) : null}
 
           {/* Input area */}
           <form className="chat-input-box" onSubmit={handleSubmit}>
             {attachedFile ? (
               <div className="chat-file-preview">
-                <FileText size={14} />
+                {attachedPreviewUrl ? (
+                  <img className="chat-file-preview__thumb" src={attachedPreviewUrl} alt={attachedFile.name} />
+                ) : (
+                  <FileText size={14} />
+                )}
                 <span>{attachedFile.name}</span>
                 <button
                   type="button"
@@ -1027,6 +1255,10 @@ export default function ChatWorkspace({ onOpenNav }) {
               </div>
             </div>
           </form>
+
+          <div className="chat-disclaimer-claude">
+            Agent Learning Sistem dapat membuat kekeliruan. Selalu verifikasi data sensor aktual dan ikuti SOP keselamatan plant sebelum tindakan pemeliharaan.
+          </div>
         </div>
       </div>
     </div>

@@ -1,0 +1,8 @@
+<svg width="100%" viewBox="0 0 240 240" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Gear reliability engineering</title>
+<desc>Logo bulat merah PLN dengan roda gigi putih tebal 8 gigi di tengah.</desc>
+<circle cx="120" cy="120" r="117" fill="#B3141B"/>
+<circle cx="120" cy="120" r="111" fill="#E31B23"/>
+<path d="M 108.7 59.0 L 110.9 40.5 L 129.1 40.5 L 131.3 59.0 A 62 62 0 0 1 155.1 68.9 L 169.8 57.4 L 182.6 70.2 L 171.1 84.9 A 62 62 0 0 1 181.0 108.7 L 199.5 110.9 L 199.5 129.1 L 181.0 131.3 A 62 62 0 0 1 171.1 155.1 L 182.6 169.8 L 169.8 182.6 L 155.1 171.1 A 62 62 0 0 1 131.3 181.0 L 129.1 199.5 L 110.9 199.5 L 108.7 181.0 A 62 62 0 0 1 84.9 171.1 L 70.2 182.6 L 57.4 169.8 L 68.9 155.1 A 62 62 0 0 1 59.0 131.3 L 40.5 129.1 L 40.5 110.9 L 59.0 108.7 A 62 62 0 0 1 68.9 84.9 L 57.4 70.2 L 70.2 57.4 L 84.9 68.9 A 62 62 0 0 1 108.7 59.0 Z M 140 120 A 20 20 0 1 0 100 120 A 20 20 0 1 0 140 120 Z" fill="#FFFFFF" fill-rule="evenodd"/>
+<circle cx="120" cy="120" r="20" fill="none" stroke="#B3141B" stroke-width="3" opacity="0.55"/>
+</svg>

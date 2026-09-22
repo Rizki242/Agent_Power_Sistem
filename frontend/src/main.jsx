@@ -2,8 +2,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
-import 'katex/dist/katex.min.css'
+import { initTheme } from './utils/theme.js'
 import './styles.css'
+
+// Tema dipasang sebelum render pertama agar tidak ada kedipan terang di tema gelap.
+initTheme()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

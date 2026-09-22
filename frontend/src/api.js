@@ -1,22 +1,139 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 const API_KEY = import.meta.env.VITE_API_KEY || ''
-const authHeaders = API_KEY ? { 'X-API-Key': API_KEY } : {}
 
-async function getJson(path, signal) {
-  const response = await fetch(`${API_BASE}${path}`, { signal, headers: authHeaders })
+export function getAuthToken() {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('pple_auth_token') || ''
+  }
+  return ''
+}
+
+export function setAuthToken(token) {
+  if (typeof window !== 'undefined') {
+    if (token) {
+      localStorage.setItem('pple_auth_token', token)
+    } else {
+      localStorage.removeItem('pple_auth_token')
+    }
+  }
+}
+
+function getAuthHeaders(customHeaders = {}) {
+  const headers = { ...customHeaders }
+  if (API_KEY) {
+    headers['X-API-Key'] = API_KEY
+  }
+  const token = getAuthToken()
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  return headers
+}
+
+const READ_TIMEOUT_MS = 20000
+const WRITE_TIMEOUT_MS = 45000
+// Chat melewati LLM + 6 specialist agent, jadi diberi anggaran waktu jauh lebih panjang.
+const CHAT_TIMEOUT_MS = 180000
+
+/**
+ * Gabungkan signal pemanggil dengan batas waktu, supaya permintaan yang menggantung
+ * tidak membuat UI menunggu selamanya (spinner tanpa akhir saat backend tidak sehat).
+ */
+function withTimeout(signal, timeoutMs) {
+  const controller = new AbortController()
+  let timedOut = false
+  const timer = setTimeout(() => {
+    timedOut = true
+    controller.abort()
+  }, timeoutMs)
+
+  const onAbort = () => controller.abort()
+  if (signal) {
+    if (signal.aborted) controller.abort()
+    else signal.addEventListener('abort', onAbort, { once: true })
+  }
+
+  return {
+    signal: controller.signal,
+    didTimeout: () => timedOut,
+    cleanup: () => {
+      clearTimeout(timer)
+      if (signal) signal.removeEventListener('abort', onAbort)
+    },
+  }
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = READ_TIMEOUT_MS) {
+  const guard = withTimeout(options.signal, timeoutMs)
+  try {
+    return await fetch(url, { ...options, signal: guard.signal })
+  } catch (error) {
+    if (error.name === 'AbortError' && guard.didTimeout()) {
+      throw new Error(`Permintaan melebihi batas waktu ${Math.round(timeoutMs / 1000)} detik`)
+    }
+    // Jika fetch gagal (koneksi ditolak / backend mati), berikan pesan diagnostik yang jelas
+    const msg = error?.message || ''
+    if (error instanceof TypeError || msg === 'Failed to fetch' || msg.includes('fetch') || msg.includes('NetworkError')) {
+      throw new Error('Tidak dapat terhubung ke server backend FastAPI (port 8000). Pastikan server backend sudah berjalan (jalankan run_api.bat atau run_all.bat).')
+    }
+    throw error
+  } finally {
+    guard.cleanup()
+  }
+}
+
+async function getJson(path, signal, customHeaders = {}) {
+  const response = await fetchWithTimeout(`${API_BASE}${path}`, {
+    signal,
+    headers: getAuthHeaders(customHeaders),
+  })
   if (!response.ok) {
-    throw new Error(`API merespons ${response.status}`)
+    let errDetail = `API merespons ${response.status}`
+    if (response.status === 502 || response.status === 504) {
+      errDetail = 'Server backend FastAPI (port 8000) tidak dapat dihubungi. Pastikan backend aktif (jalankan run_api.bat).'
+    } else {
+      try {
+        const errJson = await response.json()
+        if (errJson && errJson.detail) {
+          errDetail = errJson.detail
+        }
+      } catch {
+        // ignore
+      }
+    }
+    const err = new Error(errDetail)
+    err.status = response.status
+    throw err
   }
   return response.json()
 }
 
-async function sendJson(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...authHeaders, ...options.headers },
-  })
+async function sendJson(path, options = {}, timeoutMs = WRITE_TIMEOUT_MS) {
+  const response = await fetchWithTimeout(
+    `${API_BASE}${path}`,
+    {
+      ...options,
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders(options.headers) },
+    },
+    timeoutMs
+  )
   if (!response.ok) {
-    throw new Error(`API merespons ${response.status}`)
+    let errDetail = `API merespons ${response.status}`
+    if (response.status === 502 || response.status === 504) {
+      errDetail = 'Server backend FastAPI (port 8000) tidak dapat dihubungi. Pastikan backend aktif (jalankan run_api.bat).'
+    } else {
+      try {
+        const errJson = await response.json()
+        if (errJson && errJson.detail) {
+          errDetail = errJson.detail
+        }
+      } catch {
+        // ignore
+      }
+    }
+    const err = new Error(errDetail)
+    err.status = response.status
+    throw err
   }
   return response.json()
 }
@@ -29,12 +146,18 @@ export async function getWorkspaceOverview(signal) {
     getJson('/api/skills/learned-patterns', signal),
   ])
 
+  const results = [agentsRes, modulesRes, automationsRes, learnedRes]
   const agents = agentsRes.status === 'fulfilled' ? (agentsRes.value.agents ?? []) : []
   const modules = modulesRes.status === 'fulfilled' ? (modulesRes.value.results ?? []) : []
   const runs = automationsRes.status === 'fulfilled' ? (automationsRes.value.runs ?? []) : []
   const patterns = learnedRes.status === 'fulfilled' ? (learnedRes.value.skills ?? []) : []
 
-  return { agents, modules, runs, patterns }
+  // allSettled tidak pernah menolak, sehingga pemanggil harus diberi tahu berapa
+  // sumber yang gagal - tanpa ini Beranda mengklaim "Sistem terhubung" walau
+  // seluruh backend mati.
+  const failed = results.filter((result) => result.status === 'rejected').length
+
+  return { agents, modules, runs, patterns, failed, total: results.length }
 }
 
 export async function getDataWorkspace(signal) {
@@ -164,7 +287,14 @@ export function testAIConnection() {
   return sendJson('/api/settings/test-ai', { method: 'POST' })
 }
 
-export async function sendChatMessage({ message, provider, model, apiKey, file, source = 'CHAT', sessionId = null, signal }) {
+export function scanOllamaModels(host) {
+  return sendJson('/api/settings/ollama/scan', {
+    method: 'POST',
+    body: JSON.stringify({ host: host || undefined }),
+  })
+}
+
+export async function sendChatMessage({ message, provider, model, apiKey, file, source = 'CHAT', sessionId = null, ollamaHost = null, signal }) {
   if (file) {
     const body = new FormData()
     body.append('message', message || '')
@@ -173,13 +303,14 @@ export async function sendChatMessage({ message, provider, model, apiKey, file, 
     if (apiKey) body.append('api_key', apiKey)
     if (source) body.append('source', source)
     if (sessionId) body.append('session_id', sessionId)
+    if (ollamaHost) body.append('ollama_host', ollamaHost)
     body.append('file', file)
-    const response = await fetch(`${API_BASE}/api/agent/chat`, {
+    const response = await fetchWithTimeout(`${API_BASE}/api/agent/chat`, {
       method: 'POST',
       body,
       headers: { ...authHeaders, 'X-Source': source },
       signal,
-    })
+    }, CHAT_TIMEOUT_MS)
     if (!response.ok) {
       const error = await response.json().catch(() => ({}))
       throw new Error(error.detail || `Chat merespons ${response.status}`)
@@ -197,9 +328,10 @@ export async function sendChatMessage({ message, provider, model, apiKey, file, 
       api_key: apiKey,
       source,
       session_id: sessionId,
+      ollama_host: ollamaHost,
     }),
     signal,
-  })
+  }, CHAT_TIMEOUT_MS)
 }
 
 export async function getChatSessions(sessionType, signal) {
@@ -340,5 +472,32 @@ export function calculateRotorBar(data) {
     body: JSON.stringify(data),
   })
 }
+
+// ── Authentication & User Session API ──────────────────────────────
+
+export function loginUser(username, password) {
+  return sendJson('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  })
+}
+
+export function getCurrentUser(signal) {
+  return getJson('/api/auth/me', signal)
+}
+
+export function logoutUser() {
+  return sendJson('/api/auth/logout', {
+    method: 'POST',
+  })
+}
+
+export function changeUserPassword(oldPassword, newPassword) {
+  return sendJson('/api/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+  })
+}
+
 
 

@@ -11,6 +11,7 @@ import {
   getMcsaEquipmentList,
   getMcsaSummary,
 } from './api.js'
+import { useToast } from './components/Toast.jsx'
 
 function normalizeStatus(status) {
   const value = String(status || '').toLowerCase()
@@ -45,6 +46,7 @@ function RotorBarBadge({ status }) {
 }
 
 function EquipmentDetailDrawer({ equipmentName, onClose, onOpenWorkOrder }) {
+  const { notify } = useToast()
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -84,7 +86,7 @@ function EquipmentDetailDrawer({ equipmentName, onClose, onOpenWorkOrder }) {
       })
       setWoSuccess(res.work_order?.wo_number || 'WO Berhasil Diterbitkan')
     } catch (err) {
-      alert(`Gagal membuat Work Order: ${err.message}`)
+      notify({ tone: 'error', message: `Gagal membuat Work Order: ${err.message}` })
     } finally {
       setWoCreating(false)
     }
@@ -134,7 +136,7 @@ function EquipmentDetailDrawer({ equipmentName, onClose, onOpenWorkOrder }) {
 
           {/* Action Notification */}
           {woSuccess && (
-            <div className="notice" style={{ background: '#ecfdf5', borderColor: '#a7f3d0', color: '#065f46', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className="notice" style={{ background: 'var(--healthy-soft)', borderColor: 'color-mix(in srgb, var(--healthy) 45%, transparent)', color: 'var(--healthy)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <CheckCircle2 size={18} color="#059669" />
                 <span>Work Order terbit: <strong>{woSuccess}</strong></span>
@@ -181,7 +183,7 @@ function EquipmentDetailDrawer({ equipmentName, onClose, onOpenWorkOrder }) {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginTop: '10px' }}>
                 {Object.entries(spec).map(([k, v]) => (
-                  <div key={k} style={{ padding: '10px 12px', background: '#fafcfc', border: '1px solid var(--border)', borderRadius: '8px' }}>
+                  <div key={k} style={{ padding: '10px 12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px' }}>
                     <span style={{ fontSize: '0.72rem', color: 'var(--muted)', display: 'block' }}>{k}</span>
                     <strong style={{ fontSize: '0.85rem', color: 'var(--ink)' }}>{String(v) || '-'}</strong>
                   </div>
@@ -219,14 +221,14 @@ function EquipmentDetailDrawer({ equipmentName, onClose, onOpenWorkOrder }) {
             {/* Rotor Bar Parameters */}
             {groups.rotor_bar && Object.keys(groups.rotor_bar).length > 0 && (
               <div style={{ marginTop: '16px' }}>
-                <strong style={{ fontSize: '0.82rem', color: '#b86608', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <strong style={{ fontSize: '0.82rem', color: 'var(--attention)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                   <Activity size={15} /> Indikator Rotor Bar Signature (MCSA Sideband)
                 </strong>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
                   {Object.entries(groups.rotor_bar).map(([k, v]) => (
-                    <div key={k} style={{ padding: '9px 12px', background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '8px' }}>
-                      <span style={{ fontSize: '0.72rem', color: '#92400e', display: 'block' }}>{k}</span>
-                      <strong style={{ fontSize: '0.88rem', color: '#78350f' }}>
+                    <div key={k} style={{ padding: '9px 12px', background: 'var(--attention-soft)', border: '1px solid color-mix(in srgb, var(--attention) 45%, transparent)', borderRadius: '8px' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--attention)', display: 'block' }}>{k}</span>
+                      <strong style={{ fontSize: '0.88rem', color: 'var(--attention)' }}>
                         {v.value} {v.unit}
                       </strong>
                     </div>
@@ -246,9 +248,9 @@ function EquipmentDetailDrawer({ equipmentName, onClose, onOpenWorkOrder }) {
                 </strong>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
                   {Object.entries(groups.power_quality).map(([k, v]) => (
-                    <div key={k} style={{ padding: '9px 12px', background: '#f0fdf4', border: '1px solid #dcfce7', borderRadius: '8px' }}>
-                      <span style={{ fontSize: '0.72rem', color: '#166534', display: 'block' }}>{k}</span>
-                      <strong style={{ fontSize: '0.88rem', color: '#14532d' }}>
+                    <div key={k} style={{ padding: '9px 12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--healthy)', display: 'block' }}>{k}</span>
+                      <strong style={{ fontSize: '0.88rem', color: 'var(--healthy)' }}>
                         {v.value} {v.unit}
                       </strong>
                     </div>
@@ -329,6 +331,7 @@ function EquipmentDetailDrawer({ equipmentName, onClose, onOpenWorkOrder }) {
 }
 
 function RotorBarCalculatorModal({ onClose }) {
+  const { notify } = useToast()
   const [upperSb, setUpperSb] = useState('-58.0')
   const [lowerSb, setLowerSb] = useState('-57.5')
   const [healthIndex, setHealthIndex] = useState('85')
@@ -345,7 +348,7 @@ function RotorBarCalculatorModal({ onClose }) {
       })
       setResult(res)
     } catch (err) {
-      alert(`Evaluasi gagal: ${err.message}`)
+      notify({ tone: 'error', message: `Evaluasi rotor bar gagal: ${err.message}` })
     } finally {
       setEvaluating(false)
     }
@@ -356,7 +359,7 @@ function RotorBarCalculatorModal({ onClose }) {
       <div className="modal-card" style={{ background: 'var(--surface)', borderRadius: '16px', padding: '24px', maxWidth: '520px', width: '100%', border: '1px solid var(--border)', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#ecfeff', display: 'grid', placeItems: 'center', color: '#0891b2' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'var(--action-soft)', display: 'grid', placeItems: 'center', color: 'var(--action)' }}>
               <Calculator size={20} />
             </div>
             <div>
@@ -501,7 +504,7 @@ export default function MCSAWorkspace() {
       <header className="page-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 600, color: '#0891b2', background: '#ecfeff', padding: '2px 8px', borderRadius: '99px', border: '1px solid #cffafe' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 600, color: 'var(--action)', background: 'var(--action-soft)', padding: '2px 8px', borderRadius: '99px', border: '1px solid color-mix(in srgb, var(--action) 45%, transparent)' }}>
               <Zap size={12} /> Domain MCSA
             </span>
             <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>PLTU Jeranjang 3 × 25 MW</span>

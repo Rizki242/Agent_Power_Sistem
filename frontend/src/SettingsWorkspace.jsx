@@ -30,7 +30,9 @@ import {
   Volume2,
   Zap,
 } from 'lucide-react'
-import { getSettingsOverview, saveAISettings, testAIConnection } from './api.js'
+import { getSettingsOverview, saveAISettings, testAIConnection, scanOllamaModels } from './api.js'
+import { useToast } from './components/Toast.jsx'
+import { saveThemePreference } from './utils/theme.js'
 import {
   isSpeechRecognitionSupported,
   isSpeechSynthesisSupported,
@@ -42,7 +44,7 @@ const PROVIDER_NAMES = {
   gemini: 'Google Gemini',
   groq: 'Groq',
   opencode: 'OpenAI Compatible',
-  ollama: 'Ollama Lokal',
+  ollama: 'Ollama (Lokal / WSL / Privat)',
 }
 
 function formatModelLabel(modelName) {
@@ -115,15 +117,22 @@ function McpToolItem({ name, description, status = 'healthy', statusLabel = 'Rea
 }
 
 export default function SettingsWorkspace() {
+  const { notify } = useToast()
   const [activeTab, setActiveTab] = useState('ai')
   const [data, setData] = useState(null)
   const [form, setForm] = useState({
     ai_enabled: false,
     ai_provider: 'gemini',
     model: '',
+    ollama_host: 'http://localhost:11434',
     response_mode: 'balanced',
     fallback_strategy: 'rule_first',
   })
+  const [scanningOllama, setScanningOllama] = useState(false)
+  const [ollamaScanMsg, setOllamaScanMsg] = useState(null)
+  const [discoveredOllamaModels, setDiscoveredOllamaModels] = useState([])
+  const [customModelMode, setCustomModelMode] = useState(false)
+  const [customModelInput, setCustomModelInput] = useState('')
   const [state, setState] = useState({ status: 'loading', saving: false, message: '' })
   const [testResult, setTestResult] = useState(null)
   const [testingAI, setTestingAI] = useState(false)
@@ -164,7 +173,7 @@ export default function SettingsWorkspace() {
       unitRole: 'Unit Pemeliharaan CBM & Keandalan',
       language: 'id',
       timeZone: 'Asia/Makassar',
-      theme: 'dark',
+      theme: 'system',
       notifySafety: true,
       notifyAnalysis: true,
       notifyAutomation: true,
@@ -178,12 +187,22 @@ export default function SettingsWorkspace() {
     return getSettingsOverview(signal).then((result) => {
       setData(result)
       const provider = result.active_provider
+      const savedHost = result.providers?.ollama?.host || 'http://localhost:11434'
+      const savedModel = result.providers[provider]?.model || ''
       setForm((prev) => ({
         ...prev,
         ai_enabled: result.ai_enabled,
         ai_provider: provider,
-        model: result.providers[provider]?.model || '',
+        model: savedModel,
+        ollama_host: prev.ollama_host || savedHost,
       }))
+      if (provider === 'ollama' && savedModel) {
+        const standardOllama = result.providers?.ollama?.models || []
+        if (!standardOllama.includes(savedModel)) {
+          setCustomModelMode(true)
+          setCustomModelInput(savedModel)
+        }
+      }
       setState({ status: 'ready', saving: false, message: '' })
     }).catch((error) => {
       if (error.name !== 'AbortError') {
@@ -208,18 +227,50 @@ export default function SettingsWorkspace() {
       ai_provider: provider,
       model: data?.providers[provider]?.model || data?.providers[provider]?.models?.[0] || '',
     }))
+    setCustomModelMode(false)
+    setCustomModelInput('')
+    setOllamaScanMsg(null)
+  }
+
+  async function handleScanOllama() {
+    setScanningOllama(true)
+    setOllamaScanMsg(null)
+    try {
+      const host = (form.ollama_host || 'http://localhost:11434').trim()
+      const res = await scanOllamaModels(host)
+      if (res.success) {
+        setDiscoveredOllamaModels(res.models || [])
+        setOllamaScanMsg({ success: true, text: res.message })
+        if (res.models && res.models.length > 0 && !customModelMode) {
+          if (!res.models.includes(form.model)) {
+            setForm((prev) => ({ ...prev, model: res.models[0] }))
+          }
+        }
+      } else {
+        setOllamaScanMsg({ success: false, text: res.message })
+      }
+    } catch (err) {
+      setOllamaScanMsg({ success: false, text: `Pemindaian gagal: ${err.message}` })
+    } finally {
+      setScanningOllama(false)
+    }
   }
 
   async function saveAI(event) {
     event.preventDefault()
     setState((current) => ({ ...current, saving: true, message: '' }))
     try {
+      const chosenModel = (customModelMode && customModelInput.trim())
+        ? customModelInput.trim()
+        : form.model
       const payload = {
         ai_enabled: form.ai_enabled,
         ai_provider: form.ai_provider,
-        model: form.model,
+        model: chosenModel,
       }
-      if (form.ai_provider === 'ollama') payload.ollama_host = 'http://localhost:11434'
+      if (form.ai_provider === 'ollama') {
+        payload.ollama_host = (form.ollama_host || 'http://localhost:11434').trim()
+      }
       const result = await saveAISettings(payload)
       setState({ status: 'ready', saving: false, message: result.message })
       await load()
@@ -254,7 +305,7 @@ export default function SettingsWorkspace() {
 
   function handleTestVoice() {
     if (!isSpeechSynthesisSupported()) {
-      alert('Browser Anda tidak mendukung Text-to-Speech.')
+      notify({ tone: 'warning', message: 'Browser ini belum mendukung Text-to-Speech. Gunakan Chrome atau Edge.' })
       return
     }
     stopSpeaking()
@@ -267,13 +318,20 @@ export default function SettingsWorkspace() {
 
   function handleTestMic() {
     if (!isSpeechRecognitionSupported()) {
-      alert('Browser tidak mendukung Speech Recognition (Gunakan Chrome atau Edge).')
+      notify({ tone: 'warning', message: 'Browser ini belum mendukung Speech Recognition. Gunakan Chrome atau Edge.' })
       return
     }
     setMicTestActive(true)
     setTimeout(() => {
       setMicTestActive(false)
     }, 4000)
+  }
+
+  // Tema diterapkan seketika (bukan menunggu tombol Simpan) supaya pengguna
+  // langsung melihat hasilnya; nilainya tetap ikut tersimpan bersama prefs lain.
+  function handleThemeChange(nextTheme) {
+    setUserPrefs((prev) => ({ ...prev, theme: nextTheme }))
+    saveThemePreference(nextTheme)
   }
 
   function saveUserPreferences(e) {
@@ -312,6 +370,13 @@ export default function SettingsWorkspace() {
   const safety = data?.safety
   const database = data?.database
   const dataSources = data?.data_sources || []
+  const availableModelsForProvider = form.ai_provider === 'ollama'
+    ? Array.from(new Set([
+        ...discoveredOllamaModels,
+        ...(provider?.models || []),
+        form.model,
+      ])).filter(Boolean)
+    : (provider?.models || [])
 
   return (
     <div className="page settings-page">
@@ -336,7 +401,7 @@ export default function SettingsWorkspace() {
             <span>Control Plane</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.74rem', color: '#9db4b5' }}>
+            <span style={{ fontSize: '0.74rem', color: 'var(--panel-dark-muted)' }}>
               Last check: {data ? new Date(data.generated_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
             </span>
             <button
@@ -344,14 +409,14 @@ export default function SettingsWorkspace() {
               onClick={() => load()}
               aria-label="Jalankan health check ulang"
               title="Refresh status"
-              style={{ width: '32px', height: '32px', color: '#dcebea', borderColor: '#3a5f64' }}
+              style={{ width: '32px', height: '32px', color: 'var(--panel-dark-muted)', borderColor: 'color-mix(in srgb, var(--panel-dark-action) 45%, transparent)' }}
             >
               <RefreshCw size={14} />
             </button>
           </div>
         </div>
 
-        <h2 style={{ margin: '0 0 14px', fontSize: '1.2rem', color: '#ffffff', fontWeight: 600 }}>
+        <h2 style={{ margin: '0 0 14px', fontSize: '1.2rem', color: 'var(--panel-dark-ink)', fontWeight: 600 }}>
           {state.status === 'ready'
             ? 'Sistem Siap Digunakan · Seluruh Layanan Aktif'
             : state.status === 'error'
@@ -361,11 +426,11 @@ export default function SettingsWorkspace() {
 
         <div className="control-plane-pills">
           <span className="control-plane-pill">
-            <i style={{ background: '#258c7d' }} />
+            <i style={{ background: 'var(--healthy)' }} />
             <strong>Backend:</strong> 🟢 Online (v{data?.version || '2.0.0'})
           </span>
           <span className="control-plane-pill">
-            <i style={{ background: '#258c7d' }} />
+            <i style={{ background: 'var(--healthy)' }} />
             <strong>Database:</strong> 🟢 Healthy (SQLite)
           </span>
           <span className="control-plane-pill">
@@ -377,11 +442,11 @@ export default function SettingsWorkspace() {
             <strong>Voice STT/TTS:</strong> {voiceSettings.voiceEnabled ? '🟢 Ready' : '⚪ Disabled'}
           </span>
           <span className="control-plane-pill">
-            <i style={{ background: '#258c7d' }} />
+            <i style={{ background: 'var(--healthy)' }} />
             <strong>Safety Guardrail:</strong> 🟢 Active (Hard-Locked)
           </span>
           <span className="control-plane-pill">
-            <i style={{ background: '#258c7d' }} />
+            <i style={{ background: 'var(--healthy)' }} />
             <strong>API:</strong> {system?.api_protection_label || '🟢 Protected — Localhost'}
           </span>
         </div>
@@ -447,7 +512,7 @@ export default function SettingsWorkspace() {
                     <div>
                       <strong>{PROVIDER_NAMES[id] || id}</strong>
                       <small>
-                        {item.configured ? '🟢 Credential Terdeteksi' : id === 'ollama' ? '🟢 Localhost (11434)' : '🔑 Key Not Configured'}
+                        {item.configured ? (id === 'ollama' ? `🟢 Host: ${item.host || '11434'}` : '🟢 Credential Terdeteksi') : '🔑 Key Not Configured'}
                       </small>
                     </div>
                     {item.configured ? <Check size={16} /> : <KeyRound size={16} />}
@@ -455,17 +520,133 @@ export default function SettingsWorkspace() {
                 ))}
               </fieldset>
 
+              {form.ai_provider === 'ollama' && (
+                <div className="ollama-config-panel" style={{
+                  background: 'var(--panel-dark-subtle, rgba(255,255,255,0.03))',
+                  border: '1px solid var(--border-color, rgba(255,255,255,0.08))',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  margin: '14px 0 18px',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--panel-dark-ink)' }}>
+                      <HardDrive size={16} style={{ color: 'var(--primary, #0ea5e9)' }} />
+                      Konfigurasi Endpoint & Host Ollama
+                    </span>
+                    <button
+                      type="button"
+                      className="button button--secondary"
+                      onClick={handleScanOllama}
+                      disabled={scanningOllama}
+                      style={{ padding: '5px 12px', fontSize: '0.78rem', gap: '6px' }}
+                      title="Pindai model lokal/privat/cloud yang terpasang di host Ollama ini"
+                    >
+                      <RefreshCw size={13} className={scanningOllama ? 'spin' : ''} />
+                      {scanningOllama ? 'Memindai Host...' : 'Pindai Model di Host'}
+                    </button>
+                  </div>
+
+                  <label className="form-field" style={{ marginBottom: '8px' }}>
+                    <span>Ollama Host URL (Lokal Windows, WSL2, atau Server Privat)</span>
+                    <input
+                      type="text"
+                      value={form.ollama_host || 'http://localhost:11434'}
+                      onChange={(e) => setForm({ ...form, ollama_host: e.target.value })}
+                      placeholder="http://localhost:11434 atau http://172.x.x.x:11434"
+                    />
+                  </label>
+
+                  {/* Preset chips */}
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Preset Cepat:</span>
+                    <button
+                      type="button"
+                      className="tag"
+                      style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '3px 9px', borderRadius: '4px' }}
+                      onClick={() => setForm((prev) => ({ ...prev, ollama_host: 'http://localhost:11434' }))}
+                      title="Default Windows / Localhost"
+                    >
+                      Windows Localhost (11434)
+                    </button>
+                    <button
+                      type="button"
+                      className="tag"
+                      style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '3px 9px', borderRadius: '4px' }}
+                      onClick={() => setForm((prev) => ({ ...prev, ollama_host: 'http://127.0.0.1:11434' }))}
+                      title="Local IPv4 Loopback"
+                    >
+                      WSL2 / Localhost (127.0.0.1)
+                    </button>
+                    <button
+                      type="button"
+                      className="tag"
+                      style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '3px 9px', borderRadius: '4px' }}
+                      onClick={() => setForm((prev) => ({ ...prev, ollama_host: 'http://host.docker.internal:11434' }))}
+                      title="Docker Container Bridge"
+                    >
+                      Docker Host
+                    </button>
+                  </div>
+
+                  {ollamaScanMsg && (
+                    <div className={`notice ${ollamaScanMsg.success ? 'notice--success' : 'notice--error'}`} style={{ margin: '8px 0 12px', fontSize: '0.8rem' }}>
+                      {ollamaScanMsg.success ? <Check size={14} /> : <CircleAlert size={14} />}
+                      <span>{ollamaScanMsg.text}</span>
+                    </div>
+                  )}
+
+                  {/* Tips WSL & Jaringan Privat */}
+                  <div style={{
+                    fontSize: '0.78rem',
+                    color: 'var(--muted)',
+                    background: 'rgba(14, 165, 233, 0.06)',
+                    borderLeft: '3px solid #0ea5e9',
+                    padding: '8px 12px',
+                    borderRadius: '0 4px 4px 0',
+                    lineHeight: '1.45',
+                  }}>
+                    <strong>💡 Tips WSL2 & Server Privat:</strong> Jika Ollama dijalankan di dalam WSL2 Linux atau remote server terpisah, jalankan dengan perintah:
+                    <code style={{ display: 'block', marginTop: '4px', padding: '4px 8px', background: 'rgba(0,0,0,0.25)', borderRadius: '3px', color: 'var(--healthy)' }}>
+                      OLLAMA_HOST=0.0.0.0:11434 OLLAMA_ORIGINS="*" ollama serve
+                    </code>
+                  </div>
+                </div>
+              )}
+
               <div className="form-row-dual">
                 <label className="form-field">
                   <span>Model Aktif</span>
                   <select
-                    value={form.model}
-                    onChange={(e) => setForm({ ...form, model: e.target.value })}
+                    value={customModelMode ? '__custom__' : form.model}
+                    onChange={(e) => {
+                      if (e.target.value === '__custom__') {
+                        setCustomModelMode(true)
+                        if (!customModelInput) setCustomModelInput(form.model || '')
+                      } else {
+                        setCustomModelMode(false)
+                        setForm({ ...form, model: e.target.value })
+                      }
+                    }}
                   >
-                    {provider?.models.map((m) => (
+                    {availableModelsForProvider.map((m) => (
                       <option key={m} value={m}>{formatModelLabel(m)}</option>
                     ))}
+                    <option value="__custom__">✏️ Model Kustom / Privat (Ketik Manual)...</option>
                   </select>
+                  {customModelMode && (
+                    <div style={{ marginTop: '8px' }}>
+                      <input
+                        type="text"
+                        value={customModelInput}
+                        onChange={(e) => setCustomModelInput(e.target.value)}
+                        placeholder="Contoh: cbm-expert:v1, deepseek-r1:8b, mistral, gemma2:9b"
+                        style={{ fontSize: '0.84rem' }}
+                      />
+                      <small style={{ color: 'var(--muted)', fontSize: '0.74rem', display: 'block', marginTop: '4px' }}>
+                        Dapat berupa model cloud publik maupun model privat (fine-tuned / Modelfile GGUF).
+                      </small>
+                    </div>
+                  )}
                 </label>
 
                 <label className="form-field">
@@ -538,7 +719,7 @@ export default function SettingsWorkspace() {
                 <button
                   type="submit"
                   className="button button--primary"
-                  disabled={state.saving || !form.model}
+                  disabled={state.saving || (customModelMode ? !customModelInput.trim() : !form.model)}
                 >
                   <Save size={16} />
                   {state.saving ? 'Menyimpan...' : 'Simpan Preferensi'}
@@ -840,7 +1021,7 @@ export default function SettingsWorkspace() {
           </div>
 
           <div className="form-row-dual" style={{ marginBottom: '18px' }}>
-            <div style={{ padding: '16px', background: '#f8fafb', border: '1px solid var(--border)', borderRadius: '10px' }}>
+            <div style={{ padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                 <Database size={18} style={{ color: 'var(--action)' }} />
                 <strong style={{ fontSize: '0.92rem' }}>Penyimpanan SQLite</strong>
@@ -853,7 +1034,7 @@ export default function SettingsWorkspace() {
               </span>
             </div>
 
-            <div style={{ padding: '16px', background: '#f8fafb', border: '1px solid var(--border)', borderRadius: '10px' }}>
+            <div style={{ padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                 <HardDrive size={18} style={{ color: 'var(--action)' }} />
                 <strong style={{ fontSize: '0.92rem' }}>Knowledge Base (RAG)</strong>
@@ -890,7 +1071,7 @@ export default function SettingsWorkspace() {
             <button
               type="button"
               className="button button--secondary"
-              onClick={() => alert('Backup otomatis harian aktif dengan retensi 5 file rotasi (MCSA_MAX_BACKUPS).')}
+              onClick={() => notify({ tone: 'info', message: 'Backup otomatis harian aktif dengan retensi 5 file rotasi (MCSA_MAX_BACKUPS).' })}
             >
               <Save size={15} />
               Verifikasi Integritas Backup
@@ -1092,7 +1273,7 @@ export default function SettingsWorkspace() {
                     name="theme"
                     value="light"
                     checked={userPrefs.theme === 'light'}
-                    onChange={() => setUserPrefs({ ...userPrefs, theme: 'light' })}
+                    onChange={() => handleThemeChange('light')}
                   />
                   <Sun size={15} />
                   <span>Terang (Light)</span>
@@ -1103,7 +1284,7 @@ export default function SettingsWorkspace() {
                     name="theme"
                     value="dark"
                     checked={userPrefs.theme === 'dark'}
-                    onChange={() => setUserPrefs({ ...userPrefs, theme: 'dark' })}
+                    onChange={() => handleThemeChange('dark')}
                   />
                   <Moon size={15} />
                   <span>Gelap (Dark / Control Room)</span>
@@ -1114,7 +1295,7 @@ export default function SettingsWorkspace() {
                     name="theme"
                     value="system"
                     checked={userPrefs.theme === 'system'}
-                    onChange={() => setUserPrefs({ ...userPrefs, theme: 'system' })}
+                    onChange={() => handleThemeChange('system')}
                   />
                   <Cpu size={15} />
                   <span>Mengikuti Sistem</span>

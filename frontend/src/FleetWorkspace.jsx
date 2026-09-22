@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { generateCbmWorkOrder, getFleetReliability } from './api.js'
+import { useToast } from './components/Toast.jsx'
 
 const HEALTH_COLORS = {
   HEALTHY: { bg: 'rgba(16, 185, 129, 0.15)', text: '#10b981', border: '#10b981' },
@@ -22,6 +23,7 @@ const HEALTH_COLORS = {
 }
 
 export default function FleetWorkspace() {
+  const { notify } = useToast()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -67,7 +69,7 @@ export default function FleetWorkspace() {
       setWoSuccessMsg(`Work Order ${res.work_order?.wo_number} untuk ${item.equipment} berhasil dibuat!`)
       setTimeout(() => setWoSuccessMsg(null), 6000)
     } catch (err) {
-      alert(`Gagal menerbitkan Work Order: ${err.message}`)
+      notify({ tone: 'error', message: `Gagal menerbitkan Work Order: ${err.message}` })
     }
   }
 
@@ -103,7 +105,7 @@ export default function FleetWorkspace() {
       <header className="page-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span className="domain-pill" style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+            <span className="domain-pill" style={{ background: 'rgba(56, 189, 248, 0.15)', color: 'var(--action)', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
               PLTU JERANJANG (3 × 25 MW)
             </span>
             <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>CBM Reliability & Condition Fusion</span>
@@ -132,10 +134,10 @@ export default function FleetWorkspace() {
       {woSuccessMsg && (
         <div className="notice notice--success" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CheckCircle2 size={18} style={{ color: '#10b981' }} />
+            <CheckCircle2 size={18} style={{ color: 'var(--healthy)' }} />
             <span>{woSuccessMsg}</span>
           </div>
-          <Link to="/work-orders" style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>
+          <Link to="/work-orders" style={{ fontSize: '0.85rem', color: 'var(--healthy)', fontWeight: 'bold' }}>
             Buka Tiket <ArrowUpRight size={14} />
           </Link>
         </div>
@@ -166,20 +168,20 @@ export default function FleetWorkspace() {
               <strong>{data?.total_assets || 0} unit</strong>
             </div>
             <div>
-              <span style={{ color: '#10b981' }}>Healthy (Normal)</span>
-              <strong style={{ color: '#10b981' }}>{data?.health_summary?.HEALTHY || 0}</strong>
+              <span style={{ color: 'var(--healthy)' }}>Healthy (Normal)</span>
+              <strong style={{ color: 'var(--healthy)' }}>{data?.health_summary?.HEALTHY || 0}</strong>
             </div>
             <div>
-              <span style={{ color: '#60a5fa' }}>Watch (Pantau)</span>
-              <strong style={{ color: '#60a5fa' }}>{data?.health_summary?.WATCH || 0}</strong>
+              <span style={{ color: 'var(--action)' }}>Watch (Pantau)</span>
+              <strong style={{ color: 'var(--action)' }}>{data?.health_summary?.WATCH || 0}</strong>
             </div>
             <div>
-              <span style={{ color: '#f59e0b' }}>Warning (Waspada)</span>
-              <strong style={{ color: '#f59e0b' }}>{data?.health_summary?.WARNING || 0}</strong>
+              <span style={{ color: 'var(--attention)' }}>Warning (Waspada)</span>
+              <strong style={{ color: 'var(--attention)' }}>{data?.health_summary?.WARNING || 0}</strong>
             </div>
             <div>
-              <span style={{ color: '#ef4444' }}>Alert / Critical</span>
-              <strong style={{ color: '#ef4444' }}>
+              <span style={{ color: 'var(--critical)' }}>Alert / Critical</span>
+              <strong style={{ color: 'var(--critical)' }}>
                 {(data?.health_summary?.ALERT || 0) + (data?.health_summary?.CRITICAL || 0)}
               </strong>
             </div>
@@ -196,7 +198,7 @@ export default function FleetWorkspace() {
                 <div
                   key={uKey}
                   style={{
-                    background: 'var(--panel)',
+                    background: 'var(--surface)',
                     border: '1px solid var(--border)',
                     borderRadius: '12px',
                     padding: '16px 20px',
@@ -207,7 +209,7 @@ export default function FleetWorkspace() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Zap size={18} style={{ color: healthColor }} />
-                      <strong style={{ fontSize: '1.05rem', color: '#f8fafc' }}>{uKey}</strong>
+                      <strong style={{ fontSize: '1.05rem', color: 'var(--ink)' }}>{uKey}</strong>
                     </div>
                     <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: healthColor, background: `${healthColor}18`, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${healthColor}33` }}>
                       {avg.toFixed(1)}% Health
@@ -221,7 +223,7 @@ export default function FleetWorkspace() {
 
                   {/* Stats pills */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--muted)' }}>
-                    <span>Total: <strong style={{ color: '#cbd5e1' }}>{uData.total} aset</strong></span>
+                    <span>Total: <strong style={{ color: 'var(--muted)' }}>{uData.total} aset</strong></span>
                     <span>Anomali: <strong style={{ color: (uData.ALERT + uData.CRITICAL) > 0 ? '#ef4444' : '#10b981' }}>{uData.ALERT + uData.CRITICAL}</strong></span>
                   </div>
                 </div>
@@ -233,8 +235,8 @@ export default function FleetWorkspace() {
           {watchlist.length > 0 && (
             <div style={{ marginBottom: '24px', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '12px', padding: '18px 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                <ShieldAlert size={20} style={{ color: '#ef4444' }} />
-                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                <ShieldAlert size={20} style={{ color: 'var(--critical)' }} />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--ink)' }}>
                   Critical Watchlist — Tindakan Prioritas Segera ({watchlist.length})
                 </h3>
               </div>
@@ -245,7 +247,7 @@ export default function FleetWorkspace() {
                     <div
                       key={idx}
                       style={{
-                        background: 'var(--panel)',
+                        background: 'var(--surface)',
                         border: `1px solid ${styleColor.border}`,
                         borderRadius: '10px',
                         padding: '14px',
@@ -257,18 +259,18 @@ export default function FleetWorkspace() {
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
                           <div>
-                            <strong style={{ fontSize: '1.02rem', color: '#f8fafc' }}>{item.equipment}</strong>
+                            <strong style={{ fontSize: '1.02rem', color: 'var(--ink)' }}>{item.equipment}</strong>
                             <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{item.unit} • {item.system || 'Sistem Utama'}</div>
                           </div>
                           <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '2px 7px', borderRadius: '4px', background: styleColor.bg, color: styleColor.text, border: `1px solid ${styleColor.border}` }}>
                             {item.health_status} ({item.health_index.toFixed(0)}%)
                           </span>
                         </div>
-                        <div style={{ fontSize: '0.82rem', color: '#cbd5e1', margin: '6px 0' }}>
-                          <span style={{ color: '#94a3b8' }}>Mode Anomali:</span> {item.primary_failure_mode || 'Degradasi Komponen'}
+                        <div style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: '6px 0' }}>
+                          <span style={{ color: 'var(--muted)' }}>Mode Anomali:</span> {item.primary_failure_mode || 'Degradasi Komponen'}
                         </div>
                         {item.rul_days && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#f59e0b', marginBottom: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--attention)', marginBottom: '10px' }}>
                             <Clock size={13} />
                             <span>Perkiraan Sisa Umur (RUL): <strong>{item.rul_days} hari</strong></span>
                           </div>
@@ -301,7 +303,7 @@ export default function FleetWorkspace() {
           )}
 
           {/* Full Asset Matrix Toolbar */}
-          <div className="fleet-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', margin: '20px 0 16px', padding: '14px 18px', background: 'var(--panel)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+          <div className="fleet-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', margin: '20px 0 16px', padding: '14px 18px', background: 'var(--surface)', borderRadius: '10px', border: '1px solid var(--border)' }}>
             <div style={{ position: 'relative', flex: '1 1 240px' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }} />
               <input
@@ -346,7 +348,7 @@ export default function FleetWorkspace() {
           </div>
 
           {/* Fleet Table */}
-          <div className="fleet-table-wrapper" style={{ overflowX: 'auto', background: 'var(--panel)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+          <div className="fleet-table-wrapper" style={{ overflowX: 'auto', background: 'var(--surface)', borderRadius: '10px', border: '1px solid var(--border)' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)', background: 'rgba(255, 255, 255, 0.02)', color: 'var(--muted)' }}>
@@ -372,15 +374,15 @@ export default function FleetWorkspace() {
                     const statusConfig = HEALTH_COLORS[item.health_status] || HEALTH_COLORS.HEALTHY
                     return (
                       <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }} className="fleet-row">
-                        <td style={{ padding: '12px 16px', fontWeight: '600', color: '#f8fafc' }}>
+                        <td style={{ padding: '12px 16px', fontWeight: '600', color: 'var(--ink)' }}>
                           {item.equipment}
                         </td>
-                        <td style={{ padding: '12px 16px', color: '#cbd5e1' }}>
+                        <td style={{ padding: '12px 16px', color: 'var(--muted)' }}>
                           <div>{item.unit}</div>
                           <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{item.system || 'Pembangkit'}</div>
                         </td>
                         <td style={{ padding: '12px 16px' }}>
-                          <span style={{ fontSize: '0.78rem', padding: '2px 7px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', color: '#cbd5e1' }}>
+                          <span style={{ fontSize: '0.78rem', padding: '2px 7px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', color: 'var(--muted)' }}>
                             Kelas {item.criticality || 'B'}
                           </span>
                         </td>
@@ -399,7 +401,7 @@ export default function FleetWorkspace() {
                             {item.health_status}
                           </span>
                         </td>
-                        <td style={{ padding: '12px 16px', color: '#cbd5e1', fontSize: '0.84rem', maxWidth: '200px' }}>
+                        <td style={{ padding: '12px 16px', color: 'var(--muted)', fontSize: '0.84rem', maxWidth: '200px' }}>
                           {item.primary_failure_mode || 'Normal (Tanpa Anomali)'}
                         </td>
                         <td style={{ padding: '12px 16px', color: item.rul_days ? '#f59e0b' : '#94a3b8', fontSize: '0.84rem' }}>
