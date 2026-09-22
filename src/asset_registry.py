@@ -138,7 +138,7 @@ def delete_asset(asset_id: str) -> bool:
         del records[asset_id]
         _write_registry(records)
 
-        history = load_condition_history()
+        history = _load_condition_history_raw()
         if not history.empty and (history["asset_id"] == asset_id).any():
             history = history[history["asset_id"] != asset_id]
             path = _condition_path()
@@ -185,20 +185,46 @@ def upsert_asset(asset: dict[str, Any]) -> dict[str, Any]:
     return record
 
 
-def load_condition_history() -> pd.DataFrame:
-    columns = ["record_id", "asset_id", "asset_name", "module", "test_date", "condition", "summary", "source_file", "created_at"]
+_CONDITION_COLUMNS = ["record_id", "asset_id", "asset_name", "module", "test_date", "condition", "summary", "source_file", "created_at"]
+
+
+def _load_condition_history_raw() -> pd.DataFrame:
+    """Reads condition_history.csv with every column kept as plain text
+    (dtype=str), never coerced to datetime.
+
+    This is the version `add_condition_record` must append onto and save.
+    Round-tripping through `pd.to_datetime` (as `load_condition_history`
+    does, for display/sorting) and then concatenating a freshly-formatted
+    string date from a new row produces a column that mixes real
+    `Timestamp` objects with plain strings. On a later load+append cycle
+    pandas silently turns some of those older rows' `test_date` into NaT
+    (empty on save) - reproduced with 3+ sequential add_condition_record
+    calls. Never mutate/coerce this DataFrame's dtypes before saving it.
+    """
     path = _condition_path()
     if not path.exists():
-        return pd.DataFrame(columns=columns)
+        return pd.DataFrame(columns=_CONDITION_COLUMNS)
     try:
-        history = pd.read_csv(path)
+        history = pd.read_csv(path, dtype=str, keep_default_na=False)
     except (OSError, pd.errors.ParserError):
-        return pd.DataFrame(columns=columns)
-    for column in columns:
+        return pd.DataFrame(columns=_CONDITION_COLUMNS)
+    for column in _CONDITION_COLUMNS:
         if column not in history.columns:
             history[column] = ""
-    history["test_date"] = pd.to_datetime(history["test_date"], errors="coerce")
-    return history[columns].sort_values("test_date", ascending=False, na_position="last")
+    return history[_CONDITION_COLUMNS]
+
+
+def load_condition_history() -> pd.DataFrame:
+    history = _load_condition_history_raw().copy()
+    # format="mixed" is required, not cosmetic: rows written before the
+    # test_date corruption fix above may carry "%Y-%m-%d %H:%M:%S" (from an
+    # old Timestamp round-trip) alongside newer plain "%Y-%m-%d" rows.
+    # Without it, pandas >= 2 infers ONE format from the first value and
+    # coerces every row that doesn't match it to NaT - silently blanking
+    # otherwise-valid dates rather than raising, reproduced with a column
+    # mixing both formats. format="mixed" parses every value independently.
+    history["test_date"] = pd.to_datetime(history["test_date"], errors="coerce", format="mixed")
+    return history.sort_values("test_date", ascending=False, na_position="last")
 
 
 def add_condition_record(record: dict[str, Any]) -> dict[str, Any]:
@@ -223,7 +249,7 @@ def add_condition_record(record: dict[str, Any]) -> dict[str, Any]:
         "created_at": datetime.now().isoformat(timespec="seconds"),
     }
     with _LOCK:
-        history = load_condition_history()
+        history = _load_condition_history_raw()
         history = pd.concat([history, pd.DataFrame([row])], ignore_index=True)
         path = _condition_path()
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -256,7 +282,7 @@ def update_condition_record(record_id: str, fields: dict[str, Any]) -> dict[str,
         raise ValueError("Tanggal pengujian tidak valid.")
 
     with _LOCK:
-        history = load_condition_history()
+        history = _load_condition_history_raw()
         if history.empty or record_id not in set(history["record_id"]):
             raise ValueError("Record riwayat kondisi tidak ditemukan.")
         idx = history.index[history["record_id"] == record_id][0]
@@ -272,7 +298,7 @@ def update_condition_record(record_id: str, fields: dict[str, Any]) -> dict[str,
 
 def delete_condition_record(record_id: str) -> bool:
     with _LOCK:
-        history = load_condition_history()
+        history = _load_condition_history_raw()
         if history.empty or record_id not in set(history["record_id"]):
             return False
         history = history[history["record_id"] != record_id]

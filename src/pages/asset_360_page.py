@@ -236,7 +236,7 @@ def render_asset_360_page(
         tribo_water = tribo_match.get("water_ppm", 55)
         tribo_tan = tribo_match.get("tan", 0.14)
         tribo_fe = tribo_match.get("wear_fe", 12)
-        tribo_clean = str(tribo_match.get("iso_cleanliness", "16/14/11"))
+        tribo_clean = str(tribo_match.get("iso_cleanliness") or "-")
         tribo_date = str(tribo_match.get("sampling_date", "-"))
 
     # Calculate 5-pillar scores for radar

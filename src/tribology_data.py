@@ -142,16 +142,50 @@ DEFAULT_TRIBOLOGY_SAMPLES = [
     }
 ]
 
+_INDONESIAN_MONTHS = {
+    "januari": 1, "februari": 2, "maret": 3, "april": 4, "mei": 5, "juni": 6,
+    "juli": 7, "agustus": 8, "september": 9, "oktober": 10, "november": 11, "desember": 12,
+}
+
+
+def _extract_report_month(target: Path, fallback: str = "2026-07-01") -> str:
+    """Reads the "... BULAN <bulan> <tahun>" title off the RESUM sheet and
+    returns the first day of that month. Falls back to `fallback` (never
+    raises) since this only affects `sampling_date` display, not which
+    equipment/status rows get parsed."""
+    try:
+        title_rows = pd.read_excel(target, sheet_name="RESUM", header=None, nrows=6)
+        for _, cell in title_rows.iloc[:, 0].items():
+            match = re.search(r"BULAN\s+([A-Za-z]+)\s+(\d{4})", str(cell or ""), re.IGNORECASE)
+            if match:
+                month = _INDONESIAN_MONTHS.get(match.group(1).strip().lower())
+                if month:
+                    return f"{match.group(2)}-{month:02d}-01"
+    except Exception:
+        pass
+    return fallback
+
+
 def load_tribology_monthly_tests(excel_path: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Loads periodic Tribology inspection reports from EXSUM TRIBOLOGY BULAN JULI 2026.xlsx."""
+    """Loads periodic Tribology inspection reports from EXSUM TRIBOLOGY BULAN JULI 2026.xlsx.
+
+    The source sheet (RESUM ALL) only has a per-equipment PDM status per
+    domain (Vibrasi/Thermal/MCSA/PD/DGA/Tribology, one column each) plus a
+    free-text Indonesian analysis/recommendation - it carries NO numeric
+    physicochemical values (viscosity, TAN, water content, wear metals).
+    Those fields are therefore always returned as None ("data tidak
+    tersedia" - see CONTEXT.md: missing data is a data gap, never a
+    fabricated measurement) rather than invented placeholder numbers.
+    """
     p1 = Path(get_data_path('vibrasi', 'pengujian', 'EXSUM TRIBOLOGY  BULAN JULI 2026.xlsx'))
     p2 = Path(excel_path) if excel_path else p1
     target = p2 if p2.exists() else p1
-    
+
     if not target.exists():
         return DEFAULT_TRIBOLOGY_SAMPLES
 
     try:
+        sampling_date = _extract_report_month(target)
         df_trib = pd.read_excel(target, sheet_name='RESUM ALL')
         records = []
         cur_u = 'UNIT 1'
@@ -159,7 +193,11 @@ def load_tribology_monthly_tests(excel_path: Optional[str] = None) -> List[Dict[
             row = df_trib.iloc[idx]
             no = row.iloc[0]
             eq = row.iloc[1]
-            st_pdm = row.iloc[2]
+            # Column layout (row 13 header): 0=No. 1=Equipment 2=Vibrasi
+            # 3=Thermal 4=MCSA 5=PD 6=DGA 7=Tribology 8=Analisa 9=Rekomendasi.
+            # This used to read column 2 (Vibrasi's status) and label it
+            # Tribology - a real bug, fixed here to read column 7.
+            st_pdm = row.iloc[7]
             analisa = row.iloc[8]
             rekom = row.iloc[9]
             if pd.isna(no) and pd.notna(eq):
@@ -174,24 +212,26 @@ def load_tribology_monthly_tests(excel_path: Optional[str] = None) -> List[Dict[
                 if 'STAND' in st_raw or 'STD' in st_raw: st_clean = 'STANDBY'
                 elif 'PRE' in st_raw: st_clean = 'PREWARNING'
                 elif 'WARN' in st_raw or 'ALARM' in st_raw: st_clean = 'WARNING'
-                
+
                 records.append({
                     'sample_id': f"TRB-{len(records)+1:03d}",
                     'unit': cur_u,
                     'equipment': str(eq).replace('Equipment-', '').replace('\xa0', ' ').strip(),
                     'status': st_clean,
-                    'oil_type': 'ISO VG 46' if 'Fan' in str(eq) or 'Pump' in str(eq) else 'ISO VG 220',
-                    'oil_brand': 'Shell / Mobil Industrial Oil',
-                    'viscosity_40c': 46.5 if 'Fan' in str(eq) else 220.0,
-                    'water_ppm': 65,
-                    'tan': 0.18,
-                    'iso_cleanliness': '18/16/11 (NAS 8)',
-                    'wear_fe': 12,
-                    'wear_cu': 3,
-                    'flash_point': 225,
+                    # Not present anywhere in this report - unknown rather
+                    # than guessed from the equipment name.
+                    'oil_type': 'Tidak diketahui',
+                    'oil_brand': 'Tidak diketahui',
+                    'viscosity_40c': None,
+                    'water_ppm': None,
+                    'tan': None,
+                    'iso_cleanliness': None,
+                    'wear_fe': None,
+                    'wear_cu': None,
+                    'flash_point': None,
                     'analysis': str(analisa).strip() if pd.notna(analisa) else 'Parameter pelumas dalam batas wajar operasi.',
                     'recommendation': str(rekom).strip() if pd.notna(rekom) else 'Monitoring Tribology sesuai 52 week',
-                    'sampling_date': '2026-07-25'
+                    'sampling_date': sampling_date
                 })
         return records if records else DEFAULT_TRIBOLOGY_SAMPLES
     except Exception as e:
@@ -331,11 +371,20 @@ def get_tribology_sample_detail(sample_id: str) -> Optional[Dict[str, Any]]:
     target["status"] = eval_res["status"]
     target["evaluation"] = eval_res
     
-    target["history"] = [
-        {"date": "2025-11-15", "visc": target["viscosity_40c"] * 0.98, "tan": target["tan"] * 0.7, "water": max(20, target["water_ppm"] * 0.6), "fe": max(4, target["wear_fe"] * 0.5), "status": "NORMAL"},
-        {"date": "2026-03-20", "visc": target["viscosity_40c"] * 0.99, "tan": target["tan"] * 0.85, "water": max(30, target["water_ppm"] * 0.8), "fe": max(6, target["wear_fe"] * 0.75), "status": "NORMAL"},
-        {"date": target["sampling_date"], "visc": target["viscosity_40c"], "tan": target["tan"], "water": target["water_ppm"], "fe": target["wear_fe"], "status": eval_res["status"]}
-    ]
+    # No consumer renders this field today (nothing under src/pages or
+    # frontend reads target["history"]) and no real multi-sample trend data
+    # exists in the source report - a single point for the actual sample is
+    # honest, two synthetic prior dates with numbers derived by multiplying
+    # the real value by arbitrary factors were not. Only build it when every
+    # numeric field is real (not None), matching evaluate_tribology_sample's
+    # own None-safe fallbacks rather than crashing on a real record where
+    # the lab values simply were not extractable from this report.
+    if None not in (target.get("viscosity_40c"), target.get("tan"), target.get("water_ppm"), target.get("wear_fe")):
+        target["history"] = [
+            {"date": target["sampling_date"], "visc": target["viscosity_40c"], "tan": target["tan"], "water": target["water_ppm"], "fe": target["wear_fe"], "status": eval_res["status"]}
+        ]
+    else:
+        target["history"] = []
     
     rec = target.get("recommendation")
     if not rec or rec == 'Monitoring Tribology sesuai 52 week':

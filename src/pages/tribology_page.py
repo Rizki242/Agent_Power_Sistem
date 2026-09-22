@@ -112,13 +112,13 @@ def _render_tribology_summary(st) -> None:
         st.markdown("**Parameter Fisikokimia**")
         st.dataframe(
             [
-                {"Parameter": "Viskositas 40°C (cSt)", "Nilai": str(detail.get("viscosity_40c", "-"))},
-                {"Parameter": "TAN (mg KOH/g)", "Nilai": str(detail.get("tan", "-"))},
-                {"Parameter": "Air (ppm)", "Nilai": str(detail.get("water_ppm", "-"))},
-                {"Parameter": "ISO Cleanliness", "Nilai": str(detail.get("iso_cleanliness", "-"))},
-                {"Parameter": "Wear Fe (ppm)", "Nilai": str(detail.get("wear_fe", "-"))},
-                {"Parameter": "Wear Cu (ppm)", "Nilai": str(detail.get("wear_cu", "-"))},
-                {"Parameter": "Flash Point (°C)", "Nilai": str(detail.get("flash_point", "-"))},
+                {"Parameter": "Viskositas 40°C (cSt)", "Nilai": str(detail.get("viscosity_40c") if detail.get("viscosity_40c") is not None else "Tidak tersedia")},
+                {"Parameter": "TAN (mg KOH/g)", "Nilai": str(detail.get("tan") if detail.get("tan") is not None else "Tidak tersedia")},
+                {"Parameter": "Air (ppm)", "Nilai": str(detail.get("water_ppm") if detail.get("water_ppm") is not None else "Tidak tersedia")},
+                {"Parameter": "ISO Cleanliness", "Nilai": str(detail.get("iso_cleanliness") if detail.get("iso_cleanliness") is not None else "Tidak tersedia")},
+                {"Parameter": "Wear Fe (ppm)", "Nilai": str(detail.get("wear_fe") if detail.get("wear_fe") is not None else "Tidak tersedia")},
+                {"Parameter": "Wear Cu (ppm)", "Nilai": str(detail.get("wear_cu") if detail.get("wear_cu") is not None else "Tidak tersedia")},
+                {"Parameter": "Flash Point (°C)", "Nilai": str(detail.get("flash_point") if detail.get("flash_point") is not None else "Tidak tersedia")},
             ],
             hide_index=True, width="stretch",
         )

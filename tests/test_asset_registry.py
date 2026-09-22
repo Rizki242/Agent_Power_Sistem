@@ -31,6 +31,58 @@ class AssetRegistryTests(unittest.TestCase):
                 self.assertEqual(len(history), 1)
                 self.assertEqual(history.iloc[0]["module"], "VIBRASI")
 
+    def test_repeated_writes_never_corrupt_test_date_to_blank(self):
+        """Regression test for a real bug: add_condition_record() used to
+        append onto load_condition_history()'s datetime-coerced DataFrame,
+        then save it back. Mixing freshly-formatted string dates with
+        already-coerced Timestamp objects across repeated calls made pandas
+        silently turn some earlier rows' test_date into NaT (blank on
+        save) - reproduced with 3+ sequential calls. Also covers a second,
+        related failure: once corrupted rows exist with a different date
+        string format ("%Y-%m-%d %H:%M:%S" vs "%Y-%m-%d"), pandas >= 2's
+        default to_datetime() infers ONE format from the column and NaTs
+        every row that doesn't match it - fixed by format="mixed"."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with patch.object(asset_registry, "get_data_path", side_effect=lambda *parts: str(root.joinpath(*parts))):
+                for i in range(5):
+                    asset_registry.upsert_asset({
+                        "asset_id": f"AST-SEQ-{i}",
+                        "name": f"Sequential Pump {i}",
+                        "unit": "UNIT 1",
+                        "monitoring_modules": ["VIBRASI"],
+                    })
+                for i in range(5):
+                    asset_registry.add_condition_record({
+                        "asset_id": f"AST-SEQ-{i}",
+                        "module": "VIBRASI",
+                        "test_date": "2026-07-01",
+                        "condition": "Normal",
+                        "summary": "test",
+                    })
+                history = asset_registry.load_condition_history()
+                seq_rows = history[history["asset_id"].str.startswith("AST-SEQ-")]
+                self.assertEqual(len(seq_rows), 5)
+                self.assertEqual(seq_rows["test_date"].isna().sum(), 0,
+                                  "no sequentially-written row should end up with a blank/NaT test_date")
+                self.assertTrue((seq_rows["test_date"] == "2026-07-01").all())
+
+                # Simulate a pre-existing row written by the old buggy code
+                # path (Timestamp-formatted "%Y-%m-%d %H:%M:%S") to prove
+                # load_condition_history() still parses the new plain-date
+                # rows correctly alongside it, rather than NaT-ing them.
+                raw = asset_registry._load_condition_history_raw()
+                raw.loc[len(raw)] = {
+                    "record_id": "COND-LEGACYFMT", "asset_id": "AST-SEQ-0", "asset_name": "Sequential Pump 0",
+                    "module": "VIBRASI", "test_date": "2026-06-01 00:00:00", "condition": "Normal",
+                    "summary": "legacy-format row", "source_file": "", "created_at": "2026-01-01T00:00:00",
+                }
+                raw.to_csv(asset_registry._condition_path(), index=False)
+
+                reloaded = asset_registry.load_condition_history()
+                self.assertEqual(reloaded["test_date"].isna().sum(), 0,
+                                  "a legacy '%Y-%m-%d %H:%M:%S' row must not blank out the other rows' plain-date values")
+
     def test_condition_requires_registered_asset_and_valid_module(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
