@@ -4474,22 +4474,15 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   min-width: 0;
 }
 
-.chat-brand-badge {
-  background: var(--sidebar-brand-bg);
-  color: var(--sidebar-brand-ink);
-  border: 1.5px solid var(--sidebar-accent);
-  border-radius: 7px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+/* Logo brand memakai komponen PlanetaryGear yang sama dengan avatar chat
+   (statis di sini, ukuran dari prop `size`). Tidak diberi latar/border:
+   bingkai navy sudah menjadi bagian dari logo. */
+.chat-brand-logo {
   box-shadow: var(--shadow-sm);
 }
 
 .chat-brand-title {
-  font-size: 0.86rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--sidebar-ink);
   white-space: nowrap;
@@ -5024,23 +5017,72 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   padding: 0;
 }
 
-@keyframes claude-gear-rotate {
+/* ── Logo gear planetary (lihat src/components/PlanetaryGear.jsx) ───────────
+   Seluruh laju putaran diturunkan dari satu custom property `--pg-dur`
+   (durasi satu putaran carrier, dalam detik) yang dipasang dari JS mengikuti
+   kecepatan koneksi - lihat src/utils/connectionSpeed.js. Karena yang berubah
+   hanya nilai variabel CSS, pergantian kecepatan tidak merender ulang SVG.
+
+   Rasio antar bagian diambil dari GIF referensi: ring jauh lebih lambat dari
+   carrier, sun berlawanan arah pada laju yang sama dengan carrier, dan tiap
+   planet berputar pada porosnya sendiri berlawanan carrier. */
+
+.pgear {
+  --pg-dur: 1.8s;
+  flex-shrink: 0;
+  display: block;
+  border-radius: 50%;
+}
+
+@keyframes pgear-cw {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-/* Gear hanya berputar di sini (saat agent menyusun jawaban); avatar bubble diam. */
-.claude-gear-spin {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  animation: claude-gear-rotate 2.4s linear infinite;
-  flex-shrink: 0;
-  display: block;
+@keyframes pgear-ccw {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+/* Putaran hanya hidup saat agent sedang bekerja; di luar itu logo diam.
+   `transform-box` ditulis eksplisit: nilai awalnya memang view-box, tapi
+   menyebutkannya menghindari selisih perilaku antar browser pada elemen SVG. */
+.pgear__ring,
+.pgear__carrier,
+.pgear__sun {
+  transform-box: view-box;
+  transform-origin: 128px 128px;
+}
+
+.pgear__planet {
+  /* Bounding box carrier tidak simetris terhadap pusat lingkaran, jadi grup ini
+     memakai fill-box: 50% 50% jatuh tepat di poros planet karena roda giginya
+     digambar mengelilingi titik (0,0) lokalnya sendiri. */
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+.pgear--spinning .pgear__ring {
+  animation: pgear-cw calc(var(--pg-dur) * 4.33) linear infinite;
+}
+
+.pgear--spinning .pgear__carrier {
+  animation: pgear-cw var(--pg-dur) linear infinite;
+}
+
+.pgear--spinning .pgear__sun {
+  animation: pgear-ccw var(--pg-dur) linear infinite;
+}
+
+.pgear--spinning .pgear__planet {
+  animation: pgear-ccw calc(var(--pg-dur) / 2) linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .claude-gear-spin {
+  .pgear--spinning .pgear__ring,
+  .pgear--spinning .pgear__carrier,
+  .pgear--spinning .pgear__sun,
+  .pgear--spinning .pgear__planet {
     animation: none;
   }
 }

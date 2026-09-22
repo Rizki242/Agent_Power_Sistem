@@ -52,7 +52,8 @@ const QUICK_ACTIONS = [
 ]
 
 import MarkdownRenderer from './components/MarkdownRenderer.jsx'
-import thinkingGear from './assets/thinking-gear.svg'
+import PlanetaryGear from './components/PlanetaryGear.jsx'
+import { useGearDuration, recordLatency } from './utils/connectionSpeed.js'
 
 const LOADING_STAGES = [
   'Memeriksa Safety Guardrail & mengenali aset...',
@@ -145,7 +146,7 @@ const ChatMessageBubble = React.memo(function ChatMessageBubble({
         {isUser ? (
           <User size={24} />
         ) : (
-          <img src={thinkingGear} alt="Agent Learning Sistem" className="chat-avatar-gear" />
+          <PlanetaryGear size={44} className="chat-avatar-gear" title="Agent Learning Sistem" />
         )}
       </div>
 
@@ -379,6 +380,8 @@ export default function ChatWorkspace({ onOpenNav }) {
     }
   })
   const [loadingStage, setLoadingStage] = useState(0)
+  // Laju putaran logo gear mengikuti kecepatan koneksi + latensi request terakhir.
+  const gearDuration = useGearDuration()
   const [expandedTraces, setExpandedTraces] = useState({})
   const [expandedCitations, setExpandedCitations] = useState({})
   const [speechError, setSpeechError] = useState(null)
@@ -839,6 +842,7 @@ export default function ChatWorkspace({ onOpenNav }) {
 
     const controller = new AbortController()
     chatAbortRef.current = controller
+    const startedAt = performance.now()
 
     try {
       const response = await sendChatMessage({
@@ -908,6 +912,9 @@ export default function ChatWorkspace({ onOpenNav }) {
         },
       ])
     } finally {
+      // Request yang gagal pun ikut dicatat: koneksi lambat justru sering
+      // terlihat dari permintaan yang menggantung lama sebelum menyerah.
+      recordLatency(performance.now() - startedAt)
       chatAbortRef.current = null
       setLoading(false)
     }
@@ -1120,11 +1127,10 @@ export default function ChatWorkspace({ onOpenNav }) {
             {loading ? (
               <div className="claude-thinking-row" role="status" aria-live="polite">
                 <div className="claude-thinking-content">
-                  <img
-                    src={thinkingGear}
-                    alt=""
-                    aria-hidden="true"
-                    className="claude-gear-spin"
+                  <PlanetaryGear
+                    size={44}
+                    spinning
+                    style={{ '--pg-dur': `${gearDuration}s` }}
                   />
                   <span className="claude-thinking-text">
                     {LOADING_STAGES[loadingStage]}

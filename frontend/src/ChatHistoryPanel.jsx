@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   BarChart2,
-  BrainCircuit,
   ChevronUp,
   Circle,
   ClipboardList,
@@ -21,6 +20,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
+import PlanetaryGear from './components/PlanetaryGear.jsx'
 
 // Memoized session row component per Vercel Best Practices (rerender-memo)
 const ChatHistoryItem = React.memo(function ChatHistoryItem({
@@ -151,9 +151,7 @@ export default function ChatHistoryPanel({
             </button>
           ) : null}
           <div className="chat-brand-row">
-            <div className="chat-brand-badge">
-              <BrainCircuit size={17} />
-            </div>
+            <PlanetaryGear size={40} className="chat-brand-logo" />
             <span className="chat-brand-title">Agent Learning Sistem</span>
           </div>
         </div>

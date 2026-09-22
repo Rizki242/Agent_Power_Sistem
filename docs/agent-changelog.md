@@ -27,6 +27,50 @@ Rules:
 
 ## Entries
 
+### 2026-09-23 - Logo brand sidebar chat: pakai logo gear planetary, ukuran naik 28 -> 40 px
+
+- **Requested:** "buat lebih besar lagi ukuran nya dan buat agar lebih jelas, kemudian ganti / perbaiki dulu gambarnya gunakan logo ini" - badge kuning berisi ikon `BrainCircuit` di header sidebar chat diganti logo bulat navy bergerigi (screenshot dilampirkan), diperbesar dan dipertajam.
+- **Plan (agreed before coding):** trivial, no plan confirmation needed (satu badge: markup + satu blok CSS).
+  - Screenshot logo hanya 86x64 px, jadi memakainya langsung sebagai PNG akan pecah saat diperbesar - logo harus berupa vektor.
+  - **Check menemukan pekerjaan sesi lain yang belum di-commit:** `frontend/src/components/PlanetaryGear.jsx` (untracked) sudah berisi logo yang sama persis sebagai inline SVG dengan palet identik (navy `#14213D`, krem `#F4F1EA`, slate `#5D6A7C`, amber `#E0A040`) dan prop `spinning` yang bila `false` membuatnya diam. SVG `assets/agent-logo.svg` yang sempat saya buat ulang dari hasil sampling warna screenshot karena itu dibatalkan dan dihapus - memakai komponen yang sudah ada menghindari dua salinan logo yang bisa berbeda.
+- **Changed:**
+  - `frontend/src/ChatHistoryPanel.jsx` - `<div className="chat-brand-badge"><BrainCircuit size={17} /></div>` diganti `<PlanetaryGear size={40} className="chat-brand-logo" />` (statis, `spinning` default `false`); import `BrainCircuit` dihapus karena tidak dipakai lagi di file ini.
+  - `frontend/src/styles.css` - `.chat-brand-badge` (kotak kuning 28x28 + border aksen) dihapus, diganti `.chat-brand-logo` yang hanya menambah `box-shadow`; ukuran datang dari prop `size` dan bentuk bulat/`flex-shrink` sudah diatur kelas `.pgear` milik komponen. `.chat-brand-title` dinaikkan 0.86rem -> 0.95rem agar seimbang dengan logo yang lebih besar.
+  - Ikut ter-commit karena menjadi dependensi perubahan di atas: `frontend/src/components/PlanetaryGear.jsx` (milik sesi lain, tanpa import apa pun sehingga berdiri sendiri) dan blok CSS `.pgear*` di `styles.css`.
+- **Verified:**
+  - `oxlint src` - exit 0 (termasuk memastikan tidak ada import `BrainCircuit` yang menggantung).
+  - `npm --prefix frontend run build` - sukses, "built in 2.66s".
+  - `git diff frontend/src/ChatHistoryPanel.jsx` dibaca ulang: hanya 3 perubahan sesuai rencana.
+- **Left out / risks:** Verifikasi visual di browser belum dilakukan. `frontend/src/ChatWorkspace.jsx` + `frontend/src/utils/connectionSpeed.js` (pekerjaan sesi lain: laju putaran indikator "thinking" mengikuti kecepatan koneksi) awalnya hendak saya tinggalkan, tapi sesi itu menambahkan entri changelog-nya sendiri sebelum commit ini dibuat - jadi keduanya ikut di-commit bersama setelah `oxlint` (exit 0) dan `npm run build` ("built in 1.86s") dijalankan ulang atas seluruh working tree. Ukuran 40 px dipilih agar logo naik signifikan dari 28 px tanpa mendorong tinggi header sidebar.
+- **Docs/ADR:** `docs/agent-changelog.md` saja.
+
+### 2026-09-23 - Logo chat gear planetary + laju putaran mengikuti kecepatan koneksi
+
+- **Requested:** "jadikan ini sebagai logo chat, buat gerakannya agar lebih cepat tergantung kecepatan internet atau pengkonfidensiannya" - dengan lampiran GIF logo gear planetary. Dikonfirmasi lewat AskUserQuestion: sinyal = **koneksi + latensi terukur**, cakupan = **dua tempat di chat** (avatar bubble bot + indikator sedang berpikir).
+- **Plan (agreed before coding):**
+  - GIF referensi dibongkar dulu (256x256, 80 frame @40ms). Geometri terukur: cakram luar r=124 `#14213D`; ring gear 52 gigi r 100..110 `#F4F1EA`; 3 planet 21 gigi r 33..39 mengorbit r=65.5 pada sudut -90/30/150 derajat `#5D6A7C`; sun 12 gigi r 20..30 `#E0A040`; rangka carrier `#CAD1D8`.
+  - Pelacakan posisi poros planet per frame membuktikan gerakannya **bukan** satu gambar diputar: carrier mengorbit +30 derajat tiap 20 frame, ring berputar +6.92 derajat per 20 frame (tepat satu pitch gigi - itu yang membuat loop 80 frame mulus), sun berlawanan arah. Karena itu `<img src=...svg>` tidak cukup (SVG lewat `<img>` terisolasi dari CSS dokumen induk) dan logo digambar inline sebagai komponen React.
+  - Confidence **tidak** dipakai sebagai sinyal: `POST /agent/chat` (`pple/api/routers/agents.py:534`) tidak mengembalikan field confidence ke frontend, jadi opsi itu butuh perubahan backend lebih dulu. Selain itu confidence baru ada setelah jawaban selesai, saat gear justru sudah berhenti.
+- **Changed:**
+  - `frontend/src/components/PlanetaryGear.jsx` (baru) - komponen SVG inline. Gigi dibentuk dari lingkaran ber-`stroke-dasharray` seukuran pitch, bukan path 200+ simpul. Empat grup berputar independen: `pgear__ring`, `pgear__carrier` (berisi rangka segitiga + 3 planet), `pgear__planet`, `pgear__sun`. Menerima prop `spinning`, `size`, `title`, `style`.
+  - `frontend/src/utils/connectionSpeed.js` (baru) - `recordLatency()`, `currentGearDuration()`, dan hook `useGearDuration()`. Menggabungkan `navigator.connection.downlink`/`effectiveType` (bobot 0.3) dengan EWMA latensi request chat nyata (bobot 0.7, alpha 0.4). Pemetaan logaritmik ke durasi 0.55 s (kencang) .. 4.2 s (lambat/offline), default 1.8 s sebelum ada sinyal. Ikut event `change` Network Information API serta `online`/`offline`.
+  - `frontend/src/styles.css` - blok `.claude-gear-spin` + `@keyframes claude-gear-rotate` lama diganti blok `.pgear*`. Seluruh laju diturunkan dari satu custom property `--pg-dur` (`calc()` untuk rasio antar bagian), jadi perubahan kecepatan hanya mengubah nilai variabel CSS tanpa render ulang SVG. `transform-box` ditulis eksplisit: `view-box` untuk ring/carrier/sun, `fill-box` + `50% 50%` untuk planet (bounding box carrier tidak simetris terhadap pusat, jadi `fill-box` akan salah untuk grup itu). `prefers-reduced-motion` menghentikan keempat animasi.
+  - `frontend/src/ChatWorkspace.jsx` - dua pemakaian `thinkingGear` diganti `<PlanetaryGear>`; `--pg-dur` dipasang dari `useGearDuration()`; `recordLatency()` dipanggil di blok `finally` pengiriman chat sehingga request gagal/dibatalkan pun ikut terukur.
+- **Verified:**
+  - `npx oxlint src`: exit 0, tanpa warning/error.
+  - `npm --prefix frontend run build`: Vite production bundle sukses, "built in 2.77s", exit 0.
+  - Kesetiaan bentuk diuji objektif, bukan dikira-kira: struktur SVG dirasterisasi ulang di Python lalu dibandingkan piksel dengan frame 0 GIF. Tiga hipotesis bentuk rangka carrier diadu - tanpa rangka 27.91, lengan radial 27.74, **segitiga antar poros planet 27.10** (mean abs diff per kanal, dari 255). Varian segitiga dipakai. Sisa selisih didominasi beda fase gigi dan antialiasing, yang tidak relevan untuk logo yang berputar.
+  - Logika pemetaan kecepatan dijalankan langsung lewat Node (repo tidak punya test runner JS dan menambah vitest akan melanggar aturan "jangan tambah framework baru"): tanpa sinyal -> 1.8 s; 300 ms -> 0.55 s; 1200 ms -> 1.32 s; 2500 ms -> 2.37 s; 5000 ms -> 3.36 s; 9000 ms -> 4.2 s; 20000 ms -> 4.2 s. Monotonik naik: ya. Selalu terjepit di [MIN, MAX]: ya. Sampel invalid (<=0 atau NaN) diabaikan: ya.
+  - `grep` memastikan kelas lama `.claude-gear-spin` tidak lagi dirujuk dari mana pun.
+- **Left out / risks:**
+  - **Verifikasi visual di browser belum dilakukan** (agen tidak bisa melihat hasil render). Perbandingan piksel di atas menguji bentuk statis, **bukan** animasinya. Yang perlu dicek manual lewat `run_frontend.bat`: keempat grup benar-benar berputar pada porosnya (kesalahan `transform-origin` pada SVG biasanya muncul sebagai gear yang "terlempar" mengorbit, bukan berputar di tempat), dan perubahan laju saat jaringan di-throttle lewat DevTools.
+  - `frontend/src/assets/thinking-gear.svg` (logo gear merah PLN lama) kini tidak dirujuk kode mana pun, tapi **sengaja tidak dihapus** - penghapusan file bukan bagian dari permintaan.
+  - `.chat-thinking-gear` di `styles.css` sudah yatim sejak sebelum perubahan ini (tidak ada di JSX mana pun); tidak disentuh karena di luar cakupan.
+  - `python verify_app.py` dan unit test tidak dijalankan: tidak ada file di bawah `src/`, `pple/`, `api_server.py`, atau `app.py` yang tersentuh.
+  - **Pekerjaan paralel pengguna di working copy, bukan milik perubahan ini:** `frontend/src/ChatHistoryPanel.jsx` (badge brand sidebar: `BrainCircuit` diganti `<PlanetaryGear size={40} className="chat-brand-logo" />`) dan kelas `.chat-brand-logo` di `styles.css`. Sempat ada `frontend/src/assets/agent-logo.svg` sebagai salinan statis logo yang sama, lalu pengguna sendiri menghapusnya dan mengarahkan sidebar ke komponen `PlanetaryGear` - jadi logo ini sekarang punya **satu** sumber kebenaran, tidak terduplikasi. Perubahan tersebut dipertahankan apa adanya dan sudah diverifikasi tidak tertimpa; lint dan build dijalankan ulang pada kondisi gabungan (keduanya bersih).
+  - Karena badge sidebar memanggil `PlanetaryGear` tanpa prop `spinning`, logo di sidebar diam - hanya indikator "sedang berpikir" yang berputar. Itu perilaku yang diinginkan, tapi artinya `PlanetaryGear` kini dipakai di tiga tempat: satu file berubah, tiga permukaan ikut terpengaruh.
+- **Docs/ADR:** `docs/agent-changelog.md` saja. Tidak ada ADR (keputusan presentasi, bukan arsitektural). `docs/feature-parity.md` tidak berubah - animasi logo bukan fitur lintas surface. `CONTEXT.md` tidak berubah.
+
 ### 2026-09-23 - Tombol "Chat Baru" jadi ikon saja dengan warna netral terang
 
 - **Requested:** "sya ingin buat agar + nya saja untuk tulisan chatnya hapus saja dan buat agar warnanya light saja ganti warna kuningnya" - hapus label teks pada tombol Chat Baru, sisakan ikon `+`, dan ganti latar kuning PLN menjadi warna terang.
