@@ -199,9 +199,10 @@ export default function ChatHistoryPanel({
         type="button"
         className="chat-new-button-claude"
         onClick={onCreateNewSession}
+        aria-label="Chat Baru"
+        title="Chat Baru"
       >
-        <Plus size={16} />
-        <span>Chat Baru</span>
+        <Plus size={18} />
       </button>
 
       {/* 4. Quick Navigation Links (Proyek, Artifacts, Terjadwal style) */}

@@ -4578,31 +4578,33 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 /* Claude New Chat Pill Button - PLN Yellow on PLN Blue */
+/* Tombol ikon saja (tanpa label "Chat Baru"); warnanya netral mengikuti token
+   sidebar, aksen PLN hanya pada ikon. */
 .chat-new-button-claude {
   margin: 8px 12px 10px 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: var(--sidebar-brand-bg);
-  border: 1px solid #eab308;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  background: var(--sidebar-field-bg);
+  border: 1px solid var(--sidebar-field-border);
   border-radius: 10px;
-  padding: 9px 14px;
-  color: var(--sidebar-brand-ink);
-  font-weight: 700;
-  font-size: 0.84rem;
+  padding: 0;
+  color: var(--sidebar-accent);
   cursor: pointer;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
 }
 
 .chat-new-button-claude svg {
-  color: var(--sidebar-brand-ink);
+  color: var(--sidebar-accent);
 }
 
 .chat-new-button-claude:hover {
-  background: #FFF04D;
-  color: #000000;
+  background: var(--sidebar-hover);
+  border-color: var(--sidebar-accent);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }

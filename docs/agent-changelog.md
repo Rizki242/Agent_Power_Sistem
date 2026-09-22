@@ -27,6 +27,21 @@ Rules:
 
 ## Entries
 
+### 2026-09-23 - Tombol "Chat Baru" jadi ikon saja dengan warna netral terang
+
+- **Requested:** "sya ingin buat agar + nya saja untuk tulisan chatnya hapus saja dan buat agar warnanya light saja ganti warna kuningnya" - hapus label teks pada tombol Chat Baru, sisakan ikon `+`, dan ganti latar kuning PLN menjadi warna terang.
+- **Plan (agreed before coding):** trivial, no plan confirmation needed (perubahan satu tombol: markup + satu blok CSS, tanpa perubahan kontrak). Hapus `<span>Chat Baru</span>`, pindahkan labelnya ke `aria-label`/`title` supaya tetap terbaca screen reader dan tetap ada tooltip; ubah pill lebar jadi tombol ikon 36x36 dan ganti hex kuning ke token `--sidebar-*` yang sudah ada supaya ikut tema.
+- **Changed:**
+  - `frontend/src/ChatHistoryPanel.jsx` - `<span>Chat Baru</span>` dihapus, ikon `Plus` dinaikkan 16 -> 18 agar seimbang pada tombol ikon, ditambah `aria-label="Chat Baru"` dan `title="Chat Baru"`.
+  - `frontend/src/styles.css` - `.chat-new-button-claude` jadi kotak 36x36 (`padding: 0`, tanpa `gap`/`font-weight`/`font-size`), latar `var(--sidebar-field-bg)` dan border `var(--sidebar-field-border)` menggantikan `var(--sidebar-brand-bg)` + `#eab308`; ikon memakai `var(--sidebar-accent)`. Hover `#FFF04D`/`#000000` diganti `var(--sidebar-hover)` + border aksen.
+- **Verified:**
+  - `oxlint src` - exit 0, tanpa warning/error.
+  - `npm --prefix frontend run build` - sukses, "built in 2.61s".
+  - `grep` `#eab308`/`#FFF04D` di `styles.css` - nihil; dua hex hardcode terakhir di area sidebar chat (sisa audit entri sebelumnya) ikut hilang, jadi seluruh rentang sidebar kini bebas hex hardcode.
+  - `git diff --stat` - hanya 2 file sesuai rencana.
+- **Left out / risks:** Verifikasi visual di browser belum dilakukan (agen tidak bisa melihat render); perlu hard-refresh setelah dev server memuat bundle baru. Kontras ikon `#0099D8` di atas `#f3f6f8` ~3.1:1 - memenuhi minimum 3:1 untuk komponen grafis (bukan teks), konsisten dengan catatan kontras entri sidebar sebelumnya.
+- **Docs/ADR:** `docs/agent-changelog.md` saja (perubahan styling, bukan arsitektural).
+
 ### 2026-09-22 - Sidebar ikut tema: tokenisasi --sidebar-* untuk sidebar nav utama dan sidebar chat
 
 - **Requested:** "buat warna ini menjadi sesuai theme aja, kalau putih ya berubah menjadi light kalau dark ya buat dark" - sidebar navigasi utama dan sidebar riwayat chat yang selalu biru PLN `#0099D8` harus ikut tema aktif. Dikonfirmasi lewat AskUserQuestion: mode terang = **putih bersih + aksen PLN**, cakupan = **dua sidebar saja**.
