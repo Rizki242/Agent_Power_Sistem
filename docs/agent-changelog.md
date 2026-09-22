@@ -27,6 +27,25 @@ Rules:
 
 ## Entries
 
+### 2026-09-22 - Purge 1.5 GB of unused binaries from git history and push main to GitHub
+
+- **Requested:** "gas" - lanjutkan dengan push ke `origin/main`.
+- **Plan (agreed before coding; escalated once via AskUserQuestion when the push turned out to be impossible as-is):**
+  - Push ditolak: `Materi/VIBRASI/.../OMNITREND/setup.exe` (282 MB) melebihi batas keras GitHub 100 MB, dan pack repo 1.53 GiB. Remote ternyata hanya berisi satu "Initial commit" (README 2 baris) dengan history tidak berhubungan.
+  - User memilih "bersihkan history" (opsi lain: snapshot 1 commit, atau tunda) - tulis ulang seluruh history dengan `git filter-repo`, pertahankan 145 commit lokal.
+  - Backup penuh (`git bundle --all`) sebelum menyentuh apa pun.
+- **Changed:**
+  - `fa0937b` (pre-rewrite) - merge `origin/main` "Initial commit" dengan `--allow-unrelated-histories`; konflik add/add di `README.md` diselesaikan dengan mempertahankan README lokal (versi remote hanya 2 baris hasil generate GitHub).
+  - History rewrite via `git filter-repo --invert-paths` (2 pass; pass pertama gagal karena glob `Materi/**/*.exe` - fnmatch filter-repo tidak melintasi `/`, diperbaiki jadi prefix path + `regex:`): menghapus dari semua commit `Materi/VIBRASI/5.2.3.1. Omnitrend 2.51 Installer`, `Materi/VIBRASI/Presentasi`, `Materi/VIBRASI/Technical Associates`, `data/rag_index`, `data/Asset`, `archive-*/`, dan binary `Materi/**` berekstensi exe/msi/mp4/flv/zip/ptz/swf/dll/sys/cab/hex/bif. PDF/JSON Materi yang benar-benar diindeks `rag_engine` dipertahankan.
+  - `.gitignore` - `data/Asset/` (file 92 MB dikembalikan ke disk sebagai untracked; tidak direferensikan kode mana pun - dicek di `src/` dan `pple/`).
+  - `b74554d` - commit pencatatan purge.
+- **Verified:**
+  - Blob reachable dari `main`: 1.53 GB -> 592.9 MB; blob terbesar kini 77.9 MB (`Vibration Analysis Manual Level 2.pdf`), tidak ada lagi >100 MB.
+  - Setelah rewrite: `python verify_app.py` - Verification Complete (Materi OK: 79, Failed: 0); `python -m unittest tests.test_auth tests.test_chatbot tests.test_dga_methods tests.test_asset_registry` - Ran 49 tests, OK; `git status` bersih; 144 commit utuh.
+  - `git push -u --force origin main` - `+ 3076c18...b74554d main -> main (forced update)`, exit 0. GitHub hanya mengeluarkan peringatan ukuran (>50 MB), bukan penolakan.
+- **Left out / risks:** Force-push mengganti hash seluruh history - siapa pun yang sudah clone repo ini harus clone ulang (saat ini hanya ada satu commit remote hasil generate GitHub, jadi tidak ada pekerjaan orang lain yang hilang). 4 ref internal Codex (`refs/codex/turn-diffs/...`) masih menahan blob lama sehingga pack lokal tetap 1.39 GiB; ref tooling ini tidak pernah di-push dan bisa dihapus kapan saja untuk mengecilkan `.git`. Manual Charlotte 77.9 MB masih di atas ukuran yang disarankan GitHub - Git LFS adalah langkah berikutnya bila diperlukan. Backup pra-rewrite: `D:\final-deplay\Agent_Power_Sistem-prerewrite-20260922-1928.bundle` (1.5 GB) - jangan dihapus sebelum yakin.
+- **Docs/ADR:** `docs/agent-changelog.md`, `.gitignore`.
+
 ### 2026-09-22 - Consolidate ~10k lines of uncommitted work into 7 reviewable commits; full verification pass; parity/gitignore sync
 
 - **Requested:** "apa yang perlu kita lakukan untuk project ini" -> "oke gas kerjakan": secure the working tree (12 changelog entries' worth of code plus older unrecorded changes sitting uncommitted), verify everything together once, and sync the governance docs.
