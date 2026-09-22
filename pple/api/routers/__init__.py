@@ -1,6 +1,7 @@
 """API Routers package."""
 
 from pple.api.routers.agents import router as agents_router
+from pple.api.routers.auth import router as auth_router
 from pple.api.routers.automations import router as automations_router
 from pple.api.routers.automated_reports import router as automated_reports_router
 from pple.api.routers.core import router as core_router
@@ -14,6 +15,7 @@ from pple.api.routers.work_orders import router as work_orders_router
 
 __all__ = [
     "agents_router",
+    "auth_router",
     "automated_reports_router",
     "automations_router",
     "core_router",
