@@ -3,6 +3,7 @@ DGA (Dissolved Gas Analysis) data loader and Transformer asset database.
 Loads transformer health and gas data from Excel reports and structured records.
 """
 
+import math
 import os
 from pathlib import Path
 from typing import Dict, Any, List, Optional
@@ -267,8 +268,366 @@ def save_dga_transformer(transformer_id: str, fields: Dict[str, Any]) -> None:
     _override_store().set(transformer_id, record)
 
 
+def calculate_duval_pentagon(gases: Dict[str, float]) -> Dict[str, Any]:
+    """Calculates Duval Pentagon 1 coordinates and fault zone per CIGRE TB 771.
+    
+    5 gas components: H2, C2H6, CH4, C2H4, C2H2
+    Apexes on circle:
+      H2: 90 deg (Top)
+      C2H6: 18 deg (Top-Right)
+      CH4: -54 deg (Bottom-Right)
+      C2H4: -126 deg (Bottom-Left)
+      C2H2: 162 deg (Top-Left)
+    """
+    h2 = max(0.0, float(gases.get("H2") or 0))
+    c2h6 = max(0.0, float(gases.get("C2H6") or 0))
+    ch4 = max(0.0, float(gases.get("CH4") or 0))
+    c2h4 = max(0.0, float(gases.get("C2H4") or 0))
+    c2h2 = max(0.0, float(gases.get("C2H2") or 0))
+    
+    total_5 = h2 + c2h6 + ch4 + c2h4 + c2h2
+    if total_5 <= 0:
+        return {
+            "x": 0.0,
+            "y": 0.0,
+            "zone": "Normal",
+            "zone_label": "Normal Operation (Gas Rendah)",
+            "zone_desc": "Kandungan 5 gas hidrokarbon rendah, tidak ada indikasi anomali.",
+            "percentages": {"H2": 0.0, "C2H6": 0.0, "CH4": 0.0, "C2H4": 0.0, "C2H2": 0.0}
+        }
+    
+    p_h2 = (h2 / total_5) * 100.0
+    p_c2h6 = (c2h6 / total_5) * 100.0
+    p_ch4 = (ch4 / total_5) * 100.0
+    p_c2h4 = (c2h4 / total_5) * 100.0
+    p_c2h2 = (c2h2 / total_5) * 100.0
+    
+    # Pentagon angles in radians (90°, 18°, -54°, -126°, 162°)
+    angles = [
+        math.radians(90),    # H2
+        math.radians(18),    # C2H6
+        math.radians(-54),   # CH4
+        math.radians(-126),  # C2H4
+        math.radians(162)    # C2H2
+    ]
+    r_max = 40.0
+    
+    x = (
+        (p_h2 / 100.0) * r_max * math.cos(angles[0]) +
+        (p_c2h6 / 100.0) * r_max * math.cos(angles[1]) +
+        (p_ch4 / 100.0) * r_max * math.cos(angles[2]) +
+        (p_c2h4 / 100.0) * r_max * math.cos(angles[3]) +
+        (p_c2h2 / 100.0) * r_max * math.cos(angles[4])
+    )
+    y = (
+        (p_h2 / 100.0) * r_max * math.sin(angles[0]) +
+        (p_c2h6 / 100.0) * r_max * math.sin(angles[1]) +
+        (p_ch4 / 100.0) * r_max * math.sin(angles[2]) +
+        (p_c2h4 / 100.0) * r_max * math.sin(angles[3]) +
+        (p_c2h2 / 100.0) * r_max * math.sin(angles[4])
+    )
+
+    # Zone detection per Duval Pentagon 1
+    if p_h2 >= 75 or (y >= 18 and -10 <= x <= 14):
+        zone = "PD"
+        label = "PD (Partial Discharge)"
+        desc = "Pelepasan muatan parsial bertegangan tinggi di dalam rongga gas atau gelembung minyak."
+    elif p_c2h2 >= 35 or (x <= -12 and -16 <= y <= 12):
+        zone = "D2"
+        label = "D2 (High Energy Discharge / Arcing)"
+        desc = "Pelepasan busur api energi tinggi (Arcing) menembus minyak trafo, flashover antar lilitan."
+    elif p_c2h2 >= 12 or (x <= -6 and y >= 0):
+        zone = "D1"
+        label = "D1 (Low Energy Discharge / Sparking)"
+        desc = "Pelepasan percikan listrik energi rendah (Sparking), potensi elektroda mengambang atau pin isolator."
+    elif p_c2h4 >= 45 or (x <= 5 and y <= -15):
+        zone = "T3"
+        label = "T3 (Thermal Fault T > 700°C)"
+        desc = "Gangguan termal suhu tinggi (> 700°C), overheating parah pada inti besi atau belitan."
+    elif p_c2h4 >= 20 or (y <= -8 and x >= -10):
+        zone = "T2"
+        label = "T2 (Thermal Fault 300°C < T < 700°C)"
+        desc = "Gangguan termal suhu menengah (300°C - 700°C), pemanasan berlebih lokal pada sambungan konduktor."
+    elif p_ch4 >= 35 or (x >= 12 and y <= 8):
+        zone = "T1"
+        label = "T1 (Thermal Fault T < 300°C)"
+        desc = "Gangguan termal suhu rendah (< 300°C), degradasi minyak ringan pada titik panas terisolasi."
+    elif p_c2h6 >= 30 or (-8 <= x <= 12 and -6 <= y <= 14):
+        zone = "S"
+        label = "S (Stray Gassing / Oil Overheating < 200°C)"
+        desc = "Pelepasan gas alami (stray gassing) pada minyak mineral di bawah 200°C."
+    else:
+        zone = "T1"
+        label = "T1 (Thermal Fault T < 300°C)"
+        desc = "Gangguan termal suhu rendah pada minyak trafo."
+
+    return {
+        "x": round(x, 2),
+        "y": round(y, 2),
+        "zone": zone,
+        "zone_label": label,
+        "zone_desc": desc,
+        "percentages": {
+            "H2": round(p_h2, 1),
+            "C2H6": round(p_c2h6, 1),
+            "CH4": round(p_ch4, 1),
+            "C2H4": round(p_c2h4, 1),
+            "C2H2": round(p_c2h2, 1)
+        }
+    }
+
+
+def calculate_rogers_ratios(gases: Dict[str, float]) -> Dict[str, Any]:
+    """Calculates Rogers Ratios and IEC 60599 diagnostics.
+    
+    Ratios:
+      R1 = C2H2 / C2H4 (Acetylene / Ethylene)
+      R2 = CH4 / H2   (Methane / Hydrogen)
+      R3 = C2H4 / C2H6 (Ethylene / Ethane)
+    """
+    h2 = max(0.0, float(gases.get("H2") or 0))
+    ch4 = max(0.0, float(gases.get("CH4") or 0))
+    c2h6 = max(0.0, float(gases.get("C2H6") or 0))
+    c2h4 = max(0.0, float(gases.get("C2H4") or 0))
+    c2h2 = max(0.0, float(gases.get("C2H2") or 0))
+    co = max(0.0, float(gases.get("CO") or 0))
+    co2 = max(0.0, float(gases.get("CO2") or 0))
+
+    r1 = round(c2h2 / c2h4, 3) if c2h4 > 0 else (0.0 if c2h2 == 0 else 999.0)
+    r2 = round(ch4 / h2, 3) if h2 > 0 else (0.0 if ch4 == 0 else 999.0)
+    r3 = round(c2h4 / c2h6, 3) if c2h6 > 0 else (0.0 if c2h4 == 0 else 999.0)
+    co2_co = round(co2 / co, 2) if co > 0 else 0.0
+
+    # Diagnostic codes per IEC 60599
+    code_r1 = 0 if r1 < 0.1 else (1 if r1 <= 3.0 else 2)
+    code_r2 = 1 if r2 < 0.1 else (0 if r2 <= 1.0 else 2)
+    code_r3 = 0 if r3 < 1.0 else (1 if r3 <= 3.0 else 2)
+    diag_code = f"{code_r1}-{code_r2}-{code_r3}"
+
+    if r1 < 0.1 and 0.1 <= r2 <= 1.0 and r3 < 1.0:
+        diagnosis = "Normal Deterioration"
+        description = "Degradasi normal isolasi minyak karena penuaan operasional normal."
+        severity = "NORMAL"
+    elif r1 < 0.1 and r2 < 0.1 and r3 < 1.0:
+        diagnosis = "Partial Discharge (Corona)"
+        description = "Pelepasan muatan listrik parsial berdaya rendah di dalam rongga isolasi atau celah gas."
+        severity = "WARNING"
+    elif 0.1 <= r1 <= 3.0 and 0.1 <= r2 <= 1.0 and r3 > 3.0:
+        diagnosis = "Continuous Sparking / Arcing"
+        description = "Pelepasan bunga api listrik terus-menerus ke elektroda mengambang atau kontak longgar."
+        severity = "HIGH"
+    elif r1 >= 1.0 and 0.1 <= r2 <= 1.0 and 0.1 <= r3 <= 3.0:
+        diagnosis = "Arc with Power Follow-through"
+        description = "Busur listrik energi tinggi menembus dielektrik minyak trafo (Arcing)."
+        severity = "HIGH"
+    elif r1 < 0.1 and 0.1 <= r2 <= 1.0 and 1.0 <= r3 <= 3.0:
+        diagnosis = "Thermal Fault 150°C - 200°C"
+        description = "Overheating ringan pada minyak trafo atau konduktor lokal."
+        severity = "PREWARNING"
+    elif r1 < 0.1 and r2 > 1.0 and 1.0 <= r3 <= 3.0:
+        diagnosis = "Thermal Fault 200°C - 300°C"
+        description = "Pemanasan setempat suhu menengah pada inti besi atau sambungan konduktor."
+        severity = "WARNING"
+    elif r1 < 0.1 and r2 > 1.0 and r3 >= 3.0:
+        diagnosis = "Thermal Fault 300°C - 700°C"
+        description = "Pemanasan konduktor serius disertai degradasi minyak dan karbonisasi awal."
+        severity = "WARNING"
+    elif r1 < 0.1 and 0.1 <= r2 <= 1.0 and r3 >= 3.0:
+        diagnosis = "Thermal Fault > 700°C"
+        description = "Suhu termal ekstrem melebihi 700°C, pembentukan jelaga dan degradasi parah."
+        severity = "HIGH"
+    elif r1 >= 0.1:
+        diagnosis = "Electrical Discharge / Sparking"
+        description = "Terdeteksi pelepasan listrik aktif yang menghasilkan gas asetilena (C2H2)."
+        severity = "HIGH"
+    else:
+        diagnosis = "Thermal Fault Undifferentiated"
+        description = "Indikasi suhu termal tidak seimbang pada belitan trafo."
+        severity = "PREWARNING"
+
+    if co2_co >= 7.0 and co2_co <= 15.0:
+        paper_diag = "Normal (Penuaan wajar)"
+    elif co2_co < 3.0:
+        paper_diag = "Kritis (Degradasi / Pyrolysis isolasi kertas selulosa)"
+    elif co2_co < 7.0:
+        paper_diag = "Perhatian (Penuaan isolasi kertas dipercepat)"
+    else:
+        paper_diag = "Normal (Rasio tinggi menandakan oksidasi suhu rendah)"
+
+    return {
+        "r1_c2h2_c2h4": r1,
+        "r2_ch4_h2": r2,
+        "r3_c2h4_c2h6": r3,
+        "co2_co_ratio": co2_co,
+        "diag_code": diag_code,
+        "diagnosis": diagnosis,
+        "description": description,
+        "severity": severity,
+        "paper_diagnosis": paper_diag,
+    }
+
+
+def calculate_key_gas_profile(gases: Dict[str, float]) -> Dict[str, Any]:
+    """Calculates Key Gas method proportions and fault identification per IEEE C57.104."""
+    h2 = max(0.0, float(gases.get("H2") or 0))
+    ch4 = max(0.0, float(gases.get("CH4") or 0))
+    c2h6 = max(0.0, float(gases.get("C2H6") or 0))
+    c2h4 = max(0.0, float(gases.get("C2H4") or 0))
+    c2h2 = max(0.0, float(gases.get("C2H2") or 0))
+    co = max(0.0, float(gases.get("CO") or 0))
+    
+    total_key = h2 + ch4 + c2h6 + c2h4 + c2h2 + co
+    if total_key <= 0:
+        return {
+            "dominant_gas": "-",
+            "fault_type": "Normal (Tidak Ada Gas Kunci)",
+            "primary_mechanism": "Konsentrasi seluruh gas kunci berada pada tingkat latar belakang yang dapat diabaikan.",
+            "proportions": {"H2": 0.0, "CH4": 0.0, "C2H6": 0.0, "C2H4": 0.0, "C2H2": 0.0, "CO": 0.0},
+            "scores": {"thermal_oil": 0, "thermal_cellulose": 0, "corona_pd": 0, "arcing": 0}
+        }
+    
+    p = {
+        "H2": round((h2 / total_key) * 100.0, 1),
+        "CH4": round((ch4 / total_key) * 100.0, 1),
+        "C2H6": round((c2h6 / total_key) * 100.0, 1),
+        "C2H4": round((c2h4 / total_key) * 100.0, 1),
+        "C2H2": round((c2h2 / total_key) * 100.0, 1),
+        "CO": round((co / total_key) * 100.0, 1),
+    }
+
+    s_oil = min(100.0, max(0.0, (p["C2H4"] * 1.3) + (p["CH4"] * 0.4) + (p["C2H6"] * 0.3) - (p["C2H2"] * 1.5)))
+    s_cell = min(100.0, max(0.0, (p["CO"] * 1.05) - (p["C2H2"] * 1.2)))
+    s_pd = min(100.0, max(0.0, (p["H2"] * 1.15) + (p["CH4"] * 0.2) - (p["C2H2"] * 1.5)))
+    s_arc = min(100.0, max(0.0, (p["C2H2"] * 1.8) + (p["H2"] * 0.3)))
+
+    scores = {
+        "thermal_oil": round(s_oil, 1),
+        "thermal_cellulose": round(s_cell, 1),
+        "corona_pd": round(s_pd, 1),
+        "arcing": round(s_arc, 1),
+    }
+
+    dominant_gas = max(p.items(), key=lambda kv: kv[1])[0]
+
+    best_fault = max(scores.items(), key=lambda kv: kv[1])
+    if best_fault[0] == "arcing" and p["C2H2"] >= 3.0:
+        fault_type = "Electrical Arcing (Flashover)"
+        mech = f"Gas kunci utama: Asetilena ({p['C2H2']}%), mengindikasikan loncatan busur api listrik suhu tinggi menembus minyak trafo."
+    elif best_fault[0] == "thermal_oil" and p["C2H4"] >= 20.0:
+        fault_type = "Thermal Oil Degradation"
+        mech = f"Gas kunci utama: Etilena ({p['C2H4']}%), mengindikasikan overheating termal suhu tinggi pada minyak trafo."
+    elif best_fault[0] == "thermal_cellulose" and p["CO"] >= 50.0:
+        fault_type = "Thermal Cellulose / Paper Overheating"
+        mech = f"Gas kunci utama: Karbon Monoksida ({p['CO']}%), mengindikasikan degradasi dan penuaan termal isolasi kertas selulosa."
+    elif best_fault[0] == "corona_pd" and p["H2"] >= 40.0:
+        fault_type = "Electrical Corona / Partial Discharge"
+        mech = f"Gas kunci utama: Hidrogen ({p['H2']}%), mengindikasikan pelepasan muatan parsial pada rongga udara atau gelembung minyak."
+    else:
+        fault_type = "Normal / Undifferentiated Mix"
+        mech = "Distribusi gas kunci campuran pada tingkat operasional wajar, tidak ada pola gangguan tunggal dominan."
+
+    return {
+        "dominant_gas": dominant_gas,
+        "fault_type": fault_type,
+        "primary_mechanism": mech,
+        "proportions": p,
+        "scores": scores
+    }
+
+
+def calculate_gas_trend_prediction(history: List[Dict[str, Any]], current_gases: Dict[str, float]) -> Dict[str, Any]:
+    """Calculates rate of gas generation and 3/6/12-month projections per IEEE C57.104."""
+    gas_keys = ["H2", "CH4", "C2H6", "C2H4", "C2H2", "CO", "CO2"]
+    current_tdcg = sum(float(current_gases.get(k) or 0) for k in ["H2", "CH4", "C2H6", "C2H4", "C2H2", "CO"])
+    
+    if not history or len(history) < 2:
+        rate_day = {k: 0.01 for k in gas_keys}
+        rate_day["TDCG"] = 0.05
+        interval_days = 90
+    else:
+        sorted_h = sorted(history, key=lambda r: str(r.get("date", "")))
+        prev = sorted_h[-2]
+        curr = sorted_h[-1]
+        
+        try:
+            d_curr = pd.to_datetime(curr.get("date"))
+            d_prev = pd.to_datetime(prev.get("date"))
+            interval_days = max(1, (d_curr - d_prev).days)
+        except Exception:
+            interval_days = 90
+
+        rate_day = {}
+        for k in gas_keys:
+            v_curr = float(curr.get(k, current_gases.get(k, 0)))
+            v_prev = float(prev.get(k, 0))
+            delta = v_curr - v_prev
+            rate_day[k] = round(delta / interval_days, 3)
+            
+        tdcg_curr = float(curr.get("tdcg", current_tdcg))
+        tdcg_prev = float(prev.get("tdcg", tdcg_curr))
+        rate_day["TDCG"] = round((tdcg_curr - tdcg_prev) / interval_days, 3)
+
+    rate_month = {k: round(rate_day[k] * 30.0, 2) for k in rate_day}
+
+    forecast_3m = {}
+    forecast_6m = {}
+    forecast_12m = {}
+
+    for k in gas_keys:
+        curr_val = float(current_gases.get(k, 0))
+        r = rate_day.get(k, 0.0)
+        forecast_3m[k] = round(max(0.0, curr_val + (r * 90)), 1)
+        forecast_6m[k] = round(max(0.0, curr_val + (r * 180)), 1)
+        forecast_12m[k] = round(max(0.0, curr_val + (r * 365)), 1)
+
+    r_tdcg = rate_day.get("TDCG", 0.0)
+    forecast_3m["TDCG"] = round(max(0.0, current_tdcg + (r_tdcg * 90)), 1)
+    forecast_6m["TDCG"] = round(max(0.0, current_tdcg + (r_tdcg * 180)), 1)
+    forecast_12m["TDCG"] = round(max(0.0, current_tdcg + (r_tdcg * 365)), 1)
+
+    tdcg_rate = rate_day.get("TDCG", 0.0)
+    c2h2_rate = rate_day.get("C2H2", 0.0)
+    h2_rate = rate_day.get("H2", 0.0)
+
+    if tdcg_rate > 30.0 or c2h2_rate > 0.5:
+        rate_status = "CRITICAL"
+        rate_desc = "Laju pembentukan gas sangat cepat (kritis). Risiko gangguan aktif berenergi tinggi."
+        action_advice = "Lakukan re-sampling dalam kurun waktu 48 jam dan evaluasi pengurangan pembebanan trafo."
+    elif tdcg_rate > 10.0 or c2h2_rate > 0.1 or h2_rate > 5.0:
+        rate_status = "ALERT"
+        rate_desc = "Laju pembentukan gas meningkat di atas batas toleransi IEEE C57.104."
+        action_advice = "Tingkatkan frekuensi sampling menjadi 1 bulan sekali dan pantau tren secara ketat."
+    elif tdcg_rate > 3.0:
+        rate_status = "PREWARNING"
+        rate_desc = "Kenaikan gas terdeteksi moderat seiring peningkatan beban trafo."
+        action_advice = "Lanjutkan pemantauan berkala 3 bulan sekali dan periksa riwayat pembebanan puncak."
+    else:
+        rate_status = "STABLE"
+        rate_desc = "Laju pembentukan gas stabil dalam batas operasional aman (< 10 ppm/hari)."
+        action_advice = "Lanjutkan siklus pemeliharaan rutin 6 bulan sekali."
+
+    days_to_warn = None
+    if current_tdcg < 720 and r_tdcg > 0.05:
+        days_to_warn = int((720 - current_tdcg) / r_tdcg)
+    elif current_tdcg >= 720:
+        days_to_warn = 0
+
+    return {
+        "interval_days": interval_days,
+        "rate_ppm_day": rate_day,
+        "rate_ppm_month": rate_month,
+        "rate_status": rate_status,
+        "rate_desc": rate_desc,
+        "action_advice": action_advice,
+        "days_to_warning": days_to_warn,
+        "forecast_3m": forecast_3m,
+        "forecast_6m": forecast_6m,
+        "forecast_12m": forecast_12m,
+    }
+
+
 def calculate_dga_diagnosis(gases: Dict[str, float]) -> Dict[str, Any]:
-    """Calculates TDCG, IEEE C57.104 condition, Duval Triangle 1, and Rogers Ratios."""
+    """Calculates TDCG, IEEE C57.104 condition, Duval Triangle 1, Duval Pentagon 1, Rogers Ratios, and Key Gas."""
     h2 = float(gases.get("H2") or 0)
     ch4 = float(gases.get("CH4") or 0)
     c2h6 = float(gases.get("C2H6") or 0)
@@ -317,44 +676,27 @@ def calculate_dga_diagnosis(gases: Dict[str, float]) -> Dict[str, Any]:
         else:
             duval_diag = "T1 (Thermal Fault T < 300°C)"
 
-    # Rogers Ratios
-    r1 = ch4 / h2 if h2 > 0 else 0
-    r2 = c2h6 / ch4 if ch4 > 0 else 0
-    r3 = c2h4 / c2h6 if c2h6 > 0 else 0
-    
-    rogers_diag = "Normal Deterioration"
-    if r2 < 0.1 and 0.1 <= r1 < 1.0 and r3 < 0.1:
-        rogers_diag = "Normal Deterioration"
-    elif r2 < 0.1 and r1 < 0.1 and r3 < 0.1:
-        rogers_diag = "Partial Discharge"
-    elif 0.1 <= r2 < 1.0 and 0.1 <= r1 < 1.0 and 0.1 <= r3 < 3.0:
-        rogers_diag = "Thermal Fault < 150°C"
-    elif r2 < 0.1 and 0.1 <= r1 < 1.0 and 0.1 <= r3 < 3.0:
-        rogers_diag = "Thermal Fault 150°C - 200°C"
-    elif r2 < 0.1 and r1 >= 1.0 and 0.1 <= r3 < 3.0:
-        rogers_diag = "Thermal Fault 200°C - 300°C"
-    elif r2 < 0.1 and r1 >= 1.0 and r3 >= 3.0:
-        rogers_diag = "Thermal Fault 300°C - 700°C"
-    elif r2 < 0.1 and 0.1 <= r1 < 1.0 and r3 >= 3.0:
-        rogers_diag = "Thermal Fault > 700°C"
-
-    # CO2/CO ratio for paper insulation aging
-    co2_co_ratio = round(co2 / co, 1) if co > 0 else 0.0
-    paper_status = "Normal (< 7 ratio)" if 3 <= co2_co_ratio <= 10 else ("Severe Paper Degradation" if co2_co_ratio < 3 else "Normal")
+    # Rogers Ratios & Pentagon & Key Gas
+    rogers_info = calculate_rogers_ratios(gases)
+    pentagon_info = calculate_duval_pentagon(gases)
+    key_gas_info = calculate_key_gas_profile(gases)
 
     return {
         "tdcg": round(tdcg, 1),
         "ieee_condition": ieee_cond,
         "status": status,
         "duval_diagnosis": duval_diag,
-        "rogers_diagnosis": rogers_diag,
-        "co2_co_ratio": co2_co_ratio,
-        "paper_status": paper_status,
+        "rogers_diagnosis": rogers_info["diagnosis"],
+        "co2_co_ratio": rogers_info["co2_co_ratio"],
+        "paper_status": rogers_info["paper_diagnosis"],
         "duval_coords": {
             "pct_CH4": round(p_ch4, 1),
             "pct_C2H4": round(p_c2h4, 1),
             "pct_C2H2": round(p_c2h2, 1)
-        }
+        },
+        "pentagon": pentagon_info,
+        "rogers": rogers_info,
+        "key_gas": key_gas_info,
     }
 
 def get_dga_summary() -> Dict[str, Any]:
@@ -523,4 +865,5 @@ def get_dga_transformer_detail(transformer_id: str) -> Optional[Dict[str, Any]]:
         rec = "Kondisi minyak trafo normal. Lanjutkan pengujian DGA rutin 6 bulan sekali sesuai IEEE C57.104."
     
     target["recommendation"] = rec
+    target["prediction"] = calculate_gas_trend_prediction(target["history"], target["gases"])
     return target
