@@ -74,11 +74,21 @@ data/audit/
 # override lokasi via PPLE_AUTOMATION_DIR).
 data/automations/
 
+# Backup otomatis measurements.csv per domain (rotasi MCSA_MAX_BACKUPS,
+# lihat src/domain_measurements.py) - artefak runtime, bukan source of truth.
+data/domain/*/backup/
+
+# Ekspor duplikat docs/STRUKTUR_PROJECT.md (sudah di-untrack 2026-09-21).
+docs/STRUKTUR_PROJECT.pdf
+docs/image.png
+
 # Runtime state yang ditulis ulang otomatis (memori chatbot, continuous
-# learning) - bukan source of truth, jangan di-commit.
+# learning, user auth) - bukan source of truth, jangan di-commit.
 data/agent_memory.db
 data/learning/improvement_history.json
 data/learning/improvement_state.json
+data/users.json
+data/auth_secret.key
 
 # Artefak sisa scratch/testing lokal, bukan bagian repo.
 .tmp-test-runtime/
@@ -86,15 +96,50 @@ data/learning/improvement_state.json
 .venv-linux-backup/
 scripts/scratch/
 
-# Materi/: hanya .json (v1/v2 knowledge docs) dan .pdf (dibaca rag_engine)
-# yang dipakai aplikasi. Installer/video/firmware ini tidak pernah dibaca
-# oleh knowledge_retriever.py atau rag_engine.py - jangan di-commit lagi.
+# Materi/: hanya .json (v1/v2 knowledge docs), .pdf, dan .md (dibaca
+# rag_engine) yang dipakai aplikasi. Installer/video/firmware/e-learning
+# ini tidak pernah dibaca oleh knowledge_retriever.py atau rag_engine.py -
+# jangan di-commit lagi.
 Materi/**/*.exe
 Materi/**/*.msi
 Materi/**/*.mp4
 Materi/**/*.flv
 Materi/**/*.zip
 Materi/**/*.ptz
+Materi/**/*.swf
+Materi/**/*.htm
+Materi/**/*.html
+Materi/**/*.gif
+Materi/**/*.bat
+Materi/**/*.lnk
+Materi/**/*.dll
+Materi/**/*.sys
+Materi/**/*.OMT
+Materi/**/*.omt
+Materi/**/*.STP
+Materi/**/*.mot
+Materi/**/*.bif
+Materi/**/*.eif
+Materi/**/*.pre
+Materi/**/*.lng
+Materi/**/*.cat
+Materi/**/*.inf
+Materi/**/*.cab
+Materi/**/*.dbm
+Materi/**/*.dat
+Materi/**/*.wri
+Materi/**/*.psc
+Materi/**/*.hex
+Materi/**/*.manifest
+
+# Paket installer/e-learning vendor yang 0% dipakai aplikasi (dicek: hanya
+# 3 dari 290 file di Technical Associates berupa PDF, dan isinya bantuan
+# troubleshooting software IVDC demo, bukan materi teknik). Dipindahkan
+# keluar folder proyek secara fisik - baris ini menjaga agar tidak
+# ter-track lagi bila disalin balik untuk sementara.
+Materi/VIBRASI/5.2.3.1. Omnitrend 2.51 Installer/
+Materi/VIBRASI/Presentasi/
+Materi/VIBRASI/Technical Associates/
 
 # Index FAISS - artefak build regenerable via `python build_rag_index.py`,
 # bukan source of truth (lihat src/rag_engine.py RAG_INDEX_DIR).
