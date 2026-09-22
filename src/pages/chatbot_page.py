@@ -74,6 +74,32 @@ def _basic_file_answer(filename: str, file_context: str) -> str:
     )
 
 
+
+MAX_CHAT_CONTEXT_TURNS = 6
+MAX_CHAT_CONTEXT_CHARS = 3000
+
+
+def _build_conversation_context(messages: list) -> str:
+    """Rangkum beberapa giliran terakhir percakapan Streamlit menjadi teks konteks."""
+    if not messages:
+        return ""
+
+    lines = []
+    for msg in messages[-(MAX_CHAT_CONTEXT_TURNS * 2):]:
+        text = str(msg.get("content") or "").strip()
+        if not text:
+            continue
+        speaker = "User" if msg.get("role") == "user" else "Agent"
+        if len(text) > 600:
+            text = text[:600] + " ..."
+        lines.append(f"{speaker}: {text}")
+
+    context = "\n".join(lines)
+    if len(context) > MAX_CHAT_CONTEXT_CHARS:
+        context = context[-MAX_CHAT_CONTEXT_CHARS:]
+    return context
+
+
 def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFrame):
     render_page_header(
         st,
@@ -276,6 +302,10 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
         # 3. LLM enhancement with Multi-provider + RAG + Attached File Context
         extra_context = st.session_state.get("_chat_file_context", "")
 
+        # Riwayat percakapan (tanpa pesan yang sedang diproses) supaya pertanyaan
+        # lanjutan seperti "kenapa begitu?" tetap merujuk topik sebelumnya.
+        conversation_context = _build_conversation_context(st.session_state.get("messages", [])[:-1])
+
         llm = MCSALLMAssistant(
             enabled=ai_active,
             provider=provider,
@@ -291,6 +321,7 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
             df_history=df_history,
             include_knowledge=True,
             extra_file_context=extra_context,
+            conversation_context=conversation_context,
         )
 
         # Rule-based fallback: when the LLM is off/unavailable, don't answer a

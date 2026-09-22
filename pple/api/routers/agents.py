@@ -10,6 +10,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import pandas as pd
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from pple.api.schemas.core import SpecialistSubAgentsResponse
@@ -29,8 +30,13 @@ from src.agents.safety_guard import SafetyGuardrailAgent
 from src.agents.self_improvement import RecursiveSelfImprover
 from src.agents.subagent_coordinator import SubAgentCoordinator
 from src.chatbot import MCSAChatbot
-from src.data_loader import get_data_path, get_latest_data, load_mcsa_data
-from src.llm_assistant import DEFAULT_GEMINI_MODEL, MCSALLMAssistant, resolve_provider_key
+from src.llm_assistant import (
+    DEFAULT_GEMINI_MODEL,
+    DEFAULT_OLLAMA_HOST,
+    DEFAULT_OPENCODE_BASE_URL,
+    MCSALLMAssistant,
+    resolve_provider_key,
+)
 
 router = APIRouter(prefix="/api", tags=["agents"])
 
@@ -69,10 +75,26 @@ def get_data_frames() -> Tuple[pd.DataFrame, pd.DataFrame]:
     return _cached_raw_df, _cached_latest_df
 
 
+IMAGE_UPLOAD_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".heic", ".heif"}
+
+
 def extract_text_from_upload(file_bytes: bytes, filename: str) -> str:
     ext = os.path.splitext(filename)[1].lower()
     try:
-        if ext in [".txt", ".csv", ".json", ".md", ".log"]:
+        if ext in IMAGE_UPLOAD_EXTENSIONS:
+            # Tidak ada analisis visual (OCR/vision) yang terpasang - jangan
+            # kirim byte gambar sebagai "teks" ke LLM, karena itu akan
+            # membuat LLM berpura-pura melihat isi gambar yang sebenarnya
+            # tidak pernah dibacanya (lihat CONTEXT.md - LLM tidak boleh
+            # mengarang bukti).
+            return (
+                f"[Gambar {filename} dilampirkan pengguna. Analisis visual "
+                f"(OCR/vision) belum didukung pada fitur ini - jangan "
+                f"mendeskripsikan isi gambar. Jika relevan, minta pengguna "
+                f"menjelaskan gambar tersebut secara tertulis atau masukkan "
+                f"nilai pengukurannya secara manual.]"
+            )
+        elif ext in [".txt", ".csv", ".json", ".md", ".log"]:
             return file_bytes.decode("utf-8", errors="ignore")
         elif ext == ".pdf":
             import pypdf
@@ -387,20 +409,91 @@ def generate_speech_summary(text: str, matched_equipment: Optional[str] = None) 
         clean = re.sub(pattern, rep, clean, flags=re.IGNORECASE)
 
     # Take first 2-3 coherent sentences
+    # Take first few coherent sentences (split by punctuation or newlines for lists)
     raw_sentences = [
         s.strip()
         for s in re.split(r"(?<=[.!?])\s+", clean)
+        for s in re.split(r"(?<=[.!?\n])\s+", clean)
         if s.strip() and len(s.strip()) > 5
     ]
     if raw_sentences:
         speech = " ".join(raw_sentences[:3])
         if len(speech) > 320:
             speech = " ".join(raw_sentences[:2])
+        if len(raw_sentences) <= 3:
+            speech = " ".join(raw_sentences)
+        else:
+            speech = " ".join(raw_sentences[:3])
+            if len(speech) > 450:
+                speech = " ".join(raw_sentences[:2])
+            speech += " Silakan lihat layar untuk detail selengkapnya."
     else:
         speech = clean[:250]
+        speech = clean[:300]
+        if len(clean) > 300:
+            speech += "... Silakan lihat layar untuk detail selengkapnya."
 
     return speech.strip()
 
+
+
+
+FOLLOW_UP_MARKERS = (
+    "nya", "itu", "tersebut", "kenapa", "mengapa", "bagaimana", "gimana",
+    "lalu", "terus", "lanjut", "detail", "jelaskan", "trennya", "dampak",
+)
+
+
+def is_follow_up_question(message: str) -> bool:
+    """Deteksi pertanyaan lanjutan yang merujuk aset pada giliran sebelumnya."""
+    text = (message or "").strip().lower()
+    if not text:
+        return False
+    if len(text) > 120:
+        return False
+    return any(marker in text for marker in FOLLOW_UP_MARKERS) or len(text) <= 40
+
+
+MAX_CONTEXT_TURNS = 6
+MAX_CONTEXT_CHARS = 3000
+
+
+def build_conversation_context(session_id: Optional[str]) -> Tuple[str, Optional[str]]:
+    """Rangkum beberapa giliran terakhir sesi menjadi konteks percakapan.
+
+    Mengembalikan (teks konteks, aset terakhir yang dikenali). Aset terakhir dipakai
+    sebagai carry-over supaya pertanyaan lanjutan seperti "bagaimana kondisinya?"
+    tetap merujuk peralatan yang sama. Gagal baca memori tidak boleh mematikan chat,
+    jadi error ditelan dan chat berjalan tanpa konteks (fail-open).
+    """
+    if not session_id:
+        return "", None
+    try:
+        history = get_chat_session_messages(session_id)
+    except Exception as exc:
+        print(f"Chat context note: {exc}")
+        return "", None
+
+    last_equipment = None
+    for msg in history:
+        if msg.get("matched_equipment"):
+            last_equipment = msg["matched_equipment"]
+
+    recent = history[-(MAX_CONTEXT_TURNS * 2):]
+    lines = []
+    for msg in recent:
+        text = (msg.get("text") or "").strip()
+        if not text:
+            continue
+        speaker = "User" if msg.get("role") == "user" else "Agent"
+        if len(text) > 600:
+            text = text[:600] + " ..."
+        lines.append(f"{speaker}: {text}")
+
+    context = "\n".join(lines)
+    if len(context) > MAX_CONTEXT_CHARS:
+        context = "... (dipotong)\n" + context[-MAX_CONTEXT_CHARS:]
+    return context, last_equipment
 
 
 @router.get("/agent/chat/sessions")
@@ -447,6 +540,8 @@ async def agent_chat(
     api_key: Optional[str] = Form(None),
     source: Optional[str] = Form(None),
     session_id: Optional[str] = Form(None),
+    ollama_host: Optional[str] = Form(None),
+    opencode_base_url: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
 ):
     df_raw, df_latest = get_data_frames()
@@ -470,6 +565,8 @@ async def agent_chat(
         k = body.get("api_key")
         source_val = body.get("source") or source_val or "CHAT"
         session_id_val = body.get("session_id")
+        ollama_host_val = body.get("ollama_host") or saved_ai.get("ollama_host") or DEFAULT_OLLAMA_HOST
+        opencode_base_url_val = body.get("opencode_base_url") or saved_ai.get("opencode_base_url") or DEFAULT_OPENCODE_BASE_URL
     else:
         msg_text = message or ""
         prov = provider or saved_ai.get("ai_provider") or "gemini"
@@ -478,6 +575,8 @@ async def agent_chat(
         k = api_key
         source_val = source_val or "CHAT"
         session_id_val = session_id
+        ollama_host_val = ollama_host or saved_ai.get("ollama_host") or DEFAULT_OLLAMA_HOST
+        opencode_base_url_val = opencode_base_url or saved_ai.get("opencode_base_url") or DEFAULT_OPENCODE_BASE_URL
         if file and file.filename:
             file_name = file.filename
             file_bytes = await file.read()
@@ -493,6 +592,20 @@ async def agent_chat(
                 f"- Jadikan data ini sebagai riwayat pembelajaran untuk menganalisis tren perubahan parameter, pola degradasi, dan perbandingan kondisi mesin dari waktu ke waktu.\n\n"
                 f"{extracted_text[:12000]}\n--- AKHIR DOKUMEN TERLAMPIR ---"
             )
+
+    # Auto-resolve or create voice session for continuous context understanding
+    if not session_id_val and source_val == "VOICE":
+        try:
+            voice_sessions = list_chat_sessions(session_type="voice", limit=1)
+            if voice_sessions:
+                session_id_val = voice_sessions[0]["session_id"]
+            else:
+                session_id_val = create_chat_session(title="Sesi Inspeksi Suara Lapangan", session_type="voice")
+        except Exception as _v_exc:
+            print(f"Voice session auto-init note: {_v_exc}")
+
+    # Konteks percakapan dihitung sebelum pesan user disimpan agar tidak terduplikasi.
+    conversation_context, last_session_equipment = build_conversation_context(session_id_val)
 
     # Save user message to session history if session_id is active
     if session_id_val and msg_text:
@@ -521,6 +634,26 @@ async def agent_chat(
     # Asset resolution via Master Agent across all plant domains (MCSA, DGA, Vibration, Central Register)
     resolved_info = master_agent.resolve_asset(msg_text) if msg_text else None
     matched_eq = bot.last_matched_equipment or (resolved_info.get("equipment") if resolved_info else None)
+    # Carry-over: pertanyaan lanjutan ("bagaimana kondisinya sekarang?") tidak menyebut
+    # nama aset, sehingga aset terakhir pada sesi yang sama tetap dipakai sebagai rujukan.
+    if not matched_eq and last_session_equipment and msg_text and is_follow_up_question(msg_text):
+        matched_eq = last_session_equipment
+
+    # Intent classification — controls which pipeline stages actually run.
+    # Rule-based answer (bot_reply) is always produced above and always forwarded
+    # to the LLM regardless of intent; this only gates extra data fetching.
+    try:
+        from src.chat_intent import classify_intent
+        chat_intent = classify_intent(msg_text or "", matched_eq, bot_reply, conversation_context)
+    except Exception:
+        # Classifier import failure must never break the chat; fall back to
+        # treating every query as an equipment-status query (original behavior).
+        from src.chat_intent import IntentResult
+        chat_intent = IntentResult(
+            intent_type="EQUIPMENT_STATUS",
+            needs_equipment_data=True,
+            needs_multi_agent=bool(matched_eq),
+        )
 
     # Identify active specialist sub-agents
     active_agent_keys = subagent_coordinator.identify_relevant_agents(msg_text, matched_eq)
@@ -564,10 +697,46 @@ async def agent_chat(
             "subagent_traces": [],
         }
 
-    # Execute Multi-Agent Diagnostic Collaboration if equipment is recognized
+    # OUT_OF_SCOPE — politely decline before spending any more compute.
+    if chat_intent.intent_type == "OUT_OF_SCOPE" and not extra_file_context:
+        oos_reply = (
+            "Maaf, pertanyaan Anda tampaknya berada di luar cakupan keahlian saya sebagai "
+            "**Agent CBM Learning PLTU Jeranjang**.\n\n"
+            "Saya dikhususkan untuk domain **Predictive Maintenance (PdM)**, **Condition-Based "
+            "Maintenance (CBM)**, dan operasional **PLTU** (pembangkit listrik tenaga uap). "
+            "Saya siap membantu Anda dengan:\n"
+            "- Kondisi & diagnosa peralatan (BFP, CWP, fan, trafo, motor, dll.)\n"
+            "- Analisis CBM: vibrasi, MCSA, DGA, tribologi, thermal, partial discharge\n"
+            "- Standar teknis: ISO, IEEE, IEC, NEMA, EPRI\n"
+            "- Reliability: health index, RUL, work order\n\n"
+            "Silakan ajukan pertanyaan seputar topik di atas! 😊"
+        )
+        if session_id_val:
+            save_session_message(
+                session_id_val, "assistant", oos_reply,
+                summary_for_speech="Pertanyaan di luar domain. Silakan tanyakan seputar CBM atau PLTU.",
+                payload={"out_of_scope": True, "active_subagents": active_subagents},
+            )
+        return {
+            "reply": oos_reply,
+            "summary_for_speech": "Pertanyaan di luar cakupan CBM PLTU. Silakan tanya tentang kondisi peralatan atau standar pemeliharaan.",
+            "matched_equipment": matched_eq,
+            "ai_enhanced": False,
+            "file_name": file_name,
+            "provider": prov,
+            "session_id": session_id_val,
+            "safety_blocked": False,
+            "active_subagents": active_subagents,
+            "subagent_traces": [],
+            "intent_type": chat_intent.intent_type,
+        }
+
+    # Execute Multi-Agent Diagnostic Collaboration only when intent calls for it.
+    # CONCEPTUAL_TECH and GENERAL_CHAT queries skip this to avoid injecting
+    # irrelevant equipment data and to save latency.
     subagent_traces = []
     subagents_context = ""
-    if matched_eq:
+    if matched_eq and chat_intent.needs_multi_agent:
         try:
             collab_result = master_agent.execute_collaborative_diagnosis(matched_eq, msg_text)
             subagent_traces = collab_result.get("subagent_traces", [])
@@ -623,16 +792,28 @@ async def agent_chat(
                 provider=prov or "gemini",
                 model=mdl or DEFAULT_GEMINI_MODEL,
                 api_key=resolved_key or "local",
+                ollama_host=ollama_host_val,
+                base_url=opencode_base_url_val,
             )
             if assistant.available:
-                ai_resp = assistant.enhance_answer(
+                # Panggilan LLM adalah I/O jaringan sinkron (urllib) yang bisa memakan
+                # puluhan detik. Dijalankan di threadpool agar event loop FastAPI tetap
+                # melayani request lain (dashboard, polling) selama chat diproses.
+                # df_context / df_history hanya disertakan untuk EQUIPMENT_STATUS intent;
+                # pertanyaan konseptual dan obrolan umum tidak memerlukan data pengukuran.
+                _needs_data = chat_intent.needs_equipment_data
+                import pandas as _pd
+                ai_resp = await run_in_threadpool(
+                    assistant.enhance_answer,
                     question=msg_text or f"Analisis isi dokumen {file_name}",
                     rule_answer=bot_reply,
-                    df_context=df_latest,
-                    df_history=df_raw,
+                    df_context=df_latest if _needs_data else _pd.DataFrame(),
+                    df_history=df_raw if _needs_data else None,
                     include_knowledge=True,
                     extra_file_context=extra_file_context,
                     subagents_context=subagents_context,
+                    conversation_context=conversation_context,
+                    intent_type=chat_intent.intent_type,
                 )
                 r_info = getattr(assistant, "resilience_info", {})
                 if r_info:
@@ -646,11 +827,28 @@ async def agent_chat(
                 if ai_resp and len(ai_resp.strip()) > 10 and ai_resp.strip() != bot_reply.strip() and not getattr(assistant, "last_error", None):
                     final_reply = ai_resp
                     ai_enhanced = True
+                    
+                    # Log to event bus if chatbot recommends a work order or makes a strong recommendation
+                    lower_reply = final_reply.lower()
+                    if "work order" in lower_reply or "perintah kerja" in lower_reply or "rekomendasi" in lower_reply:
+                        try:
+                            from pple.core.events import publish, Events
+                            publish(
+                                Events.RECOMMENDATION_CREATED,
+                                equipment=matched_eq or "PLANT_WIDE",
+                                source="CHATBOT",
+                                text_snippet=final_reply[:250] + "..."
+                            )
+                        except Exception as ev_exc:
+                            print(f"Failed to publish recommendation event: {ev_exc}")
         except Exception as e:
             print(f"LLM AI processing note: {e}")
 
-    # Fallback to direct RAG retrieval if citations not yet populated and query exists
-    if not citations and msg_text:
+    # Fallback to direct RAG retrieval only when the assistant never ran its own
+    # retrieval (no LLM configured / LLM failed) - otherwise this repeats the same
+    # embedding + keyword search twice per chat turn.
+    assistant_retrieved = bool(assistant is not None and getattr(assistant, "available", False))
+    if not citations and msg_text and not assistant_retrieved:
         try:
             from src.knowledge_retriever import build_knowledge_context
             _, retrieved_cits = build_knowledge_context(msg_text, max_items=3, use_rag=True)

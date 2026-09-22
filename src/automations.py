@@ -10,7 +10,7 @@ from typing import Any
 from uuid import uuid4
 
 
-ALLOWED_ACTIONS = {"learning_cycle", "knowledge_health_check"}
+ALLOWED_ACTIONS = {"learning_cycle", "knowledge_health_check", "fleet_health_check"}
 
 
 def _storage_dir() -> str:
@@ -153,6 +153,37 @@ def dispatch_action(action: str) -> dict[str, Any]:
     if action == "knowledge_health_check":
         from src.knowledge_retriever import load_knowledge_base
         return {"status": "success", "indexed_chunks": len(load_knowledge_base(force_reload=True))}
+    if action == "fleet_health_check":
+        from src.data_loader import get_latest_data, load_mcsa_data, get_data_path
+        from src.agents.fusion_engine import ReliabilityFusionAgent
+        from src.agents.asset_graph import AssetKnowledgeGraph
+        from src.fleet_reliability import build_fleet_reliability
+        from pple.core.events import publish, Events
+        
+        df = load_mcsa_data(get_data_path("mcsa_updated.csv"))
+        if df is None or df.empty:
+            df = load_mcsa_data(get_data_path("Report MCSA.xls"))
+        df_latest = get_latest_data(df)
+        
+        fusion_agent = ReliabilityFusionAgent()
+        asset_graph = AssetKnowledgeGraph()
+        
+        res = build_fleet_reliability(df_latest, fusion_agent, asset_graph, include_multi_domain=True)
+        bad_count = len(res.get("critical_watchlist", []))
+        
+        # Publish event
+        publish(
+            Events.ANALYSIS_COMPLETED,
+            source="AUTOMATION_CRON",
+            summary=f"Fleet health checked. Avg Health: {res.get('fleet_health_average')}%. Critical assets: {bad_count}."
+        )
+        
+        return {
+            "status": "success",
+            "fleet_health_average": res.get("fleet_health_average"),
+            "critical_assets_count": bad_count,
+            "total_assets_scanned": res.get("total_assets")
+        }
     raise ValueError(f"Action '{action}' tidak diizinkan")
 
 

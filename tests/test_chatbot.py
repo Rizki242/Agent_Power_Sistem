@@ -148,5 +148,133 @@ class ChatbotTests(unittest.TestCase):
         self.assertIn("IEEE 519", res_thd)
 
 
+
+class TestIntentClassifier(unittest.TestCase):
+    """Unit tests for src.chat_intent.classify_intent().
+
+    All tests are pure unit tests — no network, no file I/O, no LLM.
+    """
+
+    def _classify(self, query, matched_eq=None, rule_answer=""):
+        from src.chat_intent import classify_intent
+        return classify_intent(query, matched_eq, rule_answer)
+
+    # ------------------------------------------------------------------
+    # EQUIPMENT_STATUS
+    # ------------------------------------------------------------------
+    def test_equipment_status_with_matched_equipment(self):
+        """When chatbot already matched an equipment, always EQUIPMENT_STATUS."""
+        result = self._classify(
+            "bagaimana kondisi BFP 1A?",
+            matched_eq="BFP 1A",
+            rule_answer="BFP 1A kondisi Normal.",
+        )
+        self.assertEqual(result.intent_type, "EQUIPMENT_STATUS")
+        self.assertTrue(result.needs_equipment_data)
+        self.assertTrue(result.needs_multi_agent)
+        self.assertEqual(result.equipment_hint, "BFP 1A")
+
+    def test_equipment_status_status_keyword_in_domain(self):
+        """Status keyword + domain word → EQUIPMENT_STATUS even without matched equipment."""
+        result = self._classify(
+            "tampilkan histori data vibrasi unit 1",
+            matched_eq=None,
+            rule_answer="",
+        )
+        self.assertEqual(result.intent_type, "EQUIPMENT_STATUS")
+        self.assertTrue(result.needs_equipment_data)
+
+    # ------------------------------------------------------------------
+    # CONCEPTUAL_TECH
+    # ------------------------------------------------------------------
+    def test_conceptual_tech_explanation_query(self):
+        """Conceptual/explanation queries without equipment name → CONCEPTUAL_TECH."""
+        result = self._classify(
+            "apa itu Duval Triangle dan bagaimana cara membacanya?",
+            matched_eq=None,
+            rule_answer="",
+        )
+        self.assertEqual(result.intent_type, "CONCEPTUAL_TECH")
+        self.assertFalse(result.needs_equipment_data)
+        self.assertFalse(result.needs_multi_agent)
+
+    def test_conceptual_tech_standard_query(self):
+        """Standards question without equipment → CONCEPTUAL_TECH."""
+        result = self._classify(
+            "jelaskan standar ISO 10816-3 untuk vibrasi motor",
+            matched_eq=None,
+            rule_answer="",
+        )
+        self.assertEqual(result.intent_type, "CONCEPTUAL_TECH")
+        self.assertFalse(result.needs_equipment_data)
+
+    def test_conceptual_tech_from_rule_answer_prefix(self):
+        """If rule_answer starts with knowledge-base marker → CONCEPTUAL_TECH."""
+        result = self._classify(
+            "cara kerja MCSA",
+            matched_eq=None,
+            rule_answer="📚 **Referensi & Panduan Teknis Terkait:**\n\nMCSA menggunakan...",
+        )
+        self.assertEqual(result.intent_type, "CONCEPTUAL_TECH")
+
+    # ------------------------------------------------------------------
+    # GENERAL_CHAT
+    # ------------------------------------------------------------------
+    def test_general_chat_greeting(self):
+        """Greeting messages → GENERAL_CHAT, no data, no multi-agent."""
+        result = self._classify("halo, selamat pagi!", matched_eq=None, rule_answer="")
+        self.assertEqual(result.intent_type, "GENERAL_CHAT")
+        self.assertFalse(result.needs_equipment_data)
+        self.assertFalse(result.needs_multi_agent)
+
+    def test_general_chat_identity(self):
+        """Identity question → GENERAL_CHAT."""
+        result = self._classify("siapa kamu dan apa yang bisa kamu lakukan?", matched_eq=None, rule_answer="")
+        self.assertEqual(result.intent_type, "GENERAL_CHAT")
+        self.assertFalse(result.needs_equipment_data)
+
+    def test_general_chat_thanks(self):
+        """Thanking message → GENERAL_CHAT."""
+        result = self._classify("terima kasih banyak atas bantuannya", matched_eq=None, rule_answer="")
+        self.assertEqual(result.intent_type, "GENERAL_CHAT")
+        self.assertFalse(result.needs_equipment_data)
+
+    # ------------------------------------------------------------------
+    # OUT_OF_SCOPE
+    # ------------------------------------------------------------------
+    def test_out_of_scope_unrelated_question(self):
+        """Question with no PDM/PLTU keyword → OUT_OF_SCOPE."""
+        result = self._classify(
+            "siapakah presiden Indonesia saat ini?",
+            matched_eq=None,
+            rule_answer="",
+        )
+        self.assertEqual(result.intent_type, "OUT_OF_SCOPE")
+        self.assertFalse(result.needs_equipment_data)
+        self.assertFalse(result.needs_multi_agent)
+
+    def test_out_of_scope_recipe(self):
+        """Completely unrelated domain query → OUT_OF_SCOPE."""
+        result = self._classify(
+            "berikan saya resep masakan ayam goreng yang enak",
+            matched_eq=None,
+            rule_answer="",
+        )
+        self.assertEqual(result.intent_type, "OUT_OF_SCOPE")
+
+    # ------------------------------------------------------------------
+    # Domain-adjacent topics should NOT be OUT_OF_SCOPE
+    # ------------------------------------------------------------------
+    def test_adjacent_domain_not_out_of_scope(self):
+        """Domain-adjacent topics (heat rate, generator theory) stay in-domain."""
+        result = self._classify(
+            "jelaskan konsep heat rate pada pembangkit listrik",
+            matched_eq=None,
+            rule_answer="",
+        )
+        # Should be CONCEPTUAL_TECH or EQUIPMENT_STATUS, never OUT_OF_SCOPE
+        self.assertNotEqual(result.intent_type, "OUT_OF_SCOPE")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -72,13 +72,15 @@ DEFAULT_OLLAMA_HOST = "http://localhost:11434"
 DEFAULT_OLLAMA_MODEL = "llama3.2"
 AVAILABLE_OLLAMA_MODELS = [
     "llama3.2",
-    "llama3.1",
-    "llama3",
-    "qwen2.5",
+    "deepseek-r1:8b",
     "deepseek-r1",
+    "qwen2.5:7b",
+    "qwen2.5",
+    "gemma2:9b",
+    "gemma2",
     "mistral",
     "phi3",
-    "gemma2",
+    "llama3.1",
 ]
 FALLBACK_OLLAMA_MODELS = [
     "llama3.2",
@@ -200,6 +202,7 @@ class OpenAICompatibleClient:
             "model": model,
             "messages": messages,
             "temperature": 0.3,
+            "max_tokens": 4096,
         }
 
         data = json.dumps(payload).encode("utf-8")
@@ -260,6 +263,10 @@ class OllamaClient:
             "model": model or DEFAULT_OLLAMA_MODEL,
             "prompt": prompt,
             "stream": False,
+            "options": {
+                "num_predict": 4096,  # Prevent early truncation
+                "temperature": 0.3,
+            }
         }
         if system:
             payload["system"] = system
@@ -346,31 +353,54 @@ def test_ollama_connection(
     host: str = DEFAULT_OLLAMA_HOST,
     model: Optional[str] = None,
 ) -> tuple[bool, str, list[str]]:
-    client = OllamaClient(host=host)
-    models = client.list_models()
-    if not models:
-        try:
-            url = f"{client.host}/api/tags"
-            req = urllib.request.Request(url)
-            with urllib.request.urlopen(req, timeout=5) as response:
-                if response.status == 200:
+    target_host = str(host or DEFAULT_OLLAMA_HOST).rstrip("/")
+    try:
+        url = f"{target_host}/api/tags"
+        req = urllib.request.Request(url, headers={"User-Agent": "MCSA-LLM-Assistant"})
+        with urllib.request.urlopen(req, timeout=7) as response:
+            if response.status == 200:
+                data = json.loads(response.read().decode("utf-8"))
+                models = [m.get("name", "") for m in data.get("models", []) if m.get("name")]
+                if not models:
                     return (
                         True,
-                        f"Server Ollama aktif di {client.host}, namun belum ada model yang diunduh (misal jalankan `ollama pull {DEFAULT_OLLAMA_MODEL}`).",
+                        f"Server Ollama terhubung di {target_host}, namun belum ada model yang diunduh. "
+                        f"Jalankan `ollama pull {DEFAULT_OLLAMA_MODEL}` atau pull model privat Anda.",
                         [],
                     )
-        except Exception as exc:
+                sample = ", ".join(models[:4]) + ("..." if len(models) > 4 else "")
+                return (
+                    True,
+                    f"Berhasil terhubung ke Ollama di {target_host} ({len(models)} model terdeteksi: {sample}).",
+                    models,
+                )
             return (
                 False,
-                f"Gagal terhubung ke Ollama di {client.host}. Pastikan Ollama sudah berjalan: {exc}",
+                f"Server Ollama di {target_host} merespons dengan HTTP {response.status}.",
                 [],
             )
-
-    return (
-        True,
-        f"Berhasil terhubung ke Ollama ({len(models)} model terdeteksi: {', '.join(models[:4])}).",
-        models,
-    )
+    except urllib.error.URLError as exc:
+        err_str = str(exc).lower()
+        if "refused" in err_str or "connect" in err_str or "timed out" in err_str:
+            hint = ""
+            if "localhost" not in target_host and "127.0.0.1" not in target_host:
+                hint = " Jika menggunakan WSL2 atau Remote Host, pastikan Ollama dijalankan dengan `OLLAMA_HOST=0.0.0.0:11434 OLLAMA_ORIGINS=\"*\"`."
+            return (
+                False,
+                f"Tidak dapat terhubung ke Ollama di {target_host}. Pastikan aplikasi Ollama sudah berjalan (`ollama serve`).{hint}",
+                [],
+            )
+        return (
+            False,
+            f"Gagal menghubungi Ollama di {target_host}: {exc}",
+            [],
+        )
+    except Exception as exc:
+        return (
+            False,
+            f"Kendala saat memeriksa Ollama di {target_host}: {exc}",
+            [],
+        )
 
 
 def build_retrieval_query(question: str, conversation_context: str = "", max_chars: int = 220) -> str:
@@ -808,6 +838,7 @@ class MCSALLMAssistant:
         extra_file_context: str = "",
         subagents_context: str = "",
         conversation_context: str = "",
+        intent_type: str = "EQUIPMENT_STATUS",
     ) -> str:
         self.resilience_info = {
             "primary_provider": self.provider,
@@ -844,6 +875,7 @@ class MCSALLMAssistant:
             extra_file_context=extra_file_context,
             subagents_context=subagents_context,
             conversation_context=conversation_context,
+            intent_type=intent_type,
         )
 
         try:
@@ -862,6 +894,7 @@ class MCSALLMAssistant:
                 self.resilience_info["effective_model"] = cross_model
                 self.resilience_info["failover_occurred"] = True
                 self.resilience_info["fallback_used"] = f"provider_failover_{cross_prov}"
+                self.last_error = None  # Clear error because failover succeeded
                 try:
                     from pple.core.logging import log_fallback
                     log_fallback(
@@ -985,6 +1018,7 @@ class MCSALLMAssistant:
         extra_file_context: str = "",
         subagents_context: str = "",
         conversation_context: str = "",
+        intent_type: str = "EQUIPMENT_STATUS",
     ) -> str:
         q_clean = question.strip()
         q_lower = q_clean.lower()
@@ -999,6 +1033,7 @@ class MCSALLMAssistant:
             "suhu", "panas", "delta-t", "hotspot", "kks", "bfp", "cwp", "c3wp", "bc ", "id fan",
             "pa fan", "fd fan", "alarm", "kritis", "high", "warning", "sop", "standar", "iso",
             "ieee", "iec", "astm", "rul", "health index", "work order", "pm", "cbm", "spektrum",
+            "eccentricity", "eksentrisitas", "dinamic", "dynamic", "alignment", "misalignment",
         ]
         spec_context = build_equipment_spec_context(question)
         # Pertanyaan lanjutan pendek ("kenapa?", "bagaimana trennya?") tidak memuat kata
@@ -1024,6 +1059,72 @@ class MCSALLMAssistant:
             or bool(spec_context)
             or follow_up_is_technical
         )
+
+        # ------------------------------------------------------------------
+        # CONCEPTUAL_TECH — in-domain technical question asking for theory,
+        # standards, or explanations (not equipment-specific data).
+        # No raw MCSA data or history is provided so the LLM answers purely
+        # from engineering knowledge and the knowledge base.
+        # ------------------------------------------------------------------
+        if intent_type == "CONCEPTUAL_TECH":
+            parts = [
+                "Anda adalah **Pakar Teknik Keandalan & Condition-Based Maintenance (CBM) PLTU Jeranjang** "
+                "dengan keahlian mendalam di 6 domain: Vibrasi, MCSA/ESA, DGA Transformator, Partial Discharge, "
+                "Tribologi & Analisa Oli, serta Thermal IRT.",
+                "",
+                "PERAN & PANDUAN KOMUNIKASI (MODE KONSEPTUAL):",
+                "- User sedang menanyakan **konsep, teori, standar, rumus, atau prinsip kerja** dari suatu topik CBM/PDM/PLTU.",
+                "- Jawablah sebagai pakar teknik, bukan sebagai analyst yang sedang membaca data pengukuran.",
+                "- JANGAN mencantumkan atau menyebut data pengukuran peralatan spesifik yang tidak disebut user.",
+                "- JANGAN mengarang angka pengukuran. Jika tidak ada data, jelaskan dari ilmu dan standar yang berlaku.",
+                "- STRUKTUR JAWABAN KONSEPTUAL yang disarankan:",
+                "  1. **Definisi & Konsep Fisika / Elektrikal / Mekanikal** — jelaskan prinsip kerjanya.",
+                "  2. **Batasan Standar Internasional** (ISO / IEEE / IEC / NEMA / EPRI / ASTM) & kriteria alarm/high.",
+                "  3. **Dampak pada Keandalan PLTU** — pada pompa BFP/CWP, fan ID/FD/PA, trafo, motor 6.3 kV & 380V.",
+                "  4. **Rekomendasi Investigasi & Tindakan Pemeliharaan Lapangan**.",
+                "- FORMAT MATEMATIKA (KaTeX): Tulis rumus blok dengan $$ ... $$ dan simbol inline dengan $ ... $.",
+                "- FORMAT TABEL (Markdown GFM): Gunakan tabel untuk membandingkan kriteria standar / zona alarm.",
+                "- Kutip standar yang relevan secara eksplisit (misal: `[IEEE C57.104]`, `[ISO 10816-3]`).",
+                "- Kutip dokumen dari KNOWLEDGE BASE jika ada (misal: `[Dokumen: Standar Evaluasi MCSA]`).",
+            ]
+            if conversation_context:
+                parts.extend([
+                    "",
+                    "--- RIWAYAT PERCAKAPAN SESI INI (untuk menjaga konteks) ---",
+                    "- Gunakan riwayat ini untuk memahami rujukan seperti 'itu', 'tadi', 'yang kamu maksud'.",
+                    "- Jangan mengulang penjelasan yang sudah diberikan; lanjutkan dan perdalam.",
+                    "",
+                    conversation_context,
+                ])
+            parts.extend([
+                "",
+                "--- PERTANYAAN USER ---",
+                question,
+            ])
+            if rule_answer:
+                parts.extend([
+                    "",
+                    "--- ACUAN RULE-BASED SISTEM (gunakan sebagai dasar, perkaya dengan standar & teori) ---",
+                    rule_answer,
+                ])
+            if extra_file_context:
+                parts.extend([
+                    "",
+                    "--- DOKUMEN / FILE TERLAMPIR DARI USER ---",
+                    extra_file_context,
+                ])
+            if knowledge_context:
+                parts.extend([
+                    "",
+                    "--- KNOWLEDGE BASE & MATERI SOP PLTU JERANJANG ---",
+                    knowledge_context,
+                ])
+            parts.append(
+                "\nBerikan jawaban komprehensif dan akademis sebagai pakar CBM/PDM, "
+                "berbasis standar internasional dan prinsip teknik. Hindari menyebut data "
+                "pengukuran peralatan nyata yang tidak tersedia — fokus pada teori & standar."
+            )
+            return "\n\n".join(parts)
 
         if not is_technical:
             # Natural, conversational prompt for general, casual, greetings, or non-technical inquiries

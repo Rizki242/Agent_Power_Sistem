@@ -175,6 +175,19 @@ class TestAPIServer(unittest.TestCase):
         reply = data.get("reply", "")
         self.assertTrue(any(term in reply for term in ("Warning/Alarm", "WARNING & ALARM", "Alarm", "HIGH")))
 
+    def test_agent_chat_with_image_attachment_does_not_hallucinate_content(self):
+        # Uploading an image to chat must not crash, and must not silently
+        # feed raw image bytes to the LLM as if they were extracted text
+        # (there is no OCR/vision pipeline - see extract_text_from_upload).
+        res = self.client.post(
+            "/api/agent/chat",
+            data={"message": "Apa isi gambar ini?", "source": "CHAT"},
+            files={"file": ("spektrum.png", b"\x89PNG\r\n\x1a\n-fake-bytes-", "image/png")},
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("reply", data)
+
     def test_specialist_subagents_endpoint(self):
         res = self.client.get("/api/agents/specialists")
         self.assertEqual(res.status_code, 200)
@@ -624,6 +637,51 @@ class TestKnowledgeUploadAPI(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["materi"][0]["filename"], "bearing-guide.json")
+
+
+class TestOllamaSettingsAPI(unittest.TestCase):
+    def setUp(self):
+        self.client = TestClient(app)
+
+    def test_settings_overview_includes_ollama_host(self):
+        response = self.client.get("/api/settings/overview")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("providers", data)
+        self.assertIn("ollama", data["providers"])
+        ollama_info = data["providers"]["ollama"]
+        self.assertIn("host", ollama_info)
+        self.assertTrue(ollama_info["host"].startswith("http"))
+
+    def test_ollama_scan_endpoint(self):
+        with patch("src.llm_assistant.test_ollama_connection", return_value=(True, "Berhasil terhubung ke Ollama", ["cbm-expert:v1", "deepseek-r1:8b", "llama3.2"])):
+            response = self.client.post(
+                "/api/settings/ollama/scan",
+                json={"host": "http://172.28.16.1:11434"},
+            )
+            self.assertEqual(response.status_code, 200)
+            payload = response.json()
+            self.assertTrue(payload["success"])
+            self.assertEqual(payload["host"], "http://172.28.16.1:11434")
+            self.assertIn("cbm-expert:v1", payload["models"])
+            self.assertIn("deepseek-r1:8b", payload["models"])
+
+    def test_update_ai_settings_saves_ollama_host_and_custom_model(self):
+        response = self.client.put(
+            "/api/settings/ai",
+            json={
+                "ai_enabled": True,
+                "ai_provider": "ollama",
+                "model": "cbm-expert:v1",
+                "ollama_host": "http://192.168.1.100:11434",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["ai_enabled"])
+        self.assertEqual(payload["active_provider"], "ollama")
+        self.assertEqual(payload["model"], "cbm-expert:v1")
+
 
 
 class TestAPISecurity(unittest.TestCase):

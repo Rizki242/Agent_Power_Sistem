@@ -41,6 +41,13 @@ app = FastAPI(
 
 setup_observability_and_errors(app)
 
+# Initialize application-level event bus subscribers
+try:
+    from pple.application.event_handlers import init_subscribers
+    init_subscribers()
+except Exception as exc:
+    print(f"[PPLE] Failed to initialize event subscribers: {exc}")
+
 # Keamanan HTTP (pple/api/security.py): origin CORS dari PPLE_CORS_ORIGINS
 # dengan default hanya localhost, plus API key opsional lewat PPLE_API_KEY.
 # Tanpa PPLE_API_KEY perilaku lama dipertahankan supaya pemakaian lokal
@@ -85,6 +92,7 @@ app.include_router(specialist_router)
 
 from pple.api.routers import (
     agents_router,
+    auth_router,
     automated_reports_router,
     automations_router,
     core_router,
@@ -97,6 +105,7 @@ from pple.api.routers import (
     work_orders_router,
 )
 app.include_router(agents_router)
+app.include_router(auth_router)
 app.include_router(automated_reports_router)
 app.include_router(automations_router)
 app.include_router(core_router)

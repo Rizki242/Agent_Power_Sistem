@@ -35,6 +35,18 @@ class ProviderStatus(BaseModel):
     active: bool
     model: str
     models: List[str]
+    host: Optional[str] = None
+
+
+class OllamaScanRequest(BaseModel):
+    host: Optional[str] = Field(default=None, max_length=500)
+
+
+class OllamaScanResponse(BaseModel):
+    success: bool
+    host: str
+    models: List[str]
+    message: str
 
 
 class SafetyPermission(BaseModel):
@@ -129,11 +141,23 @@ def get_settings_overview():
     providers = {}
     for provider, models in model_options.items():
         configured = bool(preferences.get("ollama_host", DEFAULT_OLLAMA_HOST)) if provider == "ollama" else bool(resolve_provider_key(provider))
+        host = None
+        effective_models = list(models)
+        saved_model = preferences.get(f"{provider}_model")
+        if saved_model and saved_model not in effective_models:
+            effective_models.insert(0, saved_model)
+
+        if provider == "ollama":
+            host = preferences.get("ollama_host", DEFAULT_OLLAMA_HOST)
+        elif provider in {"opencode", "openai"}:
+            host = preferences.get("opencode_base_url", DEFAULT_OPENCODE_BASE_URL)
+
         providers[provider] = {
             "configured": configured,
             "active": provider == active_provider,
             "model": _provider_model(preferences, provider),
-            "models": models,
+            "models": effective_models,
+            "host": host,
         }
 
     knowledge_path = materi_dir()
@@ -265,3 +289,17 @@ def update_ai_settings(body: AISettingsUpdate):
         "model": saved.get(f"{body.ai_provider}_model", body.model),
         "message": "Preferensi AI tersimpan. API key tetap dibaca dari environment.",
     }
+
+
+@router.post("/ollama/scan", response_model=OllamaScanResponse)
+def scan_ollama_models(body: OllamaScanRequest):
+    from src.llm_assistant import DEFAULT_OLLAMA_HOST, test_ollama_connection
+    target_host = (body.host or "").strip() or DEFAULT_OLLAMA_HOST
+    success, msg, detected = test_ollama_connection(host=target_host)
+    return {
+        "success": success,
+        "host": target_host,
+        "models": detected,
+        "message": msg,
+    }
+
