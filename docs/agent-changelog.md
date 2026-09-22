@@ -27,6 +27,37 @@ Rules:
 
 ## Entries
 
+### 2026-09-22 - Sidebar ikut tema: tokenisasi --sidebar-* untuk sidebar nav utama dan sidebar chat
+
+- **Requested:** "buat warna ini menjadi sesuai theme aja, kalau putih ya berubah menjadi light kalau dark ya buat dark" - sidebar navigasi utama dan sidebar riwayat chat yang selalu biru PLN `#0099D8` harus ikut tema aktif. Dikonfirmasi lewat AskUserQuestion: mode terang = **putih bersih + aksen PLN**, cakupan = **dua sidebar saja**.
+- **Plan (agreed before coding):**
+  - Diagnosis: infrastruktur tema di `frontend/src/utils/theme.js` sudah benar (`data-theme` di `<html>`, preferensi light/dark/system). Masalahnya murni CSS - dua sidebar melewati sistem token dan menulis hex langsung. Token `--sidebar` lama bernilai sama (`#0099D8`) di `:root` maupun `:root[data-theme="dark"]`, jadi tidak pernah membedakan tema, dan tidak dipakai siapa pun (`grep var(--sidebar)` kosong, tidak ada class Tailwind `bg-sidebar`).
+  - Tambah set token `--sidebar-*` (bg/ink/ink-muted/border/hover/active-bg/active-ink/accent/accent-ink/marker/brand-bg/brand-ink/field-bg/field-border/scroll-thumb) di `:root` dan `:root[data-theme="dark"]`. Biru/kuning PLN dipertahankan sebagai **aksen** (badge brand, tombol Chat Baru, penanda item aktif), bukan sebagai latar.
+  - Ganti tiap hex di `.sidebar`, `.chat-history-sidebar--claude`, `.sidebar-user-*`, dan `.profile-popover-*` menjadi `var(--sidebar-*)` / token global.
+  - Hapus `--sidebar` lama (2 tempat) dan `--color-sidebar` di blok `@theme`. `--color-pln-blue` / `--color-pln-yellow` dipertahankan (identitas brand, dipakai di tempat lain).
+- **Changed:**
+  - `frontend/src/styles.css` (satu-satunya file yang berubah; 175 insertion / 137 deletion, ~64 penggantian):
+    - `@theme` + `:root` + `:root[data-theme="dark"]` - `--color-sidebar` dan `--sidebar` dihapus, diganti 15 token `--sidebar-*` per tema.
+    - `.sidebar`, `.brand`, `.brand__mark`, `.nav-item`(+`:hover`/`--active`), `.safety-note`, `.icon-button.sidebar__close`, `.sidebar__theme` - tokenisasi penuh. `.sidebar` dapat `border-right` baru (dibutuhkan agar sidebar putih terpisah dari konten putih). `.sidebar-backdrop` dinetralkan ke `rgb(0 0 0 / 45%)`.
+    - `.chat-history-sidebar--claude` dan turunannya - header, `.chat-brand-*`, `.chat-sidebar-search-*`, `.chat-new-button-claude`, `.chat-quick-nav-*`, `.chat-sidebar-scroll-area` scrollbar, `.chat-sidebar-section*`, `.chat-pinned-*`, `.chat-history-item`(+`--active`), footer profil. Seluruh `rgba(255,255,255,.x)` diganti token - nilai itu hanya benar bila latarnya gelap.
+    - `.sidebar-user-pill` / `-avatar` / `-name` / `-role` / `-chevron` dan `.profile-popover-*` - tokenisasi; tanpa ini teks putih akan berada di atas latar putih dan tidak terbaca sama sekali di mode terang.
+    - `.dot-live-indicator` / `.dot-solid-blue` / `.circle-outline-gray` - indikator titik di dalam sidebar chat ikut token.
+  - `--sidebar-marker` mode terang memakai amber gelap `#8A5B00`, bukan `#FFE600`: kuning penuh di atas putih hanya 1.1:1 dan token `--attention` yang sudah ada (`#b86608`) pun hanya 4.25:1, sementara marker juga dipakai sebagai **teks** (peran pengguna di pill profil) sehingga butuh >=4.5:1.
+- **Verified:**
+  - `npm --prefix frontend run lint` (oxlint on src): exit 0, tanpa warning/error.
+  - `npm --prefix frontend run build`: Vite production bundle sukses, "built in 1.16s", exit 0.
+  - Audit sisa hex di rentang sidebar (`grep` `#rrggbb` + `rgba(255,255,255`): bersih. Yang sengaja tersisa hanya `#eab308`/`#FFF04D`/`#000000` pada state hover tombol "Chat Baru" (tombol ini memang tetap kuning PLN di kedua tema).
+  - Kontras WCAG dihitung untuk 10 pasangan teks/latar mode terang dan 7 pasangan mode gelap: **0 FAIL**. Terendah mode terang: teks redup di atas latar hover 4.59:1 (min 4.5) dan ikon aksen di atas sidebar 3.21:1 (min 3.0). Iterasi pertama memakai `#C98A02` dan gagal di 2.95:1, karena itu marker diturunkan ke `#8A5B00` (5.87:1 di atas putih, 5.29:1 di atas hover).
+  - `git status --short`: hanya `M frontend/src/styles.css`, tidak ada file di luar rencana.
+  - Dijalankan ulang sebelum commit (sesi berikutnya, saat user melaporkan sidebar masih biru - ternyata perubahan ini memang belum pernah di-commit dan dev server-nya masih memakai bundle lama): `oxlint src` exit 0; `npm run build` sukses "built in 3.52s"; audit ulang hex di rentang sidebar chat hanya menyisakan `#eab308`/`#FFF04D`/`#000000` milik hover tombol "Chat Baru" (memang disengaja).
+  - `git diff` dibaca ulang: tidak ada TODO/FIXME/console.log/debugger/path hardcode; line ending tetap CRLF murni (5134 CRLF, 0 bare LF); seluruh baris baru ASCII.
+- **Left out / risks:**
+  - `python verify_app.py` dan unit test **tidak dijalankan** - sengaja: tidak ada file di bawah `src/`, `pple/`, `api_server.py`, atau `app.py` yang tersentuh, dan tidak ada perubahan kontrak (input/output/side effect/error/kompatibilitas).
+  - **Verifikasi visual di browser belum dilakukan** (agen tidak bisa melihat hasil render). Perlu dicek manual lewat `run_frontend.bat` sambil toggle light/dark/system.
+  - **Known gap yang disengaja (di luar cakupan yang dipilih user):** `.control-header` di halaman Settings masih hardcode gelap (`#183033`, `#dcebea`, `#315154`) sehingga tetap gelap di mode terang. Begitu pula `.password-modal-*` - tapi yang itu memang panel gelap mandiri dengan backdrop sendiri, jadi konsisten. Sisa ~250 hex hardcode lain di `styles.css` (di luar area sidebar) tidak diaudit.
+  - Sidebar Streamlit (`app.py`) tidak disentuh; Streamlit punya mekanisme tema sendiri dan screenshot permintaan keduanya dari React.
+- **Docs/ADR:** `docs/agent-changelog.md` saja. Tidak ada ADR (keputusan styling, bukan arsitektural - `docs/adr/` masih belum ada). `docs/feature-parity.md` tidak berubah (tidak ada surface yang dapat/kehilangan fitur). `CONTEXT.md` tidak berubah (tidak ada istilah domain baru).
+
 ### 2026-09-22 - Purge 1.5 GB of unused binaries from git history and push main to GitHub
 
 - **Requested:** "gas" - lanjutkan dengan push ke `origin/main`.

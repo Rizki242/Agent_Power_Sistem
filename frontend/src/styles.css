@@ -15,7 +15,6 @@
   --color-healthy: #23856d;
   --color-attention: #b86608;
   --color-critical: #b83535;
-  --color-sidebar: #0099D8;
   --color-pln-blue: #0099D8;
   --color-pln-yellow: #FFE600;
 }
@@ -49,7 +48,29 @@
   --attention-soft: #fdf1e3;
   --critical: #b83535;
   --critical-soft: #fbe9e9;
-  --sidebar: #0099D8;
+
+  /* Token sidebar: dipakai oleh sidebar navigasi utama (.sidebar) dan sidebar
+     riwayat chat (.chat-history-sidebar--claude). Biru/kuning PLN tetap hidup
+     sebagai aksen, bukan sebagai latar, supaya sidebar ikut tema seperti
+     panel lain. Kuning penuh (#FFE600) tidak terbaca di atas putih, jadi di
+     tema terang penanda memakai amber gelap (#8A5B00, kontras 5.9:1 di atas
+     putih dan 5.3:1 di atas latar hover - aman juga untuk teks kecil seperti
+     peran pengguna di pill profil). */
+  --sidebar-bg: #ffffff;
+  --sidebar-ink: #172126;
+  --sidebar-ink-muted: #637078;
+  --sidebar-border: #dce3e7;
+  --sidebar-hover: #eef4f7;
+  --sidebar-active-bg: #e7f2f5;
+  --sidebar-active-ink: #0b6f9c;
+  --sidebar-accent: #0099D8;
+  --sidebar-accent-ink: #ffffff;
+  --sidebar-marker: #8A5B00;
+  --sidebar-brand-bg: #FFE600;
+  --sidebar-brand-ink: #0b2238;
+  --sidebar-field-bg: #f3f6f8;
+  --sidebar-field-border: #dce3e7;
+  --sidebar-scroll-thumb: #c3ced4;
   /* Panel yang sengaja gelap di kedua tema (console, control plane, header modal):
      teksnya harus tetap terang walau tema terang sedang aktif. */
   --panel-dark-ink: #edf6ff;
@@ -88,7 +109,22 @@
   --attention-soft: #2e2313;
   --critical: #ff657a;
   --critical-soft: #2e1420;
-  --sidebar: #0099D8;
+
+  --sidebar-bg: #0c1722;
+  --sidebar-ink: #edf6ff;
+  --sidebar-ink-muted: #8ba1b5;
+  --sidebar-border: #203244;
+  --sidebar-hover: rgba(255, 255, 255, .07);
+  --sidebar-active-bg: #0e2b3b;
+  --sidebar-active-ink: #32d5ff;
+  --sidebar-accent: #32d5ff;
+  --sidebar-accent-ink: #04161f;
+  --sidebar-marker: #FFE600;
+  --sidebar-brand-bg: #FFE600;
+  --sidebar-brand-ink: #0b2238;
+  --sidebar-field-bg: rgba(255, 255, 255, .06);
+  --sidebar-field-border: #2d4459;
+  --sidebar-scroll-thumb: #2d4459;
   --panel-dark-ink: #edf6ff;
   --panel-dark-muted: #8ba1b5;
   --panel-dark-healthy: var(--healthy);
@@ -302,29 +338,29 @@ button, input { font: inherit; }
 button:focus-visible, a:focus-visible { outline: 3px solid #52a8c4; outline-offset: 2px; }
 
 .app-shell { min-height: 100vh; }
-.sidebar { position: fixed; inset: 0 auto 0 0; width: 276px; z-index: 20; display: flex; flex-direction: column; padding: 22px 14px; color: #ffffff; background: #0099D8; }
+.sidebar { position: fixed; inset: 0 auto 0 0; width: 276px; z-index: 20; display: flex; flex-direction: column; padding: 22px 14px; color: var(--sidebar-ink); background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); }
 .brand { display: flex; align-items: center; gap: 11px; padding: 0 8px 28px; }
 .brand__mark {
   width: 38px;
   height: 38px;
   display: grid;
   place-items: center;
-  color: #0099D8;
-  background: #FFE600;
-  border: 1.5px solid #0099D8;
+  color: var(--sidebar-brand-ink);
+  background: var(--sidebar-brand-bg);
+  border: 1.5px solid var(--sidebar-accent);
   border-radius: 9px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
 }
 .brand strong, .brand span { display: block; }
-.brand strong { font-size: 17px; letter-spacing: .02em; color: #ffffff; }
-.brand span { margin-top: 2px; color: #e0f2fe; font-size: 12px; }
+.brand strong { font-size: 17px; letter-spacing: .02em; color: var(--sidebar-ink); }
+.brand span { margin-top: 2px; color: var(--sidebar-ink-muted); font-size: 12px; }
 .nav-list { display: grid; gap: 4px; }
-.nav-item { min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 12px; color: #e0f2fe; text-decoration: none; border-radius: 8px; font-weight: 500; transition: all 0.15s ease; }
-.nav-item:hover { color: #fff; background: rgba(255, 255, 255, 0.18); }
-.nav-item--active { color: #fff; background: #007bb0; box-shadow: inset 4px 0 #FFE600; font-weight: 600; }
+.nav-item { min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 12px; color: var(--sidebar-ink-muted); text-decoration: none; border-radius: 8px; font-weight: 500; transition: all 0.15s ease; }
+.nav-item:hover { color: var(--sidebar-ink); background: var(--sidebar-hover); }
+.nav-item--active { color: var(--sidebar-active-ink); background: var(--sidebar-active-bg); box-shadow: inset 4px 0 var(--sidebar-marker); font-weight: 600; }
 .sidebar__footer { margin-top: auto; display: grid; gap: 14px; }
-.safety-note { display: flex; align-items: center; gap: 9px; padding: 13px 12px; color: #ffffff; border-top: 1px solid rgba(255, 255, 255, 0.2); font-size: 13px; }
-.icon-button.sidebar__close { display: none; margin-left: auto; color: #ffffff; }
+.safety-note { display: flex; align-items: center; gap: 9px; padding: 13px 12px; color: var(--sidebar-ink-muted); border-top: 1px solid var(--sidebar-border); font-size: 13px; }
+.icon-button.sidebar__close { display: none; margin-left: auto; color: var(--sidebar-ink-muted); }
 
 .main-content { min-height: 100vh; margin-left: 276px; padding: 38px clamp(24px, 4vw, 64px) 56px; }
 
@@ -439,7 +475,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #52a8c4; outline-offs
   .sidebar { transform: translateX(-100%); transition: transform 180ms ease; }
   .sidebar--open { transform: translateX(0); }
   .icon-button.sidebar__close { display: grid; }
-  .sidebar-backdrop { display: block; position: fixed; inset: 0; z-index: 10; width: 100%; border: 0; background: rgb(10 26 31 / 48%); }
+  .sidebar-backdrop { display: block; position: fixed; inset: 0; z-index: 10; width: 100%; border: 0; background: rgb(0 0 0 / 45%); }
   .main-content { margin-left: 0; padding: 76px 18px 36px; }
   .mobile-menu { display: grid; position: absolute; top: 18px; left: 18px; color: var(--ink); background: var(--surface); border: 1px solid var(--border); }
   .page-header { flex-direction: column; }
@@ -3557,13 +3593,13 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 .sidebar__theme {
   margin-left: auto;
-  color: #b9c9cd;
-  border-color: #2c4a52;
+  color: var(--sidebar-ink-muted);
+  border-color: var(--sidebar-border);
 }
 
 .sidebar__theme:hover {
-  color: #fff;
-  background: #1b353d;
+  color: var(--sidebar-ink);
+  background: var(--sidebar-hover);
 }
 
 /* Tombol tutup tetap di ujung kanan saat tampilan mobile */
@@ -4083,10 +4119,10 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  background: rgba(23, 107, 135, 0.12); /* Electric Blue Tint */
-  border: 1px solid rgba(23, 107, 135, 0.35);
+  background: var(--sidebar-field-bg);
+  border: 1px solid var(--sidebar-field-border);
   border-radius: 10px;
-  color: #e8f0f2;
+  color: var(--sidebar-ink);
   cursor: pointer;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
@@ -4095,26 +4131,26 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 .sidebar-user-pill:hover,
 .sidebar-user-pill--active {
-  background: rgba(23, 107, 135, 0.28);
-  border-color: #f59e0b; /* Golden Yellow border highlight on hover/active */
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.18);
+  background: var(--sidebar-hover);
+  border-color: var(--sidebar-accent);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Avatar: PLN Navy Blue with Electric Gold/Yellow Initial */
+/* Avatar: blok aksen PLN, tetap kontras di terang maupun gelap */
 .sidebar-user-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0e2933 0%, #154553 100%);
-  border: 1.5px solid #f59e0b; /* PLN Gold Yellow Ring */
-  color: #fbbf24;
+  background: var(--sidebar-accent);
+  border: 1.5px solid var(--sidebar-marker);
+  color: var(--sidebar-accent-ink);
   font-weight: 700;
   font-size: 0.88rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-sm);
 }
 
 .sidebar-user-details {
@@ -4129,33 +4165,33 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 .sidebar-user-name {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--sidebar-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .sidebar-user-dot {
-  color: rgba(245, 158, 11, 0.6);
+  color: var(--sidebar-ink-muted);
   font-weight: 700;
 }
 
 .sidebar-user-role {
-  color: #fbbf24; /* PLN Electric Yellow */
+  color: var(--sidebar-marker);
   font-weight: 500;
   white-space: nowrap;
   font-size: 0.8rem;
 }
 
 .sidebar-user-chevron {
-  color: #9db1b7;
+  color: var(--sidebar-ink-muted);
   flex-shrink: 0;
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .sidebar-user-pill:hover .sidebar-user-chevron,
 .sidebar-user-chevron--open {
-  color: #fbbf24;
+  color: var(--sidebar-active-ink);
   transform: rotate(180deg);
 }
 
@@ -4166,11 +4202,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   left: 0;
   width: 100%;
   min-width: 256px;
-  background: #11262d; /* Deep Navy Control Room */
-  border: 1px solid #234e5a;
-  border-top: 2px solid #f59e0b; /* Golden Yellow Top Line Accent */
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--sidebar-marker);
   border-radius: 12px;
-  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.48), 0 0 1px rgba(245, 158, 11, 0.3);
+  box-shadow: var(--shadow-md);
   padding: 12px 8px 8px;
   z-index: 100;
   animation: popover-slide-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -4200,7 +4236,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 .profile-popover-email {
   font-size: 0.72rem;
-  color: #8faab1;
+  color: var(--muted);
   letter-spacing: 0.02em;
   font-family: var(--font-mono, monospace);
   white-space: nowrap;
@@ -4219,7 +4255,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .profile-popover-name {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4230,26 +4266,26 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 4px;
-  background: rgba(245, 158, 11, 0.16);
-  color: #fbbf24; /* Radiant Yellow */
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: var(--attention-soft);
+  color: var(--attention);
+  border: 1px solid var(--attention);
   letter-spacing: 0.04em;
 }
 
 .profile-popover-badge--healthy {
-  background: rgba(35, 133, 109, 0.2);
-  color: #5eead4;
-  border-color: rgba(35, 133, 109, 0.4);
+  background: var(--healthy-soft);
+  color: var(--healthy);
+  border-color: var(--healthy);
 }
 
 .profile-popover-unit {
   font-size: 0.72rem;
-  color: #6d8890;
+  color: var(--muted-soft);
 }
 
 .profile-popover-divider {
   height: 1px;
-  background: #1c3e47;
+  background: var(--border);
   margin: 2px 0;
 }
 
@@ -4268,7 +4304,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   border-radius: 8px;
   background: transparent;
   border: none;
-  color: #c9d8dc;
+  color: var(--ink);
   font-size: 0.84rem;
   cursor: pointer;
   text-decoration: none;
@@ -4277,23 +4313,23 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 .profile-popover-item:hover {
-  background: #193d47;
-  color: #ffffff;
+  background: var(--action-soft);
+  color: var(--action);
 }
 
 .profile-popover-item svg {
-  color: #52a8c4; /* Electric Cyan-Blue Icons */
+  color: var(--muted);
   flex-shrink: 0;
 }
 
 .profile-popover-item:hover svg {
-  color: #fbbf24; /* Turn Yellow on hover */
+  color: var(--action);
 }
 
 .profile-popover-hint {
   margin-left: auto;
   font-size: 0.72rem;
-  color: #7b969e;
+  color: var(--muted-soft);
   font-family: var(--font-mono, monospace);
 }
 
@@ -4303,33 +4339,33 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 .profile-popover-item--static:hover {
   background: transparent;
-  color: #c9d8dc;
+  color: var(--ink);
 }
 
 .profile-popover-item--static:hover svg {
-  color: #52a8c4;
+  color: var(--muted);
 }
 
 .profile-popover-shield {
-  color: #23856d !important;
+  color: var(--healthy) !important;
 }
 
 .profile-popover-logout {
-  color: #ff7b7b;
+  color: var(--critical);
   margin-top: 2px;
 }
 
 .profile-popover-logout svg {
-  color: #ff7b7b;
+  color: var(--critical);
 }
 
 .profile-popover-logout:hover {
-  background: rgba(184, 53, 53, 0.18);
-  color: #ff9999;
+  background: var(--critical-soft);
+  color: var(--critical);
 }
 
 .profile-popover-logout:hover svg {
-  color: #ff9999;
+  color: var(--critical);
 }
 
 /* Change Password Modal */
@@ -4401,11 +4437,13 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    Claude-style Bot UI & Chat History Drawer (PLN Blue & Gold Accent)
    ========================================================================== */
 
-/* Claude-style Left Sidebar (PLN Electric Blue #0099D8 & PLN Yellow #FFE600) */
+/* Sidebar riwayat chat: mengikuti tema lewat token --sidebar-* (lihat :root).
+   Biru/kuning PLN dipertahankan sebagai aksen (badge brand, tombol Chat Baru,
+   penanda item aktif), bukan sebagai warna latar. */
 .chat-history-sidebar--claude {
-  background: #0099D8;
-  border-right: 1px solid rgba(0, 0, 0, 0.12);
-  color: #ffffff;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  color: var(--sidebar-ink);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -4418,7 +4456,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .chat-history-sidebar--claude .chat-history-header__left {
@@ -4437,9 +4475,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 .chat-brand-badge {
-  background: #FFE600; /* PLN Yellow */
-  color: #0099DA; /* PLN Blue */
-  border: 1.5px solid #0099DA;
+  background: var(--sidebar-brand-bg);
+  color: var(--sidebar-brand-ink);
+  border: 1.5px solid var(--sidebar-accent);
   border-radius: 7px;
   width: 28px;
   height: 28px;
@@ -4447,13 +4485,13 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(255, 230, 0, 0.4);
+  box-shadow: var(--shadow-sm);
 }
 
 .chat-brand-title {
   font-size: 0.86rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--sidebar-ink);
   white-space: nowrap;
   letter-spacing: -0.01em;
 }
@@ -4463,26 +4501,26 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   align-items: center;
   gap: 8px;
   text-decoration: none;
-  color: #ffffff;
+  color: var(--sidebar-ink);
 }
 
 .chat-brand-badge-claude__icon {
-  background: #FFE600;
-  color: #0099DA;
-  border: 1.5px solid #0099DA;
+  background: var(--sidebar-brand-bg);
+  color: var(--sidebar-brand-ink);
+  border: 1.5px solid var(--sidebar-accent);
   border-radius: 6px;
   padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(255, 230, 0, 0.4);
+  box-shadow: var(--shadow-sm);
 }
 
 .chat-brand-badge-claude__text {
   font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: #ffffff;
+  color: var(--sidebar-ink);
 }
 
 /* Sidebar Search Box */
@@ -4496,30 +4534,30 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .chat-sidebar-search-icon {
   position: absolute;
   left: 10px;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--sidebar-ink-muted);
   pointer-events: none;
 }
 
 .chat-sidebar-search-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: var(--sidebar-field-bg);
+  border: 1px solid var(--sidebar-field-border);
   border-radius: 8px;
   padding: 7px 28px 7px 30px;
   font-size: 0.8rem;
-  color: #ffffff;
+  color: var(--sidebar-ink);
   transition: all 0.15s ease;
 }
 
 .chat-sidebar-search-input:focus {
   outline: none;
-  border-color: #FFE600; /* PLN Yellow */
-  background: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 0 0 2px rgba(255, 230, 0, 0.35);
+  border-color: var(--sidebar-accent);
+  background: var(--sidebar-bg);
+  box-shadow: 0 0 0 2px var(--sidebar-active-bg);
 }
 
 .chat-sidebar-search-input::placeholder {
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--sidebar-ink-muted);
 }
 
 .chat-sidebar-search-clear {
@@ -4527,7 +4565,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   right: 6px;
   background: transparent;
   border: 0;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--sidebar-ink-muted);
   cursor: pointer;
   padding: 3px;
   display: flex;
@@ -4536,7 +4574,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 .chat-sidebar-search-clear:hover {
-  color: #ffffff;
+  color: var(--sidebar-ink);
 }
 
 /* Claude New Chat Pill Button - PLN Yellow on PLN Blue */
@@ -4546,27 +4584,27 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #FFE600;
+  background: var(--sidebar-brand-bg);
   border: 1px solid #eab308;
   border-radius: 10px;
   padding: 9px 14px;
-  color: #0b2238;
+  color: var(--sidebar-brand-ink);
   font-weight: 700;
   font-size: 0.84rem;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
 }
 
 .chat-new-button-claude svg {
-  color: #0b2238;
+  color: var(--sidebar-brand-ink);
 }
 
 .chat-new-button-claude:hover {
   background: #FFF04D;
   color: #000000;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-md);
 }
 
 .chat-new-button-claude:active {
@@ -4579,7 +4617,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   flex-direction: column;
   gap: 2px;
   padding: 0 8px 8px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .chat-quick-nav-item {
@@ -4589,24 +4627,24 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   padding: 7px 10px;
   border-radius: 7px;
   font-size: 0.8rem;
-  color: #ffffff;
+  color: var(--sidebar-ink);
   text-decoration: none;
   font-weight: 500;
   transition: all 0.15s ease;
 }
 
 .chat-quick-nav-item:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  background: var(--sidebar-hover);
+  color: var(--sidebar-ink);
 }
 
 .chat-quick-nav-icon {
-  color: #FFE600;
+  color: var(--sidebar-accent);
   transition: color 0.15s ease;
 }
 
 .chat-quick-nav-item:hover .chat-quick-nav-icon {
-  color: #ffffff;
+  color: var(--sidebar-marker);
 }
 
 /* Scrollable middle area between quick nav and sticky profile footer */
@@ -4629,12 +4667,12 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 .chat-sidebar-scroll-area::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--sidebar-scroll-thumb);
   border-radius: 999px;
 }
 
 .chat-sidebar-scroll-area::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--sidebar-ink-muted);
 }
 
 /* Pinned & Recent Section Layout */
@@ -4645,7 +4683,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 .chat-sidebar-section--pinned {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .chat-sidebar-section-title {
@@ -4657,18 +4695,18 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--sidebar-ink-muted);
   user-select: none;
 }
 
 .chat-sidebar-filter-btn {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--sidebar-ink-muted);
   padding: 2px;
   border-radius: 4px;
 }
 
 .chat-sidebar-filter-btn:hover {
-  color: #FFE600;
+  color: var(--sidebar-active-ink);
 }
 
 .chat-pinned-list {
@@ -4688,18 +4726,18 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   border: 0;
   cursor: pointer;
   text-align: left;
-  color: #ffffff;
+  color: var(--sidebar-ink);
   font-size: 0.78rem;
   transition: all 0.15s ease;
 }
 
 .chat-pinned-item:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  background: var(--sidebar-hover);
+  color: var(--sidebar-ink);
 }
 
 .chat-pinned-icon {
-  color: #FFE600; /* PLN Yellow */
+  color: var(--sidebar-marker);
   flex-shrink: 0;
 }
 
@@ -4712,13 +4750,13 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 .chat-pinned-item__kks {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--sidebar-ink);
   font-size: 0.77rem;
 }
 
 .chat-pinned-item__name {
   font-size: 0.69rem;
-  color: #e0f2fe;
+  color: var(--sidebar-ink-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4732,13 +4770,13 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 .chat-pinned-item__tag--normal {
-  background: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  background: var(--sidebar-hover);
+  color: var(--sidebar-ink-muted);
 }
 
 .chat-pinned-item__tag--warning {
-  background: #FFE600;
-  color: #0b2238;
+  background: var(--attention-soft);
+  color: var(--attention);
   font-weight: 700;
 }
 
@@ -4757,7 +4795,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   padding: 7px 10px;
   border-radius: 8px;
   margin-bottom: 2px;
-  color: #ffffff;
+  color: var(--sidebar-ink);
   cursor: pointer;
   transition: all 0.15s ease;
   font-size: 0.79rem;
@@ -4765,24 +4803,24 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 .chat-history-sidebar--claude .chat-history-item:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  background: var(--sidebar-hover);
+  color: var(--sidebar-ink);
 }
 
 .chat-history-sidebar--claude .chat-history-item--active {
-  background: #0077a8 !important;
-  color: #ffffff !important;
+  background: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-active-ink) !important;
   font-weight: 600;
-  border-left: 3px solid #FFE600;
+  border-left: 3px solid var(--sidebar-marker);
 }
 
 .chat-history-sidebar--claude .chat-history-item--active .chat-history-item__title {
-  color: #ffffff !important;
+  color: var(--sidebar-active-ink) !important;
   font-weight: 600;
 }
 
 .chat-history-sidebar--claude .chat-history-item--active .chat-history-item__icon svg {
-  color: #FFE600 !important;
+  color: var(--sidebar-marker) !important;
 }
 
 .chat-history-sidebar--claude .chat-history-item__title {
@@ -4790,7 +4828,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #ffffff;
+  color: var(--sidebar-ink);
 }
 
 .chat-history-sidebar--claude .chat-history-item__actions {
@@ -4810,19 +4848,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   flex-shrink: 0;
   position: relative;
   padding: 10px 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-  background: #0087bf;
+  border-top: 1px solid var(--sidebar-border);
+  background: var(--sidebar-bg);
 }
 
 .chat-history-sidebar--claude .sidebar-user-pill {
   width: 100%;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: var(--sidebar-field-bg);
+  border: 1px solid var(--sidebar-field-border);
 }
 
 .chat-history-sidebar--claude .sidebar-user-pill:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: #FFE600;
+  background: var(--sidebar-hover);
+  border-color: var(--sidebar-accent);
 }
 
 .chat-history-sidebar--claude .profile-popover-menu {
@@ -4834,7 +4872,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 .chat-user-chevron {
-  color: #799aa7;
+  color: var(--sidebar-ink-muted);
   transition: transform 0.2s ease;
   flex-shrink: 0;
 }
@@ -4844,8 +4882,8 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 6px #22c55e;
+  background: var(--healthy);
+  box-shadow: 0 0 6px var(--healthy);
   display: inline-block;
 }
 
@@ -4853,12 +4891,12 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #38bdf8;
+  background: var(--sidebar-accent);
   display: inline-block;
 }
 
 .circle-outline-gray {
-  color: #557582;
+  color: var(--sidebar-ink-muted);
 }
 
 /* Claude Chat Header & Session Title */
