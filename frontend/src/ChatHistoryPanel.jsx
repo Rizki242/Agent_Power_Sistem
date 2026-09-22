@@ -151,7 +151,7 @@ export default function ChatHistoryPanel({
             </button>
           ) : null}
           <div className="chat-brand-row">
-            <PlanetaryGear size={40} className="chat-brand-logo" />
+            <PlanetaryGear size={56} className="chat-brand-logo" />
             <span className="chat-brand-title">Agent Learning Sistem</span>
           </div>
         </div>

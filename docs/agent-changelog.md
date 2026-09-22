@@ -27,6 +27,22 @@ Rules:
 
 ## Entries
 
+### 2026-09-23 - Logo brand sidebar chat: perbesar lagi 40 -> 56 px
+
+- **Requested:** "buat agar lebih jela lagi visualnya sizenya juga" (lanjutan permintaan sebelumnya yang menaikkan logo 28 -> 40 px) - logo `PlanetaryGear` di header sidebar chat masih dianggap kurang besar/jelas.
+- **Plan (agreed before coding):** trivial, no plan confirmation needed (dua nilai: ukuran prop + font judul).
+  - Logo sudah SVG vektor murni (`viewBox 0 0 256 256`, tanpa filter/blur/opacity) - jadi "kurang jelas" di sini murni soal ukuran render terlalu kecil untuk detail gigi roda gigi terlihat, bukan masalah ketajaman gambar.
+  - Naikkan `size` 40 -> 56 (+40%) pada pemanggilan di header; naikkan `.chat-brand-title` 0.95rem -> 1.05rem supaya judul tetap seimbang di sebelah logo yang lebih besar.
+- **Changed:**
+  - `frontend/src/ChatHistoryPanel.jsx` - `<PlanetaryGear size={40} .../>` -> `size={56}`.
+  - `frontend/src/styles.css` - `.chat-brand-title` `font-size: 0.95rem` -> `1.05rem`.
+- **Verified:**
+  - `oxlint src` - exit 0.
+  - `npm --prefix frontend run build` - sukses, "built in 1.75s".
+  - `git diff --stat` - hanya 2 file, 2 baris masing-masing, sesuai rencana.
+- **Left out / risks:** Verifikasi visual di browser belum dilakukan (agen tidak bisa melihat render); perlu hard-refresh setelah dev server memuat bundle baru. Tidak menyentuh ukuran avatar chat (`ChatWorkspace.jsx`, tetap 44px) karena permintaan spesifik ke logo header sidebar.
+- **Docs/ADR:** `docs/agent-changelog.md` saja.
+
 ### 2026-09-23 - Logo brand sidebar chat: pakai logo gear planetary, ukuran naik 28 -> 40 px
 
 - **Requested:** "buat lebih besar lagi ukuran nya dan buat agar lebih jelas, kemudian ganti / perbaiki dulu gambarnya gunakan logo ini" - badge kuning berisi ikon `BrainCircuit` di header sidebar chat diganti logo bulat navy bergerigi (screenshot dilampirkan), diperbesar dan dipertajam.
