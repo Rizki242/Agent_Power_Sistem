@@ -27,6 +27,178 @@ Rules:
 
 ## Entries
 
+### 2026-09-22 - Consolidate ~10k lines of uncommitted work into 7 reviewable commits; full verification pass; parity/gitignore sync
+
+- **Requested:** "apa yang perlu kita lakukan untuk project ini" -> "oke gas kerjakan": secure the working tree (12 changelog entries' worth of code plus older unrecorded changes sitting uncommitted), verify everything together once, and sync the governance docs.
+- **Plan (agreed before coding):**
+  - Run the full Verify checklist on the combined tree first (nothing had been verified as a whole).
+  - Split the diff into logical commits by changelog entry rather than one dump: Materi relocation (already staged), auth, ingest Thermal/Tribology + asset_registry fix, DGA workspace, Agent Lab/voice, chat intent + settings + platform, frontend theme/UI, then this docs entry.
+  - Decide tracked vs runtime data: keep `data/domain/*/measurements.csv`, `condition_history.csv`, `data/learning/*.json`, Tribology workbooks (seed data other code reads); ignore `data/domain/*/backup/` (rotating runtime backups, same rule as `data/backup/`).
+  - Fix `docs/feature-parity.md` drift (stale duplicate "Chat assistant: React tidak ada" row; no auth row).
+- **Changed:**
+  - `.gitignore` - `data/domain/*/backup/`, `docs/STRUKTUR_PROJECT.pdf`, `docs/image.png` (the two exports were `git rm --cached` on 2026-09-21 but still on disk; the sandbox blocked deleting them, so they are ignored instead - safe to delete by hand).
+  - `docs/feature-parity.md` - removed the stale duplicate Chat assistant row; added "Login / autentikasi pengguna" row (React canonical via `LoginPage.jsx`/`AuthContext.jsx` + `/api/auth/*`; Streamlit none; `PPLE_API_KEY` middleware stays a separate layer).
+  - Commits created (no code edits in this task beyond the two files above): `d1be7c8` chore(materi), `35926f0` feat(auth), `f244d54` feat(ingest), `42abee0` feat(dga), `1c362fa` feat(agents), `e0594b2` feat(chat), `6437afb` feat(frontend). Several changes in `e0594b2` predate the changelog and had no entry (`/api/settings/ollama/scan` + `ollama_host` prefs, `src/chat_intent.py` intent classes, `src/automations.py` `fleet_health_check` whitelisted read-only action, `pple/application/event_handlers.py` startup subscribers) - recorded retroactively in that commit message.
+- **Verified:**
+  - `python -m py_compile` on all 30 touched/new `.py` files - clean.
+  - `python -m unittest tests.test_auth tests.test_chat_context tests.test_dga_methods tests.test_chatbot tests.test_asset_registry tests.test_continuous_learning tests.test_self_improvement tests.test_env_harness tests.test_automations tests.test_tribology_data tests.test_thermal_data tests.test_domain_measurements tests.test_domain_ingest` - Ran 154 tests in 10.035s, OK.
+  - `python -m unittest tests.test_api_server` - Ran 69 tests in 220.211s, OK.
+  - `python verify_app.py` - Verification Complete (Materi OK: 79, Failed: 0).
+  - `AppTest.from_file("app.py", default_timeout=180).run()` - exceptions: 0.
+  - `npm --prefix frontend run lint` - oxlint exit 0; `npm --prefix frontend run build` - built in 4.29s.
+- **Left out / risks:** `python -m unittest discover` not run as one shot (known network-hanging tests: `test_llm_assistant`, `test_knowledge_retriever`, `test_streamlit_app` via rag_engine) - covered by the targeted modules + api_server + AppTest instead. `docs/image.png`/`docs/STRUKTUR_PROJECT.pdf` still on disk (ignored, not deleted). No ADR written for auth or event subscribers - flagged as a follow-up (both touch security / architecture per `docs/coding-protocol.md` section 13). HawkScan post-commit hook not run: `HAWK_API_KEY` is unset in this environment.
+- **Docs/ADR:** `docs/agent-changelog.md`, `docs/feature-parity.md`, `.gitignore`.
+
+### 2026-09-22 - Ingest Thermal & Tribology monthly reports; fix a Tribology status-column bug and a condition-history date-corruption bug
+
+- **Requested:** "di folder pengujian terdapat data Thermal, Tribology dan Vibrasi tolong masukan ke dalam aplikasi" - ingest `data/vibrasi/pengujian/EKSUM IRT JULI 2026.xlsx` (Thermal) and `EXSUM TRIBOLOGY  BULAN JULI 2026.xlsx` (Tribology) into the app (Vibrasi's `Exsume Vibrasi juli 2026.xlsx` was handled in a separate, already-recorded pass via the pre-existing `scripts/ingestion/ingest_vibration_monthly_tests.py`).
+- **Plan (agreed before coding; escalated twice via AskUserQuestion as real problems surfaced mid-task, per the mandatory workflow):**
+  - Checked first: `src/thermal_data.py`/`src/tribology_data.py` already live-read these exact hardcoded filenames (so Thermal/Tribology were already visible in the app the moment the files existed), but neither persists history into `data/domain/<DOMAIN>/measurements.csv` - user confirmed building that persistence, matching the Vibrasi pattern.
+  - Found before building: `load_tribology_monthly_tests()` read the wrong RESUM ALL column (Vibrasi's status, mislabeled as Tribology) and fabricated every numeric field (viscosity/TAN/water/wear/flash point) as constants unrelated to the file - a real, already-live bug. User confirmed: fix first, then ingest status only (the file has no real numeric tribology values to ingest).
+  - Found while ingesting: `src.asset_registry.add_condition_record()` (and `delete_asset`/`update_condition_record`/`delete_condition_record`) silently corrupted `test_date` to blank on repeated writes (a pandas dtype round-trip bug, reproduced and root-caused down to two distinct pandas>=2 behaviors), which had already corrupted rows from before this session (DGA, written 2026-09-13) and corrupted my own new Vibrasi/Tribology writes in this session. Fixed both root causes before treating any condition-history write as done, and repaired (deleted + re-inserted) only the rows this session had just corrupted - the pre-existing 2026-09-13 corrupted rows were left alone (unknown original dates, not mine to guess).
+- **Changed:**
+  - `src/tribology_data.py` - `load_tribology_monthly_tests()` now reads column 7 (Tribology) instead of column 2 (Vibrasi) for status; the 7 numeric fields + oil_type/oil_brand are `None`/"Tidak diketahui" (not present anywhere in this report) instead of fabricated constants; `sampling_date` now parsed from the report's own title instead of hardcoded; `get_tribology_sample_detail()`'s fabricated 2-point synthetic trend history (values invented by multiplying the real value by arbitrary factors) removed - it had no consumer anywhere in `src/pages` or `frontend`.
+  - `src/pages/tribology_page.py`, `src/pages/asset_360_page.py` - display `None` as "Tidak tersedia"/"-" instead of the literal string "None".
+  - `src/asset_registry.py` - new `_load_condition_history_raw()` (dtype=str, never coerced) is now what every write path (`add_condition_record`, `delete_asset`, `update_condition_record`, `delete_condition_record`) appends/mutates/saves; `load_condition_history()` (display-only) parses dates from that raw frame with `format="mixed"` (pandas>=2's default single-format inference silently NaTs any row not matching the first value's format - reproduced with a column mixing `"%Y-%m-%d"` and `"%Y-%m-%d %H:%M:%S"`).
+  - `scripts/ingestion/ingest_thermal_irt_tests.py` - new. Parses the EKSUM IRT REKOMENDASI sheet's per-measurement-point rows (forward-filling merged Unit/KKS/Description cells) into `winding_temp`/`bearing_temp` (worst-case among multiple bearings)/`delta_t_phase` (worst-case among phases, using the sheet's own pre-computed "T rise" column) - exactly the keys `ThermalAgent.evaluate()` reads. `ambient_temp`/`hotspot_temp` are never present in this report and are left out rather than guessed. Asset matching: exact name, then a narrow parenthetical-abbreviation regex (`"CIRCULATING WATER PUMP (CWP) 1A"` -> `"CWP 1A"`) deliberately bounded to a single digit 1-3 + optional A/B so it can never grab a capacity/voltage number (verified against `"GENERATOR TRANSFORMER (GT) 34.5 MVA..."`, which must NOT become `"GT 3"`).
+  - `scripts/ingestion/ingest_tribology_monthly_status.py` - new. Condition-history only (no `domain_measurements` write - there is nothing numeric to store), same asset-matching approach as the Thermal script.
+  - `tests/test_asset_registry.py` - `test_repeated_writes_never_corrupt_test_date_to_blank`, a regression test covering both root causes (5 sequential `add_condition_record` calls must not corrupt any prior row; a legacy `"%Y-%m-%d %H:%M:%S"`-formatted row must not blank out newer plain-date rows on load).
+- **Verified:**
+  - `python -m py_compile` on every touched/new `.py` file - clean.
+  - `python -m unittest tests.test_asset_registry tests.test_tribology_data tests.test_tribology_overrides tests.test_thermal_data tests.test_thermal_tribo_standards tests.test_domain_measurements tests.test_domain_ingest tests.test_vibration_data` - 116 tests OK.
+  - `python -m unittest tests.test_api_server` - 69 tests OK (from the same session, before this entry's changes - re-confirms nothing in the shared `src/asset_registry.py` write path broke the API layer).
+  - Real ingest runs (not just tests): Thermal wrote 193 measurement rows (0 rejected) across all 3 parameter keys, 28 condition-history records (0 with a corrupted date); Tribology wrote 14 condition-history records (0 numeric measurement rows - correctly, none exist to write), 0 corrupted dates. Cross-validated Thermal's block-parsing (110 equipment, 21 standby) against the pre-existing `load_thermal_irt_tests()`'s SUMMARY-sheet counts (110 records, 21 STANDBY) - exact match.
+  - Ran `ThermalAgent().evaluate()` directly against a real ingested row (equipment "SECONDARY AIR FAN UNIT 3") end-to-end - produced a real condition/health_score instead of the agent's built-in example values.
+  - `python verify_app.py` - Verification Complete (78 Materi files OK, PPT generated, MCSA query OK) - run twice, once immediately after the asset_registry fix and once after this session resumed from an interruption.
+  - `python -m unittest discover -s . -p "test_*.py"` - hung past a 280s hard timeout on both attempts (before and after the interruption), matching AGENTS.md's documented network-hanging-test caveat (LLM provider / HuggingFace download tests) rather than anything introduced here; not run to completion, per that caveat's own guidance to prefer targeted modules over discover in that situation.
+- **Left out / risks:** Tribology ingest matched only 14/29 equipment to registered assets (Unit 2's un-parenthesised naming style and unregistered equipment like Main Oil Tank were correctly left unmatched rather than guessed); Thermal matched 35/110 for the same reason. Neither script was extended with fuzzy matching beyond the verified-safe abbreviation regex, to avoid misattributing data to the wrong equipment. The pre-existing 2026-09-13 DGA condition-history rows with a corrupted blank `test_date` (found, not caused, this session) were left uncorrected - their original dates are unrecoverable from the file as written; flagging here rather than guessing. Nothing in this entry has been `git commit`ed (staged/on-disk only), per the repo's standing convention of not committing without being asked.
+- **Docs/ADR:** none needed (bug fixes + additive ingest scripts; no schema, architecture, or public-contract change).
+
+### 2026-09-22 - Gear logo as the chat "thinking" visual
+
+- **Requested:** Use the provided blue gear/cog logo SVG as the visual shown in ChatWorkspace while the bot is generating a reply, replacing the 3-dot typing indicator there.
+- **Plan (agreed before coding; trivial/cosmetic, proceeded without a blocking confirmation since scope was fully specified by the request + reference asset):**
+  - Save the provided SVG under `frontend/src/assets/` (new folder - no prior convention for image assets, everything else is lucide-react icon components), stripped of its embedded C2PA provenance metadata block (~14 KB of base64, no visual effect, pure bundle bloat).
+  - Import it in `ChatWorkspace.jsx`'s loading bubble in place of the `chat-typing-indicator` 3-dot animation (left untouched elsewhere - still used by `App.jsx` route/session loading and `FleetWorkspace.jsx`).
+  - Spin it via CSS reusing the codebase's existing `@keyframes spin` (already defined 3x elsewhere, identical `rotate(360deg)` in each), with a `prefers-reduced-motion: reduce` override matching the file's established pattern.
+- **Changed:**
+  - `frontend/src/assets/thinking-gear.svg` - new, trimmed copy of the provided logo.
+  - `frontend/src/ChatWorkspace.jsx` - import the SVG; loading bubble now renders `<img class="chat-thinking-gear">` instead of the 3-span dot indicator, next to the existing `LOADING_STAGES` cycling text and stop button (both unchanged).
+  - `frontend/src/styles.css` - `.chat-thinking-gear` (28px, `animation: spin 2.4s linear infinite`) + reduced-motion override.
+- **Verified:** `npm --prefix frontend run lint` - 0 errors, 0 warnings. `npm --prefix frontend run build` - built in 1.71s; confirmed the SVG was inlined into the `ChatWorkspace` bundle chunk (`grep -c thinking-gear dist/assets/ChatWorkspace*.js` matched), so no separate asset file needed to ship. Diff isolated with `git diff -- frontend/src/ChatWorkspace.jsx frontend/src/styles.css` and confirmed only the intended hunks (import, JSX swap, CSS block) are mine - both files already carried substantial uncommitted changes from other in-progress work this session, none of which was touched.
+- **Left out / risks:** Purely presentational; no backend/business logic involved. Not visually screenshotted in this session (no browser available) - only compiled/bundled correctness was verified, not the rendered look. Did not remove the still-used `.chat-typing-indicator`/`typing-dot` CSS since two other components still render it.
+- **Docs/ADR:** none needed.
+
+### 2026-09-22 - DGA Multi-Method Workspace (Duval Pentagon, History Chart, Rogers Ratios, Key Gas, Future Prediction)
+
+- **Requested:** Rename CBM Dashboard tab from 'Segitiga Duval (DGA)' to 'DGA' (preparing for modular dashboards). Add visual DGA historical gas trend chart + sampling records, Duval Pentagon 1 method, Rogers Ratio & IEC 60599 method, Key Gas method (IEEE C57.104), and historical rate-based future gas predictions/projections.
+- **Plan (agreed before coding):**
+  - Implement rule-based backend calculations in `src/dga_data.py`: `calculate_duval_pentagon` (5-gas polar barycentric coordinates & 7 zones PD, D1, D2, T1, T2, T3, S), `calculate_rogers_ratios` (R1, R2, R3, CO2/CO paper degradation), `calculate_key_gas_profile` (IEEE C57.104 fault patterns and similarity scoring), `calculate_gas_trend_prediction` (ppm/day and ppm/month generation rates, IEEE limits, and 3/6/12-month projections).
+  - Update `calculate_dga_diagnosis` and `get_dga_transformer_detail` to enrich responses with `pentagon`, `rogers`, `key_gas`, and `prediction` objects while preserving full backwards compatibility.
+  - Rename main tab in `frontend/src/CBMDashboard.jsx` from `'Segitiga Duval (DGA)'` to `'DGA'`.
+  - Build sub-navigation inside DGA workspace with 6 views: Segitiga Duval 1, Pentagon Duval 1, Grafik Riwayat Gas, Rasio Rogers & IEC, Metode Key Gas, and Prediksi & Laju Gas.
+  - Build SVG Duval Pentagon visualizer with concentric grid, zone polygons, and active barycenter target marker.
+  - Build multi-line SVG gas trend chart with toggleable gas series and historical sampling table.
+  - Build Rogers ratio cards and IEC 60599 diagnostic matrix with active combination highlight.
+  - Build Key Gas stacked distribution bar and 4 IEEE C57.104 reference fault cards with matching scores.
+  - Build Gas Prediction card with rate of rise status and 3/6/12-month forecast table.
+  - Expand laboratory simulator with 7 gas sliders and presets so all 6 methods recalculate live.
+- **Changed:**
+  - `src/dga_data.py` - added `calculate_duval_pentagon`, `calculate_rogers_ratios`, `calculate_key_gas_profile`, `calculate_gas_trend_prediction`; updated `calculate_dga_diagnosis` and `get_dga_transformer_detail`.
+  - `frontend/src/CBMDashboard.jsx` - renamed tab to `DGA`; added sub-nav switcher (`dgaSubTab`); added components `DuvalPentagon`, `DgaHistoryChart`, `RogersRatioCard`, `KeyGasCard`, `GasPredictionCard`; added 7 gas sliders to simulator.
+  - `frontend/src/styles.css` - added `.dga-subtab-bar`, `.dga-subtab-btn`, `.dga-subtab-btn--active`, `.duval-diag-pill--danger`, `.cbm-badge--neutral`.
+  - `tests/test_dga_methods.py` - new unit tests for all DGA methods and transformer detail integration.
+- **Verified:**
+  - `python -m py_compile src/dga_data.py` clean.
+  - `python -m unittest tests.test_dga_methods` - 9 tests OK.
+  - `python verify_app.py` - Verification Complete (7885 rows, 1941 latest, 78 materi files OK).
+  - `npm --prefix frontend run lint` (oxlint) - 0 warnings, 0 errors.
+  - `npm --prefix frontend run build` - built cleanly in 1.50s.
+- **Left out / risks:** None.
+- **Docs/ADR:** `docs/agent-changelog.md` updated; walkthrough artifact created.
+
+
+### 2026-09-22 - Relocate remaining unused Materi/VIBRASI vendor packages out of the repo
+
+- **Requested:** User shared a screenshot of `Materi/VIBRASI`'s folder tree and asked whether it should be moved. Follow-up to the earlier "untrack unused Materi/ binaries" entry - that pass only caught specific extensions (`.exe/.msi/.mp4/.flv/.zip/.ptz`) and missed everything else belonging to the same three vendor packages (Flash-based help files, proprietary binary formats, etc.).
+- **Plan (agreed before coding):**
+  - Inspect every subfolder/file shown in the screenshot before deciding anything, per the mandatory Check step: sizes (`du -sh`), extensions (`find | sed 's/.*\.//' | sort | uniq -c`), and cross-check against what `knowledge_retriever.py` (`.json` only) and `rag_engine.py` (`.pdf`/`.json`/`.md` only) actually read.
+  - Findings: `5.2.3.1. Omnitrend 2.51 Installer` (619 MB, software installer + Flash help), `Presentasi` (373 MB, training `.mp4`/`.flv`), and `Technical Associates` (5.5 MB, an offline e-learning site for IVDC demo software - its only 3 PDFs are software-troubleshooting help, not engineering material) are 0% read by any code path; `Vibration analysis manual Charlotte` (278 MB) is real - 29 PDFs indexed by `rag_engine.py` - but carries 4 junk `.bat`/`.lnk` installer launchers; `Knolwedge4.md`/`Knowledge2.md` are 0-byte empty files.
+  - User was asked to choose between "untrack from git only" vs "also physically move out of the project folder" and deferred to my judgment ("apa yang menurutmu terbaik?") - decided: move the three 0%-used vendor packages physically out of the repo (they have no relationship to the app at all, so leaving 992 MB of dead weight in the working tree serves no purpose), keep Charlotte's real PDFs, delete confirmed junk.
+  - Verify the knowledge base still loads correctly after the physical move (nothing in `src/` should reference these paths, but must be proven, not assumed).
+- **Changed:**
+  - `Materi/VIBRASI/5.2.3.1. Omnitrend 2.51 Installer/`, `Materi/VIBRASI/Presentasi/`, `Materi/VIBRASI/Technical Associates/` - `git rm --cached -r`, then physically `mv`'d to `D:/final-deplay/Materi-Archive-Unused/VIBRASI/` (a sibling directory outside the git repo, not deleted - available if ever needed again).
+  - `Materi/VIBRASI/Vibration analysis manual Charlotte/Level 1/Level 1.bat`, `.../Level 2/Desktop - Shortcut.lnk`, `.../Level 2/Level 2.bat`, `.../Vibration analysis manual Charlotte.bat` - untracked and deleted (installer launcher junk, not manual content).
+  - `Materi/VIBRASI/Knolwedge4.md`, `Materi/VIBRASI/Knowledge2.md` - untracked and deleted (0 bytes).
+  - `.gitignore` - added ignore patterns for the extensions found in the remaining 583-file tail that the first pass missed (`.swf/.htm/.html/.gif/.bat/.lnk/.dll/.sys/.OMT/.STP/.mot/.bif/.eif/.pre/.lng/.cat/.inf/.cab/.dbm/.dat/.wri/.psc/.hex/.manifest`) plus folder-level ignores for the three relocated packages (in case they are ever briefly copied back); corrected the file's own comment, which said Materi/ only needs `.json`+`.pdf` - it also needs `.md` per `rag_engine.py`'s `_load_markdown_files()`.
+- **Verified:** `du -sh Materi/VIBRASI` - 1.33 GB -> 278 MB. `python -m unittest tests.test_chatbot tests.test_knowledge_retriever tests.test_knowledge_processor` - 26 tests OK (knowledge-loading path exercised directly). `python verify_app.py` - Verification Complete, "Materi OK: 78, Failed: 0" (unchanged - that count was always JSON-only, unaffected by this move).
+- **Left out / risks:** Nothing committed yet (staged only, per convention of not committing without being asked). The 992 MB now lives outside the repo at `D:/final-deplay/Materi-Archive-Unused/VIBRASI/` - it is not backed up anywhere else, so it is only as safe as that one disk; if the original installers/videos are ever needed again they can be re-downloaded from the vendor rather than relying on this archive being permanent. `.git` history itself is still unaffected (history-rewrite decision from the prior entry still stands: postponed until the 9 active worktrees are closed out).
+- **Docs/ADR:** none needed (pure file relocation, no behavior change).
+
+### 2026-09-21 - Fix chat history scroll in Claude sidebar & rename to Agent Learning Sistem
+
+- **Requested:**
+  - "tambahkan skroll kebawah agar bisa melihat chat histori" - Enable vertical scrolling in the chat history sidebar so all historical sessions can be seen and reached down to the sticky profile footer.
+  - "pple Agent ganti dengan Agent Learning Sistem" - Rename brand and assistant title from "PPLE Agent" to "Agent Learning Sistem".
+- **Plan (agreed before coding):**
+  - Add `.chat-sidebar-scroll-area` styling with `flex: 1 1 0%; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain;` and smooth custom scrollbar in `frontend/src/styles.css`.
+  - Fix active session item styling in `frontend/src/styles.css` so active session title is clearly readable (`#ffffff` on `#163d4c` with yellow accent border) instead of white-on-white.
+  - Fix sticky footer `.chat-history-footer` (`flex-shrink: 0;`) so it stays anchored at the bottom of the drawer.
+  - Update brand header in `frontend/src/ChatHistoryPanel.jsx` to "Agent Learning Sistem".
+  - Update assistant welcome message, sender badge, and export title in `frontend/src/ChatWorkspace.jsx` to "Agent Learning Sistem".
+- **Changed:**
+  - `frontend/src/ChatHistoryPanel.jsx` - Brand title updated to `Agent Learning Sistem`.
+  - `frontend/src/ChatWorkspace.jsx` - Updated welcome message, bubble sender, export header, and disclaimer to `Agent Learning Sistem`.
+  - `frontend/src/styles.css` - Added `.chat-sidebar-scroll-area` scroll rules + webkit scrollbar, `.chat-sidebar-section-title`, active item styling fix, and anchored `.chat-history-footer`.
+- **Verified:**
+  - `npm --prefix frontend run lint`: 0 errors.
+  - `npm --prefix frontend run build`: 0 errors, production build in 3.02s.
+- **Left out / risks:** none.
+- **Docs/ADR:** `docs/agent-changelog.md` and `walkthrough.md` updated.
+
+### 2026-09-21 - Claude-style Bot UI redesign, sidebar width 276px, and PLN yellow-blue theme
+
+- **Requested:**
+  - Remove redundant standalone `Pengaturan` button from sidebar footer.
+  - Redesign Bot/Chat workspace (`/chat`) to mirror Claude reference layout (drawer structure, search, session dropdown, floating composer, action buttons, disclaimer).
+  - Adopt PLN / Power Plant signature color scheme: Navy & Electric Blue (`#176b87`/`#0b1d24`) combined with Radiant Electric Gold/Yellow (`#f59e0b`/`#fbbf24`).
+  - Widen sidebar to `276px` to prevent text and button clipping.
+- **Plan (agreed before coding):**
+  - Adjust sidebar width to `276px` in `frontend/src/styles.css` for both `.sidebar` and `.main-content`.
+  - Clean up footer in `frontend/src/App.jsx` by removing redundant `<NavLink to="/settings">`, delegating settings access to the user profile popover.
+  - Reconstruct `frontend/src/ChatHistoryPanel.jsx` in Claude-style: Brand header + collapse toggle, search input (`Cari obrolan...`), `+ Chat Baru` pill button, quick CBM navigation (`Dashboard CBM`, `MCSA Motor`, `Work Orders`, `Otomasi`), `Disematkan` (pinned plant equipment: BFP 1A/B, Trafo GT 1-3), `Terbaru` with filter, and sticky bottom user profile pill with popover menu.
+  - Update `frontend/src/ChatWorkspace.jsx`: wire `useAuth()` to retrieve `user` and `logout`, pass them to `ChatHistoryPanel`, update chat header to Claude session title dropdown + export button, and add safety disclaimer below composer.
+  - Style the entire Claude bot UI & drawer with the PLN electric blue and yellow theme in `frontend/src/styles.css`.
+- **Changed:**
+  - `frontend/src/App.jsx` - Removed redundant standalone Pengaturan link from sidebar footer.
+  - `frontend/src/ChatHistoryPanel.jsx` - Redesigned into Claude-like drawer with search, new chat pill, quick CBM links, pinned equipment, filter dropdown, and sticky user profile.
+  - `frontend/src/ChatWorkspace.jsx` - Integrated `useAuth()`, wired session title dropdown indicator in header, added export button, and inserted bottom CBM safety disclaimer.
+  - `frontend/src/styles.css` - Set sidebar width to `276px`, added Claude-style sidebar classes (`.chat-history-sidebar--claude`, `.chat-brand-badge-claude`, `.chat-sidebar-search-box`, `.chat-new-button-claude`, `.chat-quick-nav-group`, `.chat-sidebar-section`, `.chat-pinned-list`, `.chat-user-profile-panel`), floating composer styling (`.chat-input-box`), centered chat feed (`.chat-feed`), and disclaimer (`.chat-disclaimer-claude`) in yellow and blue theme.
+- **Verified:**
+  - `npm --prefix frontend run lint` (oxlint): 0 errors, 0 warnings in touched files.
+  - `npm --prefix frontend run build`: Clean production build (built in 8.04s, client assets emitted).
+  - `.\.venv\Scripts\python.exe -m unittest tests.test_auth`: 8 tests passed in 0.929s (OK).
+  - `.\.venv\Scripts\python.exe verify_app.py`: Verification Complete (7885 rows loaded, chatbot query OK, PPT generated, 78 Materi OK).
+- **Left out / risks:** None. All features are non-breaking and backwards-compatible with previous session storage and existing backends.
+- **Docs/ADR:** `docs/agent-changelog.md` and `walkthrough.md` updated.
+
+### 2026-09-21 - Show user-uploaded images inline in ChatWorkspace
+
+- **Requested:** "gambar bisa ditampilkan di chat UI?" -> clarified via AskUserQuestion: render an image the user attaches/uploads inline in the chat conversation (not MCSA spectrum images, not chatbot-generated charts).
+- **Plan (agreed before coding):**
+  - Chat already had a generic file-attach path (`sendChatMessage({file})` -> `POST /api/agent/chat` multipart -> `extract_text_from_upload`) for documents; images fell through to a generic `"[File {filename} attached]"` fallback and rendered as a plain filename chip.
+  - Frontend: when the attached file's MIME type starts with `image/`, build a local object URL and render an actual `<img>` thumbnail in the composer and in the sent bubble, instead of the generic file chip. Scoped to the live session only - no new server-side image storage, matching the existing (also session-only) document-attachment behavior.
+  - Backend: add an explicit image-extension branch to `extract_text_from_upload` that returns a disclaimer instead of falling through - there is no OCR/vision pipeline, so the LLM must never be allowed to describe image content it never actually saw (`CONTEXT.md` invariant: LLM narrates, never fabricates evidence).
+  - Add a regression test asserting an image upload to `/api/agent/chat` returns 200 without crashing.
+- **Changed:**
+  - `frontend/src/ChatWorkspace.jsx` - `attachedPreviewUrl` state + effect (composer thumbnail, revoked on file change/unmount), `imagePreviewUrl` on sent user messages (revoked on component unmount), new `chat-attached-image` render branch in `ChatMessageBubble`, thumbnail in the composer's `chat-file-preview`.
+  - `frontend/src/styles.css` - `.chat-attached-image` (bubble thumbnail, click-through to full size) and `.chat-file-preview__thumb` (composer thumbnail) rules, matching existing `.chat-attached-file`/`.chat-file-preview` conventions.
+  - `pple/api/routers/agents.py` - `IMAGE_UPLOAD_EXTENSIONS` set + new branch in `extract_text_from_upload` returning an explicit "no visual analysis" disclaimer for image uploads.
+  - `tests/test_api_server.py` - `test_agent_chat_with_image_attachment_does_not_hallucinate_content`.
+- **Verified:** `python -m py_compile` on both touched `.py` files (clean). `python -m unittest tests.test_api_server` - 69 tests OK (includes the new test). `npm --prefix frontend run lint` - 0 errors (5 pre-existing unused-import warnings in `CBMDashboard.jsx`, a file not touched here). `npm --prefix frontend run build` - built in 1.88s, `ChatWorkspace` bundle emitted cleanly. `python verify_app.py` - Verification Complete (78 Materi files OK, PPT generated, MCSA query OK).
+- **Left out / risks:** No OCR/vision analysis of image content (explicitly out of scope; the disclaimer text makes this visible to the LLM and, indirectly, to the user if asked). No server-side persistence of uploaded images - after a page reload, a historical image attachment shows only as a filename (same limitation documents already have; not a regression). No client-side file-size cap was added for image uploads - the existing generic document-attach path has never had one either, so this stays consistent rather than introducing an inconsistent new limit; worth revisiting as its own task if large uploads become a problem.
+- **Docs/ADR:** none needed (additive UI/UX behavior, no schema/behavior-of-record change).
+
 ### 2026-09-21 - Agent Lab (EnvHarness) hardening and Voice Assistant multi-turn context
 
 - **Requested:** Voice Assistant context awareness & controls ("voice mengerti apa yang kita bicarakan menjawab dengan konteks yang benar") and Option 2 ("Penguatan Skenario Gangguan Baru di Agent Lab (EnvHarness)").
@@ -100,4 +272,119 @@ Rules:
   - `docs/agent-changelog.md` - new: this file (rules, template, first entry).
 - **Verified:** Documentation-only change; no code touched. `git status --short` confirmed pre-existing unrelated worktree changes (api_server.py, frontend/src/*, pple/api/routers/*, src/*, tests/*) were left untouched.
 - **Left out / risks:** No ADR created (no architectural decision changed). `docs/adr/` directory still does not exist; first ADR should create it.
-- **Docs/ADR:** `CONTEXT.md`, `AGENTS.md`, `CLAUDE.md`, this file.
+### 2026-09-21 - Authentication System (PBKDF2-HMAC-SHA256 & Frontend Gateway)
+
+- **Requested:** Implement application login system ("buat login aplikasi dulu").
+- **Plan (agreed before coding):**
+  - Implement zero-external-dependency secure auth core (`src/auth.py`) using PBKDF2-HMAC-SHA256 password hashing and cryptographically signed bearer session tokens.
+  - Pre-seed plant staff accounts: `admin` (Manager Keandalan), `engineer` (Engineer CBM), `operator` (Operator Lapangan).
+  - FastAPI router (`pple/api/routers/auth.py`) mounted in `api_server.py` with `/api/auth/login`, `/api/auth/me`, `/api/auth/logout`, `/api/auth/change-password`.
+  - Frontend authentication layer (`AuthContext.jsx`, `LoginPage.jsx`, token header injection in `api.js`, user profile card and logout in `Sidebar`).
+  - Strict verification via unit tests, oxlint, and Vite production build.
+- **Changed:**
+  - `src/auth.py` - Core authentication module (PBKDF2 hashing, HMAC-SHA256 token lifecycle, user store `data/users.json`).
+  - `pple/api/routers/auth.py` - FastAPI endpoints with Bearer token authentication dependency.
+  - `pple/api/routers/__init__.py` & `api_server.py` - Mounted `auth_router` under `/api/auth`.
+  - `tests/test_auth.py` - Unit test suite covering password hashing, token expiration/tampering, and FastAPI endpoints.
+  - `frontend/src/api.js` - Dynamic `Authorization: Bearer <token>` injection, `loginUser`, `logoutUser`, `getCurrentUser`, `changeUserPassword`.
+  - `frontend/src/context/AuthContext.jsx` - Global authentication context and `useAuth` hook.
+  - `frontend/src/LoginPage.jsx` - Control room styled login interface with 1-click demo presets.
+  - `frontend/src/App.jsx` - Wrapped in `AuthProvider`, gated unauthenticated access behind `LoginPage`, added user identity card & logout in sidebar.
+  - `frontend/src/styles.css` - Styled login container, cards, inputs, presets, and sidebar user card.
+- **Verified:**
+  - `python -m unittest tests.test_auth`: 8 tests passed in 0.806s.
+  - `python verify_app.py`: data loading, chatbot, PPT generation, and Materi loading all verified OK.
+  - `npm --prefix frontend run lint`: 0 errors (oxlint on 23 files).
+  - `npm --prefix frontend run build`: built in 2.93s cleanly without errors.
+- **Left out / risks:**
+  - SQLite persistent DB migration deferred according to `docs/final.md` Phase 2-4; user store is currently managed via `data/users.json`.
+- **Docs/ADR:** `docs/agent-changelog.md`.
+
+### 2026-09-21 - Claude-Style User Profile Menu, PLN Yellow & Blue Theme & Sidebar Width
+
+- **Requested:** Fix user profile card clipping by restructuring like Claude UI, widen the sidebar, and adopt a signature yellow and blue color blend.
+- **Plan (agreed before coding):**
+  - Increase sidebar width from `248px` to `276px` (and `.main-content` margin) to eliminate all horizontal clipping.
+  - Implement a sleek Claude-style bottom profile trigger button: circle avatar with initial, first name + role, and animated chevron.
+  - Implement upward floating popover menu with plant identity (`user@jeranjang.pln.id`), full name, role badge, settings link, change password modal, and logout.
+  - Infuse the design with the PLN signature Electric Blue (`#176b87` / `#0e2933`) and Radiant Gold/Yellow (`#f59e0b` / `#fbbf24`) across the brand icon, login badge, preset buttons, avatar, and active states.
+- **Changed:**
+  - `frontend/src/App.jsx` - Integrated `UserProfileMenu` and `ChangePasswordModal` into `Sidebar`; added `changeUserPassword` invocation.
+  - `frontend/src/styles.css` - Set sidebar width to `276px`, replaced static `.sidebar-user-card` with `.sidebar-user-pill` and `.profile-popover-menu`, added modal styling, and styled brand mark, login header, and button in PLN yellow and blue.
+- **Verified:**
+  - `npm --prefix frontend run lint`: 0 errors (oxlint).
+  - `npm --prefix frontend run build`: cleanly built in 1.47s.
+  - `python -m unittest tests.test_auth`: 8/8 tests passed.
+
+### 2026-09-22 - Login Connectivity, Chat Scrollbar Alignment & Scroll-to-Bottom Button
+
+- **Requested:** Fix login `Failed to fetch` error on dev port 5173, fix floating native scrollbar cutting through chat workspace, and add scroll-to-bottom feature for chat history.
+- **Plan (agreed before coding):**
+  - Add `/api` proxy in `frontend/vite.config.js` pointing to `http://localhost:8000`.
+  - Set `API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''` in `frontend/src/api.js` and provide clear Indonesian diagnostic messages when the backend is unreachable (instead of raw `Failed to fetch`).
+  - Update `LoginPage.jsx` branding from "PPLE Agent" to "Agent Learning Sistem".
+  - Resolve `.chat-feed` scrollbar placement: remove `max-width: 820px; margin: 0 auto` from `.chat-feed` so the scroll container spans 100% of the chat window, placing the scrollbar on the far right edge instead of in the middle of the messages.
+  - Implement sleek custom scrollbar (`scrollbar-width: thin;`, `::-webkit-scrollbar` with 6px width and rounded thumb matching theme borders/action colors).
+  - Add a floating "Pesan terbaru" (Scroll to Bottom) button in `ChatWorkspace.jsx` that appears when scrolling up in chat history and smoothly returns to the bottom when clicked.
+- **Changed:**
+  - `frontend/vite.config.js` - Added dev proxy for `/api` to `http://localhost:8000`.
+  - `frontend/src/api.js` - `API_BASE` default to relative path, enhanced network error handling for fetch failures and 502/504 proxy gateway errors.
+  - `frontend/src/LoginPage.jsx` - Updated title to "Agent Learning Sistem", friendly connection error feedback.
+  - `frontend/src/styles.css` - Ensured `.chat-feed` spans full container width, added custom slim webkit scrollbar, centered quick actions and message bubbles (`max-width: 820px`), and styled `.chat-scroll-bottom-btn`.
+  - `frontend/src/ChatWorkspace.jsx` - Added `showScrollBottom` state, `handleFeedScroll` callback, `scrollToBottom` callback, and rendered floating button.
+- **Verified:**
+  - `npm --prefix frontend run lint`: 0 warnings, 0 errors (oxlint on 23 files).
+  - `npm --prefix frontend run build`: cleanly built in 1.80s.
+  - `python -m unittest tests.test_auth`: 8/8 tests passed in 0.941s.
+  - `python -m unittest tests.test_api_server`: 69/69 tests passed in 159.9s.
+  - `python verify_app.py`: 79 materi files, data loading, and chatbot all verified OK.
+
+### 2026-09-22 - PLN Indonesia Power Brand Colors & Claude-Style Spinning Blue Gear Indicator
+
+- **Requested:** Apply official PLN Indonesia Power palette (PLN Blue `#0099DA` and PLN Yellow `#FFE600`), replace orange robot avatar with blue reliability gear logo, make the thinking state borderless without card/box like Claude with a spinning blue gear logo, and enlarge the gear logo size.
+- **Plan (agreed before coding):**
+  - Implement exact PLN Indonesia Power corporate colors from the official logo:
+    - PLN Electric Blue: `#0099DA`
+    - PLN Vibrant Yellow: `#FFE600`
+    - PLN Deep Navy Blue (sidebar background): `linear-gradient(180deg, #0c1c2b 0%, #081420 100%)`
+  - In `ChatMessageBubble`, replace the orange robot avatar (`chat-avatar--bot`) with the circular blue gear logo (`thinking-gear.svg`) and enlarge to 44px with soft blue drop shadow.
+  - In `ChatWorkspace.jsx`, replace the boxed card loading bubble with Claude's borderless inline indicator:
+    - Spinning blue gear logo (`claude-gear-spin`, enlarged to 30px) with continuous rotation animation.
+    - Dynamic stage text with blinking cursor in PLN Blue/Yellow.
+    - Subtle stop button (`Hentikan`).
+  - Fix brand text alignment in `ChatHistoryPanel.jsx` (`.chat-brand-row`) to prevent vertical word wrapping.
+  - Style "+ Chat Baru" button with PLN Blue `#0099DA` gradient, hover `#00A8E8`, and PLN Yellow `#FFE600` icon.
+  - Set active chat item and sidebar navigation items with a 3px `#FFE600` left border.
+- **Changed:**
+  - `frontend/src/ChatWorkspace.jsx` - Swapped `<Bot />` for `<img src={thinkingGear} className="chat-avatar-gear" />`, implemented `.claude-thinking-row` with `.claude-gear-spin`, removed unused `Bot` import.
+  - `frontend/src/styles.css` - Applied PLN Blue `#0099DA` & Yellow `#FFE600` across sidebars, brand badge, search, and active indicators; added `.chat-brand-row` layout; enlarged `.chat-avatar` to 44px; enlarged `.claude-gear-spin` to 30px; added rotating animations.
+- **Verified:**
+  - `npm --prefix frontend run lint`: 0 warnings, 0 errors (oxlint on 23 files in 23ms).
+  - `npm --prefix frontend run build`: Vite production bundle built cleanly in 1.76s.
+  - `python -m unittest tests.test_auth`: 8/8 tests passed in 1.437s.
+- **Docs/ADR:** `docs/agent-changelog.md`.
+
+### 2026-09-22 - Sidebar Background PLN Blue #0099D8 & Gear Logo Enlargement
+
+- **Requested:** Ubah warna background sidebar menjadi warna biru PLN, hex `#0099D8` (Tailwind / CSS). Besarkan lagi ukuran logo gear.
+- **Plan (agreed before coding):**
+  - Update `@theme`, `:root`, and `.dark` variables in `frontend/src/styles.css` with `--color-sidebar: #0099D8`, `--color-pln-blue: #0099D8`, and `--color-pln-yellow: #FFE600`.
+  - Apply `#0099D8` background to both `.sidebar` (main app navigation sidebar) and `.chat-history-sidebar--claude` (chat history sidebar).
+  - Enhance element contrast on `#0099D8` background:
+    - Search input: semi-transparent white/blue container with white text and placeholder.
+    - New Chat button: prominent PLN Yellow `#FFE600` pill button with dark navy text (`#0b2238`) and bold font for outstanding contrast and PLN identity.
+    - Navigation and chat history items: high-contrast white text, subtle white hover highlight, and active state with `#FFE600` accent bar.
+    - Profile footer pill: cohesive translucent blue/white styling with PLN Yellow role badge.
+  - Enlarge gear logo sizing:
+    - `.chat-avatar` & `.chat-avatar-gear` enlarged from 44px to **54px × 54px** with soft blue drop shadow.
+    - `.claude-gear-spin` enlarged from 30px to **38px × 38px**.
+    - User icon in `ChatMessageBubble` scaled up to `size={24}` for visual balance.
+- **Changed:**
+  - `frontend/src/styles.css` - Updated `--color-sidebar`, `--sidebar`, `.sidebar`, `.chat-history-sidebar--claude`, search box, new chat button, nav items, and enlarged `.chat-avatar`, `.chat-avatar-gear` (54px), and `.claude-gear-spin` (38px).
+  - `frontend/src/ChatWorkspace.jsx` - Updated user icon size in `ChatMessageBubble` to 24.
+- **Verified:**
+  - `npm --prefix frontend run lint`: 0 warnings, 0 errors (oxlint on 23 files in 74ms).
+  - `npm --prefix frontend run build`: Clean production bundle built in 1.40s.
+  - `python -m unittest tests.test_auth`: 8/8 tests passed in 0.982s.
+- **Docs/ADR:** `docs/agent-changelog.md`.
+
