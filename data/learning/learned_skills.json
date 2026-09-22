@@ -1,6 +1,22 @@
 {
   "skills": [
     {
+      "id": "SKILL-PLTU-019",
+      "title": "EnvHarness Cultivated: Chain-ExtendedLifecycle-157",
+      "equipment": "BFP 1A",
+      "system": "Adaptive Disturbance & Operational Protection",
+      "category": "VIBRASI_MCSA",
+      "symptoms": [
+        "Synthetic disturbance: Perpanjangan alur investigasi akar masalah ke penerbitan Work Order terverifikasi."
+      ],
+      "verified_root_cause": "Terverifikasi melalui EnvRigger rollout validation pada BFP 1A.",
+      "corrective_action_taken": "Penerbitan Work Order terencana dan mitigasi getaran/arus komposit.",
+      "lesson_learned": "Penerapan kontrak Chain-ExtendedLifecycle-157 berhasil melatih agent untuk mendeteksi kopling anomali lebih awal.",
+      "author": "EnvRigger AI Customizer",
+      "verified_at": "2026-09-21",
+      "accuracy_boost_weight": 1.25
+    },
+    {
       "id": "SKILL-PLTU-018",
       "title": "Pola prekursor degradasi WJP3B (auto-mined)",
       "equipment": "WJP3B",
@@ -323,6 +339,6 @@
       "accuracy_boost_weight": 1.2
     }
   ],
-  "last_updated": "2026-09-11T17:30:33.426465",
-  "total_skills_count": 18
+  "last_updated": "2026-09-21T20:19:17.457284",
+  "total_skills_count": 19
 }

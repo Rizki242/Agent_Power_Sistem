@@ -10,7 +10,10 @@ import unittest
 
 import pandas as pd
 
-from src.agents.continuous_learning import PowerPlantSkillLearner
+from src.agents.continuous_learning import (
+    PLANT_BENCHMARKS,
+    PowerPlantSkillLearner,
+)
 from src.agents.self_improvement import RecursiveSelfImprover
 
 
@@ -32,7 +35,7 @@ class SelfImprovementTests(unittest.TestCase):
     def test_real_benchmark_evaluation(self):
         """Benchmarks must be evaluated by the REAL rule-based agents, not simulated."""
         res = self.improver.evaluate_benchmarks()
-        self.assertEqual(res["total_benchmarks"], 5)
+        self.assertEqual(res["total_benchmarks"], len(PLANT_BENCHMARKS))
         self.assertGreaterEqual(res["severity_pass_count"], 4)
         self.assertGreaterEqual(res["diagnostic_score"], 80.0)
         # Observed failure modes come from actual agent evaluation
@@ -45,10 +48,10 @@ class SelfImprovementTests(unittest.TestCase):
     def test_legacy_run_benchmarks_schema(self):
         """continuous_learning.run_benchmarks() keeps its schema but is now real."""
         bm = self.learner.run_benchmarks()
-        self.assertEqual(bm["total_benchmarks"], 5)
+        self.assertEqual(bm["total_benchmarks"], len(PLANT_BENCHMARKS))
         self.assertEqual(bm["evaluation_mode"], "REAL_RULE_BASED")
         self.assertGreaterEqual(bm["diagnostic_accuracy_score"], 90.0)
-        self.assertEqual(len(bm["benchmark_results"]), 5)
+        self.assertEqual(len(bm["benchmark_results"]), len(PLANT_BENCHMARKS))
 
     def test_retrieval_evaluation_range(self):
         res = self.improver.evaluate_retrieval()

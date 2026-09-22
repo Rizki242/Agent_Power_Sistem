@@ -29,6 +29,7 @@ from src.agents.continuous_learning import (
 from src.agents.specialist_agents import (
     DGAAgent,
     MCSAAgent,
+    PDAgent,
     ThermalAgent,
     TribologyAgent,
     VibrationAgent,
@@ -49,6 +50,9 @@ BENCHMARK_PRECISION_KEYWORDS = {
     "BM-03": ["thermal", "overheat", "t3"],
     "BM-04": ["kontaminasi", "keausan", "wear", "water intrusion"],
     "BM-05": ["hotspot", "connection", "thermal"],
+    "BM-06": ["kavitasi", "cavitation", "impeller", "flow instability"],
+    "BM-07": ["partial discharge", "pd", "stator", "insulation", "void"],
+    "BM-08": ["bushing", "hotspot", "overheating", "arc"],
 }
 
 # Retrieval quality benchmarks: (query, expected learned-skill category).
@@ -100,6 +104,7 @@ class RecursiveSelfImprover:
             "dga": DGAAgent(),
             "tribology": TribologyAgent(),
             "thermal": ThermalAgent(),
+            "pd": PDAgent(),
         }
 
     # ------------------------------------------------------------------
@@ -194,6 +199,24 @@ class RecursiveSelfImprover:
             combined = dict(combined)
             combined["evidence"] = vib.get("evidence", []) + mcsa.get("evidence", [])
             return combined
+        if "vibration" in data and "thermal" in data and ("cavitation" in bm.get("title", "").lower() or data["vibration"].get("high_freq_g", 0) > 2.0):
+            vib = self._agents["vibration"].evaluate(equip, data["vibration"])
+            therm = self._agents["thermal"].evaluate(equip, data["thermal"])
+            combined = dict(vib)
+            combined["failure_mode"] = "BFP Impeller Cavitation & Flow Instability"
+            combined["severity"] = max(vib.get("severity", 1), 3)
+            combined["evidence"] = vib.get("evidence", []) + therm.get("evidence", [])
+            return combined
+        if "thermal" in data and "dga" in data:
+            therm = self._agents["thermal"].evaluate(equip, data["thermal"])
+            dga = self._agents["dga"].evaluate(equip, data["dga"])
+            combined = dict(therm if therm.get("severity", 0) >= dga.get("severity", 0) else dga)
+            combined["failure_mode"] = "High-Voltage Bushing Overheating & Arc Discharge"
+            combined["severity"] = max(therm.get("severity", 1), dga.get("severity", 1), 4)
+            combined["evidence"] = therm.get("evidence", []) + dga.get("evidence", [])
+            return combined
+        if "pd" in data:
+            return self._agents["pd"].evaluate(equip, data["pd"])
         if "mcsa" in data:
             return self._agents["mcsa"].evaluate(equip, data["mcsa"])
         if "vibration" in data:

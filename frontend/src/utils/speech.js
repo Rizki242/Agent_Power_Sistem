@@ -284,3 +284,19 @@ export function stopSpeaking() {
   }
 }
 
+export function pauseSpeaking() {
+  if (isSpeechSynthesisSupported() && window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+    window.speechSynthesis.pause()
+  }
+}
+
+export function resumeSpeaking() {
+  if (isSpeechSynthesisSupported() && window.speechSynthesis.paused) {
+    window.speechSynthesis.resume()
+  }
+}
+
+export function isSpeakingPaused() {
+  return isSpeechSynthesisSupported() && Boolean(window.speechSynthesis.paused)
+}
+

@@ -150,6 +150,27 @@ PLANT_BENCHMARKS = [
         "input": {"thermal": {"delta_t_phase": 18.5, "bearing_temp": 62.0}},
         "expected_failure_mode": "Electrical Connection Hotspot",
         "expected_min_severity": 3
+    },
+    {
+        "benchmark_id": "BM-06",
+        "title": "BFP Impeller Cavitation & Hydraulic Flow Instability",
+        "input": {"vibration": {"overall_rms": 5.8, "high_freq_g": 3.4}, "thermal": {"bearing_temp": 72.5}},
+        "expected_failure_mode": "BFP Impeller Cavitation & Flow Instability",
+        "expected_min_severity": 3
+    },
+    {
+        "benchmark_id": "BM-07",
+        "title": "Generator Stator Winding Partial Discharge (PRPD Cluster)",
+        "input": {"pd": {"pulse_magnitude_pc": 1450.0, "nqn": 380.0, "pd_type": "Internal Void"}, "thermal": {"stator_temp": 88.0}},
+        "expected_failure_mode": "Generator Stator Winding Partial Discharge",
+        "expected_min_severity": 3
+    },
+    {
+        "benchmark_id": "BM-08",
+        "title": "High-Voltage Bushing Overheating & Arc Discharge",
+        "input": {"thermal": {"delta_t_phase": 24.5, "hotspot_temp": 96.0}, "dga": {"c2h2": 8.5, "h2": 160.0, "c2h4": 120.0}},
+        "expected_failure_mode": "High-Voltage Bushing Overheating & Arc Discharge",
+        "expected_min_severity": 4
     }
 ]
 
@@ -364,7 +385,7 @@ class PowerPlantSkillLearner:
 
             success = rollout.get("success", False)
             if success:
-                total_score += 20.0  # 5 benchmarks * 20 = 100 max
+                total_score += 100.0 / len(PLANT_BENCHMARKS)
 
             benchmark_evals.append({
                 "benchmark_id": bm.get("benchmark_id"),
@@ -377,7 +398,7 @@ class PowerPlantSkillLearner:
             })
 
         return {
-            "harness_score": total_score,
+            "harness_score": round(total_score, 1),
             "total_benchmarks": len(PLANT_BENCHMARKS),
             "harness_components": harness.list_components(),
             "results": benchmark_evals,

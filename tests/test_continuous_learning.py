@@ -5,7 +5,7 @@ Unit tests for Power Plant Continuous Learning and Self-Improving Skills.
 import unittest
 import tempfile
 import os
-from src.agents.continuous_learning import PowerPlantSkillLearner
+from src.agents.continuous_learning import PLANT_BENCHMARKS, PowerPlantSkillLearner
 
 
 class TestPowerPlantSkillLearner(unittest.TestCase):
@@ -51,10 +51,10 @@ class TestPowerPlantSkillLearner(unittest.TestCase):
 
     def test_run_benchmarks(self):
         bm = self.learner.run_benchmarks()
-        self.assertEqual(bm["total_benchmarks"], 5)
+        self.assertEqual(bm["total_benchmarks"], len(PLANT_BENCHMARKS))
         self.assertGreaterEqual(bm["diagnostic_accuracy_score"], 90.0)
         self.assertEqual(bm["rating"], "GRADE A - EXPERT SYSTEM")
-        self.assertEqual(len(bm["benchmark_results"]), 5)
+        self.assertEqual(len(bm["benchmark_results"]), len(PLANT_BENCHMARKS))
 
     def test_env_harness_calls_do_not_touch_real_data_dir(self):
         """evaluate_env_harness()/run_env_rigger_learning() must colocate

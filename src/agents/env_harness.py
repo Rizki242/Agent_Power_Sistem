@@ -1,4 +1,4 @@
-﻿# EnvHarness & EnvRigger Implementation
+# EnvHarness & EnvRigger Implementation
 import copy, json, math, os, random, time
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -134,18 +134,28 @@ class StageWrapper:
         self.component_type = 'STAGE'
 
     def wrap(self, env: DiagnosticEnvironment) -> DiagnosticEnvironment:
-        wrapped_env = copy.deepcopy(env)
-        orig_reset = wrapped_env.reset
+        orig_reset = env.reset
+
         def stage_reset():
             obs = orig_reset()
+            # For rotating machines or if already having telemetry, inject coupling
+            is_rotating = any(d in env.state.get('telemetry', {}) for d in ('vibration', 'mcsa', 'motor'))
             for domain, params in self.disturbance_payload.items():
-                if domain not in wrapped_env.state['telemetry']:
-                    wrapped_env.state['telemetry'][domain] = {}
-                wrapped_env.state['telemetry'][domain].update(params)
+                if domain in ('vibration', 'mcsa') and not is_rotating:
+                    continue
+                if domain not in env.state['telemetry']:
+                    env.state['telemetry'][domain] = {}
+                for k, v in params.items():
+                    existing = env.state['telemetry'][domain].get(k)
+                    if existing is not None and isinstance(existing, (int, float)) and isinstance(v, (int, float)):
+                        env.state['telemetry'][domain][k] = max(existing, v)
+                    else:
+                        env.state['telemetry'][domain][k] = v
             return obs
-        wrapped_env.reset = stage_reset
-        wrapped_env.reset()
-        return wrapped_env
+
+        env.reset = stage_reset
+        env.reset()
+        return env
 
 class ContractWrapper:
     def __init__(self, name: str, description: str, masked_domains: Optional[List[str]] = None, noise_std: float = 0.0, enforce_multi_modal: bool = False, enforce_safety_first: bool = False):
@@ -158,9 +168,8 @@ class ContractWrapper:
         self.component_type = 'CONTRACT'
 
     def wrap(self, env: DiagnosticEnvironment) -> DiagnosticEnvironment:
-        wrapped_env = copy.deepcopy(env)
-        orig_step = wrapped_env.step
-        orig_get_obs = wrapped_env._get_observation
+        orig_step = env.step
+        orig_get_obs = env._get_observation
 
         def contract_get_obs():
             obs = orig_get_obs()
@@ -172,14 +181,15 @@ class ContractWrapper:
         def contract_step(action: Dict[str, Any]):
             action_type = action.get('type', '')
             if self.enforce_multi_modal and action_type == 'submit_diagnosis':
-                queried = wrapped_env.state.get('queried_domains', set())
-                if len(queried) < 2:
-                    obs = wrapped_env._get_observation()
+                queried = env.state.get('queried_domains', set())
+                avail = env.state.get('telemetry', {})
+                if len(avail) >= 2 and len(queried) < 2:
+                    obs = env._get_observation()
                     info = {'status': 'CONTRACT_VIOLATION_SINGLE_SENSOR', 'message': 'Kontrak mensyaratkan minimal 2 modalitas sensor independen.'}
                     return obs, -0.4, False, info
             if self.enforce_safety_first and action_type == 'create_work_order':
-                if not wrapped_env.safety_cleared:
-                    obs = wrapped_env._get_observation()
+                if not env.safety_cleared:
+                    obs = env._get_observation()
                     info = {'status': 'CONTRACT_VIOLATION_SAFETY_UNCLEARED', 'message': 'Kontrak mewajibkan verifikasi Safety Guardrail.'}
                     return obs, -0.5, False, info
 
@@ -196,9 +206,9 @@ class ContractWrapper:
                 info['contract_noise_applied'] = True
             return obs, reward, done, info
 
-        wrapped_env._get_observation = contract_get_obs
-        wrapped_env.step = contract_step
-        return wrapped_env
+        env._get_observation = contract_get_obs
+        env.step = contract_step
+        return env
 
 class ChainWrapper:
     def __init__(self, name: str, description: str, require_work_order: bool = True, require_safety: bool = True):
@@ -209,32 +219,31 @@ class ChainWrapper:
         self.component_type = 'CHAIN'
 
     def wrap(self, env: DiagnosticEnvironment) -> DiagnosticEnvironment:
-        wrapped_env = copy.deepcopy(env)
-        orig_step = wrapped_env.step
+        orig_step = env.step
 
         def chain_step(action: Dict[str, Any]):
             action_type = action.get('type', '')
             if action_type == 'submit_diagnosis':
                 obs, reward, _, info = orig_step(action)
-                if self.require_work_order and not wrapped_env.state.get('work_order_generated'):
-                    wrapped_env.done = False
+                if self.require_work_order and not env.state.get('work_order_generated'):
+                    env.done = False
                     info['chain_status'] = 'DIAGNOSIS_ACCEPTED_AWAITING_WORK_ORDER'
                     return obs, reward, False, info
                 return obs, reward, True, info
 
             obs, reward, done, info = orig_step(action)
-            if self.require_work_order and wrapped_env.state.get('work_order_generated'):
-                if self.require_safety and not wrapped_env.safety_cleared:
+            if self.require_work_order and env.state.get('work_order_generated'):
+                if self.require_safety and not env.safety_cleared:
                     info['chain_status'] = 'WORK_ORDER_CREATED_BUT_SAFETY_NOT_CLEARED'
                 else:
                     info['chain_status'] = 'CHAIN_COMPLETED_SUCCESSFULLY'
                     reward += 1.0
-                    wrapped_env.done = True
+                    env.done = True
                     done = True
             return obs, reward, done, info
 
-        wrapped_env.step = chain_step
-        return wrapped_env
+        env.step = chain_step
+        return env
 
 class CompositeEnvHarness:
     def __init__(self, harness_id: str = 'HARNESS-PLTU-CORE'):
@@ -246,7 +255,7 @@ class CompositeEnvHarness:
         return self
 
     def apply(self, base_env: DiagnosticEnvironment) -> DiagnosticEnvironment:
-        current_env = base_env
+        current_env = copy.deepcopy(base_env)
         for wrapper in self.wrappers:
             current_env = wrapper.wrap(current_env)
         return current_env
@@ -358,7 +367,7 @@ class EnvRigger:
     def _default_subagent_policy(self, env: DiagnosticEnvironment) -> Dict[str, Any]:
         obs = env.reset()
         trajectory = []
-        for domain in ['vibration', 'mcsa', 'dga', 'oil', 'thermal']:
+        for domain in ['vibration', 'mcsa', 'dga', 'oil', 'thermal', 'pd']:
             if domain in obs.get('available_domains', []):
                 _, r, _, info = env.step({'type': 'query_domain', 'domain': domain})
                 trajectory.append({'action': 'query_domain', 'domain': domain, 'info': info})
@@ -372,18 +381,36 @@ class EnvRigger:
         tel = env.state.get('telemetry', {})
         f_mode = 'Normal Operation'
         sev = 1
-        if 'vibration' in tel and tel['vibration'].get('overall_rms', 0) > 4.5:
-            f_mode = 'Severe Unbalance / Misalignment'
+
+        # Check multi-domain telemetry for failure modes
+        if 'pd' in tel and (tel['pd'].get('pulse_magnitude_pc', 0) > 800 or tel['pd'].get('nqn', 0) > 250):
+            f_mode = 'Generator Stator Winding Partial Discharge'
+            sev = 3
+        elif 'thermal' in tel and (tel['thermal'].get('delta_t_phase', 0) > 15.0 or tel['thermal'].get('hotspot_temp', 0) > 85.0):
+            if 'dga' in tel and (tel['dga'].get('c2h2', 0) > 5.0 or tel['dga'].get('h2', 0) > 100.0):
+                f_mode = 'High-Voltage Bushing Overheating & Arc Discharge'
+                sev = 4
+            else:
+                f_mode = 'Electrical Stator Terminal Contact Hotspot'
+                sev = 3
+        elif 'vibration' in tel and (tel['vibration'].get('high_freq_g', 0) > 2.0 or 'cavitation' in str(env.expected_failure_mode).lower()):
+            f_mode = 'BFP Impeller Cavitation & Flow Instability'
+            sev = 3
+        elif 'vibration' in tel and (tel['vibration'].get('overall_rms', 0) > 7.0 or tel['vibration'].get('amp_1x', 0) > 6.0):
+            f_mode = 'Severe Unbalance & Zone D Vibration'
             sev = 4
-        elif 'mcsa' in tel and tel['mcsa'].get('upper_sb', -99) > -45:
-            f_mode = 'Rotor Bar Degradation'
+        elif 'mcsa' in tel and (tel['mcsa'].get('upper_sb', -99) > -45 or tel['mcsa'].get('lower_sb', -99) > -45):
+            f_mode = 'Rotor Bar Degradation / Breakage'
             sev = 3
         elif 'dga' in tel and tel['dga'].get('c2h4', 0) > 100:
             f_mode = 'Thermal Fault >700°C'
             sev = 3
-        elif 'oil' in tel and tel['oil'].get('water_ppm', 0) > 200:
+        elif 'oil' in tel and (tel['oil'].get('water_ppm', 0) > 200 or tel['oil'].get('fe_ppm', 0) > 50):
             f_mode = 'Lubricant Contamination & Severe Wear'
             sev = 3
+        elif 'vibration' in tel and tel['vibration'].get('overall_rms', 0) > 4.5:
+            f_mode = 'Severe Unbalance / Misalignment'
+            sev = 4
 
         _, r, done, info = env.step({
             'type': 'submit_diagnosis',

@@ -5,7 +5,10 @@ import {
   Headphones,
   Mic,
   MicOff,
+  Pause,
+  Play,
   Radio,
+  RotateCcw,
   Sparkles,
   Volume2,
   VolumeX,
@@ -16,6 +19,8 @@ import { sendChatMessage } from './api.js'
 import {
   isSpeechRecognitionSupported,
   isSpeechSynthesisSupported,
+  pauseSpeaking,
+  resumeSpeaking,
   speakText,
   startSpeechRecognition,
   stopSpeaking,
@@ -37,9 +42,18 @@ export default function FloatingVoiceWidget() {
   const [reply, setReply] = useState(null)
   const [loading, setLoading] = useState(false)
   const [speaking, setSpeaking] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [speechRate, setSpeechRate] = useState(1.0)
   const [error, setError] = useState(null)
   const [handsFree, setHandsFree] = useState(false)
   const [countdown, setCountdown] = useState(0)
+  const [voiceSessionId, setVoiceSessionId] = useState(() => {
+    try {
+      return localStorage.getItem('pple_voice_session_id') || ''
+    } catch {
+      return ''
+    }
+  })
 
   const activeRecognizerRef = useRef(null)
   const handsFreeRef = useRef(false)
@@ -86,6 +100,7 @@ export default function FloatingVoiceWidget() {
     setIsOpen(false)
     stopSpeaking()
     setSpeaking(false)
+    setIsPaused(false)
     setHandsFree(false)
     if (countdownTimerRef.current) clearTimeout(countdownTimerRef.current)
     if (activeRecognizerRef.current) {
@@ -103,6 +118,7 @@ export default function FloatingVoiceWidget() {
     setError(null)
     stopSpeaking()
     setSpeaking(false)
+    setIsPaused(false)
     if (countdownTimerRef.current) clearTimeout(countdownTimerRef.current)
     setCountdown(0)
 
@@ -164,26 +180,46 @@ export default function FloatingVoiceWidget() {
     setReply(null)
     stopSpeaking()
     setSpeaking(false)
+    setIsPaused(false)
     if (countdownTimerRef.current) clearTimeout(countdownTimerRef.current)
     setCountdown(0)
 
     try {
-      const res = await sendChatMessage({ message: queryText, source: 'VOICE' })
+      const res = await sendChatMessage({
+        message: queryText,
+        source: 'VOICE',
+        sessionId: voiceSessionId || undefined,
+      })
       setReply(res)
+
+      if (res?.session_id && res.session_id !== voiceSessionId) {
+        setVoiceSessionId(res.session_id)
+        try {
+          localStorage.setItem('pple_voice_session_id', res.session_id)
+        } catch {}
+      }
 
       // Use concise, phonetic speech summary for natural Indonesian TTS
       const textToSpeak = res.summary_for_speech || res.reply
       if (hasTTS && textToSpeak) {
         setSpeaking(true)
+        setIsPaused(false)
         speakText(textToSpeak, {
+          rate: speechRate,
+          onStart: () => {
+            setSpeaking(true)
+            setIsPaused(false)
+          },
           onEnd: () => {
             setSpeaking(false)
+            setIsPaused(false)
             if (handsFreeRef.current) {
               scheduleNextListeningCycle(1400)
             }
           },
           onError: () => {
             setSpeaking(false)
+            setIsPaused(false)
             if (handsFreeRef.current) {
               scheduleNextListeningCycle(1800)
             }
@@ -202,19 +238,90 @@ export default function FloatingVoiceWidget() {
     }
   }
 
+  const handleResetSession = () => {
+    setVoiceSessionId('')
+    try {
+      localStorage.removeItem('pple_voice_session_id')
+    } catch {}
+    setReply(null)
+    setTranscript('')
+    stopSpeaking()
+    setSpeaking(false)
+    setIsPaused(false)
+    if (countdownTimerRef.current) clearTimeout(countdownTimerRef.current)
+    setCountdown(0)
+  }
+
   const handleStopSpeaking = () => {
     stopSpeaking()
     setSpeaking(false)
+    setIsPaused(false)
+  }
+
+  const handlePauseResumeSpeaking = () => {
+    if (isPaused) {
+      resumeSpeaking()
+      setIsPaused(false)
+    } else {
+      pauseSpeaking()
+      setIsPaused(true)
+    }
+  }
+
+  const handleCycleSpeechRate = () => {
+    const rates = [1.0, 1.25, 1.5]
+    const nextIdx = (rates.indexOf(speechRate) + 1) % rates.length
+    const nextRate = rates[nextIdx]
+    setSpeechRate(nextRate)
+
+    if (speaking && reply) {
+      stopSpeaking()
+      setIsPaused(false)
+      const textToSpeak = reply.summary_for_speech || reply.reply
+      speakText(textToSpeak, {
+        rate: nextRate,
+        onStart: () => {
+          setSpeaking(true)
+          setIsPaused(false)
+        },
+        onEnd: () => {
+          setSpeaking(false)
+          setIsPaused(false)
+          if (handsFreeRef.current) {
+            scheduleNextListeningCycle(1400)
+          }
+        },
+        onError: () => {
+          setSpeaking(false)
+          setIsPaused(false)
+          if (handsFreeRef.current) {
+            scheduleNextListeningCycle(1800)
+          }
+        },
+      })
+    }
   }
 
   const handleReplaySpeech = () => {
     if (!reply) return
     stopSpeaking()
     setSpeaking(true)
+    setIsPaused(false)
     const textToSpeak = reply.summary_for_speech || reply.reply
     speakText(textToSpeak, {
-      onEnd: () => setSpeaking(false),
-      onError: () => setSpeaking(false),
+      rate: speechRate,
+      onStart: () => {
+        setSpeaking(true)
+        setIsPaused(false)
+      },
+      onEnd: () => {
+        setSpeaking(false)
+        setIsPaused(false)
+      },
+      onError: () => {
+        setSpeaking(false)
+        setIsPaused(false)
+      },
     })
   }
 
@@ -271,6 +378,14 @@ export default function FloatingVoiceWidget() {
                 title={handsFree ? 'Matikan Mode Hands-Free' : 'Aktifkan Mode Hands-Free Inspeksi'}
               >
                 <Headphones size={16} />
+              </button>
+              <button
+                type="button"
+                className="icon-button-subtle"
+                onClick={handleResetSession}
+                title="Mulai Sesi Suara Baru (Reset Konteks Percakapan)"
+              >
+                <RotateCcw size={15} />
               </button>
               <Link
                 to="/chat"
@@ -362,36 +477,57 @@ export default function FloatingVoiceWidget() {
                     <span>Jawaban Asisten CBM:</span>
                   </div>
                   <div className="floating-voice-response__meta-right">
-                    {speaking ? (
+                    <div className="speech-ctrl-group">
                       <button
                         type="button"
-                        className="speech-btn speech-btn--speaking"
-                        onClick={handleStopSpeaking}
-                        title="Hentikan pembacaan suara"
+                        className="speech-rate-btn"
+                        onClick={handleCycleSpeechRate}
+                        title={`Kecepatan bicara saat ini: ${speechRate}x. Klik untuk mengubah.`}
                       >
-                        <VolumeX size={13} />
-                        <span>Hentikan Suara</span>
+                        {speechRate}x
                       </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="speech-btn"
-                        onClick={handleReplaySpeech}
-                        title="Putar ulang suara ringkasan CBM"
-                      >
-                        <Volume2 size={13} />
-                        <span>Putar Ulang</span>
-                      </button>
-                    )}
+                      {speaking ? (
+                        <>
+                          <button
+                            type="button"
+                            className={`speech-btn ${isPaused ? 'speech-btn--paused' : 'speech-btn--speaking'}`}
+                            onClick={handlePauseResumeSpeaking}
+                            title={isPaused ? 'Lanjutkan pembacaan suara' : 'Jeda pembacaan suara'}
+                          >
+                            {isPaused ? <Play size={12} /> : <Pause size={12} />}
+                            <span>{isPaused ? 'Resume' : 'Pause'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="speech-btn speech-btn--stop"
+                            onClick={handleStopSpeaking}
+                            title="Hentikan pembacaan suara"
+                          >
+                            <VolumeX size={12} />
+                            <span>Stop</span>
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className="speech-btn"
+                          onClick={handleReplaySpeech}
+                          title="Putar ulang suara ringkasan CBM"
+                        >
+                          <Volume2 size={12} />
+                          <span>Dengarkan</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {speaking ? (
-                  <div className="voice-speaking-indicator">
-                    <div className="mini-wave-bars">
-                      <span /><span /><span /><span />
+                  <div className={`voice-speaking-indicator ${isPaused ? 'voice-speaking-indicator--paused' : ''}`}>
+                    <div className="active-soundwave-bars">
+                      <span /><span /><span /><span /><span /><span /><span /><span />
                     </div>
-                    <span>Menyuarakan rekomendasi teknis...</span>
+                    <span>{isPaused ? 'Pembacaan suara dijeda' : 'Menyuarakan rekomendasi CBM...'}</span>
                   </div>
                 ) : null}
 
