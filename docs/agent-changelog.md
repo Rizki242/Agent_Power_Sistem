@@ -41,6 +41,7 @@ Rules:
   - `git diff --stat` - hanya 2 file sesuai rencana.
 - **Left out / risks:** Verifikasi visual di browser belum dilakukan (agen tidak bisa melihat render); perlu hard-refresh setelah dev server memuat bundle baru. Kontras ikon `#0099D8` di atas `#f3f6f8` ~3.1:1 - memenuhi minimum 3:1 untuk komponen grafis (bukan teks), konsisten dengan catatan kontras entri sidebar sebelumnya.
 - **Docs/ADR:** `docs/agent-changelog.md` saja (perubahan styling, bukan arsitektural).
+- **Follow-up (permintaan lanjutan sesi yang sama):** "buat agar di tengah" - `.chat-new-button-claude` diberi `margin: 8px auto 10px auto` + `align-self: center` agar tombol ikon 36x36 berada persis di tengah sidebar (sebelumnya rata kiri mengikuti margin 12px). Diverifikasi ulang: `oxlint src` exit 0, `npm run build` sukses "built in 7.09s".
 
 ### 2026-09-22 - Sidebar ikut tema: tokenisasi --sidebar-* untuk sidebar nav utama dan sidebar chat
 

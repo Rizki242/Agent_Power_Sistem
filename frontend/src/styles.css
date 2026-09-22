@@ -4581,10 +4581,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* Tombol ikon saja (tanpa label "Chat Baru"); warnanya netral mengikuti token
    sidebar, aksen PLN hanya pada ikon. */
 .chat-new-button-claude {
-  margin: 8px 12px 10px 12px;
+  margin: 8px auto 10px auto;
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
   width: 36px;
   height: 36px;
   flex: 0 0 auto;
