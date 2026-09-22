@@ -78,6 +78,10 @@ data/automations/
 # lihat src/domain_measurements.py) - artefak runtime, bukan source of truth.
 data/domain/*/backup/
 
+# Dataset PDF 92 MB yang tidak dibaca kode mana pun (dikeluarkan dari history
+# 2026-09-22 agar repo bisa di-push; filenya tetap ada di disk).
+data/Asset/
+
 # Ekspor duplikat docs/STRUKTUR_PROJECT.md (sudah di-untrack 2026-09-21).
 docs/STRUKTUR_PROJECT.pdf
 docs/image.png
