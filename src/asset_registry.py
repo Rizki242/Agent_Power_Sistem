@@ -25,6 +25,7 @@ from src.data_loader import get_data_path
 MONITORING_MODULES = ("MCSA", "DGA", "VIBRASI", "PD", "TRIBOLOGY", "THERMAL")
 LIFECYCLE_STATUSES = ("Aktif", "Upgrade", "Diganti", "Nonaktif")
 _LOCK = Lock()
+_PANDAS_GE_2 = tuple(int(x) for x in pd.__version__.split(".")[:2] if x.isdigit()) >= (2, 0)
 
 
 def _registry_path() -> Path:
@@ -216,15 +217,20 @@ def _load_condition_history_raw() -> pd.DataFrame:
 
 def load_condition_history() -> pd.DataFrame:
     history = _load_condition_history_raw().copy()
-    # format="mixed" is required, not cosmetic: rows written before the
+    # format="mixed" is required on pandas >= 2: rows written before the
     # test_date corruption fix above may carry "%Y-%m-%d %H:%M:%S" (from an
     # old Timestamp round-trip) alongside newer plain "%Y-%m-%d" rows.
     # Without it, pandas >= 2 infers ONE format from the first value and
     # coerces every row that doesn't match it to NaT - silently blanking
-    # otherwise-valid dates rather than raising, reproduced with a column
-    # mixing both formats. format="mixed" parses every value independently.
-    history["test_date"] = pd.to_datetime(history["test_date"], errors="coerce", format="mixed")
+    # otherwise-valid dates rather than raising. format="mixed" parses every value independently.
+    # On pandas < 2 (which lacks format="mixed" and treats it as a literal strftime string),
+    # dateutil's per-row fallback is already the default when format is omitted.
+    to_datetime_kwargs: dict[str, Any] = {"errors": "coerce"}
+    if _PANDAS_GE_2:
+        to_datetime_kwargs["format"] = "mixed"
+    history["test_date"] = pd.to_datetime(history["test_date"], **to_datetime_kwargs)
     return history.sort_values("test_date", ascending=False, na_position="last")
+
 
 
 def add_condition_record(record: dict[str, Any]) -> dict[str, Any]:
