@@ -210,6 +210,41 @@ class DeleteTests(DomainMeasurementsTestCase):
         self.assertEqual(len(dm.load_measurements("DGA")), 1)
 
 
+class UnicodeSpaceTests(DomainMeasurementsTestCase):
+    """Excel exports smuggle U+00A0 into names; the store must not keep it."""
+
+    NBSP = chr(0x00A0)
+
+    def test_nbsp_in_equipment_name_is_stored_as_plain_space(self):
+        dm.append_measurements("VIBRASI", [{
+            "equipment": "ROLLER" + self.NBSP + "SCREEN" + self.NBSP + "1",
+            "test_date": "2026-07-01",
+            "parameter": "overall_rms",
+            "value": 8.21,
+        }])
+        frame = dm.load_measurements("VIBRASI")
+        self.assertEqual(frame.loc[0, "equipment"], "ROLLER SCREEN 1")
+
+    def test_equipment_filter_matches_the_plain_space_name(self):
+        dm.append_measurements("VIBRASI", [{
+            "equipment": "Fire" + self.NBSP + "Fighting" + self.NBSP + "Jockey" + self.NBSP + "Pump" + self.NBSP + "1",
+            "test_date": "2026-07-01",
+            "parameter": "overall_rms",
+            "value": 0.93,
+        }])
+        found = dm.filter_measurements("VIBRASI", equipment="Fire Fighting Jockey Pump 1")
+        self.assertEqual(len(found), 1)
+
+    def test_internal_whitespace_runs_are_collapsed(self):
+        dm.append_measurements("VIBRASI", [{
+            "equipment": "BC  10.1 ",
+            "test_date": "2026-07-01",
+            "parameter": "overall_rms",
+            "value": 3.47,
+        }])
+        self.assertEqual(dm.load_measurements("VIBRASI").loc[0, "equipment"], "BC 10.1")
+
+
 class CorruptFileTests(DomainMeasurementsTestCase):
     def test_unreadable_csv_degrades_to_empty_not_crash(self):
         path = dm.measurements_path("THERMAL")

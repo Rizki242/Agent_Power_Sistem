@@ -106,8 +106,26 @@ def _text(value: Any) -> str:
     except (TypeError, ValueError):
         # Non-scalar (list/dict/etc.) - not missing, fall through to str().
         pass
-    text = str(value).strip()
+    text = _collapse_spaces(str(value))
     return "" if text.lower() in {"nan", "nat", "none", "<na>"} else text
+
+
+# Unicode spaces that Excel exports smuggle into equipment names - most
+# often U+00A0 (non-breaking space) from a merged or wrapped header cell.
+# Stored as-is, a U+00A0 name is a different equipment from the registry's
+# plain-space one, so a name-based join silently misses and the UI renders
+# mojibake. Normalised here, at the single point every stored cell passes.
+_UNICODE_SPACES = tuple(
+    chr(code)
+    for code in (0x00A0, 0x1680, *range(0x2000, 0x200B), 0x202F, 0x205F, 0x3000, 0xFEFF)
+)
+
+
+def _collapse_spaces(text: str) -> str:
+    """Map exotic unicode spaces to a plain space, collapse runs, and trim."""
+    for char in _UNICODE_SPACES:
+        text = text.replace(char, " ")
+    return " ".join(text.split())
 
 
 def canon_domain(domain: str) -> str:

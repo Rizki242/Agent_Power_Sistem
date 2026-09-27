@@ -584,3 +584,23 @@ Rules:
   - `python -m unittest tests.test_auth`: 8/8 tests passed in 0.982s.
 - **Docs/ADR:** `docs/agent-changelog.md`.
 
+
+### 2026-09-27 - Vibrasi Juli 2026: verifikasi data + normalisasi spasi Unicode di store domain
+
+- **Requested:** "Ini adalah data vibrasi bulan Juli, tolong masukkan ke aplikasi" (4 tangkapan layar tabel HASIL PENGUKURAN PADA EQUIPMENT BULAN JULI 2026: Coal Ash Handling, Unit 1, Unit 2, Unit 3).
+- **Check:** `data/domain/VIBRASI/measurements.csv` sudah berisi 1145 baris `test_date=2026-07-01`, `source_file="Exsume Vibrasi juli 2026.xlsx"`, `batch_id=monthly-2026-07-01`, mencakup 90 equipment (14 COMMON + 26 Unit 1 + 20 Unit 2 + 30 Unit 3) - persis sesuai keempat tangkapan layar. Spot-check nilai cocok (Motor ID Fan 1#1 VIB MAX 2.21 Normal, Turbin-Generator#2 5.85 Prewarning, Motor Condensat Pump 2#1 8.07 Alarm). **Tidak ada data baru yang perlu diingest.**
+- **Cacat yang ditemukan:** 6 nama equipment tersimpan dengan U+00A0 (non-breaking space) bawaan ekspor Excel - `ROLLER<NBSP>SCREEN<NBSP>1/2`, `Fire<NBSP>Fighting<NBSP>Jockey<NBSP>Pump<NBSP>1/2`, `Fire<NBSP>Fighting<NBSP>Pump<NBSP>With<NBSP>Motor/Diesel` (153 baris VIBRASI Mei/Juni/Juli + 3 baris THERMAL). Nama ber-NBSP bukan nama yang sama dengan entri `data/MCSA/config/asset_registry.json` ("ROLLER SCREEN 1", "Fire Fighting Jockey Pump 1"), sehingga join berbasis nama gagal diam-diam dan UI menampilkan mojibake.
+- **Plan:** (1) normalisasi spasi Unicode di `_text()` `src/domain_measurements.py` - satu titik yang dilalui setiap sel tersimpan, agar ingest berikutnya tidak memasukkan ulang; (2) backfill store yang sudah ada lewat `_write_frame()` (atomik + backup); (3) tes regresi; (4) verifikasi; (5) catat di sini.
+- **Changed:**
+  - `src/domain_measurements.py` - tambah `_UNICODE_SPACES` + `_collapse_spaces()`; `_text()` memetakan spasi Unicode eksotis ke spasi biasa, merapatkan deret spasi, dan memangkas ujung.
+  - `tests/test_domain_measurements.py` - kelas `UnicodeSpaceTests` (3 tes): nama ber-NBSP tersimpan dengan spasi biasa, filter equipment cocok dengan nama spasi biasa, deret spasi internal dirapatkan.
+  - `data/domain/VIBRASI/measurements.csv` (153 baris) dan `data/domain/THERMAL/measurements.csv` (3 baris) - backfill nama; backup otomatis `data/domain/VIBRASI/backup/measurements_20260927_202712.csv`.
+- **Verified:**
+  - `python -m py_compile src/domain_measurements.py tests/test_domain_measurements.py` - bersih.
+  - `python -m unittest tests.test_domain_measurements` - Ran 30 tests, OK.
+  - `python -m unittest tests.test_domain_ingest tests.test_domain_report tests.test_domain_workspace tests.test_domain_input_forms tests.test_domain_overrides tests.test_pple_domain_api tests.test_pple_cli_domain` - Ran 112 tests, OK.
+  - `python verify_app.py` - "Verification Complete!" (data load, chatbot, PPT 1321631 bytes, Materi OK 79 / Failed 0).
+  - Cek ulang store: 0 sel NBSP di kelima `data/domain/*/measurements.csv`; Juli 2026 tetap 1145 baris / 90 equipment.
+- **Left out:** tidak menyentuh `src/asset_registry.py`, yang sudah termodifikasi di working copy sebelum tugas ini (perubahan `_PANDAS_GE_2` / `format="mixed"`) dan bukan milik perubahan ini.
+- **Docs/ADR:** `docs/agent-changelog.md`.
+
