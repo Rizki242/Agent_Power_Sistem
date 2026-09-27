@@ -628,3 +628,22 @@ Rules:
 - **Anomali data yang dilaporkan ke user, tidak diubah sendiri:** baris kembar 139/8/6/3/2/0/120/1100 yang muncul identik di Unit 1, 2, dan 3 (Mar/Jun/Des); tanggal duplikat di sheet Unit 2 (18-Nov-25, 19-Dec-25) dan Unit 3 (12-Nov-25, 13-Dec-25) yang hanya beda H2O - tidak diingest karena tanggalnya sudah ada; selisih C2H6/CO2 pada Unit 3 2024-10-16 antara sheet (54 / 1016) dan store (71 / 1207); lonjakan CO/CO2 Unit 2 Juni 2026 (254 -> 663 ppm, 682 -> 4194 ppm).
 - **Docs/ADR:** `docs/agent-changelog.md`.
 
+### 2026-09-28 - Tribology: samakan key ke agen + ingest EXSUM Juli 2026
+
+- **Requested:** lanjutkan ke domain Tribology (Juli 2026 masih kosong; store hanya 36 baris / 9 equipment, terakhir 2026-05-25).
+- **Check + rencana yang berubah di tengah jalan:** `EXSUM TRIBOLOGY BULAN JULI 2026.xlsx` ternyata **bukan** lembar hasil lab, melainkan matriks status lintas-domain (`RESUM ALL`) - tidak ada angka viskositas/TAN/water. Yang ada nyata: kode ISO 4406 dan kelas NAS di dalam teks kolom ANALISA, plus status tribology per equipment. Sekalian ditemukan bug: store memakai key `water_content` dan `cleanliness_iso`, sedangkan `TribologyAgent.evaluate()` membaca `water_ppm` dan `iso_cleanliness`. Dibuktikan pada MOT Unit 1 - agen memakai default bawaannya `iso_cleanliness="16/14/11"` padahal data asli `18/16/11`, dan `water_ppm=45.0` yang kebetulan sama dengan default sehingga kesalahan itu tidak terlihat. Rencana disampaikan ulang dan dikonfirmasi user (perbaiki bug + ingest).
+- **Changed:**
+  - `src/domain_ingest.py` - alias `water_content`/`water content` pada `water_ppm`, dan `cleanliness_iso`/`particle count` pada `iso_cleanliness`.
+  - `data/domain/TRIBOLOGY/measurements.csv` - migrasi 18 baris lama: `water_content` -> `water_ppm` (9), `cleanliness_iso` -> `iso_cleanliness` (9). Untuk yang ISO, `value` dikosongkan supaya `agent_input_from_measurements()` meneruskan `raw_value` "18/16/11" sebagai string (parameter ini `numeric=False`); diassert dulu bahwa setiap `raw_value` memang berisi kode lengkap sebelum menulis.
+  - `data/domain/TRIBOLOGY/measurements.csv` - +56 bacaan untuk 28 equipment tanggal `2026-07-01` (36 -> 92 baris, 9 -> 37 equipment): `iso_cleanliness` (kode penuh) + `nas_class`, `condition` dipetakan ke kosakata store (STD BY -> Standby, WARNING -> Warning, NORMAL -> Normal), teks ANALISA disimpan di `notes`.
+  - `data/domain/TRIBOLOGY/uploads/2026/09/28/batch-002228-0213f4/` - sumber + manifest (28 baris sumber, 56 valid, 0 ditolak).
+  - `tests/test_domain_ingest.py` - `test_maps_legacy_tribology_store_keys_to_the_agent_keys`, `test_iso_cleanliness_reaches_the_agent_as_the_full_code`.
+- **Tidak dikarang:** viskositas/TAN/water hanya kualitatif di sumber ("Normal" / "EROR"), jadi tidak diingest sebagai angka - hanya tercatat di `notes`. Tanggal per-equipment tidak ada di lembar bulanan itu; dipakai `2026-07-01` sebagai penanda periode, konsisten dengan batch VIBRASI Juli.
+- **Verified:**
+  - `python -m py_compile src/domain_ingest.py tests/test_domain_ingest.py` - bersih.
+  - `python -m unittest tests.test_domain_ingest tests.test_domain_measurements tests.test_tribology_data tests.test_tribology_overrides tests.test_thermal_tribo_standards tests.test_domain_workspace tests.test_domain_report tests.test_pple_domain_api` - Ran 120 tests, OK; setelah tes baru ditambahkan `tests.test_domain_ingest` Ran 39 tests, OK.
+  - `python verify_app.py` - "Verification Complete!".
+  - Sesudah migrasi, `TribologyAgent` menerima data asli: MOT Unit 1 `iso_cleanliness='18/16/11'` (sebelumnya default `'16/14/11'`), PAF 1B `'17/15/11'`; data Juli terbaca, mis. MOT Unit 1 `22/19/13` NAS 10, MOT Unit 3 `15/13/10` NAS 4.
+- **Gap yang ditemukan dan BELUM diperbaiki (butuh keputusan user, perubahan aturan diagnosa):** `TribologyAgent` membaca `iso_cleanliness` tetapi tidak pernah menilainya - hanya diteruskan ke `metrics`. Akibatnya ISO 22/19/13 (NAS 10, sangat kotor; lembar sumbernya sendiri menandai WARNING) tetap dinilai `HEALTHY` 95.0. Begitu pula `fe_ppm`/`cu_ppm` selalu default 12.0/3.0 karena tidak ada satu pun data wear di sumber mana pun.
+- **Docs/ADR:** `docs/agent-changelog.md`.
+

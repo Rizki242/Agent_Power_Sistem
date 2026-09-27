@@ -1,0 +1,34 @@
+{
+  "batch_id": "batch-002228-0213f4",
+  "domain": "TRIBOLOGY",
+  "uploaded_at": "2026-09-28T00:22:28",
+  "file": "EXSUM TRIBOLOGY BULAN JULI 2026.csv",
+  "status": "committed",
+  "source_rows": 28,
+  "valid_rows": 56,
+  "rejected_rows": 0,
+  "mapping": {
+    "equipment": "equipment",
+    "unit_name": "unit_name",
+    "test_date": "test_date",
+    "condition": "condition",
+    "notes": "notes",
+    "iso_cleanliness": "iso_cleanliness",
+    "nas_class": "nas_class"
+  },
+  "unmapped_columns": [],
+  "duplicate_columns": [],
+  "rejected": [],
+  "audit_events": [
+    {
+      "action": "preview",
+      "at": "2026-09-28T00:22:28"
+    },
+    {
+      "action": "commit",
+      "at": "2026-09-28T00:22:29",
+      "written": 56
+    }
+  ],
+  "written_rows": 56
+}

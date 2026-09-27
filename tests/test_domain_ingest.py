@@ -93,6 +93,7 @@ class ColumnMappingTests(IngestTestCase):
         self.assertEqual(mapping["note"], "notes")
         self.assertEqual(mapping["asset_id"], "asset_id")
 
+
     def test_maps_the_gt_sampling_sheet_columns(self):
         """The GT#1..GT#3 transformer sheets carry TDCG and H2O columns whose
         keys are already in the store; both must map, not fall through."""
@@ -110,6 +111,30 @@ class ColumnMappingTests(IngestTestCase):
         self.assertEqual(mapping["Winding Temp"], "temp_winding")
         self.assertNotIn("H2O", {mapping[col] for col in mapping if col == "H2"})
 
+
+    def test_maps_legacy_tribology_store_keys_to_the_agent_keys(self):
+        """data/domain/TRIBOLOGY rows written before this alias existed used
+        water_content / cleanliness_iso, which TribologyAgent does not read -
+        it silently fell back to its built-in example values instead."""
+        frame = pd.DataFrame(columns=["equipment", "test_date", "water_content", "cleanliness_iso"])
+        mapping = ingest.map_columns("TRIBOLOGY", frame)
+        self.assertEqual(mapping["water_content"], "water_ppm")
+        self.assertEqual(mapping["cleanliness_iso"], "iso_cleanliness")
+
+    def test_iso_cleanliness_reaches_the_agent_as_the_full_code(self):
+        """iso_cleanliness is numeric=False: the agent parses "20/18/15", so
+        the code must survive as text rather than collapsing to a number."""
+        frame = pd.DataFrame([{
+            "equipment": "MOT Unit 1", "test_date": "2026-07-01", "iso_cleanliness": "20/18/15",
+        }])
+        rows = ingest.wide_to_long("TRIBOLOGY", frame)
+        iso = [row for row in rows if row["parameter"] == "iso_cleanliness"][0]
+        self.assertEqual(iso["raw_value"], "20/18/15")
+        payload = ingest.agent_input_from_measurements("TRIBOLOGY", pd.DataFrame([{
+            "parameter": "iso_cleanliness", "value": float("nan"),
+            "raw_value": "20/18/15", "test_date": "2026-07-01",
+        }]))
+        self.assertEqual(payload["iso_cleanliness"], "20/18/15")
 
 
 class DelimiterDetectionTests(IngestTestCase):
