@@ -38,7 +38,7 @@ const TABS = [
 const DOMAIN_COLORS = {
   VIBRASI: '#3b82f6',
   DGA: '#f59e0b',
-  TRIBOLOGI: '#10b981',
+  TRIBOLOGY: '#10b981',
   THERMAL: '#ef4444',
   PD: '#8b5cf6',
   MCSA: '#06b6d4',

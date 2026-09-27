@@ -665,3 +665,21 @@ Rules:
   - `tests.test_streamlit_app` - Ran 43 tests in 125.191s, OK (sebelumnya gagal 3/43: `test_pd_page_rekomendasi_tab_renders`, `test_pd_page_renders_with_disclaimer`, `test_tribology_page_rekomendasi_tab_renders`).
 - **Left out:** agen lain (Vibration/DGA/PD/Thermal) mungkin punya pola `.get(key, default)` serupa yang belum diaudit satu per satu - di luar cakupan hari ini, disebut sebagai potensi kerja lanjutan bukan diperbaiki diam-diam.
 - **Docs/ADR:** `docs/agent-changelog.md`.
+
+### 2026-09-28 - Sinkronkan frontend/chat dengan data domain yang sudah diingest
+
+- **Requested:** "buat agar front juga update sesuaikan data yang sudah masuk" (setelah ingest Vibrasi/DGA/Tribology Juli 2026 sebelumnya).
+- **Check:** ditelusuri jalur data yang benar-benar dipakai React dan chat assistant, bukan diasumsikan. Ditemukan dua arsitektur data per domain: (1) store kanonik `data/domain/<DOMAIN>/measurements.csv` yang saya isi minggu ini, dipakai `/api/v2/domain/*` (`pple/api/domain_router.py`); (2) "seed of record" legacy per-domain yang lebih tua, dibaca langsung oleh `src.dga_data`/`src.tribology_data`/dst. Vibrasi dan Tribology sudah aman: `CBMDashboard.jsx` tab "Parameter Vibrasi" dan "Tren Kesehatan" memanggil `getDomainMeasurements()` -> `/api/v2/domain/*/measurements` -> store kanonik langsung, jadi otomatis fresh tanpa perubahan (dikonfirmasi lewat `TestClient` langsung). **DGA berbeda**: tab Duval Triangle React (`getDgaTransformers()` -> `/api/dga/transformers`) dan chat assistant (`src/agents/master_agent.py`, `src/chatbot.py`, keduanya lewat `src.dga_data.search_dga_transformers()`/`get_dga_transformer_detail()`) membaca `data/DGA/dga_history_cbmai.csv` - file terpisah yang tidak tersentuh oleh ingest via `domain_ingest.commit_batch()` (dikonfirmasi: `commit_batch()` hanya menulis ke store kanonik + event, tidak pernah menulis ke seed legacy manapun). Akibatnya tab Duval dan jawaban chat soal trafo masih menampilkan tanggal Mei 2026, bukan Juli.
+- **Plan:** ikuti presedn yang sudah ada di `scripts/ingestion/ingest_dga_gt_uat_report.py` (dual-write canonical + legacy, idempotent per Equipment+Date) - tulis skrip serupa yang HANYA menyalin 12 baris yang sudah ada di store kanonik (bukan re-parse sumber) ke `dga_history_cbmai.csv`.
+- **Changed:**
+  - `scripts/ingestion/sync_dga_history_from_canonical_juli2026.py` (baru) - baca 12 baris batch `DGA GT Unit 1-3 2025-2026.csv` dari store kanonik, tulis ke skema `dga_history_cbmai.csv` (Date/Unit/.../TDCG/Condition), idempotent pada (Equipment, Date). Kolom `Condition` sengaja dikosongkan, bukan ditebak "Normal" - kolom itu metadata saja (API menghitung status live dari gas via `calculate_dga_diagnosis()`, tidak pernah membaca kolom ini), dan salah satu baris baru (Unit 2, 2026-06-29) sudah ditandai ALERT/T3 oleh `DGAAgent` sehingga label "Normal" akan salah.
+  - `data/DGA/dga_history_cbmai.csv` - +12 baris (388 -> 400).
+  - `frontend/src/CBMDashboard.jsx` - perbaiki typo `DOMAIN_COLORS.TRIBOLOGI` -> `TRIBOLOGY`; sebelumnya garis tren kesehatan Tribology (domain yang barusan diisi datanya) jatuh ke warna abu-abu fallback karena key peta warna tidak pernah cocok dengan id domain nyata dari `/api/v2/domain/domains`.
+- **Verified:**
+  - Skrip dijalankan 2x - run kedua "All rows already present... nothing to do" (idempotent terkonfirmasi).
+  - `search_dga_transformers()`/`get_dga_transformer_detail()` - `sampling_date` Main Transformer Unit 1/2/3 sekarang 2026-07-01/2026-07-06/2026-06-24 (sebelumnya Mei 2026); riwayat detail memuat semua 12 bacaan baru.
+  - `npm --prefix frontend run lint` - bersih (oxlint). `npm --prefix frontend run build` - bersih, 6.42s.
+  - `python -m unittest tests.test_dga_data tests.test_dga_methods tests.test_api_server` - Ran 83 tests in 250.399s, OK.
+  - `python verify_app.py` - "Verification Complete!" (PPT 1321637 bytes, Materi 80/0 gagal).
+- **Left out:** riwayat kondisi di `src/asset_registry.py` (dipakai Asset 360/Fleet) sengaja tidak di-backfill - itu pipeline historis terpisah yang bahkan tidak dijalankan otomatis oleh upload biasa via Streamlit/API, jadi memperluasnya sekarang di luar permintaan "front update sesuai data yang masuk".
+- **Docs/ADR:** `docs/agent-changelog.md`.
