@@ -27,6 +27,32 @@ Rules:
 
 ## Entries
 
+### 2026-09-28 - Ingest Data Laporan Bulanan PdM Mei 2026 (2.117 pengukuran) & Kompatibilitas Pandas Asset Registry
+
+- **Requested:** Ingest seluruh data CBM dari `data/Laporan/05. Laporan Bulanan PdM Bulan Mei 2026.pdf` ke dalam platform (Streamlit dan React frontend).
+- **Plan:**
+  - Ekstraksi seluruh 5 domain data dari PDF 624 halaman `data/Laporan/05. Laporan Bulanan PdM Bulan Mei 2026.pdf` (Vibrasi hal 15-166, Thermal hal 167-455, DGA hal 528-539, PD hal 540-574, Tribology hal 575-624).
+  - Tulis skrip otomatisasi ekstraksi idempotent `scripts/ingestion/ingest_laporan_bulanan_mei_2026.py` yang memasukkan data ke canonical store `data/domain/<DOMAIN>/measurements.csv`, `data/DGA/dga_history_cbmai.csv`, dan `condition_history.csv`.
+  - Tangani kompatibilitas versi pandas pada `load_condition_history()` (`src/asset_registry.py`) agar `format="mixed"` tidak menyebabkan `NaT` pada runtime dengan pandas < 2.0.
+  - Verifikasi menyeluruh: unit test domain, asset registry, auth, DGA, Streamlit app loading, dan frontend build/lint.
+- **Changed:**
+  - `scripts/ingestion/ingest_laporan_bulanan_mei_2026.py` - skrip ingest komprehensif untuk mem-parse dan mengimpor 2.117 pengukuran riil dari PDF laporan bulanan Mei 2026.
+  - `data/domain/VIBRASI/measurements.csv` - bertambah 1.053 baris pengukuran vibrasi Mei 2026 (posisi 1V-6A, overall RMS, ISO Level A-D).
+  - `data/domain/THERMAL/measurements.csv` - bertambah 209 baris pengukuran suhu/IRT Mei 2026 (T_max, T_rise, ambient, delta T).
+  - `data/domain/DGA/measurements.csv` & `data/DGA/dga_history_cbmai.csv` - bertambah 801 baris pengukuran gas terlarut DGA (GT 1, GT 2, GT 3, UAT 3) dan 388 baris riwayat evaluasi DGA.
+  - `data/domain/TRIBOLOGY/measurements.csv` - bertambah 36 baris analisis oli lab (Viskositas 40°C, TAN, Water ppm, Wear Fe/Cu, ISO 4406 Cleanliness).
+  - `data/domain/PD/measurements.csv` - bertambah 18 baris Partial Discharge (Fasa R/S/T, Qm+, Qm-, NQN).
+  - `src/asset_registry.py` - deteksi versi pandas `_PANDAS_GE_2` agar `format="mixed"` hanya diaktifkan pada pandas >= 2.0, mencegah coercing tanggal menjadi `NaT` pada pandas 1.5.x.
+- **Verified:**
+  - `python -m unittest tests.test_asset_registry` - 13/13 tests OK.
+  - `python -m unittest tests.test_auth tests.test_dga_methods` - 20/20 tests OK.
+  - `python -m unittest tests.test_domain_measurements` - 30/30 tests OK.
+  - `python verify_app.py` - Verification Complete (7.885 data baris termuat, chatbot rules teruji, PPT dihasilkan 1.3 MB, 79/79 materi valid).
+  - Streamlit: `python -c "import app"` berhasil tanpa error modul atau page import.
+  - Frontend: `npm --prefix frontend run lint` (oxlint: 0 warnings, 0 errors); `npm --prefix frontend run build` (vite v8.3.0 berhasil membangun bundle tanpa error).
+- **Left out / risks:** Ekstraksi data PDF memanfaatkan teks dan tabel bawaan file laporan bulanan PdM; parameter tanpa nilai numerik jelas atau format grafik diabaikan tanpa fabrikasi angka tiruan.
+- **Docs/ADR:** none needed.
+
 ### 2026-09-27 - Cache hasil parsing dokumen RAG ke disk (cold start ~282 detik -> hitungan detik)
 
 - **Requested:** "gas #1-#3 dulu" - item #2 dari temuan suite penuh: `GET /api/rag/chunks` tercatat 282262 ms di log test padahal dipanggil dengan `limit=5`.
