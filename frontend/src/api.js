@@ -499,5 +499,13 @@ export function changeUserPassword(oldPassword, newPassword) {
   })
 }
 
+// `avatar` is a small base64 data URL, or null to remove the current photo.
+export function updateUserAvatar(avatar) {
+  return sendJson('/api/auth/avatar', {
+    method: 'POST',
+    body: JSON.stringify({ avatar }),
+  })
+}
+
 
 

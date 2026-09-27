@@ -687,3 +687,7 @@ COND-FED5D12A72,AST-051,FIRE FIGHTING PUMP WITH MOTOR UNIT 3,THERMAL,2026-07-16,
 COND-267027B335,AST-CRUSHER1,CRUSHER 1,THERMAL,2026-07-23,Normal,Inspeksi IR Thermography bulan 2026-07: status Normal.,EKSUM IRT JULI 2026.xlsx,2026-09-22T03:34:02
 COND-0D07AF68D8,AST-CRUSHER2,CRUSHER 2,THERMAL,2026-07-23,Normal,Inspeksi IR Thermography bulan 2026-07: status Normal.,EKSUM IRT JULI 2026.xlsx,2026-09-22T03:34:03
 COND-12E56C434C,AST-ROLLINGSCREEN2,Rolling Screen 2,THERMAL,2026-07-23,Normal,Inspeksi IR Thermography bulan 2026-07: status Normal.,EKSUM IRT JULI 2026.xlsx,2026-09-22T03:34:03
+COND-E2620A8B14,AST-TRF-MAIN-1,Main Transformer Unit 1,DGA,2026-05-25,Normal,DGA sampling Mei 2026 pada Main Transformer Unit 1 menunjukkan TDCG stabil.,05. Laporan Bulanan PdM Bulan Mei 2026.pdf,2026-09-27T17:05:49
+COND-142E3FE4DC,AST-TRF-MAIN-2,Main Transformer Unit 2,DGA,2026-05-25,Normal,DGA sampling Mei 2026 pada Main Transformer Unit 2 menunjukkan TDCG stabil.,05. Laporan Bulanan PdM Bulan Mei 2026.pdf,2026-09-27T17:05:49
+COND-FB076CD009,AST-TRF-MAIN-3,Main Transformer Unit 3,DGA,2026-05-25,Normal,DGA sampling Mei 2026 pada Main Transformer Unit 3 menunjukkan TDCG stabil.,05. Laporan Bulanan PdM Bulan Mei 2026.pdf,2026-09-27T17:05:50
+COND-C49E7874B1,AST-TRF-UAT-3,Unit Auxiliary Transformer 3 (UAT 3),DGA,2026-05-25,Normal,DGA sampling Mei 2026 pada Unit Auxiliary Transformer 3 (UAT 3) menunjukkan TDCG stabil.,05. Laporan Bulanan PdM Bulan Mei 2026.pdf,2026-09-27T17:05:50

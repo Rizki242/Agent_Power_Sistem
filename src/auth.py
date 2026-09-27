@@ -40,6 +40,10 @@ def _get_or_create_secret_key() -> bytes:
     return new_key
 
 
+MAX_AVATAR_DATA_URL_LENGTH = 300_000  # ~220 KB decoded, enough for a small square thumbnail
+ALLOWED_AVATAR_MIME_TYPES = ("image/png", "image/jpeg", "image/webp")
+
+
 def hash_password(password: str) -> str:
     """Hash password with PBKDF2-HMAC-SHA256 using random 16-byte salt."""
     salt = secrets.token_bytes(16)
@@ -147,6 +151,7 @@ def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
         "role": user.get("role", "OPERATOR"),
         "unit": user.get("unit", "PLTU Jeranjang"),
         "title": user.get("title", "Plant Personnel"),
+        "avatar": user.get("avatar"),
     }
 
 
@@ -212,5 +217,32 @@ def change_user_password(username: str, old_password: str, new_password: str) ->
             u["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
             save_users(users)
             return True, "Kata sandi berhasil diperbarui."
+    return False, "Pengguna tidak ditemukan."
+
+
+def update_user_avatar(username: str, avatar_data_url: Optional[str]) -> Tuple[bool, str]:
+    """Set or clear a user's profile photo (a small base64 data: URL) in users.json.
+
+    `avatar_data_url` of None/"" clears the photo. Otherwise it must be a
+    `data:image/<png|jpeg|webp>;base64,...` string within MAX_AVATAR_DATA_URL_LENGTH,
+    since it is stored inline rather than as a separate uploaded file.
+    """
+    if avatar_data_url:
+        if len(avatar_data_url) > MAX_AVATAR_DATA_URL_LENGTH:
+            return False, "Ukuran foto terlalu besar. Gunakan foto yang lebih kecil."
+        if not avatar_data_url.startswith("data:"):
+            return False, "Format foto tidak valid."
+        header = avatar_data_url.split(",", 1)[0]
+        if not any(header.startswith(f"data:{mime};base64") for mime in ALLOWED_AVATAR_MIME_TYPES):
+            return False, "Format foto harus PNG, JPEG, atau WEBP."
+
+    users = load_users()
+    clean = username.strip().lower()
+    for u in users:
+        if u.get("username", "").lower() == clean:
+            u["avatar"] = avatar_data_url or None
+            u["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+            save_users(users)
+            return True, "Foto profil berhasil diperbarui."
     return False, "Pengguna tidak ditemukan."
 

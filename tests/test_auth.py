@@ -13,8 +13,14 @@ from src.auth import (
     generate_token,
     get_user_by_username,
     hash_password,
+    update_user_avatar,
     verify_password,
     verify_token,
+)
+
+TINY_PNG_DATA_URL = (
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4"
+    "2mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
 )
 
 
@@ -71,6 +77,25 @@ class AuthCoreTests(unittest.TestCase):
         expired_token = generate_token(user, expires_hours=-1)
         self.assertIsNone(verify_token(expired_token))
 
+    def test_update_user_avatar(self):
+        try:
+            ok, msg = update_user_avatar("operator", TINY_PNG_DATA_URL)
+            self.assertTrue(ok, msg)
+            self.assertEqual(get_user_by_username("operator")["avatar"], TINY_PNG_DATA_URL)
+
+            # Clearing sets it back to None
+            ok, _ = update_user_avatar("operator", None)
+            self.assertTrue(ok)
+            self.assertIsNone(get_user_by_username("operator")["avatar"])
+
+            # Rejects non-image data URLs and oversized payloads
+            ok, _ = update_user_avatar("operator", "data:text/plain;base64,aGVsbG8=")
+            self.assertFalse(ok)
+            ok, _ = update_user_avatar("operator", "data:image/png;base64," + ("A" * 400_000))
+            self.assertFalse(ok)
+        finally:
+            update_user_avatar("operator", None)
+
 
 class AuthApiRouterTests(unittest.TestCase):
     def setUp(self):
@@ -111,6 +136,31 @@ class AuthApiRouterTests(unittest.TestCase):
         res = self.client.post("/api/auth/logout")
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()["status"], "success")
+
+    def test_avatar_update_requires_auth(self):
+        res = self.client.post("/api/auth/avatar", json={"avatar": TINY_PNG_DATA_URL})
+        self.assertEqual(res.status_code, 401)
+
+    def test_avatar_set_appears_in_login_and_me(self):
+        login = self.client.post("/api/auth/login", json={"username": "operator", "password": "operator2026"})
+        token = login.json()["token"]
+        headers = {"Authorization": f"Bearer {token}"}
+        try:
+            res = self.client.post("/api/auth/avatar", json={"avatar": TINY_PNG_DATA_URL}, headers=headers)
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(res.json()["user"]["avatar"], TINY_PNG_DATA_URL)
+
+            me_res = self.client.get("/api/auth/me", headers=headers)
+            self.assertEqual(me_res.json()["user"]["avatar"], TINY_PNG_DATA_URL)
+
+            login2 = self.client.post("/api/auth/login", json={"username": "operator", "password": "operator2026"})
+            self.assertEqual(login2.json()["user"]["avatar"], TINY_PNG_DATA_URL)
+
+            # Invalid payload is rejected with 400
+            bad_res = self.client.post("/api/auth/avatar", json={"avatar": "not-a-data-url"}, headers=headers)
+            self.assertEqual(bad_res.status_code, 400)
+        finally:
+            update_user_avatar("operator", None)
 
 
 if __name__ == "__main__":

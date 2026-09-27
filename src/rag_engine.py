@@ -4,6 +4,7 @@ Provides semantic search over VIBRASI and TRIBOLOGY knowledge base documents
 using embeddings and FAISS vector store.
 """
 
+import hashlib
 import json
 import os
 import re
@@ -11,6 +12,7 @@ from typing import Optional
 
 
 RAG_INDEX_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "rag_index")
+RAG_DOCS_CACHE_FILE = os.path.join(RAG_INDEX_DIR, "parsed_docs.json")
 
 _RAG_ENGINE = None
 
@@ -125,6 +127,62 @@ def clear_rag_cache():
     _CHUNKS_CACHE = None
 
 
+def _materi_fingerprint() -> str:
+    """Sidik jari seluruh berkas sumber Materi (path relatif + ukuran + mtime).
+
+    Dipakai untuk memutuskan apakah cache hasil parsing di disk masih sahih. Hanya
+    `os.stat` per berkas, jadi jauh lebih murah daripada mem-parse ulang ratusan PDF.
+    Sengaja mencakup semua .md/.json/.pdf di bawah Materi - superset dari yang benar-benar
+    dimuat - supaya kesalahan selalu condong ke "rebuild tak perlu", bukan "cache basi".
+    """
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    materi_dir = os.path.join(root_dir, "Materi")
+    entries = []
+    for root, _, files in os.walk(materi_dir):
+        for fn in files:
+            if not fn.lower().endswith((".md", ".json", ".pdf")):
+                continue
+            path = os.path.join(root, fn)
+            try:
+                st = os.stat(path)
+            except OSError:
+                continue
+            entries.append(f"{os.path.relpath(path, root_dir)}|{st.st_size}|{st.st_mtime_ns}")
+    entries.sort()
+    digest = hashlib.sha256("\n".join(entries).encode("utf-8")).hexdigest()
+    return f"{len(entries)}:{digest}"
+
+
+def _read_docs_cache(fingerprint: str) -> Optional[list[dict]]:
+    """Baca cache dokumen hasil parsing bila sidik jarinya masih cocok, selain itu None."""
+    try:
+        with open(RAG_DOCS_CACHE_FILE, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(payload, dict) or payload.get("fingerprint") != fingerprint:
+        return None
+    docs = payload.get("docs")
+    return docs if isinstance(docs, list) else None
+
+
+def _write_docs_cache(docs: list[dict], fingerprint: str) -> None:
+    """Tulis cache dokumen secara atomik. Fail-open: cache hanya percepatan, jadi
+    direktori yang read-only tidak boleh membuat RAG gagal - cukup dilaporkan."""
+    tmp_path = f"{RAG_DOCS_CACHE_FILE}.tmp"
+    try:
+        os.makedirs(RAG_INDEX_DIR, exist_ok=True)
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump({"fingerprint": fingerprint, "docs": docs}, f, ensure_ascii=False)
+        os.replace(tmp_path, RAG_DOCS_CACHE_FILE)
+    except (OSError, ValueError) as exc:
+        print(f"[RAG] Gagal menulis cache dokumen: {exc}")
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+
+
 def _load_pdf_files() -> list[dict]:
     documents = []
     try:
@@ -161,15 +219,30 @@ def _load_pdf_files() -> list[dict]:
 
 
 def _load_all_documents(force_reload: bool = False) -> list[dict]:
+    """Muat seluruh dokumen Materi, berurutan: cache memori -> cache disk -> parse ulang.
+
+    Parsing penuh berarti membaca ratusan PDF dengan pypdf dan memakan waktu beberapa menit,
+    dan cache memori saja tidak menolong karena hilang tiap proses restart (deploy, reload dev
+    server, dan tiap worker uvicorn membayarnya sendiri). Karena itu hasilnya dipersist ke
+    `data/rag_index/parsed_docs.json` - direktori artefak build yang sudah gitignored.
+    """
     global _RAW_DOCS_CACHE
     if _RAW_DOCS_CACHE is not None and not force_reload:
         return _RAW_DOCS_CACHE
+
+    fingerprint = _materi_fingerprint()
+    if not force_reload:
+        cached = _read_docs_cache(fingerprint)
+        if cached is not None:
+            _RAW_DOCS_CACHE = cached
+            return cached
 
     docs = []
     docs.extend(_load_markdown_files())
     docs.extend(_load_json_knowledge_files())
     docs.extend(_load_pdf_files())
     _RAW_DOCS_CACHE = docs
+    _write_docs_cache(docs, fingerprint)
     return docs
 
 

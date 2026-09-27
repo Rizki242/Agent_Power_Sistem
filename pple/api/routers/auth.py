@@ -12,6 +12,7 @@ from src.auth import (
     change_user_password,
     generate_token,
     get_user_by_username,
+    update_user_avatar,
     verify_token,
 )
 
@@ -26,6 +27,10 @@ class LoginRequest(BaseModel):
 class ChangePasswordRequest(BaseModel):
     old_password: str
     new_password: str
+
+
+class AvatarRequest(BaseModel):
+    avatar: Optional[str] = None
 
 
 def get_current_user_payload(authorization: Optional[str] = Header(None)) -> dict:
@@ -100,6 +105,7 @@ def get_me(payload: dict = Depends(get_current_user_payload)):
             "role": full_user.get("role", "OPERATOR"),
             "unit": full_user.get("unit", "PLTU Jeranjang"),
             "title": full_user.get("title", "Plant Personnel"),
+            "avatar": full_user.get("avatar"),
         },
     }
 
@@ -118,3 +124,25 @@ def update_password(req: ChangePasswordRequest, payload: dict = Depends(get_curr
     if not ok:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
     return {"status": "success", "message": msg}
+
+
+@router.post("/avatar")
+def update_avatar(req: AvatarRequest, payload: dict = Depends(get_current_user_payload)):
+    """Sets or clears the current user's profile photo (small base64 data URL, or null to clear)."""
+    username = payload.get("sub", "")
+    ok, msg = update_user_avatar(username, req.avatar)
+    if not ok:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
+    full_user = get_user_by_username(username)
+    return {
+        "status": "success",
+        "message": msg,
+        "user": {
+            "username": full_user["username"],
+            "full_name": full_user.get("full_name", full_user["username"]),
+            "role": full_user.get("role", "OPERATOR"),
+            "unit": full_user.get("unit", "PLTU Jeranjang"),
+            "title": full_user.get("title", "Plant Personnel"),
+            "avatar": full_user.get("avatar"),
+        },
+    }

@@ -10,6 +10,11 @@ from pple.cli.main import app
 
 runner = CliRunner()
 
+# Penanda bahwa jawaban datang dari sapaan rule-based `src.chatbot`, bukan dari LLM.
+# Sengaja memakai item menu, bukan nama "Agent CBM Learning PLTU Jeranjang": nama itu juga
+# dipakai sebagai identitas di prompt LLM (`src/llm_assistant.py`), jadi tidak membuktikan apa pun.
+RULE_BASED_GREETING_MARKER = "Korelasi Multi-Disiplin"
+
 
 def _temp_settings_path(initial=None):
     fd, path = tempfile.mkstemp(suffix=".json")
@@ -68,7 +73,7 @@ class ChatCommandTests(unittest.TestCase):
             with mock.patch("src.ai_settings._default_path", return_value=path):
                 result = runner.invoke(app, ["chat", "halo"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("MCSA AI Virtual Assistant", result.stdout)
+            self.assertIn(RULE_BASED_GREETING_MARKER, result.stdout)
         finally:
             if os.path.exists(path):
                 os.remove(path)
@@ -81,7 +86,7 @@ class ChatCommandTests(unittest.TestCase):
                  mock.patch("src.llm_assistant.MCSALLMAssistant") as mocked_llm:
                 result = runner.invoke(app, ["--offline", "chat", "halo"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("MCSA AI Virtual Assistant", result.stdout)
+            self.assertIn(RULE_BASED_GREETING_MARKER, result.stdout)
             mocked_llm.assert_not_called()
         finally:
             if os.path.exists(path):
@@ -94,7 +99,7 @@ class ChatCommandTests(unittest.TestCase):
                  mock.patch("src.llm_assistant.resolve_provider_key", return_value=None):
                 result = runner.invoke(app, ["chat", "halo"])
             self.assertEqual(result.exit_code, 0)
-            self.assertIn("MCSA AI Virtual Assistant", result.stdout)
+            self.assertIn(RULE_BASED_GREETING_MARKER, result.stdout)
         finally:
             if os.path.exists(path):
                 os.remove(path)

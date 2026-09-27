@@ -9,6 +9,7 @@ import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { changeUserPassword, getWorkspaceOverview } from './api.js'
 import FloatingVoiceWidget from './FloatingVoiceWidget.jsx'
 import { ToastProvider } from './components/Toast.jsx'
+import { AvatarThumb, ProfileAvatarEditor } from './components/ProfileAvatar.jsx'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
 import LoginPage from './LoginPage.jsx'
 import { readThemePreference, resolveTheme, saveThemePreference } from './utils/theme.js'
@@ -295,6 +296,7 @@ function UserProfileMenu({ user, onLogout }) {
       {isOpen && (
         <div className="profile-popover-menu" role="menu" aria-label="Menu akun pengguna">
           <div className="profile-popover-header">
+            <ProfileAvatarEditor avatar={user.avatar} initial={initial} displayName={displayName} />
             <div className="profile-popover-email">{user.username}@jeranjang.pln.id</div>
             <div className="profile-popover-user">
               <strong className="profile-popover-name">{displayName}</strong>
@@ -369,7 +371,7 @@ function UserProfileMenu({ user, onLogout }) {
         title={`${displayName} (${user.role || 'Pengguna'})`}
       >
         <div className="sidebar-user-avatar">
-          {initial}
+          <AvatarThumb avatar={user.avatar} initial={initial} imgClassName="sidebar-user-avatar-img" />
         </div>
         <div className="sidebar-user-details">
           <span className="sidebar-user-name">{firstName}</span>

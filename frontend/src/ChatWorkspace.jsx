@@ -124,6 +124,7 @@ const PINNED_RESERVE_PX = 96
 // Memoized message bubble per Vercel Best Practices (rerender-memo)
 const ChatMessageBubble = React.memo(function ChatMessageBubble({
   msg,
+  userAvatar,
   isSpeaking,
   isExpanded,
   isCitationsExpanded,
@@ -144,7 +145,11 @@ const ChatMessageBubble = React.memo(function ChatMessageBubble({
     <div className={`chat-bubble-row ${isUser ? 'chat-bubble-row--user' : 'chat-bubble-row--bot'}`}>
       <div className={`chat-avatar ${isUser ? 'chat-avatar--user' : 'chat-avatar--bot'}`}>
         {isUser ? (
-          <User size={24} />
+          userAvatar ? (
+            <img src={userAvatar} alt="" className="chat-avatar-photo" />
+          ) : (
+            <User size={24} />
+          )
         ) : (
           <PlanetaryGear size={44} className="chat-avatar-gear" title="Agent Learning Sistem" />
         )}
@@ -1111,6 +1116,7 @@ export default function ChatWorkspace({ onOpenNav }) {
               <ChatMessageBubble
                 key={msg.id}
                 msg={msg}
+                userAvatar={user?.avatar}
                 isSpeaking={speakingId === msg.id}
                 isExpanded={Boolean(expandedTraces[msg.id])}
                 isCitationsExpanded={Boolean(expandedCitations[msg.id])}

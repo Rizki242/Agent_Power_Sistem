@@ -27,6 +27,76 @@ Rules:
 
 ## Entries
 
+### 2026-09-27 - Cache hasil parsing dokumen RAG ke disk (cold start ~282 detik -> hitungan detik)
+
+- **Requested:** "gas #1-#3 dulu" - item #2 dari temuan suite penuh: `GET /api/rag/chunks` tercatat 282262 ms di log test padahal dipanggil dengan `limit=5`.
+- **Plan (agreed before coding, dikonfirmasi lewat AskUserQuestion setelah diagnosis):**
+  - **Diagnosis mengubah bentuk masalahnya.** Dugaan awal "tidak ada cache / re-index tiap request" salah: `_load_all_documents()` dan `_create_documents_with_metadata()` **sudah** punya cache memori, jadi ini biaya **cold start sekali per proses**, bukan per request. Biaya sebenarnya ada di `_load_pdf_files()` yang mem-parse **139 PDF / 401 MB** dengan pypdf (maks 50 halaman per berkas). `limit=5` tidak menolong karena pagination diterapkan setelah seluruh parsing selesai (`rag_engine.py:452`).
+  - Karena cache memori hilang tiap proses restart (deploy, reload dev server) dan tiap worker uvicorn membayarnya sendiri, opsi "warm-up saat startup" ditolak: itu hanya memindahkan biaya, tidak menghilangkannya. Dipilih persist hasil parsing ke disk.
+  - Yang di-cache adalah **dokumen hasil ekstraksi** (sebelum chunking), bukan chunk-nya: ekstraksi PDF yang mahal, sedangkan chunking hanya slicing string. Konsekuensinya mengubah `chunk_size`/`chunk_overlap` tidak perlu membatalkan cache.
+- **Changed:**
+  - `src/rag_engine.py` - konstanta baru `RAG_DOCS_CACHE_FILE` (`data/rag_index/parsed_docs.json`; direktori itu sudah gitignored dan komentarnya memang menyebutnya artefak build regenerable, jadi tidak perlu ubah `.gitignore`). Tiga helper baru: `_materi_fingerprint()` (sha256 atas path+ukuran+mtime semua .md/.json/.pdf di bawah `Materi/`; hanya `os.stat`, murah), `_read_docs_cache()`, `_write_docs_cache()` (tulis atomik via tmp + `os.replace`, mengikuti konvensi `data_loader.save_mcsa_data`). `_load_all_documents()` kini berurutan: cache memori -> cache disk -> parse ulang.
+  - Sidik jari sengaja mencakup **superset** berkas yang benar-benar dimuat (`_load_json_knowledge_files` hanya memindai root Materi + subdir langsung, sidik jari memakai `os.walk` penuh), supaya kesalahan selalu condong ke "rebuild yang tak perlu" alih-alih "cache basi".
+  - Penulisan cache **fail-open**: direktori read-only hanya menghasilkan pesan ke stderr, tidak menggagalkan RAG - prinsip yang sama dengan `pple/core/audit.py`. Cache rusak/JSON tidak sahih diperlakukan sebagai cache miss.
+  - `tests/test_rag_doc_cache.py` (baru) - 5 tes: restart membaca dari disk tanpa parse ulang, sidik jari berubah memicu parse ulang, `force_reload=True` melewati cache disk, direktori cache tak bisa ditulis tidak menggagalkan parsing, cache rusak diabaikan. Semuanya memakai loader tiruan sehingga tidak pernah menyentuh korpus asli.
+- **Verified:** `python -m py_compile src/rag_engine.py tests/test_rag_doc_cache.py` OK; `python -m unittest tests.test_rag_doc_cache` - 5 tests OK; `python -m unittest tests.test_rag_api tests.test_rag_citations_chat tests.test_rag_doc_cache` - 10 tests OK dalam 67,8 detik (sebelumnya panggilan `/api/rag/chunks` sendirian 282 detik); `python verify_app.py` - Verification Complete (Materi 79/79 OK). Pengukuran end-to-end terhadap korpus asli (`_load_all_documents()`, proses baru tiap kali): **cold tanpa cache 4m41s (281,5 detik) -> warm dengan cache 0,255 detik**, keduanya menghasilkan 1707 dokumen yang sama. Artefak cache 6,2 MB. Regresi penuh sesudah ketiga perbaikan (semua modul kecuali 4 yang network-dependent): **671 tests OK dalam 293 detik** - naik dari baseline 666 tests/3 failures, dan durasi suite ikut turun dari 557 detik karena parsing PDF berulang itu hilang.
+- **Left out / risks:** Berkas yang isinya berubah tanpa mengubah ukuran **dan** mtime tidak akan terdeteksi - batasan standar sidik jari berbasis stat; alternatifnya hashing isi 401 MB tiap start, yang justru mengalahkan tujuan cache ini. Ukuran artefak cache mengikuti volume teks hasil ekstraksi (lihat angka di bawah); ini data runtime per-deployment, bukan source of truth, dan selalu bisa dibangun ulang. Jalur build index FAISS (`rag_engine.py:274`) ikut menikmati cache yang sama karena memanggil `_load_all_documents()`, tapi tidak diuji khusus di sini.
+- **Docs/ADR:** none needed (optimasi internal, tidak mengubah kontrak endpoint mana pun; `parsed_docs.json` adalah artefak turunan, bukan sumber kebenaran).
+
+### 2026-09-27 - Hapus model Groq yang sudah decommissioned + perbaiki 3 test stale akibat rebrand
+
+- **Requested:** "gas #1-#3 dulu" - dua dari tiga temuan yang muncul saat menjalankan suite penuh (#2 RAG cold start dilaporkan terpisah, belum dikerjakan).
+- **Plan (agreed before coding):** perbaikan kecil dan terisolasi, tidak mengubah kontrak/skema - (1) buang `mixtral-8x7b-32768` dari daftar model Groq, (2) ganti assertion 3 test yang masih mengacu brand lama.
+- **Changed:**
+  - `src/llm_assistant.py` - `mixtral-8x7b-32768` dihapus dari `AVAILABLE_GROQ_MODELS` (daftar pilihan user di Settings) **dan** `FALLBACK_GROQ_MODELS` (rantai failover). Groq sudah men-decommission model ini; terlihat di log test sebagai `HTTP 400 ... model_decommissioned`. Di rantai failover efeknya paling buruk: tiap failover membuang satu round-trip ke model mati, dan pesan errornya dicatat atas nama model lain (`"model": "llama-3.3-70b-versatile"`) sehingga menyesatkan saat debugging.
+  - `tests/test_pple_cli_offline.py` - 3 test di `ChatCommandTests` masih meng-assert `"MCSA AI Virtual Assistant"`, string yang sudah tidak ada lagi di `src/` setelah rebrand ke "Agent CBM Learning PLTU Jeranjang". Assertion diganti konstanta baru `RULE_BASED_GREETING_MARKER = "Korelasi Multi-Disiplin"`. **Sengaja tidak memakai nama brand barunya**: nama itu juga dipakai sebagai identitas di prompt LLM (`src/llm_assistant.py:1131`), jadi kalau dipakai sebagai penanda, test tidak lagi membuktikan jawaban datang dari `src.chatbot` (rule-based) - intent asli ketiga test itu. Item menu `Korelasi Multi-Disiplin` hanya ada di sapaan rule-based yang di-hardcode (`src/chatbot.py:307`) dan tidak terpotong word-wrap Rich di output CLI.
+- **Verified:** `python -m py_compile src/llm_assistant.py tests/test_pple_cli_offline.py` OK; `python -m unittest tests.test_pple_cli_offline tests.test_ai_settings tests.test_settings_api` - 17 tests OK (sebelumnya 3 gagal). Baseline sebelum perubahan: suite penuh (minus 4 modul network-dependent) = 666 tests, 3 failures - persis ketiga test ini.
+- **Left out / risks:** #2 (cold start RAG ~282 detik) belum dikerjakan - didiagnosis saja, lihat entri berikutnya/diskusi. Daftar model provider lain (Gemini/OpenCode) tidak ikut diaudit terhadap deprecation vendor; kalau mau menyeluruh, itu pekerjaan terpisah dan butuh pengecekan ke dokumentasi tiap vendor, bukan tebakan.
+- **Docs/ADR:** none needed (tidak ada keputusan arsitektural; daftar model bukan kosakata domain `CONTEXT.md`).
+
+### 2026-09-27 - Foto profil pengguna (ganti/pakai avatar di sidebar & chat)
+
+- **Requested:** "bisa gak ini di buat agar bisa ganti/menggunakan foto profil pengguna" - tombol menu profil sidebar ("Manager · Admin") dan avatar "Anda" di chat bubble masih memakai inisial/ikon generik.
+- **Plan (agreed before coding, confirmed via AskUserQuestion):**
+  - Tidak ada infra upload file/static-serving di backend saat ini, jadi opsi terkecil yang cocok: simpan foto sebagai data URL base64 kecil langsung di `users.json` (bukan file terpisah), bukan membangun penyimpanan file baru.
+  - Backend: field `avatar` baru di `src/auth.py` (nullable), fungsi `update_user_avatar()` dengan validasi tipe MIME (`png`/`jpeg`/`webp`) dan batas ukuran; endpoint baru `POST /api/auth/avatar` di `pple/api/routers/auth.py`; field `avatar` disertakan di respons `/login` dan `/me`.
+  - Frontend: `AuthContext` expose `updateAvatar()`; `UserProfileMenu` (App.jsx) dapat klik-untuk-ganti foto (resize/kompres ke JPEG persegi 256px lewat canvas sebelum diupload, supaya payload tetap kecil); foto yang sama juga dipakai untuk avatar bubble "Anda" di `ChatWorkspace.jsx`.
+- **Changed:**
+  - `src/auth.py` - tambah `avatar` di user record & `authenticate_user()`, tambah `update_user_avatar()` dengan validasi format/ukuran.
+  - `pple/api/routers/auth.py` - endpoint baru `POST /api/auth/avatar`; `avatar` ditambahkan ke respons `/login` dan `/me`.
+  - `frontend/src/api.js` - `updateUserAvatar()`.
+  - `frontend/src/context/AuthContext.jsx` - `updateAvatar()` yang memanggil API lalu memperbarui state `user`.
+  - `frontend/src/App.jsx` - `UserProfileMenu`: avatar besar yang bisa diklik di popover (dengan overlay ikon kamera), file input tersembunyi, resize/kompres client-side (`resizeImageToDataUrl`), validasi tipe/ukuran file asli (maks 8 MB) sebelum diupload; avatar di pill sidebar juga menampilkan foto bila ada.
+  - `frontend/src/ChatWorkspace.jsx` - `ChatMessageBubble` menerima prop `userAvatar`; avatar bubble "Anda" menampilkan foto bila diset, jatuh ke ikon `User` bila tidak.
+  - `frontend/src/styles.css` - style `.sidebar-user-avatar-img`, `.profile-popover-avatar*`, `.chat-avatar-photo`.
+  - `tests/test_auth.py` - unit test `update_user_avatar()` (set/clear/validasi tolak non-image & oversize) dan test endpoint API (`401` tanpa token, foto muncul di `/login` & `/me` setelah diset, `400` untuk payload tidak valid).
+- **Verified:** `python -m py_compile src/auth.py pple/api/routers/auth.py tests/test_auth.py` OK; `python -m unittest tests.test_auth` - 11 tests OK; `python verify_app.py` - Verification Complete (data loading, chatbot, PPT generation 1.3 MB, Materi 79/79 OK); `npm --prefix frontend run lint` - clean (oxlint, tidak ada temuan); `npm --prefix frontend run build` - built in 8.5s tanpa error.
+- **Left out / risks:** Belum dites di browser sungguhan (tidak ada akses UI interaktif di sesi ini) - perilaku upload/resize kanvas perlu dicoba manual sebelum dianggap final secara UX. Foto disimpan inline di `users.json` (bukan file terpisah/CDN); cukup untuk basis pengguna kecil saat ini tapi tidak akan skalabel bila jumlah pengguna atau resolusi foto bertambah signifikan - kalau itu terjadi, migrasi ke penyimpanan file + endpoint statis adalah langkah berikutnya. `python -m unittest discover -s . -p "test_*.py"` dijalankan tapi belum selesai dalam sesi ini karena test lain (LLM/embedding, dikenal bisa hang di lingkungan network-restricted) berjalan lama; `tests/test_auth.py` sendiri sudah lulus penuh secara terisolasi.
+- **Docs/ADR:** none needed (perubahan aditif, mengikuti pola auth/router yang sudah ada; bukan keputusan arsitektural).
+
+### 2026-09-23 - Logo gear: varian putih, ring gear internal, dan ring berhenti berputar
+
+- **Requested:** "buat agar putarannya kayak gini jadi untuk yang paling luar diam aja" (dengan lampiran `6.gif`) lalu "pakai yang warna putih" (dengan lampiran gambar varian putih). Lanjutan dari entri logo gear planetary di bawah.
+- **Plan (agreed before coding):**
+  - `6.gif` diperiksa lebih dulu: ukurannya **byte-for-byte identik** dengan `5.gif` (690121 B) dan pelacakan sudut poros planet per frame memberi hasil sama persis (+30 derajat tiap 20 frame). Jadi lampiran itu bukan pola gerak baru - instruksi efektifnya hanya "ring paling luar diam".
+  - Gambar varian putih dipaste inline dan **tidak tersimpan sebagai file**, sehingga warna dan proporsinya dibaca visual, bukan disampling piksel seperti pada GIF. Nilai yang dipakai diturunkan dari rasio antar elemen pada gambar itu, lalu diverifikasi lewat render preview sebelum menyentuh kode.
+  - Perubahan struktural: ring gear berubah dari gear eksternal (cakram krem penuh, gigi menghadap keluar) menjadi ring gear **internal** (tepi luar mulus, gigi menghadap ke dalam, bagian tengah navy), planet dari slate `#5D6A7C` menjadi krem `#F4F1EA`, rangka carrier dari abu muda `#CAD1D8` menjadi navy terang `#2C3F63`.
+- **Changed:**
+  - `frontend/src/components/PlanetaryGear.jsx` - ditulis ulang. Ring internal dibentuk dari cakram krem r=122 yang dilubangi navy r=96, lalu celah antar gigi dikerok dengan blok navy pada r=102 (sw 12, 52 gigi) sehingga gigi menghadap pusat. Orbit planet 65.5 -> **59.5**, planet tip 39 -> 37.5 (r 31.7..37.5, 21 gigi, krem, poros navy r=11). Sun mengecil: tip 30 -> 28 (r 19..28, 12 gigi, gigi lebih ramping). Konstanta `SLATE` dan `LIGHT` dihapus karena tak terpakai lagi. Planet tip 37.5 + orbit 59.5 = 97 melawan tip gigi ring 96, jadi keduanya bertumpuk 1 unit - itu yang memberi kesan bergigi rapat, bukan celah.
+  - `frontend/src/styles.css` - aturan `.pgear--spinning .pgear__ring` dihapus seluruhnya, `.pgear__ring` dikeluarkan dari daftar `transform-box`/`transform-origin` dan dari daftar `prefers-reduced-motion`. Komentar blok diperbarui supaya tidak lagi menyatakan ring ikut berputar.
+- **Verified:**
+  - `npx oxlint src`: exit 0, tanpa warning/error.
+  - `npm --prefix frontend run build`: sukses, "built in 1.39s", exit 0.
+  - Struktur SVG final dirasterisasi ulang pada sudut carrier 0/30/60/90 derajat. Ring gear **identik di keempat frame** (bukti ia benar-benar diam), sementara posisi planet, fase gigi planet, dan fase sun berubah sesuai arah yang dimaksud. Ini menguji persis hal yang diminta.
+  - `grep`: konstanta `SLATE`/`LIGHT` tidak lagi muncul di komponen (0 kemunculan).
+- **Left out / risks:**
+  - **Nilai warna dan proporsi varian putih adalah pembacaan visual, bukan hasil ukur.** Berbeda dengan geometri dari GIF (yang disampling piksel dan angkanya pasti), gambar putih tidak tersedia sebagai file. Warna rangka carrier `#2C3F63` khususnya adalah perkiraan. Kalau ada nilai hex resmi dari desainernya, itu yang seharusnya dipakai.
+  - **Verifikasi visual di browser belum dilakukan.** Render di atas menguji bentuk statis per sudut, bukan animasi CSS yang sebenarnya berjalan.
+  - Logo kini memakai bentuk navy opaque untuk melubangi ring dan mengerok celah gigi, sehingga **tidak cocok di atas latar transparan atau berwarna lain** - ia mengandalkan cakram navy di belakangnya. Selama dipakai sebagai avatar/badge bulat, ini tidak jadi masalah.
+  - `python verify_app.py` dan unit test tidak dijalankan: tidak ada file di bawah `src/`, `pple/`, `api_server.py`, atau `app.py` yang tersentuh.
+  - `frontend/src/assets/thinking-gear.svg` (gear merah PLN lama) masih ada dan tetap tidak dirujuk kode mana pun.
+- **Docs/ADR:** `docs/agent-changelog.md` saja. Tidak ada ADR. `docs/feature-parity.md` dan `CONTEXT.md` tidak berubah.
+
 ### 2026-09-23 - Logo brand sidebar chat: perbesar lagi 40 -> 56 px
 
 - **Requested:** "buat agar lebih jela lagi visualnya sizenya juga" (lanjutan permintaan sebelumnya yang menaikkan logo 28 -> 40 px) - logo `PlanetaryGear` di header sidebar chat masih dianggap kurang besar/jelas.

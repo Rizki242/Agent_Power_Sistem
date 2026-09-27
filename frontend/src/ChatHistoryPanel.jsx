@@ -20,6 +20,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
+import { AvatarThumb, ProfileAvatarEditor } from './components/ProfileAvatar.jsx'
 import PlanetaryGear from './components/PlanetaryGear.jsx'
 
 // Memoized session row component per Vercel Best Practices (rerender-memo)
@@ -320,6 +321,7 @@ export default function ChatHistoryPanel({
         {isProfileOpen && (
           <div className="profile-popover-menu" role="menu" aria-label="Menu akun pengguna">
             <div className="profile-popover-header">
+              <ProfileAvatarEditor avatar={user?.avatar} initial={initial} displayName={displayName} />
               <div className="profile-popover-email">{user?.username || 'user'}@jeranjang.pln.id</div>
               <div className="profile-popover-user">
                 <strong className="profile-popover-name">{displayName}</strong>
@@ -391,7 +393,7 @@ export default function ChatHistoryPanel({
           aria-haspopup="true"
         >
           <div className="sidebar-user-avatar">
-            {initial}
+            <AvatarThumb avatar={user?.avatar} initial={initial} imgClassName="sidebar-user-avatar-img" />
           </div>
           <div className="sidebar-user-details">
             <span className="sidebar-user-name">{firstName}</span>

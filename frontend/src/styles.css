@@ -861,6 +861,14 @@ button:focus-visible, a:focus-visible { outline: 3px solid #52a8c4; outline-offs
 .chat-avatar--user {
   background: #1e293b;
   color: #ffffff;
+  overflow: hidden;
+}
+
+.chat-avatar-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .chat-avatar--bot {
@@ -4151,6 +4159,14 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   justify-content: center;
   flex-shrink: 0;
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.sidebar-user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .sidebar-user-details {
@@ -4232,6 +4248,52 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   display: flex;
   flex-direction: column;
   gap: 3px;
+}
+
+.profile-popover-avatar {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1.5px solid var(--sidebar-marker);
+  background: var(--sidebar-accent);
+  color: var(--sidebar-accent-ink);
+  padding: 0;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: opacity 0.15s ease;
+}
+
+.profile-popover-avatar:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.profile-popover-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-popover-avatar-fallback {
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.profile-popover-avatar-edit {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 0;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
 }
 
 .profile-popover-email {
@@ -5023,9 +5085,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    kecepatan koneksi - lihat src/utils/connectionSpeed.js. Karena yang berubah
    hanya nilai variabel CSS, pergantian kecepatan tidak merender ulang SVG.
 
-   Rasio antar bagian diambil dari GIF referensi: ring jauh lebih lambat dari
-   carrier, sun berlawanan arah pada laju yang sama dengan carrier, dan tiap
-   planet berputar pada porosnya sendiri berlawanan carrier. */
+   Ring gear paling luar sengaja DIAM. Yang bergerak hanya bagian dalam: carrier
+   membawa ketiga planet mengorbit, sun berlawanan arah pada laju yang sama
+   dengan carrier, dan tiap planet ikut berputar pada porosnya sendiri. */
 
 .pgear {
   --pg-dur: 1.8s;
@@ -5047,7 +5109,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* Putaran hanya hidup saat agent sedang bekerja; di luar itu logo diam.
    `transform-box` ditulis eksplisit: nilai awalnya memang view-box, tapi
    menyebutkannya menghindari selisih perilaku antar browser pada elemen SVG. */
-.pgear__ring,
 .pgear__carrier,
 .pgear__sun {
   transform-box: view-box;
@@ -5060,10 +5121,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
      digambar mengelilingi titik (0,0) lokalnya sendiri. */
   transform-box: fill-box;
   transform-origin: 50% 50%;
-}
-
-.pgear--spinning .pgear__ring {
-  animation: pgear-cw calc(var(--pg-dur) * 4.33) linear infinite;
 }
 
 .pgear--spinning .pgear__carrier {
@@ -5079,7 +5136,6 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pgear--spinning .pgear__ring,
   .pgear--spinning .pgear__carrier,
   .pgear--spinning .pgear__sun,
   .pgear--spinning .pgear__planet {

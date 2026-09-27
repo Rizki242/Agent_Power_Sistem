@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { getAuthToken, setAuthToken, loginUser, getCurrentUser, logoutUser } from '../api'
+import { getAuthToken, setAuthToken, loginUser, getCurrentUser, logoutUser, updateUserAvatar } from '../api'
 
 const AuthContext = createContext(null)
 
@@ -81,6 +81,15 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  const updateAvatar = useCallback(async (avatarDataUrl) => {
+    const data = await updateUserAvatar(avatarDataUrl)
+    if (data && data.user) {
+      setUser(data.user)
+      return data.user
+    }
+    throw new Error('Respons pembaruan foto profil tidak valid dari server.')
+  }, [])
+
   const value = {
     user,
     token,
@@ -88,6 +97,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: Boolean(user && token),
     login,
     logout,
+    updateAvatar,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,50 +1,47 @@
 /**
- * Logo gear planetary (epicyclic) untuk chat Agent Learning Sistem.
+ * Logo gear planetary (epicyclic) untuk Agent Learning Sistem - varian putih.
  *
  * Digambar inline sebagai SVG - bukan <img src="...svg"> - karena tiap roda
  * gigi harus berputar sendiri-sendiri dengan arah dan laju berbeda. SVG yang
  * dimuat lewat <img> terisolasi dan tidak bisa disentuh CSS dokumen induk.
  *
- * Geometri dan palet diukur langsung dari GIF referensi (256x256, 80 frame):
- *   - cakram luar  r=124          #14213D
- *   - ring gear    52 gigi, r 100..110   #F4F1EA
- *   - 3 planet     21 gigi, r 33..39, mengorbit pada r=65.5 (terpisah 120 derajat)
- *   - sun          12 gigi, r 20..30     #E0A040
+ * Susunan: ring gear **internal** (tepi luar mulus, gigi menghadap ke dalam)
+ * yang diam, tiga planet krem yang mengorbit sambil berputar pada porosnya,
+ * dan sun amber di pusat yang berputar berlawanan arah. Pola ini mengikuti GIF
+ * referensi, di mana posisi poros planet terukur bergeser +30 derajat tiap 20
+ * frame sementara sun bergerak ke arah sebaliknya.
  *
  * Gigi dibentuk dari lingkaran ber-stroke tebal dengan `stroke-dasharray`
- * seukuran pitch gigi. Cara ini menghasilkan gigi persegi khas ikon flat
- * dengan beberapa baris, jauh lebih ringkas daripada path 200+ simpul.
+ * seukuran pitch gigi - jauh lebih ringkas daripada path 200+ simpul.
  *
- * Arah putaran mengikuti perilaku GIF aslinya (diukur per frame): carrier dan
- * ring berputar searah jarum jam pada laju berbeda, sun berlawanan arah.
+ * Bagian navy (lubang tengah ring dan celah antar gigi) digambar sebagai bentuk
+ * opaque di atas krem, jadi logo ini mengandalkan cakram navy di belakangnya
+ * dan tidak dirancang untuk latar transparan.
  */
 
 const NAVY = '#14213D'
 const CREAM = '#F4F1EA'
-const SLATE = '#5D6A7C'
-const LIGHT = '#CAD1D8'
 const GOLD = '#E0A040'
+// Rangka carrier: navy yang dinaikkan terangnya supaya terbaca di atas cakram.
+const ARM = '#2C3F63'
 
-// Posisi ketiga planet pada orbit r=65.5 di sudut -90, 30, dan 150 derajat.
+// Ketiga planet mengorbit pada r=59.5, di sudut -90, 30, dan 150 derajat.
 const PLANETS = [
-  { x: 128, y: 62.5 },
-  { x: 184.72, y: 160.75 },
-  { x: 71.28, y: 160.75 },
+  { x: 128, y: 68.5 },
+  { x: 179.53, y: 157.75 },
+  { x: 76.47, y: 157.75 },
 ]
 
-// Rangka carrier: segitiga yang menghubungkan ketiga poros planet. Di GIF asli
-// bagian dekat planet tertutup roda giginya, jadi yang terlihat hanya tengah
-// tiap sisi - efek yang sama muncul di sini karena planet digambar setelahnya.
+// Rangka carrier: segitiga yang menghubungkan ketiga poros planet. Bagian dekat
+// planet tertutup roda giginya sendiri, jadi yang tampak hanya tengah tiap sisi.
 const CARRIER_PATH = `M ${PLANETS[0].x} ${PLANETS[0].y} L ${PLANETS[1].x} ${PLANETS[1].y} L ${PLANETS[2].x} ${PLANETS[2].y} Z`
 
 function PlanetGear() {
   return (
     <g>
-      <circle r="36" fill="none" stroke={SLATE} strokeWidth="6" strokeDasharray="4.847 5.924" />
-      <circle r="33" fill={SLATE} />
-      <circle r="10" fill={CREAM} />
-      <circle r="10" fill="none" stroke={LIGHT} strokeWidth="1.5" />
-      <circle r="5" fill={NAVY} />
+      <circle r="34.6" fill="none" stroke={CREAM} strokeWidth="5.8" strokeDasharray="4.659 5.694" />
+      <circle r="31.7" fill={CREAM} />
+      <circle r="11" fill={NAVY} />
     </g>
   )
 }
@@ -81,29 +78,26 @@ export default function PlanetaryGear({
 
       <circle cx="128" cy="128" r="124" fill={NAVY} />
 
-      {/* Ring gear: berputar paling lambat, searah carrier. */}
+      {/* Ring gear internal - sengaja DIAM, jadi tidak diberi kelas animasi.
+          Dibentuk dari cakram krem yang dilubangi, lalu celah antar gigi
+          dikerok dengan blok navy sehingga giginya menghadap ke pusat. */}
       <g className="pgear__ring">
+        <circle cx="128" cy="128" r="122" fill={CREAM} />
+        <circle cx="128" cy="128" r="96" fill={NAVY} />
         <circle
           cx="128"
           cy="128"
-          r="105"
+          r="102"
           fill="none"
-          stroke={CREAM}
-          strokeWidth="10"
-          strokeDasharray="5.329 7.359"
+          stroke={NAVY}
+          strokeWidth="12"
+          strokeDasharray="6.779 5.546"
         />
-        <circle cx="128" cy="128" r="100" fill={CREAM} />
       </g>
 
       {/* Carrier: membawa ketiga planet mengorbit pusat. */}
       <g className="pgear__carrier">
-        <path
-          d={CARRIER_PATH}
-          fill="none"
-          stroke={LIGHT}
-          strokeWidth="16"
-          strokeLinejoin="round"
-        />
+        <path d={CARRIER_PATH} fill="none" stroke={ARM} strokeWidth="16" strokeLinejoin="round" />
         {PLANETS.map((p) => (
           <g key={`${p.x}-${p.y}`} transform={`translate(${p.x} ${p.y})`}>
             {/* Planet juga berputar pada porosnya sendiri, berlawanan carrier. */}
@@ -119,14 +113,14 @@ export default function PlanetaryGear({
         <circle
           cx="128"
           cy="128"
-          r="25"
+          r="23.5"
           fill="none"
           stroke={GOLD}
-          strokeWidth="10"
-          strokeDasharray="5.89 7.199"
+          strokeWidth="9"
+          strokeDasharray="4.430 7.875"
         />
-        <circle cx="128" cy="128" r="20" fill={GOLD} />
-        <circle cx="128" cy="128" r="9" fill={CREAM} />
+        <circle cx="128" cy="128" r="19" fill={GOLD} />
+        <circle cx="128" cy="128" r="8" fill={NAVY} />
       </g>
     </svg>
   )
