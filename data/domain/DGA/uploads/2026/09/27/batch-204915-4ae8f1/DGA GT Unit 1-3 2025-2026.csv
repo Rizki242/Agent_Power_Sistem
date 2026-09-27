@@ -1,0 +1,13 @@
+equipment,unit_name,test_date,notes,TDCG,H2,CH4,C2H6,C2H4,C2H2,CO,CO2,H2O,BDV,Load MW,Oil Temp,Winding Temp
+Main Transformer Unit 1,UNIT 1,2025-03-05,ROUTINE,139,8,6,3,2,0,120,1100,14,58,,,
+Main Transformer Unit 1,UNIT 1,2025-06-05,ROUTINE,139,8,6,3,2,0,120,1100,15,58,,,
+Main Transformer Unit 1,UNIT 1,2026-07-01,ROUTINE,204.5,5,24,21,45,0.5,109,462,,60,25,55,55
+Main Transformer Unit 2,UNIT 2,2025-03-05,ROUTINE,139,8,6,3,2,0,120,1100,15,57,,,
+Main Transformer Unit 2,UNIT 2,2025-06-05,ROUTINE,139,8,6,3,2,0,120,1100,16,57,,,
+Main Transformer Unit 2,UNIT 2,2025-12-05,ROUTINE,139,8,6,3,2,0,120,1100,15,58,,,
+Main Transformer Unit 2,UNIT 2,2026-06-19,ROUTINE,589.5,5,4,10,14,0.5,556,3746,,60,,,
+Main Transformer Unit 2,UNIT 2,2026-06-20,ROUTINE,627.5,5,3,9,14,0.5,596,4177,,60,,,
+Main Transformer Unit 2,UNIT 2,2026-06-24,ROUTINE,663.5,5,2,10,12,0.5,634,3886,,60,,,
+Main Transformer Unit 2,UNIT 2,2026-06-29,ROUTINE,695.5,5,2,11,14,0.5,663,4194,,60,,,
+Main Transformer Unit 2,UNIT 2,2026-07-06,REQUEST,282.5,5,2,9,10,0.5,256,2140,,60,,,
+Main Transformer Unit 3,UNIT 3,2026-06-24,ROUTINE - Sampling rutin bulanan,223.5,5,33,81,7,0.5,97,1116,,69,22.5,55,60

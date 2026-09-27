@@ -93,6 +93,24 @@ class ColumnMappingTests(IngestTestCase):
         self.assertEqual(mapping["note"], "notes")
         self.assertEqual(mapping["asset_id"], "asset_id")
 
+    def test_maps_the_gt_sampling_sheet_columns(self):
+        """The GT#1..GT#3 transformer sheets carry TDCG and H2O columns whose
+        keys are already in the store; both must map, not fall through."""
+        frame = pd.DataFrame(columns=[
+            "Equipment sumber", "Unit", "Tanggal", "TDCG", "H2", "CH4", "C2H6",
+            "C2H4", "C2H2", "CO", "CO2", "H2O", "BDV", "Load MW", "Oil Temp",
+            "Winding Temp",
+        ])
+        mapping = ingest.map_columns("DGA", frame)
+        self.assertEqual(mapping["TDCG"], "tdcg")
+        self.assertEqual(mapping["H2O"], "h2o")
+        self.assertEqual(mapping["BDV"], "bdv_kv")
+        self.assertEqual(mapping["Load MW"], "beban_mw")
+        self.assertEqual(mapping["Oil Temp"], "temp_oil")
+        self.assertEqual(mapping["Winding Temp"], "temp_winding")
+        self.assertNotIn("H2O", {mapping[col] for col in mapping if col == "H2"})
+
+
 
 class DelimiterDetectionTests(IngestTestCase):
     def test_tab_separated_csv_is_read_correctly(self):

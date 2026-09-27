@@ -133,6 +133,13 @@ PROFILES: dict[str, dict[str, Any]] = {
             ParameterSpec("c2h6", "C2H6", "ppm", ("etana", "ethane")),
             ParameterSpec("co", "CO", "ppm", ("karbon monoksida",)),
             ParameterSpec("co2", "CO2", "ppm", ("karbon dioksida",)),
+            # Already present in data/domain/DGA/measurements.csv from the
+            # GT#1..GT#3 sampling sheets, but missing from this table - so a
+            # re-upload of those same sheets silently dropped both columns.
+            # TDCG is the lab sheet's own printed total, kept as reported
+            # rather than recomputed, so a transcription error stays visible.
+            ParameterSpec("tdcg", "TDCG", "ppm", ("total dissolved combustible gas", "total combustible")),
+            ParameterSpec("h2o", "H2O", "ppm", ("moisture", "kadar air oli", "water in oil")),
             # Expanded parameters for rich form and TE integration
             ParameterSpec("bdv_kv", "Breakdown Voltage", "kV", ("bdv", "dielectric strength", "breakdown voltage")),
             ParameterSpec("water_content_ppm", "Water Content", "ppm", ("water content", "kadar air", "water ppm")),

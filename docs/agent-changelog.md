@@ -604,3 +604,27 @@ Rules:
 - **Left out:** tidak menyentuh `src/asset_registry.py`, yang sudah termodifikasi di working copy sebelum tugas ini (perubahan `_PANDAS_GE_2` / `format="mixed"`) dan bukan milik perubahan ini.
 - **Docs/ADR:** `docs/agent-changelog.md`.
 
+### 2026-09-27 - DGA GT Unit 1/2/3: ingest 12 sampling baru + TDCG/H2O masuk profil DGA
+
+- **Requested:** "Masukkan data ini ke dalam aplikasi, ini adalah data DGA GT / Generator Transformer unit 1, 2 dan 3" (3 tangkapan layar sheet GT UNIT 1/2/3 dengan kolom TDCG, H2, CH4, C2H6, C2H4, C2H2, CO, CO2, H2O, BDV, Load MW, Oil Temp C, Winding Temp C, Monitoring Type, Monitoring Note).
+- **Check:** `data/domain/DGA/measurements.csv` sudah memuat riwayat GT sebagai equipment `Main Transformer Unit 1/2/3` (`source_file` `GT#1`/`GT#2`/`GT#3`) - 88/45/78 tanggal, terakhir 2026-05-27 / 2026-05-12 / 2026-05-25. Jadi tangkapan layar ini sheet yang sama, hanya lebih panjang. Setiap baris gambar dibandingkan ke store; hanya 12 tanggal yang belum ada.
+- **Plan:**
+  1. `PROFILES["DGA"]` di `src/domain_ingest.py` tidak punya `tdcg` dan `h2o` padahal store sudah menyimpan kedua key itu - tanpa ini pipeline ingest membuang dua kolom sheet secara diam-diam. Tambahkan dua `ParameterSpec`.
+  2. Susun CSV wide 12 baris, jalankan lewat `preview_upload` -> `create_batch` -> `commit_batch` (bukan tulis langsung), supaya dapat `manifest.json` + event `measurement.uploaded` seperti ingest lain.
+  3. Pakai nama equipment yang sudah ada (`Main Transformer Unit N`), bukan "GT UNIT N", agar data baru menyambung ke riwayat, bukan membuat equipment kembar tanpa histori.
+  4. Sel bernilai 0 pada BDV / Load MW / Oil Temp / Winding Temp / H2O dikosongkan, bukan disimpan sebagai 0 - BDV 0 kV atau suhu minyak 0 C adalah "tidak diukur", dan menyimpannya sebagai angka melanggar invariant "missing data is UNKNOWN, never fabricated" (CONTEXT.md sec. 2). Nilai gas 0 tetap disimpan (0 ppm di bawah batas deteksi itu bacaan sah, dan store sudah punya preseden `c2h2 = 0`).
+- **Changed:**
+  - `src/domain_ingest.py` - `ParameterSpec("tdcg", ...)` dan `ParameterSpec("h2o", ...)` pada profil DGA. TDCG disimpan apa adanya dari sheet (tidak dihitung ulang) supaya salah transkrip tetap terlihat.
+  - `tests/test_domain_ingest.py` - `test_maps_the_gt_sampling_sheet_columns`: 16 kolom sheet GT terpetakan (TDCG, H2O, BDV, Load MW, Oil Temp, Winding Temp).
+  - `data/domain/DGA/measurements.csv` - +119 bacaan / 12 tanggal sampling (3018 -> 3137 baris): Unit 1 `2025-03-05`, `2025-06-05`, `2026-07-01`; Unit 2 `2025-03-05`, `2025-06-05`, `2025-12-05`, `2026-06-19`, `2026-06-20`, `2026-06-24`, `2026-06-29`, `2026-07-06`; Unit 3 `2026-06-24`.
+  - `data/domain/DGA/uploads/2026/09/27/batch-204915-4ae8f1/` - berkas sumber + `manifest.json` (source_rows 12, valid_rows 119, rejected_rows 0, mapping lengkap, audit_events preview+commit).
+- **Verified:**
+  - `python -m py_compile src/domain_ingest.py tests/test_domain_ingest.py` - bersih.
+  - `python -m unittest tests.test_domain_ingest tests.test_domain_measurements` - Ran 67 tests, OK.
+  - `python -m unittest tests.test_domain_report tests.test_domain_workspace tests.test_domain_input_forms tests.test_domain_overrides tests.test_pple_domain_api tests.test_pple_cli_domain tests.test_multi_domain_standards tests.test_chatbot_multi_domain` - Ran 90 tests, OK.
+  - `python verify_app.py` - "Verification Complete!" (Materi 79 OK / 0 gagal).
+  - `DGAAgent.evaluate()` atas bacaan hasil ingest memberi diagnosa nyata, bukan nilai contoh bawaan: Unit 2 2026-06-29 -> ALERT, health 48.0, `T3 - Thermal Fault T > 700C`, Duval T3, confidence 0.91; Unit 3 2026-06-24 -> normal IEEE C57.104 Kondisi 1.
+  - `unittest discover` seluruh suite dalam satu proses **hang dan dibunuh di 600 s (exit 143)** - perilaku yang memang diperingatkan di CLAUDE.md. Dijalankan ulang per modul dengan timeout 120 s: 50+ modul OK termasuk `test_dga_data`, `test_dga_methods`, `test_fusion_engine`, `test_llm_assistant`, `test_knowledge_retriever`, `test_rag_api`.
+- **Anomali data yang dilaporkan ke user, tidak diubah sendiri:** baris kembar 139/8/6/3/2/0/120/1100 yang muncul identik di Unit 1, 2, dan 3 (Mar/Jun/Des); tanggal duplikat di sheet Unit 2 (18-Nov-25, 19-Dec-25) dan Unit 3 (12-Nov-25, 13-Dec-25) yang hanya beda H2O - tidak diingest karena tanggalnya sudah ada; selisih C2H6/CO2 pada Unit 3 2024-10-16 antara sheet (54 / 1016) dan store (71 / 1207); lonjakan CO/CO2 Unit 2 Juni 2026 (254 -> 663 ppm, 682 -> 4194 ppm).
+- **Docs/ADR:** `docs/agent-changelog.md`.
+
