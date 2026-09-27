@@ -16,13 +16,22 @@ def render_agent_result(st, result: Dict[str, Any], metric_labels: Dict[str, str
     """Render a standard specialist-agent result without unsafe actuation."""
     severity = int(result.get("severity", 1))
     condition = str(result.get("condition", "HEALTHY"))
-    confidence = float(result.get("confidence", 0.0))
-    health_score = float(result.get("health_score", 0.0))
+    # `result.get(key, default)` only substitutes the default when the key is
+    # ABSENT, not when its value is explicitly None - and BaseSpecialistAgent
+    # ._insufficient_if_empty() deliberately returns health_score=None for an
+    # UNKNOWN/data-gap condition (CONTEXT.md invariant: missing data is
+    # UNKNOWN, never a fabricated score). `float(None)` raised here, crashing
+    # every domain page the moment an equipment had no matching measurement.
+    confidence_raw = result.get("confidence")
+    confidence = float(confidence_raw) if confidence_raw is not None else 0.0
+    health_score_raw = result.get("health_score")
+    health_score = float(health_score_raw) if health_score_raw is not None else None
 
     with st.container(border=True):
         metric_cols = st.columns(3)
         metric_cols[0].metric("Status", condition)
-        metric_cols[1].metric("Health score", f"{health_score:.0f}/100")
+        health_score_label = f"{health_score:.0f}/100" if health_score is not None else "Tidak diketahui"
+        metric_cols[1].metric("Health score", health_score_label)
         metric_cols[2].metric("Confidence", f"{confidence:.0%}")
         if severity >= 4:
             st.error(f"Severity {severity}: {result.get('failure_mode', '-')}")

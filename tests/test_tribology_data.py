@@ -39,5 +39,25 @@ class BuildTribologyAgentInputTests(unittest.TestCase):
         self.assertEqual(result["iso_cleanliness"], "16/14/11")
 
 
+class TribologyAgentPartialDataTests(unittest.TestCase):
+    """A real sample (e.g. only ISO 4406 read, viscosity/TAN/water not
+    measured this cycle) makes build_tribology_agent_input emit every key
+    with an explicit None for what's missing. TribologyAgent.evaluate() must
+    treat that None as "use the default", not crash on float(None)."""
+
+    def test_only_iso_measured_does_not_crash_and_falls_back_to_defaults(self):
+        from src.agents.specialist_agents import TribologyAgent
+
+        sample = {
+            "viscosity_40c": None, "tan": None, "water_ppm": None,
+            "wear_fe": None, "wear_cu": None, "iso_cleanliness": "20/18/15",
+            "oil_type": "",
+        }
+        agent_input = build_tribology_agent_input(sample)
+        result = TribologyAgent().evaluate("PAF 1B", agent_input)
+        self.assertNotEqual(result.get("condition"), "UNKNOWN")
+        self.assertEqual(result["metrics"]["iso_cleanliness"], "20/18/15")
+
+
 if __name__ == "__main__":
     unittest.main()

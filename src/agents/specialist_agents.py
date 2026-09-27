@@ -488,13 +488,26 @@ class TribologyAgent(BaseSpecialistAgent):
         })
         if insufficient:
             return insufficient
-        visc = float(data.get("viscosity_40c", data.get("viscosity", 46.0)))
-        nominal_visc = float(data.get("nominal_viscosity", 46.0))
-        tan = float(data.get("tan", 0.15))
-        water_ppm = float(data.get("water_ppm", data.get("water", 45.0)))
-        fe = float(data.get("fe_ppm", data.get("fe", 12.0)))
-        cu = float(data.get("cu_ppm", data.get("cu", 3.0)))
-        iso_code = str(data.get("iso_cleanliness", "16/14/11"))
+        # `data.get(key, default)` only substitutes the default when `key` is
+        # ABSENT, not when a caller (e.g. build_tribology_agent_input, which
+        # always emits every key, None or not) sets it to None explicitly - a
+        # sample with only iso_cleanliness measured passed the insufficient-
+        # data check above, then crashed float(None) below. `_get` treats an
+        # explicit None the same as a missing key.
+        def _get(*keys, default):
+            for key in keys:
+                value = data.get(key)
+                if value is not None:
+                    return value
+            return default
+
+        visc = float(_get("viscosity_40c", "viscosity", default=46.0))
+        nominal_visc = float(_get("nominal_viscosity", default=46.0))
+        tan = float(_get("tan", default=0.15))
+        water_ppm = float(_get("water_ppm", "water", default=45.0))
+        fe = float(_get("fe_ppm", "fe", default=12.0))
+        cu = float(_get("cu_ppm", "cu", default=3.0))
+        iso_code = str(_get("iso_cleanliness", default="16/14/11"))
 
         visc_dev = abs(visc - nominal_visc) / nominal_visc * 100.0
         evidence = []
