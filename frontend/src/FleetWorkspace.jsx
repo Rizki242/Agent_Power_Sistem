@@ -20,6 +20,7 @@ const HEALTH_COLORS = {
   WARNING: { bg: 'rgba(245, 158, 11, 0.15)', text: '#f59e0b', border: '#f59e0b' },
   ALERT: { bg: 'rgba(249, 115, 22, 0.15)', text: '#f97316', border: '#f97316' },
   CRITICAL: { bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444', border: '#ef4444' },
+  UNKNOWN: { bg: 'rgba(100, 116, 139, 0.15)', text: '#64748b', border: '#64748b' },
 }
 
 export default function FleetWorkspace() {
@@ -155,12 +156,19 @@ export default function FleetWorkspace() {
         </div>
       ) : (
         <>
+          {(data?.coverage?.headline || data?.parity_contract?.ownership_note) && (
+            <div className="notice" style={{ marginBottom: '16px' }}>
+              {data?.coverage?.headline && <strong>{data.coverage.headline}</strong>}
+              {data?.parity_contract?.ownership_note && <span>{data.parity_contract.ownership_note}</span>}
+            </div>
+          )}
+
           {/* Executive KPI Strip */}
           <section className="overview-strip" aria-label="Ringkasan Kesehatan Armada" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', marginBottom: '24px' }}>
             <div>
               <span>Rata-Rata Kesehatan Armada</span>
-              <strong style={{ color: data?.fleet_health_average >= 85 ? '#10b981' : data?.fleet_health_average >= 70 ? '#f59e0b' : '#ef4444', fontSize: '1.4rem' }}>
-                {data?.fleet_health_average ? `${data.fleet_health_average.toFixed(1)}%` : '—'}
+              <strong style={{ color: data?.coverage?.fleet_health_known && data.fleet_health_average >= 85 ? '#10b981' : data?.coverage?.fleet_health_known && data.fleet_health_average >= 70 ? '#f59e0b' : data?.coverage?.fleet_health_known ? '#ef4444' : '#64748b', fontSize: '1.4rem' }}>
+                {data?.fleet_health_label || 'UNKNOWN'}
               </strong>
             </div>
             <div>
@@ -190,9 +198,9 @@ export default function FleetWorkspace() {
           {/* Unit Breakdown Cards (3x25 MW) */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
             {['UNIT 1', 'UNIT 2', 'UNIT 3', 'COMMON'].map((uKey) => {
-              const uData = unitSummary[uKey] || { total: 0, avg_health: 90, HEALTHY: 0, WATCH: 0, WARNING: 0, ALERT: 0, CRITICAL: 0 }
-              const avg = uData.avg_health || 90
-              const healthColor = avg >= 85 ? '#10b981' : avg >= 70 ? '#f59e0b' : '#ef4444'
+              const uData = unitSummary[uKey] || { total: 0, avg_health: null, health_known: false, HEALTHY: 0, WATCH: 0, WARNING: 0, ALERT: 0, CRITICAL: 0, UNKNOWN: 0 }
+              const avg = uData.health_known ? Number(uData.avg_health) : null
+              const healthColor = avg == null ? '#64748b' : avg >= 85 ? '#10b981' : avg >= 70 ? '#f59e0b' : '#ef4444'
 
               return (
                 <div
@@ -212,13 +220,13 @@ export default function FleetWorkspace() {
                       <strong style={{ fontSize: '1.05rem', color: 'var(--ink)' }}>{uKey}</strong>
                     </div>
                     <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: healthColor, background: `${healthColor}18`, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${healthColor}33` }}>
-                      {avg.toFixed(1)}% Health
+                      {avg == null ? 'UNKNOWN' : `${avg.toFixed(1)}%`}
                     </span>
                   </div>
 
                   {/* Progress Bar */}
                   <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden', marginBottom: '12px' }}>
-                    <div style={{ height: '100%', width: `${Math.min(Math.max(avg, 0), 100)}%`, background: healthColor, borderRadius: '3px' }} />
+                    <div style={{ height: '100%', width: `${avg == null ? 0 : Math.min(Math.max(avg, 0), 100)}%`, background: healthColor, borderRadius: '3px' }} />
                   </div>
 
                   {/* Stats pills */}
@@ -343,6 +351,7 @@ export default function FleetWorkspace() {
                 <option value="WARNING">Warning</option>
                 <option value="ALERT">Alert</option>
                 <option value="CRITICAL">Critical</option>
+                <option value="UNKNOWN">Unknown</option>
               </select>
             </div>
           </div>

@@ -23,7 +23,8 @@ class FleetWatchlistItem(BaseModel):
 
 class FleetReliabilityResponse(BaseModel):
     total_assets: int
-    fleet_health_average: float
+    fleet_health_average: Optional[float] = None
+    fleet_health_label: str = "UNKNOWN"
     health_summary: Dict[str, int] = Field(
         default_factory=lambda: {
             "HEALTHY": 0,
@@ -38,6 +39,8 @@ class FleetReliabilityResponse(BaseModel):
     unit_summary: Optional[Dict[str, Any]] = None
     risk_matrix: Optional[Dict[str, Any]] = None
     bad_actors: Optional[List[Dict[str, Any]]] = None
+    parity_contract: Optional[Dict[str, Any]] = None
+    coverage: Optional[Dict[str, Any]] = None
 
 
 class FailureHypothesisModel(BaseModel):

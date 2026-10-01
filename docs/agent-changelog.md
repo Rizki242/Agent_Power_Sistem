@@ -27,6 +27,42 @@ Rules:
 
 ## Entries
 
+### 2026-10-01 - Kontrak parity snapshot fleet/reliability (WF-01)
+
+- **Requested:** "gas kerjakan WF-01"
+- **Plan (agreed before coding):** selaraskan semantik `UNKNOWN`, `STALE`, dan domain kosong di builder fleet yang sudah dipakai Streamlit, FastAPI, dan CLI. Jangan biarkan UI mengisi angka 90 saat data tidak ada. Diagnosis engineering tetap milik Streamlit.
+- **Changed:**
+  - `src/fleet_reliability.py` - payload menambah `coverage`, `parity_contract`, dan `fleet_health_label`. Rata-rata kosong menjadi `None`/`UNKNOWN`, bukan 90. Domain yang tidak diukur ditandai `DATA_GAP`.
+  - `pple/api/schemas/reliability.py` - response fleet menerima field kontrak baru dan rata-rata opsional.
+  - `src/pages/agent_dashboard_page.py`, `src/pages/reliability_page.py`, `frontend/src/FleetWorkspace.jsx`, `pple/cli/main.py`, `src/automations.py` - menampilkan label kontrak, bukan skor sehat buatan.
+  - `tests/test_fleet_reliability.py` - snapshot kosong dan snapshot basi tidak lagi lolos sebagai kondisi normal.
+  - `docs/feature-parity.md`, `tasks/todo.md` - WF-01 ditandai selesai pada kontrak payload.
+- **Verified:**
+  - `python3 -m py_compile src/fleet_reliability.py src/pages/agent_dashboard_page.py src/pages/reliability_page.py src/automations.py pple/cli/main.py pple/api/schemas/reliability.py tests/test_fleet_reliability.py` — OK
+  - `python3 -m unittest tests.test_fleet_reliability tests.test_executive_reliability` — 10 tests, OK
+  - `python3 -m unittest tests.test_api_server.TestAPIServer.test_fleet_reliability_endpoint` — OK (GET `/api/reliability/fleet` 200)
+  - `python3 verify_app.py` — Verification Complete
+  - `npm --prefix frontend run lint` — 0 warnings, 0 errors
+  - `npm --prefix frontend run build` — built in 9.74s
+- **Left out / risks:** ambang STALE 90 hari adalah aturan tampilan snapshot, bukan threshold diagnosis. `WF-08` belum menambah regression API lintas-surface.
+- **Docs/ADR:** `docs/feature-parity.md`. ADR-0001 tidak diubah.
+
+### 2026-10-01 - Finalisasi keputusan feature parity per workflow + backlog implementasi
+
+- **Requested:** "oke gas kerjakan 1 tuntaskan feature parity decision + backlog per workflow"
+- **Plan (agreed before coding):**
+  - Baca dokumen parity/arsitektur, navigasi Streamlit, route React, dan halaman Settings untuk memastikan ownership workflow didasarkan pada kode aktual.
+  - Finalkan boundary parity per workflow dalam dokumen utama dan, karena ini mengubah batas Streamlit/React/API/CLI, rekam ke ADR.
+  - Publikasikan backlog kerja per workflow ke task-list target. Repo biasanya memakai GitHub Issues, tetapi `gh` CLI tidak tersedia di environment ini, jadi backlog dicatat sementara di `tasks/todo.md`.
+- **Changed:**
+  - `docs/adr/ADR-0001-feature-parity-boundaries.md` - ADR baru yang membakukan boundary parity berbasis workflow: Streamlit untuk engineering mendalam, React untuk operator/control center, FastAPI/`pple/application` untuk contract bersama, dan CLI untuk headless/offline-safe flows.
+  - `docs/feature-parity.md` - tambah keputusan ownership final, daftar workflow yang benar-benar menjadi parity target, dan indeks backlog per workflow; perjelas bahwa ingest/QC, Word sync, manual reports, dan placeholder settings bukan gap parity React.
+  - `tasks/plan.md` - rencana implementasi untuk keputusan parity + backlog, termasuk alasan fallback ke task file lokal.
+  - `tasks/todo.md` - backlog rinci per workflow (`WF-01` s.d. `WF-08`) dengan acceptance criteria, verification, dependencies, dan checkpoint.
+- **Verified:** `git --no-pager remote -v | head -n 4` mengonfirmasi repo `Rizki242/Agent_Power_Sistem`; review langsung terhadap `docs/feature-parity.md`, `app.py`, `frontend/src/App.jsx`, `frontend/src/api.js`, dan `src/pages/settings_page.py` memastikan keputusan backlog mengikuti surface yang benar-benar ada; tidak ada build/test dijalankan karena perubahan ini murni dokumentasi dan tracker lokal.
+- **Left out / risks:** GitHub issue tracker repo terdeteksi di `docs/agents/issue-tracker.md`, tetapi `gh` tidak terpasang (`gh: command not found`), sehingga backlog belum dipublikasikan sebagai issue upstream dan sementara hidup di `tasks/todo.md`. `git status --short --untracked-files=no` tidak mengembalikan file tracked yang berubah di luar pekerjaan ini, tetapi karena worktree berada di filesystem Windows mount, pengecekan status lengkap dibatasi ke probe non-destruktif.
+- **Docs/ADR:** `docs/feature-parity.md`, `docs/adr/ADR-0001-feature-parity-boundaries.md`, `tasks/plan.md`, `tasks/todo.md`.
+
 ### 2026-09-28 - Ingest Data Laporan Bulanan PdM Mei 2026 (2.117 pengukuran) & Kompatibilitas Pandas Asset Registry
 
 - **Requested:** Ingest seluruh data CBM dari `data/Laporan/05. Laporan Bulanan PdM Bulan Mei 2026.pdf` ke dalam platform (Streamlit dan React frontend).

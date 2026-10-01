@@ -31,11 +31,48 @@ class TestBuildFleetReliability(unittest.TestCase):
         self.fusion_agent = ReliabilityFusionAgent()
         self.asset_graph = AssetKnowledgeGraph()
 
-    def test_empty_dataframe_returns_zero_assets(self):
+    def test_empty_dataframe_is_unknown_not_healthy_default(self):
         result = build_fleet_reliability(pd.DataFrame(), self.fusion_agent, self.asset_graph)
         self.assertEqual(result["total_assets"], 0)
         self.assertEqual(result["asset_matrix"], [])
-        self.assertEqual(result["health_summary"], {})
+        self.assertIsNone(result["fleet_health_average"])
+        self.assertEqual(result["fleet_health_label"], "UNKNOWN")
+        self.assertNotEqual(result["fleet_health_average"], 90.0)
+        self.assertEqual(result["coverage"]["status"], "UNKNOWN")
+        self.assertIn("DGA", result["coverage"]["missing_domains"])
+        self.assertEqual(
+            result["parity_contract"]["source"],
+            "pple.application.fleet.FleetReliabilityUseCase",
+        )
+        self.assertEqual(result["parity_contract"]["engineering_drilldown_owner"], "STREAMLIT")
+        self.assertIn("UNKNOWN", result["health_summary"])
+
+    def test_stale_and_missing_domain_are_labeled_not_normal(self):
+        df_latest = pd.DataFrame([
+            {
+                "Equipment": "CWP 1A",
+                "Parameter": "Kondisi",
+                "Raw_Value": "Alarm",
+                "Value": None,
+                "Date": "2020-01-01",
+            },
+        ])
+        result = build_fleet_reliability(
+            df_latest,
+            self.fusion_agent,
+            self.asset_graph,
+            include_multi_domain=False,
+        )
+        entry = result["asset_matrix"][0]
+        self.assertEqual(entry["freshness"], "STALE")
+        self.assertEqual(entry["domain_coverage"]["MCSA"], "MEASURED")
+        self.assertEqual(entry["domain_coverage"]["DGA"], "DATA_GAP")
+        self.assertEqual(entry["domain_coverage"]["PD"], "DATA_GAP")
+        self.assertEqual(result["coverage"]["status"], "STALE")
+        self.assertIn("DGA", result["coverage"]["missing_domains"])
+        self.assertNotIn("90.0", result["coverage"]["headline"])
+        self.assertNotIn("normal", result["coverage"]["headline"].lower())
+        self.assertNotEqual(entry["domain_coverage"]["DGA"], "MEASURED")
 
     def test_fleet_matrix_from_measured_rows(self):
         df_latest = pd.DataFrame([

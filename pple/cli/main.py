@@ -415,7 +415,10 @@ def reliability_fleet():
 
     console.print("\n[bold]FLEET RELIABILITY OVERVIEW[/bold]")
     console.print(f"Total Assets        {res.get('total_assets', 0)}")
-    console.print(f"Fleet Health Avg    {res.get('fleet_health_average', 0.0)}")
+    console.print(f"Fleet Health Avg    {res.get('fleet_health_label', res.get('fleet_health_average'))}")
+    coverage = res.get("coverage") or {}
+    if coverage.get("headline"):
+        console.print(coverage["headline"])
 
     summary = res.get("health_summary", {})
     console.print(
@@ -423,7 +426,8 @@ def reliability_fleet():
         f"WATCH={summary.get('WATCH', 0)} | "
         f"WARNING={summary.get('WARNING', 0)} | "
         f"ALERT={summary.get('ALERT', 0)} | "
-        f"CRITICAL={summary.get('CRITICAL', 0)}"
+        f"CRITICAL={summary.get('CRITICAL', 0)} | "
+        f"UNKNOWN={summary.get('UNKNOWN', 0)}"
     )
 
     watchlist = res.get("critical_watchlist", [])

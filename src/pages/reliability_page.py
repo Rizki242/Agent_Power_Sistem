@@ -114,8 +114,16 @@ def render_reliability_page(st_context=st, df_latest_all: pd.DataFrame = None):
         asset_graph = AssetKnowledgeGraph()
         fleet_data = build_fleet_reliability(df_latest_all, fusion_agent, asset_graph, limit=80, include_multi_domain=True)
 
+    coverage = fleet_data.get("coverage") or {}
+    contract = fleet_data.get("parity_contract") or {}
+    if coverage.get("headline"):
+        st_context.info(coverage["headline"])
+    if contract.get("ownership_note"):
+        st_context.caption(contract["ownership_note"])
+
     total_assets = fleet_data.get("total_assets", 0)
-    avg_health = fleet_data.get("fleet_health_average", 90.0)
+    avg_health = fleet_data.get("fleet_health_average")
+    health_label = fleet_data.get("fleet_health_label") or ("UNKNOWN" if avg_health is None else f"{avg_health:.1f}")
     summary = fleet_data.get("health_summary", {})
     unit_summary = fleet_data.get("unit_summary", {})
     risk_grid = fleet_data.get("risk_grid", {})
@@ -127,8 +135,7 @@ def render_reliability_page(st_context=st, df_latest_all: pd.DataFrame = None):
     with kpi_col1:
         st_context.metric("Total Aset Terpantau", f"{total_assets} Aset", help="Total unit motor dan pompa terpantau secara berkala")
     with kpi_col2:
-        hi_color = "#10B981" if avg_health >= 85 else ("#F59E0B" if avg_health >= 70 else "#EF4444")
-        st_context.metric("Rata-rata Plant Health", f"{avg_health:.1f}%")
+        st_context.metric("Rata-rata Plant Health", health_label if avg_health is None else f"{health_label}%")
     with kpi_col3:
         normal_cnt = summary.get("HEALTHY", 0) + summary.get("WATCH", 0)
         st_context.metric("Armada Sehat / Siap", f"{normal_cnt} Aset", delta="Kondisi Prima", delta_color="normal")
@@ -163,7 +170,8 @@ def render_reliability_page(st_context=st, df_latest_all: pd.DataFrame = None):
                     f"</div>",
                     unsafe_allow_html=True,
                 )
-                u_avg = u_info.get("avg_health", 0.0)
+                u_avg = u_info.get("avg_health")
+                u_label = "UNKNOWN" if not u_info.get("health_known") else f"{u_avg:.1f}%"
                 u_crit = u_info.get("CRITICAL", 0)
                 u_warn = u_info.get("WARNING", 0) + u_info.get("ALERT", 0)
                 u_ok = u_info.get("HEALTHY", 0) + u_info.get("WATCH", 0)
@@ -171,7 +179,7 @@ def render_reliability_page(st_context=st, df_latest_all: pd.DataFrame = None):
 
                 m_col1, m_col2 = st_context.columns([1, 1])
                 with m_col1:
-                    st_context.metric("Health Index", f"{u_avg:.1f}%")
+                    st_context.metric("Health Index", u_label)
                 with m_col2:
                     st_context.metric("Total Aset", f"{u_tot}")
 

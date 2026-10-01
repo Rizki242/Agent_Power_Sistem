@@ -175,7 +175,10 @@ def dispatch_action(action: str) -> dict[str, Any]:
         publish(
             Events.ANALYSIS_COMPLETED,
             source="AUTOMATION_CRON",
-            summary=f"Fleet health checked. Avg Health: {res.get('fleet_health_average')}%. Critical assets: {bad_count}."
+            summary=(
+                f"Fleet health checked. Avg Health: {res.get('fleet_health_label', res.get('fleet_health_average'))}. "
+                f"Coverage: {(res.get('coverage') or {}).get('status', 'UNKNOWN')}. Critical assets: {bad_count}."
+            )
         )
         
         return {

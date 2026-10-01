@@ -22,6 +22,7 @@ HEALTH_CHIP_COLORS = {
     "WARNING": "#F59E0B",
     "ALERT": "#F97316",
     "CRITICAL": "#EF4444",
+    "UNKNOWN": "#64748B",
 }
 
 METRIC_LABELS = {
@@ -90,7 +91,7 @@ def _get_coordinator() -> SubAgentCoordinator:
 
 def _render_health_chips(st, summary: dict) -> None:
     chips = []
-    for label in ("HEALTHY", "WATCH", "WARNING", "ALERT", "CRITICAL"):
+    for label in ("HEALTHY", "WATCH", "WARNING", "ALERT", "CRITICAL", "UNKNOWN"):
         count = int(summary.get(label, 0))
         color = HEALTH_CHIP_COLORS[label]
         chips.append(
@@ -163,7 +164,11 @@ def _render_mission_control_overview(st, fleet: dict, specialists: list) -> None
     with c1:
         _kpi_card(st, fleet.get("total_assets", 0), "Total Aset Aktif")
     with c2:
-        _kpi_card(st, f'{fleet.get("fleet_health_average", 0):.1f}/100', "Rata-rata Fleet Health")
+        health_label = fleet.get("fleet_health_label")
+        if not health_label:
+            average = fleet.get("fleet_health_average")
+            health_label = "UNKNOWN" if average is None else f"{average:.1f}"
+        _kpi_card(st, health_label if health_label == "UNKNOWN" else f"{health_label}/100", "Rata-rata Fleet Health")
     with c3:
         _kpi_card(st, len(fleet.get("critical_watchlist", [])), "Aset Masuk Watchlist", variant="warn")
     with c4:
@@ -177,7 +182,7 @@ def _render_mission_control_overview(st, fleet: dict, specialists: list) -> None
     with col_chart:
         st.markdown("##### Distribusi Kondisi Aset")
         summary = fleet.get("health_summary", {})
-        labels = ["HEALTHY", "WATCH", "WARNING", "ALERT", "CRITICAL"]
+        labels = ["HEALTHY", "WATCH", "WARNING", "ALERT", "CRITICAL", "UNKNOWN"]
         values = [summary.get(l, 0) for l in labels]
         colors = [HEALTH_CHIP_COLORS[l] for l in labels]
 
@@ -243,6 +248,12 @@ def render_agent_dashboard_page(st, df_latest_all: pd.DataFrame, mcsa_page=None)
         st.session_state["_agent_fleet_result"] = fleet
 
     specialists = coordinator.list_specialists()
+    coverage = fleet.get("coverage") or {}
+    contract = fleet.get("parity_contract") or {}
+    if coverage.get("headline"):
+        st.info(coverage["headline"])
+    if contract.get("ownership_note"):
+        st.caption(contract["ownership_note"])
 
     # Render Modern Overview
     _render_mission_control_overview(st, fleet, specialists)
