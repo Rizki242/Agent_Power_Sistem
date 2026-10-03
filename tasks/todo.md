@@ -32,19 +32,29 @@ even if their layouts differ.
 
 ## Task WF-02: Narrow domain diagnosis parity to read/analyze flows
 
+**Status:** Completed 2026-10-03 for workflow scope and gap inventory.
+UI labels and contract regressions remain explicit follow-ups in WF-07/WF-08.
+
 **Description:** Keep parity commitments for domain engineering focused on
 read/analyze/dispatch workflows, while leaving ingest, QC, and manual authoring in
 Streamlit unless a later ADR expands scope.
 
 **Acceptance criteria:**
-- [ ] The parity doc states that React does not own bulk ingest, QC, Word sync, or manual report authoring.
-- [ ] Domain diagnosis parity covers status, evidence, confidence, provenance, and next action only.
-- [ ] The backlog identifies any missing capability labels or unsupported-state messaging in React.
+- [x] The parity doc states that React does not own bulk ingest, QC, Word sync, or manual report authoring.
+- [x] Domain diagnosis parity covers status, evidence, confidence, provenance, and next action only.
+- [x] The backlog identifies any missing capability labels or unsupported-state messaging in React.
 
 **Verification:**
-- [ ] Review `docs/feature-parity.md` rows for the six engineering domains.
-- [ ] Confirm the workflow boundary matches `docs/adr/ADR-0001-feature-parity-boundaries.md`.
-- [ ] Manual check: no task asks for page-by-page cloning of Streamlit workspaces.
+- [x] Review `docs/feature-parity.md` rows for the six engineering domains.
+- [x] Confirm the workflow boundary matches `docs/adr/ADR-0001-feature-parity-boundaries.md`.
+- [x] Manual check: no task asks for page-by-page cloning of Streamlit workspaces.
+
+**Concrete follow-ups (not completed by WF-02):**
+- WF-07: remove implied upload/QC support from the CBM empty-state link to Data;
+  label MCSA missing status UNKNOWN and limited Tribology/Thermal/PD read support.
+- WF-08: test shared diagnosis evidence/confidence/provenance/next-data payloads,
+  preserve UNKNOWN through the V2 adapter, compare DGA operational results against
+  backend rules, and distinguish legitimate zero health from missing trend scores.
 
 **Dependencies:** WF-01
 
@@ -58,19 +68,34 @@ Streamlit unless a later ADR expands scope.
 
 ## Task WF-03: Align chat, voice, and citation behavior
 
+**Status:** Completed 2026-10-03 for workflow contract documentation and gap inventory.
+Streamlit prompt/attachment safety is covered; remaining API/citation gaps stay open
+in the WF-08 follow-ups below.
+
 **Description:** Make the parity goal explicit for chat workflows: both surfaces
 must respect the same safety, evidence, and fallback rules, while React remains the
 canonical UX for voice and citation display.
 
 **Acceptance criteria:**
-- [ ] Chat parity expectations name the same safety boundary and rule-based source of truth.
-- [ ] Citation support is described as a contract capability, not a prompt-only behavior.
-- [ ] Voice-specific work is clearly marked React-canonical, not a Streamlit parity gap.
+- [x] Chat parity expectations name the same safety boundary and rule-based source of truth.
+- [x] Citation support is described as a contract capability, not a prompt-only behavior.
+- [x] Voice-specific work is clearly marked React-canonical, not a Streamlit parity gap.
 
 **Verification:**
-- [ ] Review `docs/feature-parity.md` chat and RAG rows.
-- [ ] Confirm the workflow references `src.chatbot`, `src.agents.master_agent`, and `/api/agent/chat`.
-- [ ] Manual check: the backlog separates shared chat logic from React-only voice UX work.
+- [x] Review `docs/feature-parity.md` chat and RAG rows.
+- [x] Confirm the workflow references `src.chatbot`, `src.agents.master_agent`, and `/api/agent/chat`.
+- [x] Manual check: the backlog separates shared chat logic from React-only voice UX work.
+
+**Concrete follow-ups for WF-08:**
+- Streamlit safety slice completed: prompt/active attachments use the shared guard
+  before rule processing/LLM; rejected turns are excluded from conversation context.
+  Regression: `tests.test_streamlit_chat_safety`. API text/VOICE contract tests remain next.
+- Citation retrieval with LLM disabled/unavailable and semantic dependencies absent;
+  Streamlit currently returns before retrieval and gates stored citations on ai_active.
+- Consistent safety_blocked/citations fields across normal, blocked, and failed replies;
+  citation source/payload/session round-trip tests (existing citation tests are partial proof).
+- UNKNOWN, measured numbers/units, and safety rejection retained by API/master speech summaries.
+- React-only microphone/STT/TTS/hands-free UX remains outside Streamlit parity.
 
 **Dependencies:** WF-02
 

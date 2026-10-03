@@ -1,6 +1,6 @@
 # Feature Parity Streamlit dan React
 
-Status: diperbarui 2026-10-01 terhadap kode aktual dan keputusan ownership workflow final (lihat "Riwayat" di bawah)
+Status: diperbarui 2026-10-03 terhadap kode aktual dan keputusan ownership workflow final (lihat "Riwayat" di bawah)
 Tujuan: mencegah dua UI mengembangkan business rule yang berbeda.
 
 ## Riwayat penting
@@ -73,8 +73,8 @@ Backlog rinci ada di `tasks/todo.md`. Tabel ini adalah indeks keputusan dan prio
 | Workflow | Ownership final | Target parity | Gap yang masih perlu ditutup | Backlog |
 | --- | --- | --- | --- | --- |
 | Fleet / reliability snapshot | Streamlit + React `Supported`, contract canonical di `FleetReliabilityUseCase` / `GET /api/reliability/fleet` | Status, severity, watchlist, stale-data, dan `UNKNOWN` konsisten | Kontrak payload `coverage` + `parity_contract` sudah menjadi sumber label. Sisa kerja: regression lintas-surface di `WF-08` | `WF-01` selesai, `WF-08` |
-| Domain diagnosis (MCSA/DGA/Vibration/Tribology/Thermal/PD) | Streamlit canonical untuk ingest/QC/report; React supported untuk read/analyze/dispatch | Paritas hanya untuk baca/analisa/dispatch | Perlu batas tegas agar React tidak dikejar ke Word sync/QC/manual report | `WF-02`, `WF-07`, `WF-08` |
-| Chat / voice / citations | React canonical untuk UX voice+citation; Streamlit supported untuk assistant rule-based | Safety, source of truth, evidence, dan fallback sama | Perlu pemisahan tegas antara logic chat bersama vs UX voice React-only | `WF-03`, `WF-08` |
+| Domain diagnosis (MCSA/DGA/Vibration/Tribology/Thermal/PD) | Streamlit canonical untuk ingest/QC/report; React supported untuk read/analyze/dispatch | Paritas hanya untuk baca/analisa/dispatch | Batas dan inventaris gap selesai di WF-02; label dan regresi contract masih terbuka | `WF-02` selesai, `WF-07`, `WF-08` |
+| Chat / voice / citations | React canonical untuk UX voice+citation; Streamlit supported untuk assistant rule-based | Safety, source of truth, evidence, dan fallback sama | Guard prompt/lampiran Streamlit sudah diuji; contract API teks/VOICE, fallback citation, dan respons masih follow-up | `WF-03` selesai, `WF-08` |
 | Work orders | Streamlit + React `Supported`, API/workflow canonical di backend | Lifecycle WO dan safety checklist sama | Perlu regression coverage untuk create/approve/progress/complete/reject | `WF-04`, `WF-08` |
 | Knowledge base | Search/upload supported; delete tetap Streamlit-canonical | Search/read/upload sama, delete tidak dipaksakan parity | Perlu labeling eksplisit agar React tidak menyiratkan delete support | `WF-06`, `WF-07` |
 | Settings | Hanya kategori yang punya backend yang masuk parity | General, AI & LLM, engineering/system settings yang nyata | Perlu rapikan placeholder vs real settings agar tidak membingungkan user | `WF-05`, `WF-07`, `WF-08` |
@@ -83,18 +83,115 @@ Backlog rinci ada di `tasks/todo.md`. Tabel ini adalah indeks keputusan dan prio
 | Automation / Agent Lab / Memory | React canonical | Tidak dikejar parity ke Streamlit | Perlu tetap diikat ke contract backend dan audit trail | `WF-07` |
 | Login / auth UX | React canonical | Tidak dikejar parity ke Streamlit | Perlu tetap dibedakan dari middleware `PPLE_API_KEY` untuk klien non-browser | `WF-07` |
 
+## WF-02: Batas diagnosis read/analyze/dispatch (2026-10-03)
+
+WF-02 menetapkan batas workflow, bukan menyatakan seluruh tampilan diagnosis sudah setara.
+React membaca data, menampilkan hasil analisa backend, dan mengirim permintaan draft WO.
+Bulk ingest, preview/quarantine/commit, QC, Word sync, dan authoring laporan manual tetap
+Streamlit-canonical. Ketersediaan endpoint upload/report tidak mengubah ownership UI.
+
+Contract yang perlu dijaga untuk keenam domain:
+
+- Identitas equipment, domain, periode/timestamp, nilai, unit, dan sumber pengukuran harus jelas.
+- Condition, severity, dan health score berasal dari core; skor `None` dan `UNKNOWN` tidak
+  boleh diberi fallback Normal atau angka sehat oleh UI.
+- Evidence, confidence, provenance, recommendation/next action, dan kebutuhan data tambahan
+  berasal dari hasil diagnosis yang sama. Confidence bukan probabilitas terkalibrasi.
+- Domain tanpa data yang cukup dicatat sebagai data gap; tidak masuk pembobotan fusion.
+- Dispatch membuat permintaan WO melalui backend; approval dan safety tetap workflow bersama.
+
+Boundary kode: `src.agents.specialist_agents` untuk evaluasi domain,
+`pple/application/diagnostics.py` untuk fusion, `/api/equipment/*` untuk MCSA,
+`/api/dga/*` untuk DGA, dan `/api/v2/domain/{domain}/measurements|summary` untuk store kanonik.
+Summary saat ini hanya membawa condition/health/failure mode/readings; evidence, confidence,
+provenance, dan next-data belum lengkap. Itu gap contract untuk WF-08, bukan parity yang sudah lulus.
+
+Gap yang sudah diperiksa dan dialokasikan:
+
+| Area | Kondisi aktual | Tindak lanjut |
+| --- | --- | --- |
+| MCSA (`MCSAWorkspace.jsx`) | `StatusBadge`/`RotorBarBadge` memakai fallback Normal saat status kosong | WF-07: label UNKNOWN eksplisit; WF-08: regression unknown/empty |
+| Vibrasi (`CBMDashboard.jsx`) | Empty-state menyarankan upload via halaman Data, tetapi `DataWorkspace.jsx` adalah registry/config modul | WF-07: arahkan ingest/QC ke Streamlit |
+| DGA (`CBMDashboard.jsx`) | Visual Duval/Rogers juga memiliki kalkulasi lokal dan simulator | WF-08: bandingkan hasil backend; bedakan simulasi dari diagnosis operasional |
+| Tribology/Thermal/PD | Belum ada workspace diagnosis tersendiri pada route React aktual; data tampil lewat tren/chat | WF-07: label dukungan baca terbatas, jangan menyiratkan analyze lengkap |
+| Tren lintas-domain | Nilai health yang tidak tersedia dipetakan ke 0 lalu disaring; skor sah 0 ikut hilang | WF-08: uji skor 0 vs UNKNOWN dan provenance seri |
+| Adapter V2 | Data quality dibentuk ulang dan severity 0 dipetakan ke NORMAL; kebutuhan data agen belum diteruskan | WF-08: kontrak abstention/UNKNOWN dan metadata parsial |
+| Tribology legacy (`src/tribology_data.py`) | `evaluate_tribology_sample` masih memiliki fallback angka dan ambang berbeda dari specialist agent | WF-08: audit kontrak legacy secara terpisah; perbaikan agen pada tugas ini tidak mengklaim parity semua jalur |
+
+## WF-03: Contract chat, voice, dan citation (2026-10-03)
+
+WF-03 selesai untuk batas workflow dan inventaris gap. Ini bukan klaim bahwa kedua
+jalur chat sudah memakai satu implementasi atau seluruh perilakunya sudah setara.
+ADR-0001 tetap menetapkan React sebagai canonical UX voice/citation dan Streamlit
+sebagai supported assistant rule-based. Voice tidak menjadi backlog parity Streamlit.
+
+### Perilaku bersama yang wajib dijaga
+
+- Jawaban kondisi/status/threshold/evidence berasal dari core Python dan pengukuran nyata.
+  LLM hanya memperkaya narasi; provider gagal/tidak tersedia mengembalikan rule answer.
+  Data gap/UNKNOWN tidak boleh berubah menjadi Normal atau angka pengukuran buatan.
+- Input teks dan transkrip voice tunduk pada `SafetyGuardrailAgent` yang sama. Permintaan
+  trip/shutdown/breaker/isolation diblokir sebelum enrichment; chat tidak mengeksekusi
+  tindakan plant. Peringatan keselamatan harus tetap ada pada jawaban dan ringkasan suara.
+- Equipment dan konteks percakapan harus tetap scoped pada aset yang benar; follow-up
+  bukan izin memakai sample aset lain. Dokumen terlampir adalah sumber konteks, bukan
+  otorisasi untuk melewati guard atau mengganti hasil engineering.
+- Citation adalah hasil retrieval terstruktur, bukan sumber/nomor halaman yang dibuat LLM.
+  Contract minimal mencakup `source`, `title`, `heading`, dan `preview` bila tersedia.
+  Locator halaman/chunk/skor hanya boleh ditampilkan bila benar-benar tersedia dari sumber.
+  Tanpa sumber yang relevan, gunakan daftar kosong, jangan membuat rujukan.
+- Jawaban tanpa LLM tetap harus bisa menggunakan keyword retrieval saat semantic RAG
+  tidak tersedia. Citation yang tampil harus tetap konsisten setelah sesi dimuat kembali.
+
+### Jalur aktual dan target tes
+
+| Jalur | Implementasi aktual | Target verifikasi |
+| --- | --- | --- |
+| Streamlit | `src/pages/chatbot_page.py` -> `src.chatbot.MCSAChatbot` -> `MCSALLMAssistant.enhance_answer`; citation tampil di expander, riwayat session_state, dan export Markdown | Rule answer/fallback + citation persistence saat LLM on/off; test guard pada prompt teks/file |
+| React chat/voice | `ChatWorkspace.jsx` dan `FloatingVoiceWidget.jsx` -> `sendChatMessage` -> `/api/agent/chat` di `pple/api/routers/agents.py` | Guard dan response contract untuk teks/VOICE; citation payload dan sesi |
+| Orkestrasi domain | API memakai `get_master_agent().resolve_asset`/`execute_collaborative_diagnosis`; `PPLEMasterAgent.process_query` juga memiliki jalur tersendiri | `tests.test_master_agent`, `tests.test_chat_context`; jangan mengasumsikan API mendelegasikan seluruh chat ke `process_query` |
+| Knowledge/citation | API mengambil `assistant.last_citations` atau `build_knowledge_context`; keyword fallback berada di knowledge retriever | `tests.test_rag_citations_chat`, `tests.test_rag_api`, serta regression fallback tanpa semantic deps di WF-08 |
+| Ringkasan suara | API menyediakan `summary_for_speech`; browser Web Speech API menyediakan STT/TTS | `tests.test_speech_summary`; UX microphone/hands-free/browser fallback tetap React-only |
+
+Contract target respons chat menyatakan `reply`, `matched_equipment`, `ai_enhanced`,
+`safety_blocked`, `citations`, `summary_for_speech`, dan identitas sesi bila digunakan.
+Perbedaan layout/format teks boleh ada; keputusan safety dan hasil engineering harus sama.
+
+Gap aktual untuk WF-08:
+
+1. Guard Streamlit diterapkan pada `render_chatbot_page`: prompt dan konteks lampiran
+   aktif diperiksa oleh `SafetyGuardrailAgent` sebelum rule processing/LLM. Penolakan
+   tersimpan di history tetapi tidak masuk konteks giliran berikutnya. Regresi:
+   `tests.test_streamlit_chat_safety` (AI on/off, multi-file, lampiran persisten,
+   dan follow-up aman). Kebijakan substring guard tetap berlaku; API teks/VOICE
+   masih memerlukan coverage contract lintas-surface WF-08.
+2. `enhance_answer` langsung kembali ke rule answer saat provider unavailable sebelum
+   retrieval; Streamlit menyimpan citation hanya bila `ai_active`. API memiliki retrieval
+   langsung bila assistant tidak berjalan. Citation offline belum setara di kedua surface.
+3. API normal reply belum menyertakan `safety_blocked=False`, sementara blocked reply
+   tidak menyertakan `citations=[]`; normalisasi field dan regression dibutuhkan.
+4. Tes citation API membuktikan schema/persistence, belum mengikat setiap klaim dalam
+   jawaban ke sumber atau membuktikan seluruh fallback tanpa optional dependency.
+5. Dua generator ringkasan suara (API/master) perlu regression untuk menjaga UNKNOWN,
+   angka/unit, dan penolakan safety; widget voice ringkas tidak wajib menduplikasi accordion
+   citation milik ChatWorkspace.
+
+WF-08 berikutnya memprioritaskan contract safety API teks/VOICE, lalu fallback citation,
+respons sesi, dan konsistensi ringkasan suara. Perubahan runtime dibuat sebagai tugas kecil
+terpisah dengan failing test; scope dokumentasi WF-03 tidak mengubah safety policy.
+
 ## Matrix — rekayasa CBM (domain engineering)
 
-Seluruh baris berikut murni ditangani Streamlit hari ini. React tidak memiliki dashboard per-domain
-sejak `22be836`; `pple/api/domain_router.py` dan `pple/application/` menyiapkan data/contract yang sama
-seandainya React ingin membangunnya kembali, tapi belum ada konsumen React untuk itu.
+Streamlit memiliki workspace engineering lengkap. React saat ini memiliki MCSA Workspace
+dan Dashboard CBM yang memakai API MCSA/DGA serta measurements lintas-domain; dukungan ini
+tidak berarti semua domain sudah memiliki analyze view lengkap (lihat gap WF-02 di atas).
 
 | Capability | Streamlit | React | Sumber logic/contract | Keputusan |
 | --- | --- | --- | --- | --- |
 | Fleet command center / reliability fusion | Agent Dashboard (`src/pages/agent_dashboard_page.py`, pakai `DiagnoseEquipmentUseCase`/`FleetReliabilityUseCase`) | **Supported** — `FleetWorkspace.jsx` (`/fleet`) menampilkan KPI rata-rata kesehatan armada pembangkit 3×25 MW, rincian Unit 1/2/3/Common, Critical Watchlist, estimasi RUL, dan Matriks Armada terintegrasi ke `/api/reliability/fleet` | `src.fleet_reliability`, `pple/application/fleet.py`, fusion engine | Supported pada keduanya; parity hanya untuk snapshot/health semantics, bukan seluruh drill-down engineering |
 | MCSA / Vibration / DGA / Tribology / Thermal / Partial Discharge analysis | Halaman per-domain + `src.components.domain_workspace` (ingest, tren, diagnosa, laporan) | **Supported** — `MCSAWorkspace.jsx` (`/mcsa`) menampilkan data MCSA 93 motor lengkap (KPI Normal/Alarm/High, filter Unit/Voltage/Kondisi, telemetri kelistrikan, kualitas daya IEEE 519, sideband rotor bar EPRI dB, spesifikasi nameplate, ringkasan kinerja, tren riwayat, kalkulator rotor bar, dispatch WO CBM) terhubung ke `/api/equipment` & `/api/summary`. Ditambah **Dashboard CBM** (`/cbm`, `CBMDashboard.jsx`) dengan tab Segitiga Duval (DGA), tab MCSA & Motor, Parameter Vibrasi, dan Tren Kesehatan. | `src` rule-based + specialist agents, `pple/api/routers/equipment.py`, `pple/api/routers/core.py`, `pple/api/domain_router.py` | Supported pada keduanya; parity dibatasi ke read/analyze/dispatch. Ingest, QC, Word sync, dan authoring laporan tetap Streamlit-canonical |
-| Chat assistant (tanya status/threshold per domain) | Chatbot (`src.chatbot.MCSAChatbot`, rule-based + LLM opsional) | **Supported** — `ChatWorkspace.jsx` + `FloatingVoiceWidget.jsx`, endpoint `/api/agent/chat`, orchestrated by `PPLEMasterAgent` (multi-domain asset resolution, safety guardrail, LLM narrative enrichment) | `src.chatbot`, `src.llm_assistant`, `src.agents.master_agent` | Supported pada keduanya; React canonical untuk agent multi-domain; Streamlit canonical untuk MCSA spesifik |
-| Jawaban chat bersitasi (RAG) | Tidak ada tampilan sitasi terpisah; `rag_engine`/`knowledge_retriever` hanya dipakai untuk enrichment jawaban | **Supported** — `ChatWorkspace.jsx` menampilkan accordion "Rujukan Dokumen & Standar CBM" per pesan (`msg.citations`) dari `/api/agent/chat`; endpoint inspeksi terpisah `/api/rag/status`, `/api/rag/search`, `/api/rag/chunks`, `/api/rag/rebuild` | `src.rag_engine`, `pple/api/routers/rag.py` | React canonical untuk tampilan sitasi; fallback ke pencarian kata kunci di kedua UI bila dependensi opsional (FAISS/LangChain) tidak terpasang |
+| Chat assistant (tanya status/threshold per domain) | Chatbot (`src.chatbot.MCSAChatbot`, rule-based + LLM opsional); page memeriksa prompt/lampiran dengan shared guard | **Supported** — `ChatWorkspace.jsx` + `FloatingVoiceWidget.jsx`, endpoint `/api/agent/chat`; API memakai master untuk resolve/diagnosis dan memiliki orkestrasi chat sendiri | `src.chatbot`, `src.llm_assistant`, `src.agents.master_agent`, `pple/api/routers/agents.py` | React canonical UX chat/voice; Streamlit supported. Guard Streamlit diuji melalui `tests.test_streamlit_chat_safety`; contract API teks/VOICE masih follow-up WF-08 |
+| Jawaban chat bersitasi (RAG) | Expander referensi (`title`, `heading`, `source`, `preview`), riwayat session_state, dan export Markdown; persistence citation hanya saat AI aktif | **Supported** — `ChatWorkspace.jsx` menampilkan accordion "Rujukan Dokumen & Standar CBM" per pesan (`msg.citations`) dari `/api/agent/chat`; citation disimpan pada sesi backend | `src.knowledge_retriever`, `src.rag_engine`, `src.llm_assistant`, `pple/api/routers/agents.py` | React canonical UX citation; Streamlit supported. Contract retrieval/persistence dan fallback offline diuji di WF-08 |
 
 | Data management (upload/QC MCSA & 5 domain lain) | Manajemen Data, `domain_workspace` tab "Data & Upload" | Not planned | `src.data_loader`, `src.domain_ingest` | Streamlit canonical; React not planned dan bukan backlog parity |
 | Word batch sync dan QC | Sync + Quality Check | Not planned | `src.report_batches` | Streamlit canonical; React not planned dan bukan backlog parity |

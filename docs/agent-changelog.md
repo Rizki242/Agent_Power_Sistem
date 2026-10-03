@@ -27,6 +27,101 @@ Rules:
 
 ## Entries
 
+### 2026-10-03 - Publikasi hasil Tribology, safety chat, dan WF-02/WF-03 ke GitHub
+
+- **Requested:** "push git untuk repo github".
+- **Plan (agreed before coding):** Commit hasil pekerjaan yang sudah terverifikasi dalam kelompok Tribology/fusion, safety chat, dan dokumentasi; push branch aktif `data-ingest-juli-2026-domain-fixes` ke remote `origin` (`Rizki242/Agent_Power_Sistem`). Tidak ada perubahan kontrak runtime pada tugas publikasi ini.
+- **Changed:** Dokumentasi changelog ini dan staging/commit file hasil tugas sebelumnya; tidak ada perubahan kode baru.
+- **Verified:** `git status --short`, `git branch --show-current`, `git remote -v`, `git diff --cached --name-only` (index awal kosong), dan `git diff --check` pada file scope (exit 0). `git ls-remote --heads origin data-ingest-juli-2026-domain-fixes` berhasil setelah network escalation; branch belum ada di remote. Commit Tribology/fusion: `a49c00c`; safety chat: `7816915`. Hasil tes sebelumnya tetap berlaku karena kode tidak berubah: 22 tes terkait OK, py_compile/verify_app/AppTest smoke OK, suite 77 modul OK/1 FAIL/1 TIMEOUT. Push dan verifikasi hash remote dilakukan setelah commit dokumentasi; hasil publikasi dilaporkan di respons akhir.
+- **Left out / risks:** Perubahan user pada `src/asset_registry.py`, SQLite vibration, deletion backup DGA, dan data/Materi untracked tidak dimasukkan ke commit. Kegagalan tanggal aset dan timeout suite Streamlit tetap terbuka. Tidak melakukan force push atau merge ke main; branch aktif juga memuat commit lokal sebelumnya.
+- **Docs/ADR:** `docs/agent-changelog.md`; ADR tidak diperlukan untuk operasi Git ini.
+
+### 2026-10-03 - WF-08 slice: guard prompt dan lampiran chat Streamlit
+
+- **Requested:** Lanjut prioritas safety chat setelah WF-03; rencana konkret disetujui dengan "oke git".
+- **Plan (agreed before coding):** Gunakan `SafetyGuardrailAgent` yang sudah ada untuk prompt dan konteks lampiran aktif sebelum rule processing/LLM. Tampilkan dan simpan penolakan asli, keluarkan giliran yang ditolak dari konteks lanjutan, tambah failing regression tests, verifikasi aplikasi/suite, lalu perbarui parity/backlog. Tidak mengubah safety policy atau daftar forbidden actions.
+- **Changed:**
+  - `src/pages/chatbot_page.py` - shared guard memblokir prompt/lampiran sebelum `process_query` atau konstruksi/enhancement LLM; pesan user/assistant yang ditolak ditandai `safety_blocked`, citation kosong, dan tetap tampil pada riwayat/export. Context builder melewati kedua pesan yang ditolak agar pertanyaan aman berikutnya dapat diproses.
+  - `tests/test_streamlit_chat_safety.py` - enam tes unittest/AppTest, dengan subtests AI on/off untuk trip/breaker/interlock, lampiran kedua, lampiran persisten, follow-up aman, dan konteks lampiran aman. Chatbot/LLM/provider dimock untuk membuktikan boundary panggilan tanpa network.
+  - `docs/feature-parity.md`, `tasks/todo.md` - tandai guard Streamlit sudah diterapkan/diregresi; API teks/VOICE, citation offline, normalisasi respons, dan speech contract tetap follow-up WF-08.
+- **Verified:**
+  - Check mencakup `CONTEXT.md`, `README.md`, coding protocol section 2, ADR-0001, page/callers/tes, skill Streamlit/debugging/TDD, dan `git status --short`; perubahan user/prior task dipertahankan.
+  - RED: `python -X utf8 -m unittest tests.test_streamlit_chat_safety` - Ran 6 tests, FAILED (failures=10 termasuk subtests); alasan tepat: risky input masih memanggil rule chatbot (`1 != 0`) dan rejected history masih masuk context.
+  - `python -m py_compile src/pages/chatbot_page.py tests/test_streamlit_chat_safety.py` - exit 0.
+  - GREEN: `python -X utf8 -m unittest tests.test_streamlit_chat_safety tests.test_chat_context tests.test_master_agent` - Ran 22 tests in 19.668s, OK.
+  - Suite dijalankan per file: `python -X utf8 -m unittest tests.test_<module>` untuk seluruh 79 `tests/test_*.py`, masing-masing subprocess hard timeout 120 detik. Total 77 modul OK, 1 FAIL, 1 TIMEOUT; modul selesai melaporkan 779 tes dengan satu failure. `tests.test_streamlit_chat_safety`: Ran 6 tests in 14.196s, OK. Semua modul API termasuk `tests.test_api_server` (69 tes), citation/speech, CLI, fusion, dan work orders selesai OK. Log lokal: `scripts/scratch/chat-safety-verification/` (gitignored).
+  - `python -X utf8 verify_app.py` - exit 0, "Verification Complete!"; PPT 1321628 bytes, Materi OK: 91, Failed: 0.
+  - `AppTest.from_file('app.py', default_timeout=90).run()` - exit 0, "AppTest app.py: OK", tanpa exception; subprocess hard timeout 120 detik.
+  - `git diff --check -- src/pages/chatbot_page.py docs/feature-parity.md tasks/todo.md` - exit 0; diff page/docs dan isi tes baru dibaca ulang untuk scope/debug/secrets.
+- **Left out / risks:**
+  - Suite belum seluruhnya hijau: `tests.test_asset_registry` gagal pada `test_repeated_writes_never_corrupt_test_date_to_blank` (`5 != 0`); perubahan tanggal pada `src/asset_registry.py` sudah ada sebelum tugas ini dan tidak diubah. `tests.test_streamlit_app` timeout 120 detik dengan indikator E/F di output parsial; tidak ada hasil final modul tersebut. Smoke app dan tes page safety terpisah berhasil.
+  - Warning config Streamlit `theme.*.showSidebarBorder`, `use_container_width`, bare-mode ScriptRunContext, dan pandas/numpy deprecation masih muncul; konfigurasi/dependency tidak diubah dalam scope ini.
+  - Guard tetap berbasis substring policy lama, termasuk kemungkinan menolak dokumen penjelasan yang menyebut tindakan terlarang. Yang diperiksa adalah konteks lampiran hasil ekstraksi yang benar-benar akan dipakai; lampiran persisten berisiko perlu dilepas sebelum pertanyaan berikutnya. Tidak menambah kebijakan guard, citation offline, API/VOICE normalization, atau perbaikan input file-only.
+  - Frontend lint/build tidak dijalankan karena tidak ada perubahan frontend; tidak ada API route/schema yang diubah. Semua perubahan Tribology/WF-02/WF-03 sebelumnya, registry user, SQLite/data/Materi tetap dipertahankan. Tidak commit/push.
+- **Docs/ADR:** `docs/feature-parity.md`, `tasks/todo.md`, `docs/agent-changelog.md`; ADR-0001 tetap berlaku, tidak ada keputusan arsitektur/domain term baru.
+
+### 2026-10-03 - WF-03: contract chat/voice/citation dan inventaris gap aktual
+
+- **Requested:** "oke good next" setelah perbaikan Tribology dan WF-02; lanjut WF-03 sesuai urutan backlog.
+- **Plan (agreed before coding):** trivial, no plan needed (pembaruan dokumentasi berdasarkan ADR-0001 yang sudah diterima; tanpa perubahan runtime, safety policy, API schema, atau ownership). Periksa jalur chat kedua UI dan tes terdekat, koreksi matriks, lalu catat gap dan target regresi WF-08.
+- **Changed:**
+  - `docs/feature-parity.md` - contract rule answer/fallback, data gap, safety teks/VOICE, citation retrieval terstruktur, persistence, dan speech summary. Koreksi klaim lama bahwa Streamlit tidak menampilkan citation: sekarang expander/history/export dicatat sesuai kode. Jelaskan API memiliki orkestrasi chat sendiri dan memakai master untuk resolve/diagnosis, bukan delegasi penuh ke `process_query`.
+  - `tasks/todo.md` - WF-03 selesai untuk dokumentasi contract/gap inventory, dengan runtime follow-up safety/citation tetap terbuka di WF-08. Voice UX tetap React-canonical.
+  - `docs/agent-changelog.md` - catat check, scope, verification, dan batas hasil.
+- **Verified:**
+  - Review `CONTEXT.md`, `README.md`, coding protocol section 2, ADR-0001, `src/pages/chatbot_page.py`, `src/chatbot.py`, `src/agents/master_agent.py`, `src/llm_assistant.py`, API agents router, React chat/voice/client, dan tes terkait; `git status --short` mencatat perubahan sebelumnya dan tambahan data/Materi yang tidak disentuh pada tugas ini.
+  - `python -X utf8 -m unittest tests.test_master_agent.MasterAgentTests.test_safety_guardrail_blocking` - Ran 1 test, OK.
+  - `python -X utf8 -m unittest tests.test_master_agent.MasterAgentTests.test_process_query_rule_fallback` - Ran 1 test, OK.
+  - `python -X utf8 -m unittest tests.test_speech_summary` - Ran 4 tests, OK.
+  - `python -X utf8 -m unittest tests.test_chat_context` - Ran 10 tests, OK.
+  - `python -X utf8 -m unittest tests.test_rag_doc_cache` - Ran 5 tests, OK.
+  - Kelima target di atas dijalankan sebagai subprocess dengan hard timeout 120 detik, total 21 tes OK. Log lokal `scripts/scratch/wf03-verification/` (gitignored). Tidak ada tes baru atau behavior yang berubah.
+  - Assertion dokumen/checklist/reference menggunakan `python -c`: semua checklist WF-03 selesai, vocabulary contract wajib tersedia, dan tujuh source/test references benar-benar ada - "WF-03 checklist, contract vocabulary, source references: OK".
+  - `git diff --check -- docs/feature-parity.md tasks/todo.md` - exit 0; `git diff -- docs/feature-parity.md tasks/todo.md` dibaca ulang.
+- **Left out / risks:**
+  - WF-03 menyatakan contract target, bukan membuktikan parity runtime lengkap. Pada jalur yang diperiksa, Streamlit belum memanggil guard secara eksplisit; provider unavailable kembali sebelum citation retrieval dan citation tersimpan hanya saat AI aktif. Prioritas WF-08 adalah failing tests dan perbaikan guard Streamlit, lalu fallback citation/response normalization/speech parity.
+  - Citation API normal/blocked memiliki field yang berbeda; keberadaan citation tidak otomatis membuktikan setiap klaim grounded. Tes citation API diperiksa sebagai referensi, tidak dijalankan ulang pada tugas dokumentasi ini.
+  - Tidak menjalankan full suite, `verify_app.py`, `py_compile`, frontend lint/build, atau browser smoke karena tidak ada perubahan kode/runtime. Hasil failure asset registry dan timeout Streamlit dari tugas sebelumnya tidak dinyatakan sudah teratasi.
+  - Seluruh perubahan Tribology/WF-02 sebelumnya, perubahan `src/asset_registry.py`, SQLite vibration asset, backup DGA yang dihapus, dan file data/Materi untracked tetap utuh. Tidak commit/push.
+- **Docs/ADR:** `docs/feature-parity.md`, `tasks/todo.md`, `docs/agent-changelog.md`; ADR-0001 tetap berlaku, tidak perlu ADR baru.
+
+### 2026-10-03 - Tribology tanpa pengukuran bawaan + penutupan scope WF-02
+
+- **Requested:** "perbaiki dulu tribology kemudian lanjut wf-02"; rencana disetujui dengan "ya gas".
+- **Plan (agreed before coding):**
+  - Hilangkan angka pengukuran contoh pada `TribologyAgent`; pertahankan ambang Fe/water/TAN dan input/output lama, dengan metric kosong menjadi `None`, data gap eksplisit, dan confidence lebih rendah untuk alarm parsial.
+  - Data parsial tanpa alarm tidak membuktikan kondisi sehat menyeluruh: keluarkan `UNKNOWN`, severity 0, dan health score `None`. Aturan ISO/NAS baru dipisahkan dari bugfix ini.
+  - Tambahkan tes gagal dahulu; lanjutkan WF-02 sebagai penetapan batas read/analyze/dispatch dan inventaris gap sesuai ADR-0001, bukan duplikasi workspace Streamlit.
+  - Penyesuaian cakupan yang dijelaskan saat integrasi: fusion sebelumnya mengalikan health score `None` dengan bobot dan crash; tambahkan pengecualian data gap dan propagasi kualitas parsial beserta tes regresinya.
+- **Changed:**
+  - `src/agents/specialist_agents.py` - Tribology hanya membaca nilai nyata, mempertahankan nol yang sah, mengabaikan nilai kosong/nonfinite/negatif/tidak numerik dengan limitation, dan menghitung deviasi viskositas hanya bila nominal positif tersedia. Tambah `data_quality`/`next_data_needed`; pertahankan key metric lama dengan nilai nullable. Alarm terukur tetap berlaku; confidence parsial dikurangi berdasarkan coverage enam parameter, bukan probabilitas terkalibrasi.
+  - `src/agents/fusion_engine.py` - keluarkan hasil tanpa health score dari diagnosis/pembobotan, simpan hasil tersebut di `data_quality.excluded_domains`, dan teruskan status partial serta `partial_domains`. Tanpa hasil yang bisa dinilai, fusion tetap UNKNOWN dan tidak membuat WO/RUL.
+  - `tests/test_tribology_data.py` - ganti ekspektasi bug lama yang mengizinkan default; tambah kasus ISO-only, nol, alarm parsial, invalid values, nominal kosong/nol, batas alarm, dan kompatibilitas sampel lengkap (10 tes).
+  - `tests/test_fusion_engine.py` - tiga regresi: oil-only UNKNOWN, UNKNOWN oil tidak mengubah skor vibrasi terukur, dan alarm oil parsial tetap partial di fusion.
+  - `docs/feature-parity.md`, `tasks/todo.md` - WF-02 selesai untuk scope dan gap inventory; dokumentasikan contract minimum serta gap aktual pada MCSA badges, upload hint, DGA simulator/kalkulasi lokal, dukungan read terbatas, skor tren nol, adapter V2, dan evaluator Tribology legacy. Perbaikan UI/contract tersisa dicatat untuk WF-07/WF-08.
+- **Verified:**
+  - Red: `python -m unittest tests.test_tribology_data` - Ran 9 tests, FAILED (failures=8, errors=1); angka default, false HEALTHY, confidence yang sama, dan invalid numeric terbukti.
+  - Red: `python -m unittest tests.test_fusion_engine.TestReliabilityFusionSystem.test_unknown_tribology_is_a_data_gap_not_a_fusion_score tests.test_fusion_engine.TestReliabilityFusionSystem.test_unknown_tribology_does_not_change_measured_vibration_fusion` - Ran 2 tests, FAILED (errors=2), `TypeError: NoneType * float`.
+  - Red: `python -m unittest tests.test_fusion_engine.TestReliabilityFusionSystem.test_partial_tribology_alarm_preserves_partial_quality_in_fusion` - Ran 1 test, FAILED (valid != partial); corrected afterward.
+  - `python -m py_compile src/agents/specialist_agents.py src/agents/fusion_engine.py tests/test_tribology_data.py tests/test_fusion_engine.py` - exit 0, setelah perubahan kode terakhir.
+  - `python -m unittest tests.test_tribology_data tests.test_pple_engineering tests.test_fusion_engine tests.test_thermal_tribo_standards tests.test_domain_workspace tests.test_domain_report tests.test_pple_domain_api` - Ran 107 tests, OK pada checkpoint awal.
+  - `python -m unittest tests.test_tribology_data tests.test_fusion_engine` - Ran 26 tests, OK setelah pengecualian UNKNOWN.
+  - Setelah propagasi kualitas parsial terakhir: `python -m unittest tests.test_tribology_data tests.test_fusion_engine.TestReliabilityFusionSystem.test_unknown_tribology_is_a_data_gap_not_a_fusion_score tests.test_fusion_engine.TestReliabilityFusionSystem.test_unknown_tribology_does_not_change_measured_vibration_fusion tests.test_fusion_engine.TestReliabilityFusionSystem.test_partial_tribology_alarm_preserves_partial_quality_in_fusion` - Ran 13 tests, OK.
+  - Suite luas dijalankan dengan `python -m unittest <module>` untuk setiap `test_*.py` repo, subprocess terpisah dengan hard timeout 120 detik (bukan discover satu proses yang dikenal bisa hang). 78 modul dicoba: 76 OK, 1 FAILED (`tests.test_asset_registry`), 1 TIMEOUT (`tests.test_streamlit_app`). 772 tes pada modul yang selesai, 1 failure; tidak ada skip pada modul yang selesai. Log lokal di `scripts/scratch/tribology-verification/`, termasuk `results.json`; folder scratch gitignored. Sweep mendahului penyesuaian status partial terakhir, yang kemudian diverifikasi lewat 13 tes terarah di atas.
+  - `tests.test_asset_registry.AssetRegistryTests.test_repeated_writes_never_corrupt_test_date_to_blank` gagal: 5 tanggal menjadi NaT. Pembanding terisolasi membaca `git show HEAD:src/asset_registry.py`, mengeksekusinya ke module registry di memori, lalu menjalankan satu tes yang sama: Ran 1 test, OK. Tidak ada file worktree yang diganti; kegagalan terkait perubahan registry yang sudah ada dan pandas 1.x.
+  - Smoke terpisah, masing-masing `python -X utf8 -m unittest -v <test>` dengan timeout 60 detik: `tests.test_streamlit_app.TestAppEntrypoint.test_app_loads_default_page_without_exception` (Ran 1 test, OK), `tests.test_streamlit_app.TestDomainDashboards.test_tribology_page_renders_with_disclaimer` (Ran 1 test, OK), `tests.test_streamlit_app.TestDomainDashboards.test_tribology_page_rekomendasi_tab_renders` (Ran 1 test, OK).
+  - `python -X utf8 verify_app.py` (subprocess timeout 180 detik) - exit 0, Verification Complete!, PPT 1321633 bytes, Materi OK: 91, Failed: 0. Capture pertama sempat gagal mencetak Unicode pada console Windows setelah verifikasi selesai; capture akhir memakai UTF-8 dan berhasil.
+  - FastAPI `TestClient(app).get('/docs')` - GET /docs 200; `tests.test_api_server` pada sweep - Ran 69 tests, OK; `tests.test_pple_domain_api` - Ran 14 tests, OK.
+  - Review route React, caller/core, dan ADR-0001; assertion dokumen WF-02 (semua acceptance/verification boxes selesai dan vocabulary contract tersedia) - OK.
+  - `git diff --check -- src/agents/specialist_agents.py src/agents/fusion_engine.py tests/test_tribology_data.py tests/test_fusion_engine.py docs/feature-parity.md tasks/todo.md` - exit 0; diff dibaca ulang.
+- **Left out / risks:**
+  - Suite tidak seluruhnya hijau: failure registry yang sudah termodifikasi tidak diperbaiki/ditimpa. Suite Streamlit penuh timeout dan sempat mencetak indikator error/failure sebelum dihentikan, sehingga tes lainnya belum dapat diklaim lulus; tiga smoke relevan di atas lulus.
+  - Warning existing pandas/numpy deprecation, konfigurasi tema Streamlit, `use_container_width`, bare ScriptRunContext, dan widget/session-state tetap dilaporkan; tidak disembunyikan. Git juga memperingatkan CRLF dan akses global ignore.
+  - Evaluasi ISO/NAS, aturan Cu/viskositas baru, evaluator `src/tribology_data.evaluate_tribology_sample`, fallback nominal pada helper legacy, dan penerusan UNKNOWN/data quality/next-data lewat adapter V2 belum diperbaiki pada scope ini. WF-02 bukan klaim parity diagnosis lengkap.
+  - Tidak mengubah frontend, API route/schema, threshold engineering, data pengukuran, source-of-truth, atau safety policy. Lint/build frontend tidak dijalankan karena tidak ada perubahan frontend.
+  - Perubahan sebelum tugas: `src/asset_registry.py`, penghapusan backup DGA, `Materi/laporan.json`, batch upload DGA, dan dokumen vibrasi untracked tetap utuh. Tidak commit/push.
+- **Docs/ADR:** `docs/agent-changelog.md`, `docs/feature-parity.md`, `tasks/todo.md`. ADR-0001 tetap berlaku; tidak ada perubahan ownership atau keputusan arsitektur baru.
+
 ### 2026-10-01 - Kontrak parity snapshot fleet/reliability (WF-01)
 
 - **Requested:** "gas kerjakan WF-01"
