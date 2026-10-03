@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 
 from src.chatbot import MCSAChatbot
+from src.agents.safety_guard import SafetyGuardrailAgent
 from src.components.theme import render_page_header
 from src.knowledge_processor import process_and_save_knowledge_file
 from src.llm_assistant import (
@@ -86,6 +87,8 @@ def _build_conversation_context(messages: list) -> str:
 
     lines = []
     for msg in messages[-(MAX_CHAT_CONTEXT_TURNS * 2):]:
+        if msg.get("safety_blocked"):
+            continue
         text = str(msg.get("content") or "").strip()
         if not text:
             continue
@@ -292,6 +295,20 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
                 st.caption(f":material/attach_file: {uf.name}")
         st.session_state["messages"].append({"role": "user", "content": prompt})
 
+        extra_context = st.session_state.get("_chat_file_context", "")
+        safety_check = SafetyGuardrailAgent().check_safety("\n\n".join([prompt, extra_context]))
+        if not safety_check["safe"]:
+            st.session_state["messages"][-1]["safety_blocked"] = True
+            with st.chat_message("assistant"):
+                st.markdown(safety_check["message"])
+            st.session_state["messages"].append({
+                "role": "assistant",
+                "content": safety_check["message"],
+                "citations": [],
+                "safety_blocked": True,
+            })
+            return
+
         # 1. Rule-based analysis & intent processing
         rule_response = bot.process_query(prompt)
 
@@ -300,8 +317,6 @@ def render_chatbot_page(st, df_latest_augmented: pd.DataFrame, df_all: pd.DataFr
         df_history = df_all[df_all["Equipment"] == matched_eq] if matched_eq and not df_all.empty else None
 
         # 3. LLM enhancement with Multi-provider + RAG + Attached File Context
-        extra_context = st.session_state.get("_chat_file_context", "")
-
         # Riwayat percakapan (tanpa pesan yang sedang diproses) supaya pertanyaan
         # lanjutan seperti "kenapa begitu?" tetap merujuk topik sebelumnya.
         conversation_context = _build_conversation_context(st.session_state.get("messages", [])[:-1])
