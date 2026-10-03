@@ -482,34 +482,44 @@ class TribologyAgent(BaseSpecialistAgent):
         super().__init__("Tribology")
 
     def evaluate(self, equipment: str, data: Dict[str, Any]) -> Dict[str, Any]:
-        insufficient = self._insufficient_if_empty(equipment, data, {
-            "viscosity_40c", "viscosity", "nominal_viscosity", "tan", "water_ppm",
-            "water", "fe_ppm", "fe", "cu_ppm", "cu", "iso_cleanliness",
-        })
-        if insufficient:
-            return insufficient
-        # `data.get(key, default)` only substitutes the default when `key` is
-        # ABSENT, not when a caller (e.g. build_tribology_agent_input, which
-        # always emits every key, None or not) sets it to None explicitly - a
-        # sample with only iso_cleanliness measured passed the insufficient-
-        # data check above, then crashed float(None) below. `_get` treats an
-        # explicit None the same as a missing key.
-        def _get(*keys, default):
+        normalized = {str(key).lower(): value for key, value in (data or {}).items()}
+        invalid_fields = []
+
+        def _get(*keys, numeric=True):
             for key in keys:
-                value = data.get(key)
-                if value is not None:
-                    return value
-            return default
+                value = normalized.get(key)
+                if value is None or str(value).strip() == "":
+                    continue
+                if not numeric:
+                    return str(value).strip()
+                try:
+                    number = float(value)
+                except (TypeError, ValueError, OverflowError):
+                    invalid_fields.append(key)
+                    continue
+                if isinstance(value, bool) or not math.isfinite(number) or number < 0:
+                    invalid_fields.append(key)
+                    continue
+                return number
+            return None
 
-        visc = float(_get("viscosity_40c", "viscosity", default=46.0))
-        nominal_visc = float(_get("nominal_viscosity", default=46.0))
-        tan = float(_get("tan", default=0.15))
-        water_ppm = float(_get("water_ppm", "water", default=45.0))
-        fe = float(_get("fe_ppm", "fe", default=12.0))
-        cu = float(_get("cu_ppm", "cu", default=3.0))
-        iso_code = str(_get("iso_cleanliness", default="16/14/11"))
-
-        visc_dev = abs(visc - nominal_visc) / nominal_visc * 100.0
+        visc = _get("viscosity_40c", "viscosity")
+        nominal_visc = _get("nominal_viscosity")
+        tan = _get("tan")
+        water_ppm = _get("water_ppm", "water")
+        fe = _get("fe_ppm", "fe")
+        cu = _get("cu_ppm", "cu")
+        iso_code = _get("iso_cleanliness", numeric=False)
+        measurements = {
+            "viscosity_40c": visc, "tan": tan, "water_ppm": water_ppm,
+            "fe_ppm": fe, "cu_ppm": cu, "iso_cleanliness": iso_code,
+        }
+        observed = [key for key, value in measurements.items() if value is not None]
+        missing = [key for key, value in measurements.items() if value is None]
+        visc_dev = (
+            abs(visc - nominal_visc) / nominal_visc * 100.0
+            if visc is not None and nominal_visc is not None and nominal_visc > 0 else None
+        )
         evidence = []
         recommendations = []
         severity = 1
@@ -520,7 +530,7 @@ class TribologyAgent(BaseSpecialistAgent):
         confidence = 0.94
         health_score = 95.0
 
-        if fe >= 80.0:
+        if fe is not None and fe >= 80.0:
             severity = 4
             condition = "CRITICAL"
             failure_mode = "Severe Ferrous Bearing / Gear Wear Degradation"
@@ -530,7 +540,7 @@ class TribologyAgent(BaseSpecialistAgent):
             health_score = 30.0
             evidence.append(f"Konsentrasi partikel keausan besi (Fe) sangat tinggi ({fe:.1f} ppm > 80 ppm)")
             recommendations.append("Inspeksi fisik elemen bearing/gearbox, flushing oli, dan ganti filter cartridge")
-        elif fe >= 40.0:
+        elif fe is not None and fe >= 40.0:
             severity = max(severity, 3)
             condition = "ALERT"
             failure_mode = "Active Bearing Sliding / Fatigue Wear"
@@ -541,28 +551,48 @@ class TribologyAgent(BaseSpecialistAgent):
             evidence.append(f"Konsentrasi Fe meningkat ({fe:.1f} ppm Alert)")
             recommendations.append("Lakukan re-sampling oli dan periksa magnetic plug")
 
-        if water_ppm >= 500.0:
+        if water_ppm is not None and water_ppm >= 500.0:
             severity = max(severity, 3)
             condition = "CRITICAL" if severity >= 4 else "ALERT"
             evidence.append(f"Kontaminasi air tinggi ({water_ppm:.0f} ppm > 500 ppm ASTM D6304)")
             recommendations.append("Periksa seal pendingin oli / oil cooler dan lakukan dehidrasi oli (centrifuge/vacuum)")
             health_score = min(health_score, 50.0)
 
-        if tan >= 0.8:
+        if tan is not None and tan >= 0.8:
             severity = max(severity, 3)
             condition = "CRITICAL" if severity >= 4 else "ALERT"
             evidence.append(f"Angka asam total (TAN) tinggi ({tan:.2f} mg KOH/g), oli mengalami oksidasi parah")
             recommendations.append("Jadwalkan penggantian oli pelumas (oil replacement)")
             health_score = min(health_score, 55.0)
 
-        if not recommendations:
-            recommendations.append("Kualitas oli dan parameter tribologi dalam batas optimal operasi")
+        limitations = [
+            "ISO cleanliness, Cu, dan viskositas belum memiliki aturan diagnosis di agen ini."
+        ]
+        if missing:
+            limitations.append("Parameter belum diukur: " + ", ".join(missing) + ".")
+        if invalid_fields:
+            limitations.append("Nilai tidak valid diabaikan: " + ", ".join(invalid_fields) + ".")
+        has_evaluated_data = any(value is not None for value in (fe, water_ppm, tan))
+        if severity == 1 and (missing or not has_evaluated_data):
+            condition = "UNKNOWN"
+            severity = 0
+            health_score = None
+            confidence = 0.0
+            failure_mode = "Insufficient measurement data"
+            fault_code = FaultCode.UNKNOWN.value
+        elif missing:
+            # Coverage reduces confidence without changing measured alarm thresholds.
+            confidence = round(confidence * len(observed) / len(measurements), 3)
+        if condition == "UNKNOWN" or missing:
+            recommendations.append("Lengkapi data pengukuran sebelum menyimpulkan kondisi pelumas secara menyeluruh.")
+        elif not recommendations:
+            recommendations.append("Fe, kadar air, dan TAN terukur berada di bawah ambang alarm; parameter lainnya belum dievaluasi.")
 
         return {
             "equipment": equipment,
             "domain": "Tribology",
             "condition": condition,
-            "health_score": round(health_score, 1),
+            "health_score": round(health_score, 1) if health_score is not None else None,
             "failure_mode": failure_mode,
             "fault_code": fault_code,
             "mechanism_tags": mechanism_tags,
@@ -570,9 +600,16 @@ class TribologyAgent(BaseSpecialistAgent):
             "confidence": confidence,
             "evidence": evidence,
             "recommendation": recommendations,
+            "next_data_needed": missing,
+            "data_quality": {
+                "status": "insufficient_data" if condition == "UNKNOWN" else "partial" if missing or invalid_fields else "valid",
+                "observed_fields": observed,
+                "invalid_fields": invalid_fields,
+                "limitations": limitations,
+            },
             "metrics": {
                 "viscosity_40c": visc,
-                "viscosity_dev_pct": round(visc_dev, 1),
+                "viscosity_dev_pct": round(visc_dev, 1) if visc_dev is not None else None,
                 "tan_mgkoh_g": tan,
                 "water_ppm": water_ppm,
                 "fe_ppm": fe,

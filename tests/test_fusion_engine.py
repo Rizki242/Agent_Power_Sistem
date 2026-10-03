@@ -89,6 +89,28 @@ class TestReliabilityFusionSystem(unittest.TestCase):
                 self.assertEqual(result["fault_code"], "UNKNOWN")
                 self.assertEqual(result["mechanism_tags"], [])
 
+    def test_unknown_tribology_is_a_data_gap_not_a_fusion_score(self):
+        result = self.fusion.run_full_fusion("TEST-PARTIAL-OIL", oil_data={"water_ppm": 0})
+        self.assertEqual(result["health_status"], "UNKNOWN")
+        self.assertIsNone(result["health_index"])
+        self.assertIsNone(result["maintenance_decision"]["work_order"])
+        self.assertIn("Tribology", result["data_quality"]["excluded_domains"])
+
+    def test_partial_tribology_alarm_preserves_partial_quality_in_fusion(self):
+        result = self.fusion.run_full_fusion("TEST-PARTIAL-OIL", oil_data={"fe_ppm": 85})
+        self.assertEqual(result["health_status"], "CRITICAL")
+        self.assertEqual(result["data_quality"]["status"], "partial")
+        self.assertEqual(result["data_quality"]["excluded_domains"], {})
+
+    def test_unknown_tribology_does_not_change_measured_vibration_fusion(self):
+        baseline = self.fusion.run_full_fusion("TEST-PARTIAL-OIL", vibration_data={"overall_rms": 5.2})
+        result = self.fusion.run_full_fusion(
+            "TEST-PARTIAL-OIL", vibration_data={"overall_rms": 5.2}, oil_data={"iso_cleanliness": "22/19/13"},
+        )
+        self.assertEqual(result["health_index"], baseline["health_index"])
+        self.assertNotIn("Tribology", result["specialist_evaluations"])
+        self.assertIn("Tribology", result["data_quality"]["excluded_domains"])
+
     def test_reliability_fusion_correlation(self):
         # Test Multi-Modal Bearing Evidence Correlation
         fusion_res = self.fusion.run_full_fusion(

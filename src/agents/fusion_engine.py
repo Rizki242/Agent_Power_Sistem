@@ -590,6 +590,15 @@ class ReliabilityFusionAgent:
             specialist_results["Partial Discharge"] = self._analyze("partial_discharge", equipment, pd_data)
             health_weights["Partial Discharge"] = 0.25
 
+        # UNKNOWN results carry no score and must not enter numeric fusion.
+        excluded_domains = {
+            domain: result for domain, result in specialist_results.items()
+            if result.get("health_score") is None
+        }
+        specialist_results = {
+            domain: result for domain, result in specialist_results.items()
+            if domain not in excluded_domains
+        }
         if not specialist_results:
             return {
                 "equipment": equipment,
@@ -634,7 +643,8 @@ class ReliabilityFusionAgent:
                 },
                 "data_quality": {
                     "status": "insufficient_data",
-                    "limitations": ["Tidak ada telemetry domain yang diberikan."],
+                    "excluded_domains": excluded_domains,
+                    "limitations": ["Tidak ada telemetry domain yang dapat dinilai."],
                 },
             }
 
@@ -696,6 +706,11 @@ class ReliabilityFusionAgent:
             risk_info=risk_info
         )
 
+        partial_domains = [
+            domain for domain, result in specialist_results.items()
+            if result.get("data_quality", {}).get("status") == "partial"
+        ]
+
         return {
             "equipment": equipment,
             "asset_type": asset_type,
@@ -707,5 +722,14 @@ class ReliabilityFusionAgent:
             "failure_mode_diagnosis": diagnosis,
             "predictive_rul": rul_info,
             "risk_assessment": risk_info,
-            "maintenance_decision": decision_info
+            "maintenance_decision": decision_info,
+            "data_quality": {
+                "status": "partial" if excluded_domains or partial_domains else "valid",
+                "excluded_domains": excluded_domains,
+                "partial_domains": partial_domains,
+                "limitations": [
+                    f"Domain {domain} tidak disertakan dalam fusion karena pengukuran belum cukup."
+                    for domain in excluded_domains
+                ],
+            },
         }
